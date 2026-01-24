@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import FretboardInstance from './FretboardInstance';
 import { FretboardState, ThemeMode, Project } from '../types';
@@ -51,7 +50,8 @@ const DEFAULT_FRETBOARD = (lang: Lang): FretboardState => ({
 const FretboardPanel: React.FC = () => {
   const [instances, setInstances] = useState<FretboardState[]>([]);
   const [projectName, setProjectName] = useState('Novo Projeto');
-  const [projectId, setProjectId] = useState(crypto.randomUUID());
+  // Tipagem explícita como string para evitar o erro de SetStateAction do UUID
+  const [projectId, setProjectId] = useState<string>(crypto.randomUUID());
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [lang, setLang] = useState<Lang>('pt');
   const [user, setUser] = useState<string>('');
