@@ -42,7 +42,15 @@ export const translations = {
     fretLabel: "Casas",
     custom: "Customizada",
     statusTip: "Clique acima do Nut para Mute/Open",
-    fingeringTip: "Clique no ponto para trocar o dedo"
+    fingeringTip: "Clique no ponto para trocar o dedo",
+    storageTitle: "Sobre o Armazenamento",
+    storageLocal: "Local e Privado",
+    storageLocalDesc: "Seus projetos são salvos apenas neste navegador. Não enviamos seus dados para nenhum servidor.",
+    storageWarning: "Atenção:",
+    storageWarningDesc: "Limpar os 'Dados do Site' ou formatar o PC apagará seus projetos. Não há sincronização entre dispositivos.",
+    storageCost: "Custo Zero",
+    storageCostDesc: "Este aplicativo é gratuito e ilimitado graças ao processamento local.",
+    gotIt: "Entendi!"
   },
   en: {
     tagline: "Visualize the harmony. Structure your fretboard.",
@@ -86,7 +94,15 @@ export const translations = {
     fretLabel: "Frets",
     custom: "Custom",
     statusTip: "Click above Nut for Mute/Open",
-    fingeringTip: "Click marker to change finger"
+    fingeringTip: "Click marker to change finger",
+    storageTitle: "About Storage",
+    storageLocal: "Local & Private",
+    storageLocalDesc: "Your projects are saved only in this browser. We do not send your data to any server.",
+    storageWarning: "Warning:",
+    storageWarningDesc: "Clearing 'Site Data' or formatting your PC will delete your projects. There is no sync between devices.",
+    storageCost: "Zero Cost",
+    storageCostDesc: "This app is free and unlimited thanks to local processing.",
+    gotIt: "Got it!"
   }
 };
 

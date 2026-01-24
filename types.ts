@@ -16,7 +16,7 @@ export interface Marker {
   fret: number;
   shape: MarkerShape;
   color: string;
-  finger?: string; // T, 1, 2, 3, 4
+  finger?: string;
 }
 
 export interface Line {
@@ -42,7 +42,7 @@ export interface FretboardState {
   stringStatuses: StringStatus[];
   labelMode: LabelMode;
   harmonyMode: HarmonyMode;
-  chordQuality: ChordQuality; // Agora parte do estado global da instância
+  chordQuality: ChordQuality;
   chordDegree: number;
   inversion: number;
   layers: {
@@ -55,18 +55,18 @@ export interface FretboardState {
   lines: Line[];
 }
 
-export interface AppState {
-  version: string;
+export interface Project {
+  id: string;
+  name: string;
+  user: string;
+  lastUpdated: string;
   instances: FretboardState[];
-  activeId: string;
-  theme: ThemeMode;
-  lang: 'pt' | 'en';
-  currentUser?: string;
-  projectName?: string;
 }
 
-export interface HistoryState {
-  past: FretboardState[][];
-  present: FretboardState[];
-  future: FretboardState[][];
+export interface AppState {
+  version: string;
+  activeProjectId: string;
+  theme: ThemeMode;
+  lang: 'pt' | 'en';
+  currentUser: string;
 }
