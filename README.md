@@ -1,20 +1,34 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Guitar Architect
 
-# Run and deploy your AI Studio app
+Design your fretboard. Understand your music.  
+**Versão online:** https://guitar-architect-4pbqzia2z-dilio-alvarengas-projects.vercel.app/
 
-This contains everything you need to run your app locally.
+## Descrição
 
-View your app in AI Studio: https://ai.studio/apps/drive/1TJUHbPAwVavZxgSR6ZgETmn5vF7wb5zx
+Guitar Architect é um editor visual de diagramas de braço de guitarra, ideal para estudo de escalas, harmonia funcional (tríades e tétrades) e construção de padrões musicais.  
+O aplicativo permite adicionar marcadores, conectar notas com linhas, desfazer/refazer ações, exportar diagramas e salvar automaticamente o trabalho no navegador.
 
-## Run Locally
+## Demonstração
 
-**Prerequisites:**  Node.js
+Acesse a versão online:  
+👉 https://guitar-architect-4pbqzia2z-dilio-alvarengas-projects.vercel.app/
 
+## Funcionalidades
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- Configuração de casas, tônica e escala
+- Visualização de todas as notas ou apenas da escala
+- Harmonia por tríades e tétrades com inversões
+- Editor de marcadores com cores e formas
+- Conexão de notas por linhas
+- Undo/Redo por diagrama
+- Salvamento automático (localStorage)
+- Exportação em PNG e PDF
+- Suporte a modo canhoto
+
+## Instalação (Desenvolvimento)
+
+```bash
+git clone https://github.com/DPDDA-tech/guitar-architect.git
+cd guitar-architect
+npm install
+npm run dev
