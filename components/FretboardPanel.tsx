@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import FretboardInstance from './FretboardInstance';
@@ -180,6 +179,8 @@ const FretboardPanel: React.FC = () => {
   };
 
   const isLight = theme === 'light';
+
+  const PRIVACY_URL = "/privacy.html";
 
   return (
     <div className={`min-h-screen transition-all duration-700 ${isExporting ? 'is-exporting-mode' : (isLight ? 'blueprint-grid-light' : 'blueprint-grid-dark')}`}>
@@ -365,8 +366,15 @@ const FretboardPanel: React.FC = () => {
         <p className="font-black text-[11px] tracking-[0.7em] mb-3 uppercase">GUITAR ARCHITECT - ENGINE v1.7</p>
         <p className="text-[10px] opacity-70 font-bold uppercase tracking-widest">{t.createdBy}</p>
         <div className="mt-4 flex justify-center gap-4 text-[9px] font-bold uppercase tracking-widest opacity-60">
-          <a href="/privacy" target="_blank" className="hover:text-blue-500 transition-colors">Privacidade — guitararchitect.com.br/privacy</a>
-        </div>
+        <a
+          href={PRIVACY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-blue-500 transition-colors"
+        >
+          Privacidade — guitararchitect.com.br/privacy.html
+        </a>
+       </div>
       </footer>
     </div>
   );
