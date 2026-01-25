@@ -6,9 +6,7 @@ const App: React.FC = () => {
     document.title = "Guitar Architect — Interactive Fretboard";
   }, []);
 
-  return (
-    <FretboardPanel />
-  );
+  return <FretboardPanel />;
 };
 
 export default App;
