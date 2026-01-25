@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import FretboardPanel from "./components/FretboardPanel";
-import { translations, Lang, i18n } from "./i18n";
+import { Lang, i18n } from "./i18n";
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Lang>(i18n.getLanguage());
-  const t = translations[lang];
 
   useEffect(() => {
     document.title = "Guitar Architect — Interactive Fretboard";
@@ -23,14 +22,16 @@ const App: React.FC = () => {
     meta.setAttribute("content", description);
   }, []);
 
+  // Apenas persiste idioma — os componentes continuam lendo do i18n.ts
   const changeLanguage = (l: Lang) => {
     i18n.setLanguage(l);
     setLang(l);
+    window.location.reload(); // força re-render geral sem refatoração
   };
 
   return (
     <>
-      {/* Seletor simples de idioma — pode remover depois se quiser */}
+      {/* Toggle simples de idioma */}
       <div className="fixed top-4 right-4 z-50 flex gap-2">
         <button
           className="px-2 py-1 text-sm bg-zinc-800 rounded"
@@ -46,7 +47,7 @@ const App: React.FC = () => {
         </button>
       </div>
 
-      <FretboardPanel t={t} />
+      <FretboardPanel />
     </>
   );
 };
