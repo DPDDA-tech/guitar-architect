@@ -135,3 +135,17 @@ export const translations = {
 };
 
 export type Lang = 'pt' | 'en';
+export const DEFAULT_LANGUAGE: Lang = "pt";
+
+export const i18n = {
+  getLanguage(): Lang {
+    const stored = localStorage.getItem("lang");
+    if (stored === "pt" || stored === "en") return stored;
+    return DEFAULT_LANGUAGE;
+  },
+
+  setLanguage(lang: Lang) {
+    localStorage.setItem("lang", lang);
+  }
+};
+
