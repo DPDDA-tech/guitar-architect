@@ -1,89 +1,69 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import FretboardInstance from './FretboardInstance';
-import { FretboardState, ThemeMode, Project } from '../types';
+import { FretboardState, ThemeMode, Project, InstrumentType } from '../types';
 import { translations, Lang } from '../i18n';
+import { transposeNote, INSTRUMENT_PRESETS } from '../music/musicTheory';
 import { 
   saveConfig, 
   loadConfig, 
   getLibrary, 
-  saveProjectToLibrary, 
-  deleteProject 
+  saveProjectToLibrary 
 } from '../utils/persistence';
 import { exportToPNG, exportToPDF } from '../utils/export';
 
-// FEATURE FLAG: Mude para 'true' para reativar o Estúdio de Vídeo IA no futuro
-const ENABLE_PROMO_STUDIO = false;
-
-// Caminho para a imagem. O app procurará na raiz do projeto.
 const HERO_IMAGE = "/hero.png"; 
 
-// Extend Window interface for AI Studio APIs
-declare global {
-  interface AIStudio {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-  }
-
-  interface Window {
-    aistudio?: AIStudio;
-  }
-}
-
 const LogoIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-lg lg:w-[42px] lg:h-[42px]">
-    <rect width="100" height="100" rx="20" fill="#2563eb"/>
-    <path d="M25 30H75M25 50H75M25 70H75" stroke="white" strokeWidth="6" strokeLinecap="round"/>
-    <path d="M40 20V80M60 20V80" stroke="white" strokeWidth="3" strokeOpacity="0.4"/>
-    <circle cx="60" cy="50" r="8" fill="#ef4444" stroke="white" strokeWidth="3"/>
-  </svg>
+  <img src="/favicon-32x32.png" alt="Guitar Architect" className="w-[32px] h-[32px] lg:w-[42px] lg:h-[42px] object-contain drop-shadow-md" />
 );
 
-const DEFAULT_FRETBOARD = (lang: Lang): FretboardState => ({
-  id: crypto.randomUUID(),
-  title: translations[lang].titlePlaceholder,
-  subtitle: translations[lang].subtitle,
-  notes: "",
-  startFret: 0,
-  endFret: 15,
-  isLeftHanded: false,
-  root: "C",
-  scaleType: "Major (Ionian)",
-  tuning: "Standard",
-  stringStatuses: ['normal', 'normal', 'normal', 'normal', 'normal', 'normal'],
-  labelMode: "none", 
-  harmonyMode: "OFF",
-  chordQuality: "DIATONIC",
-  chordDegree: 0,
-  inversion: 0,
-  layers: {
-    showInlays: true,
-    showAllNotes: false,
-    showScale: false,
-    showTonic: false
-  },
-  markers: [],
-  lines: []
-});
+const DEFAULT_FRETBOARD = (lang: Lang, instrumentType: InstrumentType = 'guitar-6'): FretboardState => {
+  const instr = INSTRUMENT_PRESETS[instrumentType];
+  return {
+    id: crypto.randomUUID(),
+    title: "",
+    subtitle: "",
+    notes: "",
+    startFret: 0,
+    endFret: 15,
+    isLeftHanded: false,
+    root: "C",
+    scaleType: "Major (Ionian)",
+    instrumentType: instrumentType,
+    tuning: "Standard",
+    stringStatuses: Array(instr.strings).fill('normal'),
+    labelMode: "none", 
+    harmonyMode: "OFF",
+    chordQuality: "DIATONIC",
+    chordDegree: 0,
+    inversion: 0,
+    colorMode: "SINGLE",
+    layers: { 
+      showInlays: true, 
+      showAllNotes: false, 
+      showScale: false, 
+      showTonic: false 
+    },
+    markers: [],
+    lines: []
+  };
+};
 
 const FretboardPanel: React.FC = () => {
   const [instances, setInstances] = useState<FretboardState[]>([]);
   const [projectName, setProjectName] = useState('Novo Projeto');
   const [projectId, setProjectId] = useState<string>(crypto.randomUUID());
+  const [globalTranspose, setGlobalTranspose] = useState(0);
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [lang, setLang] = useState<Lang>('pt');
-  const [user, setUser] = useState<string>('');
-  const [imageError, setImageError] = useState(false);
+  const [user, setUser] = useState('');
+  const [defaultInstrument, setDefaultInstrument] = useState<InstrumentType>('guitar-6');
   
-  // Modals
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showStorageInfo, setShowStorageInfo] = useState(false);
-  
-  // Export State
   const [isExporting, setIsExporting] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-  
   const initialized = useRef(false);
   const t = translations[lang];
 
@@ -91,23 +71,18 @@ const FretboardPanel: React.FC = () => {
     if (!initialized.current) {
       const config = loadConfig();
       const library = getLibrary();
-      
       if (config) {
-        setTheme(config.theme);
-        setLang(config.lang);
-        setUser(config.currentUser || '');
-        
+        setTheme(config.theme); setLang(config.lang); setUser(config.currentUser || '');
         const lastProject = library.find(p => p.id === config.activeProjectId);
         if (lastProject) {
-          setInstances(lastProject.instances);
-          setProjectName(lastProject.name);
-          setProjectId(lastProject.id);
-        } else {
-          setInstances([DEFAULT_FRETBOARD(config.lang)]);
+          setInstances(lastProject.instances); setProjectName(lastProject.name); setProjectId(lastProject.id); setGlobalTranspose(lastProject.globalTransposition || 0);
+          if (lastProject.instances.length > 0) setDefaultInstrument(lastProject.instances[0].instrumentType);
+        } else { 
+          setInstances([DEFAULT_FRETBOARD(config.lang, defaultInstrument)]); 
         }
-      } else {
-        setInstances([DEFAULT_FRETBOARD('pt')]);
-        setShowLoginModal(true);
+      } else { 
+        setInstances([DEFAULT_FRETBOARD('pt', 'guitar-6')]); 
+        setShowLoginModal(true); 
       }
       initialized.current = true;
     }
@@ -117,157 +92,141 @@ const FretboardPanel: React.FC = () => {
     if (initialized.current && !isExporting && user) {
       setSaveStatus('saving');
       const timer = setTimeout(() => {
-        const currentProject: Project = {
-          id: projectId,
-          name: projectName,
-          user: user,
-          lastUpdated: new Date().toISOString(),
-          instances: instances
-        };
+        const currentProject: Project = { id: projectId, name: projectName, user: user, lastUpdated: new Date().toISOString(), instances: instances, globalTransposition: globalTranspose };
         saveProjectToLibrary(currentProject);
-        saveConfig({
-          version: "1.7",
-          activeProjectId: projectId,
-          theme,
-          lang,
-          currentUser: user
-        });
-        setSaveStatus('saved');
-        setTimeout(() => setSaveStatus('idle'), 2000);
+        saveConfig({ version: "1.7.2", activeProjectId: projectId, theme, lang, currentUser: user });
+        setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [instances, projectName, projectId, theme, lang, user, isExporting]);
+  }, [instances, projectName, projectId, theme, lang, user, isExporting, globalTranspose]);
 
-  const handleManualSave = () => {
-    if (!user) { setShowLoginModal(true); return; }
-    const currentProject: Project = { id: projectId, name: projectName, user: user, lastUpdated: new Date().toISOString(), instances: instances };
-    saveProjectToLibrary(currentProject);
-    setSaveStatus('saved');
-    setTimeout(() => setSaveStatus('idle'), 2000);
-  };
-
-  const createNewProject = () => {
-    if (confirm(t.clearAll + "?")) {
-      setProjectId(crypto.randomUUID());
-      setProjectName('Novo Projeto');
-      setInstances([DEFAULT_FRETBOARD(lang)]);
-    }
-  };
-
-  const loadProject = (p: Project) => {
-    setProjectId(p.id); setProjectName(p.name); setInstances(p.instances); setUser(p.user);
-    setShowLoadModal(false);
+  const handleGlobalTranspose = (semitones: number) => {
+    const newInstances = instances.map(inst => {
+      const newRoot = transposeNote(inst.root, semitones);
+      const newMarkers = inst.markers.map(m => ({ ...m, fret: Math.max(0, m.fret + semitones) }));
+      return { ...inst, root: newRoot, markers: newMarkers };
+    });
+    setInstances(newInstances);
+    setGlobalTranspose(prev => prev + semitones);
   };
 
   const updateInstance = (id: string, newState: FretboardState) => {
     setInstances(prev => prev.map(inst => inst.id === id ? newState : inst));
   };
 
-  const addInstance = (clone: boolean = false) => {
-    if (instances.length >= 12) { alert(t.limitReached); return; }
-    const newItem = clone ? { ...JSON.parse(JSON.stringify(instances[instances.length-1])), id: crypto.randomUUID() } : DEFAULT_FRETBOARD(lang);
+  const addInstance = (cloneData?: FretboardState) => {
+    if (instances.length >= 24) {
+      alert(t.limitReached);
+      return;
+    }
+    const newItem = cloneData ? { ...JSON.parse(JSON.stringify(cloneData)), id: crypto.randomUUID() } : DEFAULT_FRETBOARD(lang, defaultInstrument);
     setInstances(prev => [...prev, newItem]);
   };
 
-  const handleExport = async (type: 'png' | 'pdf') => {
+  const clearAll = useCallback(() => {
+    const confirmMsg = lang === 'pt' 
+      ? "LIMPAR PROJETO INTEIRO?\n\nIsso excluirá todos os diagramas. Você voltará para a tela inicial." 
+      : "CLEAR ENTIRE PROJECT?\n\nThis will delete all diagrams. You will return to the home screen.";
+    
+    if (window.confirm(confirmMsg)) {
+       setInstances([]); // Importante: Array vazio dispara a Hero Screen
+       setProjectName(lang === 'pt' ? "Novo Projeto" : "New Project");
+       setProjectId(crypto.randomUUID());
+       setGlobalTranspose(0);
+       setSaveStatus('saving');
+    }
+  }, [lang]);
+
+  const handleExportPNG = async () => {
     setIsExporting(true);
-    setTimeout(async () => {
-      try { if (type === 'png') await exportToPNG(lang); else await exportToPDF(lang); }
-      finally { setIsExporting(false); }
-    }, 200);
+    await new Promise(resolve => setTimeout(resolve, 50));
+    await exportToPNG(lang, user);
+    setIsExporting(false);
+  };
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    await new Promise(resolve => setTimeout(resolve, 50));
+    await exportToPDF(lang, user);
+    setIsExporting(false);
   };
 
   const isLight = theme === 'light';
 
-  const PRIVACY_URL = "/privacy.html";
-
   return (
-    <div className={`min-h-screen transition-all duration-700 ${isExporting ? 'is-exporting-mode' : (isLight ? 'blueprint-grid-light' : 'blueprint-grid-dark')}`}>
+    <div className={`min-h-screen transition-all ${isExporting ? 'is-exporting-mode' : (isLight ? 'blueprint-grid-light' : 'blueprint-grid-dark')}`}>
       
-      {/* HEADER */}
-      <div className={`fixed top-0 left-0 w-full z-50 border-b backdrop-blur-2xl transition-all duration-500 ${isLight ? 'bg-white/95 border-zinc-200 shadow-sm' : 'bg-zinc-950/95 border-zinc-800'} ${isExporting ? 'hidden' : ''}`}>
-        <div className="max-w-[1700px] mx-auto flex flex-col md:flex-row items-center justify-between p-3 md:p-4 px-4 md:px-10 gap-4">
-          <div className="flex items-center gap-4">
-             <LogoIcon />
-             <div className="flex flex-col">
-               <h1 className="text-xl font-black italic text-blue-600 leading-none tracking-tighter">GUITAR ARCHITECT</h1>
-               <p className={`text-[9px] font-bold uppercase tracking-tight mt-1 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{t.tagline}</p>
-               <div className="flex items-center gap-2 mt-1">
-                 <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>{user || 'Visitante'}</span>
-                 <button onClick={() => setShowLoginModal(true)} className="text-[9px] text-blue-600 font-bold hover:underline uppercase tracking-tight">({t.login})</button>
+      {/* HEADER BAR */}
+      <div className={`fixed top-0 left-0 w-full z-50 border-b backdrop-blur-2xl py-4 px-10 transition-all ${isLight ? 'bg-white/90 border-zinc-200 shadow-sm' : 'bg-zinc-950/90 border-zinc-800'} ${isExporting ? 'hidden' : ''}`}>
+         <div className="max-w-[1700px] mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-4">
+               <LogoIcon />
+               <div>
+                  <h1 className="text-xl font-black italic text-blue-600 leading-none tracking-tighter uppercase">GUITAR ARCHITECT</h1>
+                  <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-tight mt-1">{t.tagline}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                     <span className={`text-[10px] font-black uppercase ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>{user || (lang === 'pt' ? 'Visitante' : 'Guest')}</span>
+                     <button onClick={() => setShowLoginModal(true)} className="text-[9px] text-blue-600 font-bold hover:underline uppercase">(Login)</button>
+                  </div>
                </div>
-             </div>
-          </div>
-          
-          <div className="flex items-center gap-3 md:gap-4">
-            <div className={`flex items-center rounded-xl p-1 border shadow-inner ${isLight ? 'bg-zinc-100 border-zinc-300' : 'bg-zinc-800 border-zinc-700'}`}>
-              <button onClick={() => setShowLoadModal(true)} className={`px-4 py-2 text-[10px] font-black transition-colors uppercase tracking-widest ${isLight ? 'text-zinc-900 hover:text-blue-600' : 'text-zinc-300 hover:text-blue-400'}`}>{t.loadProject}</button>
-              <div className={`w-[1px] h-4 mx-1 ${isLight ? 'bg-zinc-400 opacity-50' : 'bg-zinc-600 opacity-50'}`}></div>
-              <button onClick={handleManualSave} className={`px-4 py-2 text-[10px] font-black transition-colors uppercase tracking-widest ${isLight ? 'text-zinc-900 hover:text-blue-600' : 'text-zinc-300 hover:text-blue-400'}`}>{saveStatus === 'saved' ? '✓ SALVO' : t.saveProject}</button>
             </div>
-            
-            <div className="flex gap-2">
-              <button onClick={() => handleExport('png')} className="bg-emerald-600 px-5 py-2.5 rounded-xl font-black text-[11px] text-white hover:bg-emerald-500 shadow-lg uppercase">PNG</button>
-              <button onClick={() => handleExport('pdf')} className="bg-red-600 px-5 py-2.5 rounded-xl font-black text-[11px] text-white hover:bg-red-500 shadow-lg uppercase">PDF</button>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <button onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')} className={`px-3 py-2.5 rounded-xl border font-black text-[11px] transition-all uppercase tracking-tighter ${isLight ? 'bg-zinc-100 border-zinc-300 text-zinc-900' : 'bg-zinc-800 border-zinc-700 text-zinc-100'}`}>{lang === 'pt' ? 'EN' : 'PT'}</button>
-              <button onClick={() => setTheme(isLight ? 'dark' : 'light')} className={`p-2.5 rounded-xl border transition-all text-sm ${isLight ? 'bg-zinc-100 border-zinc-300 text-zinc-900' : 'bg-zinc-800 border-zinc-700 text-zinc-100'}`}>{isLight ? '☾' : '☼'}</button>
-            </div>
-          </div>
-        </div>
-        
-        <div className={`border-t py-2 px-4 md:px-10 transition-colors ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
-           <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-3">
-             <div className="flex items-center gap-3 flex-1">
-               <span className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">{t.projectName}:</span>
-               <input value={projectName} onChange={e => setProjectName(e.target.value)} className={`bg-transparent text-xs font-bold focus:outline-none focus:text-blue-500 transition-all flex-1 md:flex-none md:min-w-[300px] ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`} />
-             </div>
-             <div className="flex items-center gap-3">
-               <div className={`group flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-tighter transition-all cursor-help ${saveStatus === 'saving' ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' : 'bg-transparent border-transparent text-zinc-500'}`}>
-                 <div className={`w-1.5 h-1.5 rounded-full ${saveStatus === 'saving' ? 'bg-blue-500 animate-pulse' : 'bg-zinc-500'}`}></div>
-                 {saveStatus === 'saving' ? 'Salvando...' : 'Sincronizado'}
-                 <button onClick={(e) => {e.stopPropagation(); setShowStorageInfo(true)}} className="ml-1 opacity-40 hover:opacity-100 transition-opacity">ⓘ</button>
+
+            <div className="flex items-center gap-4">
+               <div className={`flex items-center rounded-xl p-1 border ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
+                  <button onClick={() => setShowLoadModal(true)} className={`px-4 py-2 text-[10px] font-black uppercase ${isLight ? 'text-zinc-900' : 'text-zinc-100'} hover:text-blue-600`}>{t.loadProject}</button>
+                  <div className="w-[1px] h-4 bg-zinc-300 mx-1"></div>
+                  <button onClick={() => setSaveStatus('saved')} className={`px-4 py-2 text-[10px] font-black uppercase ${isLight ? 'text-zinc-900' : 'text-zinc-100'} hover:text-blue-600`}>{t.saveProject}</button>
                </div>
-               <button onClick={createNewProject} className="text-[9px] font-black text-red-500 hover:underline uppercase tracking-widest">{t.clearAll}</button>
-             </div>
-           </div>
-        </div>
+               <div className="flex gap-2">
+                  <button onClick={handleExportPNG} className="bg-emerald-600 px-5 py-2.5 rounded-xl font-black text-[11px] text-white hover:bg-emerald-500 shadow-md uppercase transition-transform active:scale-95">PNG</button>
+                  <button onClick={handleExportPDF} className="bg-red-600 px-5 py-2.5 rounded-xl font-black text-[11px] text-white hover:bg-red-500 shadow-md uppercase transition-transform active:scale-95">PDF</button>
+               </div>
+               <button onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')} className={`px-3 py-2.5 rounded-xl border font-black text-[11px] uppercase ${isLight ? 'border-zinc-300 text-zinc-900' : 'border-zinc-700 text-zinc-100'}`}>{lang === 'pt' ? 'EN' : 'PT'}</button>
+               <button onClick={() => setTheme(isLight ? 'dark' : 'light')} className={`p-2.5 rounded-xl border text-sm transition-transform active:rotate-12 ${isLight ? 'border-zinc-300 text-zinc-700' : 'border-zinc-700 text-zinc-100'}`}>{isLight ? '☾' : '☼'}</button>
+            </div>
+         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className={`max-w-[1700px] mx-auto px-4 md:px-10 pb-20 space-y-12 ${isExporting ? 'pt-10' : 'pt-44 md:pt-40'}`}>
-        {instances.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-1000">
-             <div className="relative mb-12">
-                <div className="absolute inset-0 bg-blue-500/20 blur-[100px] rounded-full scale-150"></div>
-                {!imageError ? (
-                  <img 
-                    src={HERO_IMAGE} 
-                    alt="Guitar Architect Hero" 
-                    className="relative w-full max-w-md md:max-w-lg rounded-3xl shadow-[0_0_80px_rgba(37,99,235,0.2)]"
-                    onLoad={() => setImageError(false)}
-                    onError={() => {
-                      setImageError(true);
-                      console.warn("Hero image missing at /hero.png. Check your local folder.");
-                    }}
-                  />
-                ) : (
-                  <div className="relative w-64 h-64 md:w-80 md:h-80 bg-zinc-950 rounded-[40px] flex flex-col items-center justify-center border-2 border-blue-500/30 shadow-[0_0_80px_rgba(37,99,235,0.2)]">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-black rounded-[40px]"></div>
-                    <div className="animate-pulse mb-4"><LogoIcon /></div>
-                    <span className="text-[8px] font-black text-blue-500/50 uppercase tracking-[0.3em]">ENGINE v1.7</span>
+      {/* SUB-HEADER */}
+      <div className={`fixed top-[88px] left-0 w-full z-40 border-b py-3 px-10 ${isLight ? 'bg-zinc-50 border-zinc-200 shadow-sm' : 'bg-zinc-900 border-zinc-800'} ${isExporting ? 'hidden' : ''}`}>
+         <div className="max-w-[1700px] mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-6">
+               <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t.projectName}:</span>
+                  <input value={projectName} onChange={e => setProjectName(e.target.value)} className={`bg-transparent font-bold text-xs focus:outline-none border-b border-transparent focus:border-blue-500 transition-all ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`} />
+               </div>
+            </div>
+            <div className="flex items-center gap-6">
+               <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Transposição Global</span>
+                  <div className={`flex rounded-lg border p-0.5 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
+                     <button onClick={() => handleGlobalTranspose(1)} className="w-8 h-8 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors">+</button>
+                     <div className={`w-10 h-8 flex items-center justify-center font-black text-xs ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}</div>
+                     <button onClick={() => handleGlobalTranspose(-1)} className="w-8 h-8 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors">-</button>
                   </div>
-                )}
+                  {globalTranspose !== 0 && (
+                    <button onClick={() => handleGlobalTranspose(-globalTranspose)} className="text-[9px] font-black text-red-500 hover:underline uppercase ml-1 transition-colors">{t.reset}</button>
+                  )}
+               </div>
+               <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${saveStatus === 'saving' ? 'bg-blue-500 animate-pulse' : 'bg-emerald-500'}`}></div>
+                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{saveStatus === 'saving' ? 'Saving...' : 'Synced'}</span>
+               </div>
+               <button onClick={clearAll} className="text-[9px] font-black text-red-500 hover:underline uppercase transition-colors">{t.clearAll}</button>
+            </div>
+         </div>
+      </div>
+
+      <div className={`max-w-[1700px] mx-auto px-10 pb-20 space-y-12 ${isExporting ? 'pt-10' : 'pt-48'}`}>
+        {instances.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-1000">
+             <div className="relative mb-12">
+                <div className="absolute inset-0 bg-blue-500/10 blur-[100px] rounded-full scale-150"></div>
+                <img src={HERO_IMAGE} alt="Hero" className="relative w-full max-w-lg rounded-[40px] shadow-2xl border border-white/10" />
              </div>
-             <h2 className={`text-2xl font-black italic uppercase tracking-tighter mb-4 ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>Arquitetura de Braço Ativada</h2>
-             <p className={`text-xs font-bold uppercase tracking-widest opacity-60 mb-8 max-w-sm mx-auto leading-relaxed`}>Pronto para estruturar sua próxima ideia musical?</p>
-             <button onClick={() => addInstance()} className="group relative bg-blue-600 text-white px-10 py-5 rounded-2xl font-black uppercase text-xs shadow-2xl hover:bg-blue-500 hover:scale-105 transition-all overflow-hidden">
-                <span className="relative z-10">Criar Primeiro Diagrama</span>
-                <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-             </button>
+             <h2 className={`text-2xl font-black italic uppercase mb-8 tracking-tighter ${isLight ? 'text-zinc-400' : 'text-zinc-600'}`}>Arquitetura de Braço Ativada</h2>
+             <button onClick={() => addInstance()} className="bg-blue-600 text-white px-12 py-5 rounded-2xl font-black uppercase text-xs shadow-2xl hover:scale-110 active:scale-95 transition-all">Criar Primeiro Diagrama</button>
           </div>
         ) : (
           instances.map((inst, idx) => (
@@ -276,106 +235,67 @@ const FretboardPanel: React.FC = () => {
         )}
       </div>
 
-      {/* MODAL STORAGE INFO */}
-      {showStorageInfo && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
-          <div className={`w-full max-w-lg rounded-3xl p-8 border shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
-             <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-2xl">🔒</div>
-                <h2 className="text-xl font-black italic text-blue-500 uppercase tracking-tighter">{t.storageTitle}</h2>
-             </div>
-             <div className="space-y-6">
-                <div className="space-y-2"><h3 className="text-xs font-black uppercase text-zinc-500">{t.storageLocal}</h3><p className="text-sm font-medium opacity-80">{t.storageLocalDesc}</p></div>
-                <div className="space-y-2 p-4 bg-red-500/10 rounded-2xl border border-red-500/20"><h3 className="text-xs font-black uppercase text-red-500">{t.storageWarning}</h3><p className="text-sm font-medium text-red-500/80">{t.storageWarningDesc}</p></div>
-                <div className="space-y-2"><h3 className="text-xs font-black uppercase text-zinc-500">{t.storageCost}</h3><p className="text-sm font-medium opacity-80">{t.storageCostDesc}</p></div>
-             </div>
-             <button onClick={() => setShowStorageInfo(false)} className="w-full mt-8 py-4 bg-zinc-800 text-white rounded-2xl font-black uppercase text-xs hover:bg-zinc-700 transition-all">{t.gotIt}</button>
-          </div>
-        </div>
-      )}
+      {/* FOOTER */}
+      <footer className={`py-16 border-t transition-all ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-900'}`}>
+         <div className="max-w-[1700px] mx-auto px-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex items-center gap-5">
+               <LogoIcon />
+               <div className="text-left">
+                  <p className={`font-black text-sm tracking-[0.3em] uppercase ${isLight ? 'text-zinc-800' : 'text-zinc-100'}`}>Guitar Architect</p>
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Engine v1.7.2 • Arquitetando Braços e Harmonia</p>
+               </div>
+            </div>
+            <div className="flex gap-12 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">
+               <a href="/privacy.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">Privacidade</a>
+               <span className="opacity-20 text-zinc-300">|</span>
+               <a href="https://guitararchitect.com.br" target="_blank" className="hover:text-blue-500 transition-colors uppercase">GUITARARCHITECT.COM.BR</a>
+            </div>
+            <p className={`text-[11px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+               © 2026 {t.allRights}
+            </p>
+         </div>
+      </footer>
 
-      {/* MODAL LOGIN COM BRANDING HERO */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
-          <div className={`w-full max-w-md rounded-[40px] overflow-hidden border shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
-             <div className="relative h-64 w-full bg-zinc-950 overflow-hidden flex items-center justify-center">
-                {!imageError ? (
-                  <img src={HERO_IMAGE} alt="Branding" className="w-full h-full object-cover opacity-80" onError={() => setImageError(true)} />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-900 to-black flex items-center justify-center">
-                     <LogoIcon />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent"></div>
-                <div className="absolute bottom-6 left-8">
-                   <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter drop-shadow-lg">{t.login}</h2>
-                   <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] mt-1">Guitar Architect Suite</p>
-                </div>
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/70 backdrop-blur-xl">
+          <div className={`w-full max-w-md rounded-[40px] p-12 border shadow-2xl transition-all ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+             <div className="flex flex-col items-center mb-10">
+                <LogoIcon />
+                <h2 className={`text-2xl font-black italic uppercase tracking-tighter mt-4 ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{t.login}</h2>
+                <div className="w-12 h-1 bg-blue-600 rounded-full mt-2"></div>
              </div>
              
-             <div className="p-8">
-                <p className="text-xs font-bold text-zinc-500 mb-6 uppercase tracking-tight">Identifique-se para organizar seus projetos localmente.</p>
-                <input 
-                  autoFocus 
-                  placeholder="Seu nome ou apelido..." 
-                  value={user} 
-                  onChange={e => setUser(e.target.value)} 
-                  onKeyDown={e => e.key === 'Enter' && user.trim() && setShowLoginModal(false)} 
-                  className={`w-full p-4 rounded-2xl mb-4 font-bold text-sm outline-none border transition-all ${isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-900 focus:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:border-blue-500'}`} 
-                />
-                <div className="flex items-start gap-3 p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10 mb-8">
-                   <span className="text-sm mt-0.5">ℹ️</span>
-                   <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tight leading-relaxed">{t.storageLocalDesc} {t.storageWarningDesc}</p>
-                </div>
-                <button onClick={() => user.trim() && setShowLoginModal(false)} disabled={!user.trim()} className="group relative w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs hover:bg-blue-500 shadow-xl disabled:opacity-30 transition-all overflow-hidden">
-                   <span className="relative z-10">Confirmar e Entrar</span>
-                   <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"></div>
-                </button>
+             <div className={`p-6 rounded-2xl mb-8 border ${isLight ? 'bg-blue-50 border-blue-100' : 'bg-blue-900/20 border-blue-900/30'}`}>
+                <h4 className="text-[10px] font-black uppercase text-blue-600 tracking-widest mb-2">⚠️ Atenção ao Armazenamento</h4>
+                <p className={`text-[11px] leading-relaxed font-medium ${isLight ? 'text-blue-800' : 'text-blue-300'}`}>Seus projetos são salvos apenas **localmente** neste navegador. Limpar dados do site apagará seu progresso.</p>
              </div>
+
+             <input autoFocus placeholder={lang === 'pt' ? "Digite seu nome..." : "Enter your name..."} value={user} onChange={e => setUser(e.target.value)} onKeyDown={e => e.key === 'Enter' && user.trim() && setShowLoginModal(false)} className={`w-full p-5 rounded-2xl mb-8 font-bold outline-none border transition-all text-center text-lg ${isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-900 focus:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:border-blue-500'}`} />
+             
+             <button onClick={() => user.trim() && setShowLoginModal(false)} className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-blue-200 hover:bg-blue-500 transition-all transform active:scale-95">{t.gotIt}</button>
           </div>
         </div>
       )}
 
-      {/* MODAL LOAD */}
       {showLoadModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-          <div className={`w-full max-w-xl rounded-3xl p-8 border ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-black italic text-blue-500 uppercase tracking-tighter">{t.loadProject}</h2>
-              <button onClick={() => setShowLoadModal(false)} className="text-zinc-500 hover:text-red-500 font-black text-xs uppercase tracking-widest">FECHAR</button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/85 backdrop-blur-md">
+          <div className={`w-full max-w-xl rounded-[32px] p-10 border shadow-3xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-2xl font-black italic text-blue-500 uppercase tracking-tighter">Projetos Salvos</h2>
+              <button onClick={() => setShowLoadModal(false)} className="text-zinc-500 font-black text-xs uppercase tracking-widest hover:text-red-500">Fechar</button>
             </div>
-            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
-              {getLibrary().filter(p => p.user === user || !p.user).length === 0 ? (
-                <div className="text-center py-20 opacity-40 text-sm font-bold uppercase tracking-widest">Nenhum projeto salvo para "{user}"</div>
-              ) : (
-                getLibrary().filter(p => p.user === user || !p.user).map(p => (
-                  <div key={p.id} className={`group flex items-center justify-between p-4 rounded-2xl border transition-all ${isLight ? 'bg-zinc-50 hover:border-blue-500' : 'bg-zinc-800 border-zinc-700 hover:border-blue-500'}`}>
-                    <div onClick={() => loadProject(p)} className="flex-1 cursor-pointer">
-                      <div className="font-black text-blue-500 uppercase text-xs mb-1 tracking-tight">{p.name}</div>
-                    </div>
-                    <button onClick={() => { if (confirm("Excluir?")) { deleteProject(p.id); setShowLoadModal(false); setShowLoadModal(true); } }} className="opacity-0 group-hover:opacity-100 p-2 text-red-500 font-black text-[10px] uppercase">EXCLUIR</button>
-                  </div>
-                ))
-              )}
+            <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-300">
+              {getLibrary().filter(p => p.user === user || !p.user).map(p => (
+                <div key={p.id} onClick={() => { setProjectId(p.id); setProjectName(p.name); setInstances(p.instances); setGlobalTranspose(p.globalTransposition || 0); setShowLoadModal(false); }} className={`flex items-center justify-between p-6 rounded-2xl border transition-all cursor-pointer group ${isLight ? 'bg-zinc-50 border-zinc-100 hover:border-blue-500 hover:bg-white' : 'bg-zinc-800 border-zinc-700 hover:border-blue-500 hover:bg-zinc-750'}`}>
+                  <div className="font-black text-zinc-800 group-hover:text-blue-500 uppercase text-sm transition-colors">{p.name}</div>
+                  <div className="text-[10px] font-bold text-zinc-400">{new Date(p.lastUpdated).toLocaleDateString()}</div>
+                </div>
+              ))}
+              {getLibrary().length === 0 && <p className="text-center py-16 font-black text-zinc-400 uppercase text-[10px] tracking-widest">Nenhum projeto encontrado</p>}
             </div>
           </div>
         </div>
       )}
-
-      <footer className={`py-20 text-center border-t ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-400' : 'bg-zinc-950 border-zinc-900 text-zinc-600'}`}>
-        <p className="font-black text-[11px] tracking-[0.7em] mb-3 uppercase">GUITAR ARCHITECT - ENGINE v1.7</p>
-        <p className="text-[10px] opacity-70 font-bold uppercase tracking-widest">{t.createdBy}</p>
-        <div className="mt-4 flex justify-center gap-4 text-[9px] font-bold uppercase tracking-widest opacity-60">
-        <a
-          href={PRIVACY_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-blue-500 transition-colors"
-        >
-          Privacidade — guitararchitect.com.br/privacy.html
-        </a>
-       </div>
-      </footer>
     </div>
   );
 };
