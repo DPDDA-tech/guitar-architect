@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import FretboardSVG from './FretboardSVG';
 import { CHROMATIC_SCALE, INSTRUMENT_PRESETS, getNoteAt, getIntervalName, TUNINGS_PRESETS, getFretForNote } from '../music/musicTheory';
@@ -141,42 +140,42 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const PRESET_COLORS = ['#ef4444', '#2563eb', '#22c55e', '#eab308', '#000000', '#6366f1', '#ec4899'];
 
   return (
-    <div className={`p-8 rounded-[40px] border shadow-2xl transition-all ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+    <div className={`p-4 sm:p-8 rounded-[24px] md:rounded-[40px] border shadow-2xl transition-all ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
       
       {/* HEADER SECTION */}
-      <div className="flex items-center justify-between mb-8 gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
         <div className="flex-1 space-y-1">
-          <input value={state.title} onChange={e => recordAction({...state, title: e.target.value})} className={`bg-transparent text-4xl font-black italic uppercase tracking-tighter focus:outline-none w-full ${isLight ? 'text-zinc-900 placeholder-zinc-300' : 'text-zinc-100 placeholder-zinc-800'}`} placeholder={t.titlePlaceholder} />
-          <input value={state.subtitle} onChange={e => recordAction({...state, subtitle: e.target.value})} className="bg-transparent text-xl font-bold text-zinc-400 focus:outline-none w-full" placeholder={t.subtitle} />
+          <input value={state.title} onChange={e => recordAction({...state, title: e.target.value})} className={`bg-transparent text-2xl md:text-4xl font-black italic uppercase tracking-tighter focus:outline-none w-full ${isLight ? 'text-zinc-900 placeholder-zinc-300' : 'text-zinc-100 placeholder-zinc-800'}`} placeholder={t.titlePlaceholder} />
+          <input value={state.subtitle} onChange={e => recordAction({...state, subtitle: e.target.value})} className="bg-transparent text-sm md:text-xl font-bold text-zinc-400 focus:outline-none w-full" placeholder={t.subtitle} />
         </div>
-        <div className="flex gap-2">
-           <button onClick={exportDataJSON} className={`px-5 py-4 rounded-xl font-black text-[10px] uppercase border transition-all active:scale-95 ${copyFeedback ? 'bg-emerald-600 border-emerald-600 text-white' : (isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200' : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-700')}`}>
-             {copyFeedback ? (lang === 'pt' ? 'COPIADO!' : 'COPIED!') : 'DADOS'}
+        <div className="flex flex-wrap gap-2">
+           <button onClick={exportDataJSON} className={`px-4 md:px-5 py-3 md:py-4 rounded-xl font-black text-[9px] md:text-[10px] uppercase border transition-all active:scale-95 ${copyFeedback ? 'bg-emerald-600 border-emerald-600 text-white' : (isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200' : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-700')}`}>
+             {copyFeedback ? (lang === 'pt' ? 'OK' : 'COPIED!') : (window.innerWidth < 768 ? 'JSON' : 'DADOS')}
            </button>
-           <button onClick={() => onAdd()} className="bg-blue-600 px-6 py-4 rounded-xl text-white font-black text-xs uppercase shadow-lg shadow-blue-200 hover:scale-105 transition-all">{t.createNew}</button>
-           <button onClick={() => onAdd(state)} className={`px-6 py-4 rounded-xl font-black text-xs uppercase transition-all shadow-md ${isLight ? 'bg-zinc-800 text-white hover:bg-zinc-900' : 'bg-zinc-700 text-white hover:bg-zinc-600'}`}>{t.cloneCurrent}</button>
-           <div className="flex flex-col gap-1 ml-4">
+           <button onClick={() => onAdd()} className="flex-1 md:flex-none bg-blue-600 px-4 md:px-6 py-3 md:py-4 rounded-xl text-white font-black text-[10px] md:text-xs uppercase shadow-lg shadow-blue-200 hover:scale-105 transition-all">{t.createNew}</button>
+           <button onClick={() => onAdd(state)} className={`flex-1 md:flex-none px-4 md:px-6 py-3 md:py-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all shadow-md ${isLight ? 'bg-zinc-800 text-white hover:bg-zinc-900' : 'bg-zinc-700 text-white hover:bg-zinc-600'}`}>{t.cloneCurrent}</button>
+           <div className="flex md:flex-col gap-1 md:ml-4">
               <button onClick={() => onMove('up')} disabled={isFirst} className="bg-zinc-200 p-2 rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-zinc-300">↑</button>
               <button onClick={() => onMove('down')} disabled={isLast} className="bg-zinc-200 p-2 rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-zinc-300">↓</button>
            </div>
-           <button onClick={onRemove} className="bg-red-800/10 text-red-700 px-4 rounded-xl font-black text-xs uppercase ml-2 hover:bg-red-800/20">Del</button>
+           <button onClick={onRemove} className="bg-red-800/10 text-red-700 px-3 md:px-4 rounded-xl font-black text-[10px] md:text-xs uppercase hover:bg-red-800/20">Del</button>
         </div>
       </div>
 
       {/* TOOLBAR GRID */}
-      <div className={`grid grid-cols-4 gap-8 mb-10 p-8 rounded-3xl border ${isLight ? 'bg-zinc-50 border-zinc-100' : 'bg-zinc-800/50 border-zinc-700'}`}>
-        <div className="space-y-4">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-10 p-4 md:p-8 rounded-2xl md:rounded-3xl border ${isLight ? 'bg-zinc-50 border-zinc-100' : 'bg-zinc-800/50 border-zinc-700'}`}>
+        <div className="space-y-3">
           <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">{t.layers}</h4>
           <div className="grid grid-cols-2 gap-2">
             {['note', 'interval', 'fingering', 'none'].map(m => (
-              <button key={m} onClick={() => recordAction({...state, labelMode: m as any})} className={`py-2 px-3 rounded-lg text-[9px] font-bold uppercase border transition-all ${state.labelMode === m ? 'bg-blue-600 border-blue-600 text-white shadow-md' : (isLight ? 'bg-white border-zinc-200 text-zinc-600' : 'bg-zinc-700 border-zinc-600 text-zinc-300')}`}>
+              <button key={m} onClick={() => recordAction({...state, labelMode: m as any})} className={`py-2 px-2 rounded-lg text-[8px] md:text-[9px] font-bold uppercase border transition-all ${state.labelMode === m ? 'bg-blue-600 border-blue-600 text-white shadow-md' : (isLight ? 'bg-white border-zinc-200 text-zinc-600' : 'bg-zinc-700 border-zinc-600 text-zinc-300')}`}>
                 {m === 'none' ? t.labelNone : (m === 'note' ? t.labelNotes : (m === 'interval' ? t.labelIntervals : t.labelFingering))}
               </button>
             ))}
           </div>
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(state.layers).map(([key, val]) => (
-              <button key={key} onClick={() => recordAction({...state, layers: {...state.layers, [key as any]: !val}})} className={`py-2 px-3 rounded-lg text-[9px] font-bold uppercase border transition-all ${val ? 'bg-blue-600 border-blue-600 text-white shadow-md' : (isLight ? 'bg-zinc-200/60 border-transparent text-zinc-500' : 'bg-zinc-700/50 border-transparent text-zinc-500')}`}>
+              <button key={key} onClick={() => recordAction({...state, layers: {...state.layers, [key as any]: !val}})} className={`py-2 px-2 rounded-lg text-[8px] md:text-[9px] font-bold uppercase border transition-all ${val ? 'bg-blue-600 border-blue-600 text-white shadow-md' : (isLight ? 'bg-zinc-200/60 border-transparent text-zinc-500' : 'bg-zinc-700/50 border-transparent text-zinc-500')}`}>
                 {key === 'showInlays' ? t.inlays : (key === 'showAllNotes' ? t.allNotes : (key === 'showScale' ? t.scaleNotes : t.tonicHighlight))}
               </button>
             ))}
@@ -184,13 +183,13 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <div className="flex p-1 rounded-xl bg-zinc-200/50">
             {(['SINGLE', 'MULTI'] as const).map(m => (
               <button key={m} onClick={() => recordAction({...state, colorMode: m})} className={`flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase transition-all ${state.colorMode === m ? 'bg-white text-blue-600 shadow-sm' : 'text-zinc-500'}`}>
-                {m === 'SINGLE' ? t.colorSingle : t.colorMulti}
+                {m === 'SINGLE' ? (window.innerWidth < 768 ? '1' : t.colorSingle) : (window.innerWidth < 768 ? 'M' : t.colorMulti)}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">{t.general}</h4>
           <div className="flex gap-2">
             <select value={state.root} title="Root" onChange={e => recordAction({...state, root: e.target.value})} className={`flex-1 p-2 border rounded-lg text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none ${isLight ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-700 border-zinc-600 text-zinc-100'}`}>
@@ -204,39 +203,39 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <select value={state.instrumentType} title="Instrument" onChange={e => recordAction({...state, instrumentType: e.target.value as InstrumentType, stringStatuses: Array(INSTRUMENT_PRESETS[e.target.value as InstrumentType].strings).fill('normal')})} className={`flex-1 p-2 border rounded-lg text-xs font-black uppercase focus:ring-2 focus:ring-blue-500 outline-none ${isLight ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-700 border-zinc-600 text-zinc-100'}`}>
               {[{ value: 'guitar-6', label: t.instr_guitar6 }, { value: 'guitar-7', label: t.instr_guitar7 }, { value: 'guitar-8', label: t.instr_guitar8 }, { value: 'bass-4', label: t.bass4 }, { value: 'bass-5', label: t.bass5 }].map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
-            <button onClick={() => recordAction({...state, isLeftHanded: !state.isLeftHanded})} className={`px-3 py-2 border rounded-lg text-[9px] font-black uppercase transition-all ${state.isLeftHanded ? 'bg-blue-600 border-blue-600 text-white shadow-md' : (isLight ? 'bg-white border-zinc-200 text-zinc-500' : 'bg-zinc-700 border-zinc-600 text-zinc-400')}`}>
-              {t.leftHanded}
+            <button onClick={() => recordAction({...state, isLeftHanded: !state.isLeftHanded})} className={`px-2 md:px-3 py-2 border rounded-lg text-[8px] md:text-[9px] font-black uppercase transition-all ${state.isLeftHanded ? 'bg-blue-600 border-blue-600 text-white shadow-md' : (isLight ? 'bg-white border-zinc-200 text-zinc-500' : 'bg-zinc-700 border-zinc-600 text-zinc-400')}`}>
+              L-H
             </button>
           </div>
           <select value={state.tuning} title="Tuning" onChange={e => changeTuning(e.target.value as TuningKey)} className={`w-full p-2 border rounded-lg text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none ${isLight ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-700 border-zinc-600 text-zinc-100'}`}>
             {Object.keys(TUNINGS_PRESETS).map(tk => <option key={tk} value={tk}>{tk}</option>)}
           </select>
           <div className="space-y-1">
-             <div className="flex justify-between text-[9px] font-black text-zinc-400 uppercase"><span>Nut + {state.endFret} {t.fretLabel}</span></div>
+             <div className="flex justify-between text-[9px] font-black text-zinc-400 uppercase"><span>{state.endFret} {t.fretLabel}</span></div>
              <input type="range" min="5" max="24" value={state.endFret} onChange={e => recordAction({...state, endFret: parseInt(e.target.value)})} className="w-full accent-blue-600 h-1" />
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">{t.geometry}</h4>
           <div className="flex flex-wrap gap-1.5">
              {(['OFF', 'C', 'A', 'G', 'E', 'D'] as CagedShape[]).map(sh => (
-               <button key={sh} onClick={() => recordAction({...state, cagedShape: sh})} className={`w-10 h-10 flex items-center justify-center rounded-xl font-black text-xs border transition-all ${state.cagedShape === sh ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : (isLight ? 'bg-white border-zinc-200 text-zinc-500 hover:border-blue-500' : 'bg-zinc-700 border-zinc-600 text-zinc-400 hover:border-blue-500')}`}>
+               <button key={sh} onClick={() => recordAction({...state, cagedShape: sh})} className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl font-black text-xs border transition-all ${state.cagedShape === sh ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : (isLight ? 'bg-white border-zinc-200 text-zinc-500 hover:border-blue-500' : 'bg-zinc-700 border-zinc-600 text-zinc-400 hover:border-blue-500')}`}>
                  {sh}
                </button>
              ))}
           </div>
           <div className="p-3 rounded-xl bg-blue-600/5 border border-blue-600/10">
-             <p className="text-[9px] font-black uppercase text-blue-600 tracking-tight leading-tight">Mapeamento Geométrico Ativo</p>
-             <p className="text-[8px] font-medium text-zinc-400 mt-1">Shapes são adaptados dinamicamente para manter a integridade musical.</p>
+             <p className="text-[8px] md:text-[9px] font-black uppercase text-blue-600 tracking-tight leading-tight">Mapeamento Geométrico</p>
+             <p className="hidden md:block text-[8px] font-medium text-zinc-400 mt-1">Shapes são adaptados dinamicamente.</p>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">{t.harmony}</h4>
           <div className="grid grid-cols-2 gap-2">
             <select value={state.harmonyMode} onChange={e => recordAction({...state, harmonyMode: e.target.value as any})} className={`p-2 border rounded-lg text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none ${isLight ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-700 border-zinc-600 text-zinc-100'}`}>
-                <option value="OFF">Harmonia Off</option>
+                <option value="OFF">OFF</option>
                 <option value="TRIADS">Tríades</option>
                 <option value="TETRADS">Tétrades</option>
             </select>
@@ -252,9 +251,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
              </select>
              <select value={state.inversion} onChange={e => recordAction({...state, inversion: parseInt(e.target.value)})} className={`p-2 border rounded-lg text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none ${isLight ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-700 border-zinc-600 text-zinc-100'}`}>
                 <option value={0}>Root</option>
-                <option value={1}>1st Inv</option>
-                <option value={2}>2nd Inv</option>
-                <option value={3}>3rd Inv</option>
+                <option value={1}>1st</option>
+                <option value={2}>2nd</option>
+                <option value={3}>3rd</option>
              </select>
           </div>
           <select value={state.chordQuality} onChange={e => recordAction({...state, chordQuality: e.target.value as any})} className={`w-full p-2 border rounded-lg text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none ${isLight ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-700 border-zinc-600 text-zinc-100'}`}>
@@ -264,46 +263,37 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       </div>
 
       {/* EDITOR BAR */}
-      <div className={`flex items-center gap-6 mb-4 p-4 rounded-2xl border ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
-         <h4 className="text-[9px] font-black uppercase text-zinc-400 tracking-[0.2em] whitespace-nowrap">{t.editor}</h4>
+      <div className={`flex flex-wrap items-center gap-3 md:gap-6 mb-4 p-3 md:p-4 rounded-xl md:rounded-2xl border ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
+         <h4 className="hidden xs:block text-[9px] font-black uppercase text-zinc-400 tracking-[0.2em] whitespace-nowrap">{t.editor}</h4>
          <div className="flex bg-blue-600/10 p-1 rounded-xl border border-blue-600/20">
-            <button onClick={() => { setEditorMode('marker'); setLineStart(null); }} className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${editorMode === 'marker' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-600'}`}>{t.marker}</button>
+            <button onClick={() => { setEditorMode('marker'); setLineStart(null); }} className={`px-2 md:px-4 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase transition-all ${editorMode === 'marker' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-600'}`}>M</button>
             <div className="w-[1px] bg-blue-600/20 mx-1"></div>
-            <button onClick={() => { setEditorMode('line'); setLineStart(null); }} className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${editorMode === 'line' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-600'}`}>{t.line}</button>
+            <button onClick={() => { setEditorMode('line'); setLineStart(null); }} className={`px-2 md:px-4 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase transition-all ${editorMode === 'line' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-600'}`}>L</button>
          </div>
-         <div className="flex gap-2">
+         <div className="flex gap-1.5 md:gap-2">
             {['circle', 'square', 'triangle'].map(s => (
-              <button key={s} onClick={() => setMarkerShape(s as any)} className={`w-10 h-10 rounded-xl border-2 transition-all flex items-center justify-center ${markerShape === s ? 'bg-white border-blue-500 text-blue-500 shadow-sm' : 'bg-zinc-300 border-transparent text-zinc-500 hover:bg-zinc-200'}`}>
+              <button key={s} onClick={() => setMarkerShape(s as any)} className={`w-8 h-8 md:w-10 md:h-10 rounded-xl border-2 transition-all flex items-center justify-center ${markerShape === s ? 'bg-white border-blue-500 text-blue-500 shadow-sm' : 'bg-zinc-300 border-transparent text-zinc-500 hover:bg-zinc-200'}`}>
                 {s === 'circle' ? '●' : s === 'square' ? '■' : '▲'}
               </button>
             ))}
          </div>
-         <div className="flex gap-2 p-1.5 bg-zinc-200/50 rounded-xl">
+         <div className="flex gap-1.5 md:gap-2 p-1 bg-zinc-200/50 rounded-xl overflow-x-auto">
             {PRESET_COLORS.map(c => (
-              <button key={c} onClick={() => setMarkerColor(c)} className={`w-7 h-7 rounded-full border-2 transition-all ${markerColor === c ? 'border-white scale-125 shadow-lg' : 'border-transparent'}`} style={{backgroundColor: c}} />
-            ))}
-         </div>
-         <div className={`flex p-1 rounded-xl ${isLight ? 'bg-zinc-200' : 'bg-zinc-700'}`}>
-            {[2, 4, 7].map(v => (
-               <button key={v} onClick={() => setLineThickness(v as any)} className={`px-4 py-2 rounded-lg text-[8px] font-black uppercase transition-all ${lineThickness === v ? 'bg-white text-blue-600 shadow-sm' : 'text-zinc-500'}`}>
-                  {v === 2 ? t.thin : (v === 4 ? t.medium : t.thick)}
-               </button>
+              <button key={c} onClick={() => setMarkerColor(c)} className={`w-6 h-6 md:w-7 md:h-7 shrink-0 rounded-full border-2 transition-all ${markerColor === c ? 'border-white scale-110 shadow-lg' : 'border-transparent'}`} style={{backgroundColor: c}} />
             ))}
          </div>
          <div className="ml-auto flex gap-1.5 items-center">
             <button onClick={undo} className="p-2 bg-zinc-200 rounded-lg text-zinc-600 hover:bg-zinc-300 transition-colors" title={t.undo}>⟲</button>
             <button onClick={redo} className="p-2 bg-zinc-200 rounded-lg text-zinc-600 hover:bg-zinc-300 transition-colors" title={t.redo}>⟳</button>
             
-            <button onClick={clearContent} className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-[10px] font-black uppercase border border-red-100 hover:bg-red-100 transition-colors" title={t.clearDiagram}>{t.clearDiagram}</button>
-            
-            <button onClick={() => recordAction({...state, markers: [], lines: []})} className="p-2 bg-zinc-200 rounded-lg text-red-500 hover:bg-red-100 transition-colors" title={t.clearEditor}>Del</button>
+            <button onClick={clearContent} className="px-3 md:px-4 py-2 bg-red-50 text-red-600 rounded-lg text-[9px] md:text-[10px] font-black uppercase border border-red-100 hover:bg-red-100 transition-colors" title={t.clearDiagram}>{window.innerWidth < 768 ? 'CLS' : t.clearDiagram}</button>
          </div>
       </div>
 
       <div className="diagram-container relative">
         {lineStart && editorMode === 'line' && (
-           <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase shadow-xl animate-pulse z-20">
-              {lang === 'pt' ? 'Clique no destino para criar linha' : 'Click destination for line'}
+           <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-1.5 rounded-full text-[8px] md:text-[10px] font-black uppercase shadow-xl animate-pulse z-20">
+              {lang === 'pt' ? 'Clique no destino' : 'Click destination'}
            </div>
         )}
         <FretboardSVG state={state} editorMode={editorMode} onEvent={handleEvent} selectedColor={markerColor} selectedShape={markerShape} theme={theme} isActive={false} isExport={isExporting} />
@@ -312,7 +302,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         )}
       </div>
 
-      <textarea value={state.notes} onChange={e => recordAction({...state, notes: e.target.value})} className={`w-full mt-6 p-6 rounded-3xl border text-sm font-medium italic min-h-[100px] outline-none transition-all ${isLight ? 'bg-zinc-50 border-zinc-200 text-zinc-600' : 'bg-zinc-800 border-zinc-700 text-zinc-300'}`} placeholder={t.notes + "..."} />
+      <textarea value={state.notes} onChange={e => recordAction({...state, notes: e.target.value})} className={`w-full mt-6 p-4 md:p-6 rounded-2xl md:rounded-3xl border text-xs md:text-sm font-medium italic min-h-[80px] md:min-h-[100px] outline-none transition-all ${isLight ? 'bg-zinc-50 border-zinc-200 text-zinc-600' : 'bg-zinc-800 border-zinc-700 text-zinc-300'}`} placeholder={t.notes + "..."} />
     </div>
   );
 };

@@ -24,7 +24,7 @@ const LogoIcon = ({ variant = 'default' }: { variant?: 'default' | 'large' | 'fo
         alt="Guitar Architect Icon" 
         className={`
           object-contain drop-shadow-lg transition-transform hover:scale-105
-          ${isLarge ? 'w-24 h-24' : (isFooter ? 'w-8 h-8' : 'w-8 h-8 lg:w-9 lg:h-9')}
+          ${isLarge ? 'w-20 h-20 md:w-24 md:h-24' : (isFooter ? 'w-6 h-6 md:w-8 md:h-8' : 'w-7 h-7 md:w-9 md:h-9')}
         `}
         onError={(e) => {
           (e.target as HTMLImageElement).src = '/favicon-32x32.png';
@@ -35,7 +35,7 @@ const LogoIcon = ({ variant = 'default' }: { variant?: 'default' | 'large' | 'fo
 };
 
 const GitHubIcon = ({ isLight }: { isLight: boolean }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isLight ? 'text-zinc-400 hover:text-zinc-900' : 'text-zinc-500 hover:text-zinc-100'}>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isLight ? 'text-zinc-400 hover:text-zinc-900' : 'text-zinc-500 hover:text-zinc-100'}>
     <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
   </svg>
 );
@@ -194,78 +194,75 @@ const FretboardPanel: React.FC = () => {
     <div className={`min-h-screen transition-all ${isExporting ? 'is-exporting-mode' : (isLight ? 'blueprint-grid-light' : 'blueprint-grid-dark')}`}>
       
       {/* HEADER BAR */}
-      <div className={`fixed top-0 left-0 w-full z-50 border-b backdrop-blur-2xl py-4 px-10 transition-all ${isLight ? 'bg-white/90 border-zinc-200 shadow-sm' : 'bg-zinc-950/90 border-zinc-800'} ${isExporting ? 'hidden' : ''}`}>
-         <div className="max-w-[1700px] mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
+      <div className={`fixed top-0 left-0 w-full z-50 border-b backdrop-blur-2xl py-3 md:py-4 px-4 md:px-10 transition-all ${isLight ? 'bg-white/90 border-zinc-200 shadow-sm' : 'bg-zinc-950/90 border-zinc-800'} ${isExporting ? 'hidden' : ''}`}>
+         <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 md:gap-4">
                <LogoIcon />
                <div>
-                  <h1 className="text-xl font-black italic text-blue-600 leading-none tracking-tighter uppercase">GUITAR ARCHITECT</h1>
-                  <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-tight mt-1">{t.tagline}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                     <span className={`text-[10px] font-black uppercase ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>{user || (lang === 'pt' ? 'Visitante' : 'Guest')}</span>
-                     <button onClick={() => setShowLoginModal(true)} className="text-[9px] text-blue-600 font-bold hover:underline uppercase">(Login)</button>
+                  <h1 className="text-sm md:text-xl font-black italic text-blue-600 leading-none tracking-tighter uppercase truncate max-w-[120px] md:max-w-none">GUITAR ARCHITECT</h1>
+                  <p className="hidden md:block text-[9px] font-bold text-zinc-500 uppercase tracking-tight mt-1">{t.tagline}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5 md:mt-1">
+                     <span className={`text-[8px] md:text-[10px] font-black uppercase truncate max-w-[60px] md:max-w-none ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>{user || (lang === 'pt' ? 'Visitante' : 'Guest')}</span>
+                     <button onClick={() => setShowLoginModal(true)} className="text-[8px] md:text-[9px] text-blue-600 font-bold hover:underline uppercase">(Login)</button>
                   </div>
                </div>
             </div>
 
-            <div className="flex items-center gap-4">
-               <a href="https://github.com/dpdda-tech/guitar-architect" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl border border-transparent hover:border-zinc-300 transition-all flex items-center justify-center" title="Open Source Code">
+            <div className="flex items-center gap-2 md:gap-4">
+               <a href="https://github.com/dpdda-tech/guitar-architect" target="_blank" rel="noopener noreferrer" className="hidden sm:flex p-2 md:p-2.5 rounded-xl border border-transparent hover:border-zinc-300 transition-all items-center justify-center" title="Open Source Code">
                   <GitHubIcon isLight={isLight} />
                </a>
-               <div className={`flex items-center rounded-xl p-1 border ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
-                  <button onClick={() => setShowLoadModal(true)} className={`px-4 py-2 text-[10px] font-black uppercase ${isLight ? 'text-zinc-900' : 'text-zinc-100'} hover:text-blue-600`}>{t.loadProject}</button>
-                  <div className="w-[1px] h-4 bg-zinc-300 mx-1"></div>
-                  <button onClick={() => setSaveStatus('saved')} className={`px-4 py-2 text-[10px] font-black uppercase ${isLight ? 'text-zinc-900' : 'text-zinc-100'} hover:text-blue-600`}>{t.saveProject}</button>
+               <div className={`flex items-center rounded-xl p-0.5 md:p-1 border ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
+                  <button onClick={() => setShowLoadModal(true)} className={`px-2 md:px-4 py-1.5 md:py-2 text-[8px] md:text-[10px] font-black uppercase ${isLight ? 'text-zinc-900' : 'text-zinc-100'} hover:text-blue-600`}>{window.innerWidth < 768 ? 'LOAD' : t.loadProject}</button>
+                  <div className="w-[1px] h-3 md:h-4 bg-zinc-300 mx-0.5"></div>
+                  <button onClick={() => setSaveStatus('saved')} className={`px-2 md:px-4 py-1.5 md:py-2 text-[8px] md:text-[10px] font-black uppercase ${isLight ? 'text-zinc-900' : 'text-zinc-100'} hover:text-blue-600`}>{window.innerWidth < 768 ? 'SAVE' : t.saveProject}</button>
                </div>
-               <div className="flex gap-2">
-                  <button onClick={handleExportPNG} className="bg-emerald-600 px-5 py-2.5 rounded-xl font-black text-[11px] text-white hover:bg-emerald-500 shadow-md uppercase transition-transform active:scale-95">PNG</button>
-                  <button onClick={handleExportPDF} className="bg-red-600 px-5 py-2.5 rounded-xl font-black text-[11px] text-white hover:bg-red-500 shadow-md uppercase transition-transform active:scale-95">PDF</button>
+               <div className="flex gap-1 md:gap-2">
+                  <button onClick={handleExportPNG} className="bg-emerald-600 px-2.5 md:px-5 py-2 md:py-2.5 rounded-xl font-black text-[9px] md:text-[11px] text-white hover:bg-emerald-500 shadow-md uppercase transition-transform active:scale-95">PNG</button>
+                  <button onClick={handleExportPDF} className="hidden xs:block bg-red-600 px-2.5 md:px-5 py-2 md:py-2.5 rounded-xl font-black text-[9px] md:text-[11px] text-white hover:bg-red-500 shadow-md uppercase transition-transform active:scale-95">PDF</button>
                </div>
-               <button onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')} className={`px-3 py-2.5 rounded-xl border font-black text-[11px] uppercase ${isLight ? 'border-zinc-300 text-zinc-900' : 'border-zinc-700 text-zinc-100'}`}>{lang === 'pt' ? 'EN' : 'PT'}</button>
-               <button onClick={() => setTheme(isLight ? 'dark' : 'light')} className={`p-2.5 rounded-xl border text-sm transition-transform active:rotate-12 ${isLight ? 'border-zinc-300 text-zinc-700' : 'border-zinc-700 text-zinc-100'}`}>{isLight ? '☾' : '☼'}</button>
+               <button onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')} className={`px-2 md:px-3 py-2 md:py-2.5 rounded-xl border font-black text-[9px] md:text-[11px] uppercase ${isLight ? 'border-zinc-300 text-zinc-900' : 'border-zinc-700 text-zinc-100'}`}>{lang === 'pt' ? 'EN' : 'PT'}</button>
+               <button onClick={() => setTheme(isLight ? 'dark' : 'light')} className={`p-2 md:p-2.5 rounded-xl border text-xs md:text-sm transition-transform active:rotate-12 ${isLight ? 'border-zinc-300 text-zinc-700' : 'border-zinc-700 text-zinc-100'}`}>{isLight ? '☾' : '☼'}</button>
             </div>
          </div>
       </div>
 
       {/* SUB-HEADER */}
-      <div className={`fixed top-[88px] left-0 w-full z-40 border-b py-3 px-10 ${isLight ? 'bg-zinc-50 border-zinc-200 shadow-sm' : 'bg-zinc-900 border-zinc-800'} ${isExporting ? 'hidden' : ''}`}>
-         <div className="max-w-[1700px] mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-6">
-               <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t.projectName}:</span>
-                  <input value={projectName} onChange={e => setProjectName(e.target.value)} className={`bg-transparent font-bold text-xs focus:outline-none border-b border-transparent focus:border-blue-500 transition-all ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`} />
+      <div className={`fixed top-[64px] md:top-[88px] left-0 w-full z-40 border-b py-2 md:py-3 px-4 md:px-10 ${isLight ? 'bg-zinc-50 border-zinc-200 shadow-sm' : 'bg-zinc-900 border-zinc-800'} ${isExporting ? 'hidden' : ''}`}>
+         <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 md:gap-6 min-w-0">
+               <div className="flex items-center gap-1.5 md:gap-3 min-w-0">
+                  <span className="hidden sm:inline text-[8px] md:text-[10px] font-black text-zinc-400 uppercase tracking-widest whitespace-nowrap">{t.projectName}:</span>
+                  <input value={projectName} onChange={e => setProjectName(e.target.value)} className={`bg-transparent font-bold text-[10px] md:text-xs focus:outline-none border-b border-transparent focus:border-blue-500 transition-all truncate ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`} />
                </div>
             </div>
-            <div className="flex items-center gap-6">
-               <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Transposição Global</span>
+            <div className="flex items-center gap-3 md:gap-6 whitespace-nowrap">
+               <div className="flex items-center gap-1.5 md:gap-3">
+                  <span className="hidden md:inline text-[10px] font-black text-zinc-400 uppercase tracking-widest">Transposição</span>
                   <div className={`flex rounded-lg border p-0.5 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
-                     <button onClick={() => handleGlobalTranspose(1)} className="w-8 h-8 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors">+</button>
-                     <div className={`w-10 h-8 flex items-center justify-center font-black text-xs ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}</div>
-                     <button onClick={() => handleGlobalTranspose(-1)} className="w-8 h-8 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors">-</button>
+                     <button onClick={() => handleGlobalTranspose(1)} className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors">+</button>
+                     <div className={`w-8 h-6 md:w-10 md:h-8 flex items-center justify-center font-black text-[9px] md:text-xs ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}</div>
+                     <button onClick={() => handleGlobalTranspose(-1)} className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors">-</button>
                   </div>
-                  {globalTranspose !== 0 && (
-                    <button onClick={() => handleGlobalTranspose(-globalTranspose)} className="text-[9px] font-black text-red-500 hover:underline uppercase ml-1 transition-colors">{t.reset}</button>
-                  )}
                </div>
-               <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${saveStatus === 'saving' ? 'bg-blue-500 animate-pulse' : 'bg-emerald-500'}`}></div>
-                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{saveStatus === 'saving' ? 'Saving...' : 'Synced'}</span>
+               <div className="hidden xs:flex items-center gap-1.5 md:gap-2">
+                  <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${saveStatus === 'saving' ? 'bg-blue-500 animate-pulse' : 'bg-emerald-500'}`}></div>
+                  <span className="text-[8px] md:text-[9px] font-black text-zinc-400 uppercase tracking-widest">{saveStatus === 'saving' ? 'Saving...' : 'Synced'}</span>
                </div>
-               <button onClick={clearAll} className="text-[9px] font-black text-red-500 hover:underline uppercase transition-colors">{t.clearAll}</button>
+               <button onClick={clearAll} className="text-[8px] md:text-[9px] font-black text-red-500 hover:underline uppercase transition-colors">{t.clearAll}</button>
             </div>
          </div>
       </div>
 
-      <div className={`max-w-[1700px] mx-auto px-10 pb-20 space-y-12 ${isExporting ? 'pt-10' : 'pt-48'}`}>
+      <div className={`max-w-[1700px] mx-auto px-4 md:px-10 pb-20 space-y-8 md:space-y-12 ${isExporting ? 'pt-10' : 'pt-36 md:pt-48'}`}>
         {instances.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-1000">
-             <div className="relative mb-12">
-                <div className="absolute inset-0 bg-blue-500/10 blur-[100px] rounded-full scale-150"></div>
-                <img src={HERO_IMAGE} alt="Hero" className="relative w-full max-w-lg rounded-[40px] shadow-2xl border border-white/10" />
+             <div className="relative mb-8 md:mb-12">
+                <div className="absolute inset-0 bg-blue-500/10 blur-[60px] md:blur-[100px] rounded-full scale-150"></div>
+                <img src={HERO_IMAGE} alt="Hero" className="relative w-full max-w-[280px] md:max-w-lg rounded-[24px] md:rounded-[40px] shadow-2xl border border-white/10" />
              </div>
-             <h2 className={`text-2xl font-black italic uppercase mb-8 tracking-tighter ${isLight ? 'text-zinc-400' : 'text-zinc-600'}`}>Arquitetura de Braço Ativada</h2>
-             <button onClick={() => addInstance()} className="bg-blue-600 text-white px-12 py-5 rounded-2xl font-black uppercase text-xs shadow-2xl hover:scale-110 active:scale-95 transition-all">Criar Primeiro Diagrama</button>
+             <h2 className={`text-lg md:text-2xl font-black italic uppercase mb-6 md:mb-8 tracking-tighter ${isLight ? 'text-zinc-400' : 'text-zinc-600'}`}>Arquitetura de Braço Ativada</h2>
+             <button onClick={() => addInstance()} className="bg-blue-600 text-white px-8 md:px-12 py-4 md:py-5 rounded-xl md:rounded-2xl font-black uppercase text-[10px] md:text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all">Criar Primeiro Diagrama</button>
           </div>
         ) : (
           instances.map((inst, idx) => (
@@ -275,64 +272,64 @@ const FretboardPanel: React.FC = () => {
       </div>
 
       {/* FOOTER */}
-      <footer className={`py-16 border-t transition-all ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-900'}`}>
-         <div className="max-w-[1700px] mx-auto px-10 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-5">
+      <footer className={`py-10 md:py-16 border-t transition-all ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-900'}`}>
+         <div className="max-w-[1700px] mx-auto px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex items-center gap-3 md:gap-5">
                <LogoIcon variant="footer" />
                <div className="text-left">
-                  <p className={`font-black text-sm tracking-[0.3em] uppercase ${isLight ? 'text-zinc-800' : 'text-zinc-100'}`}>Guitar Architect</p>
-                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Engine v1.7.2 • DPDDA-tech</p>
+                  <p className={`font-black text-xs md:text-sm tracking-[0.2em] md:tracking-[0.3em] uppercase ${isLight ? 'text-zinc-800' : 'text-zinc-100'}`}>Guitar Architect</p>
+                  <p className="text-[9px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Engine v1.7.2 • DPDDA-tech</p>
                </div>
             </div>
-            <div className="flex gap-8 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">
-               <a href="legal/privacy.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.privacyPolicy}</a>
-               <span className="opacity-20 text-zinc-300">•</span>
-               <a href="legal/terms.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.terms}</a>
-               <span className="opacity-20 text-zinc-300">•</span>
-               <a href="legal/license.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.license}</a>
+            <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-[9px] md:text-[11px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] text-zinc-500">
+               <a href="privacy.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.privacyPolicy}</a>
+               <span className="hidden sm:inline opacity-20 text-zinc-300">•</span>
+               <a href="terms.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.terms}</a>
+               <span className="hidden sm:inline opacity-20 text-zinc-300">•</span>
+               <a href="license.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.license}</a>
             </div>
-            <p className={`text-[11px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+            <p className={`text-[9px] md:text-[11px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
                © 2026 {t.allRights}
             </p>
          </div>
       </footer>
 
       {showLoginModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/70 backdrop-blur-xl">
-          <div className={`w-full max-w-md rounded-[40px] p-12 border shadow-2xl transition-all ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
-             <div className="flex flex-col items-center mb-10">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-6 bg-black/70 backdrop-blur-xl">
+          <div className={`w-full max-w-md rounded-[32px] md:rounded-[40px] p-8 md:p-12 border shadow-2xl transition-all ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+             <div className="flex flex-col items-center mb-6 md:mb-10">
                 <LogoIcon variant="large" />
-                <h2 className={`text-2xl font-black italic uppercase tracking-tighter ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{t.login}</h2>
-                <div className="w-12 h-1 bg-blue-600 rounded-full mt-2"></div>
+                <h2 className={`text-xl md:text-2xl font-black italic uppercase tracking-tighter ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{t.login}</h2>
+                <div className="w-10 h-1 bg-blue-600 rounded-full mt-2"></div>
              </div>
              
-             <div className={`p-6 rounded-2xl mb-8 border ${isLight ? 'bg-blue-50 border-blue-100' : 'bg-blue-900/20 border-blue-900/30'}`}>
-                <h4 className="text-[10px] font-black uppercase text-blue-600 tracking-widest mb-2">⚠️ Atenção ao Armazenamento</h4>
-                <p className={`text-[11px] leading-relaxed font-medium ${isLight ? 'text-blue-800' : 'text-blue-300'}`}>Seus projetos são salvos apenas **localmente** neste navegador. Limpar dados do site apagará seu progresso.</p>
+             <div className={`p-4 md:p-6 rounded-2xl mb-6 md:mb-8 border ${isLight ? 'bg-blue-50 border-blue-100' : 'bg-blue-900/20 border-blue-900/30'}`}>
+                <h4 className="text-[9px] md:text-[10px] font-black uppercase text-blue-600 tracking-widest mb-2">⚠️ Atenção ao Armazenamento</h4>
+                <p className={`text-[10px] md:text-[11px] leading-relaxed font-medium ${isLight ? 'text-blue-800' : 'text-blue-300'}`}>Seus projetos são salvos apenas **localmente** neste navegador. Limpar dados do site apagará seu progresso.</p>
              </div>
 
-             <input autoFocus placeholder={lang === 'pt' ? "Digite seu nome..." : "Enter your name..."} value={user} onChange={e => setUser(e.target.value)} onKeyDown={e => e.key === 'Enter' && user.trim() && setShowLoginModal(false)} className={`w-full p-5 rounded-2xl mb-8 font-bold outline-none border transition-all text-center text-lg ${isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-900 focus:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:border-blue-500'}`} />
+             <input autoFocus placeholder={lang === 'pt' ? "Digite seu nome..." : "Enter your name..."} value={user} onChange={e => setUser(e.target.value)} onKeyDown={e => e.key === 'Enter' && user.trim() && setShowLoginModal(false)} className={`w-full p-4 md:p-5 rounded-2xl mb-6 md:mb-8 font-bold outline-none border transition-all text-center text-base md:text-lg ${isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-900 focus:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:border-blue-500'}`} />
              
-             <button onClick={() => user.trim() && setShowLoginModal(false)} className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-blue-200 hover:bg-blue-500 transition-all transform active:scale-95">{t.gotIt}</button>
+             <button onClick={() => user.trim() && setShowLoginModal(false)} className="w-full py-4 md:py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-[10px] md:text-xs shadow-xl shadow-blue-200 hover:bg-blue-500 transition-all transform active:scale-95">{t.gotIt}</button>
           </div>
         </div>
       )}
 
       {showLoadModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/85 backdrop-blur-md">
-          <div className={`w-full max-w-xl rounded-[32px] p-10 border shadow-3xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
-            <div className="flex justify-between items-center mb-10">
-              <h2 className="text-2xl font-black italic text-blue-500 uppercase tracking-tighter">Projetos Salvos</h2>
-              <button onClick={() => setShowLoadModal(false)} className="text-zinc-500 font-black text-xs uppercase tracking-widest hover:text-red-500">Fechar</button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/85 backdrop-blur-md">
+          <div className={`w-full max-w-xl rounded-[24px] md:rounded-[32px] p-6 md:p-10 border shadow-3xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+            <div className="flex justify-between items-center mb-6 md:mb-10">
+              <h2 className="text-xl md:text-2xl font-black italic text-blue-500 uppercase tracking-tighter">Projetos Salvos</h2>
+              <button onClick={() => setShowLoadModal(false)} className="text-zinc-500 font-black text-[10px] uppercase tracking-widest hover:text-red-500">Fechar</button>
             </div>
-            <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-300">
+            <div className="space-y-3 md:space-y-4 max-h-[400px] md:max-h-[450px] overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-zinc-300">
               {getLibrary().filter(p => p.user === user || !p.user).map(p => (
-                <div key={p.id} onClick={() => { setProjectId(p.id); setProjectName(p.name); setInstances(p.instances); setGlobalTranspose(p.globalTransposition || 0); setShowLoadModal(false); }} className={`flex items-center justify-between p-6 rounded-2xl border transition-all cursor-pointer group ${isLight ? 'bg-zinc-50 border-zinc-100 hover:border-blue-500 hover:bg-white' : 'bg-zinc-800 border-zinc-700 hover:border-blue-500 hover:bg-zinc-750'}`}>
-                  <div className="font-black text-zinc-800 group-hover:text-blue-500 uppercase text-sm transition-colors">{p.name}</div>
-                  <div className="text-[10px] font-bold text-zinc-400">{new Date(p.lastUpdated).toLocaleDateString()}</div>
+                <div key={p.id} onClick={() => { setProjectId(p.id); setProjectName(p.name); setInstances(p.instances); setGlobalTranspose(p.globalTransposition || 0); setShowLoadModal(false); }} className={`flex items-center justify-between p-4 md:p-6 rounded-2xl border transition-all cursor-pointer group ${isLight ? 'bg-zinc-50 border-zinc-100 hover:border-blue-500 hover:bg-white' : 'bg-zinc-800 border-zinc-700 hover:border-blue-500 hover:bg-zinc-750'}`}>
+                  <div className="font-black text-zinc-800 group-hover:text-blue-500 uppercase text-xs md:text-sm transition-colors">{p.name}</div>
+                  <div className="text-[8px] md:text-[10px] font-bold text-zinc-400">{new Date(p.lastUpdated).toLocaleDateString()}</div>
                 </div>
               ))}
-              {getLibrary().length === 0 && <p className="text-center py-16 font-black text-zinc-400 uppercase text-[10px] tracking-widest">Nenhum projeto encontrado</p>}
+              {getLibrary().length === 0 && <p className="text-center py-12 md:py-16 font-black text-zinc-400 uppercase text-[9px] md:text-[10px] tracking-widest">Nenhum projeto encontrado</p>}
             </div>
           </div>
         </div>
