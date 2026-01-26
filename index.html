@@ -1,113 +1,57 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "Guitar Architect",
-  "url": "https://guitararchitect.com.br",
-  "applicationCategory": "MusicApplication",
-  "operatingSystem": "Web",
-  "description": "Interactive fretboard and visual music theory platform for guitarists. Build scales, chords, and harmonic structures in real time.",
-  "softwareVersion": "1.0",
-  "creator": {
-    "@type": "Organization",
-    "name": "Guitar Architect",
-    "url": "https://guitararchitect.com.br",
-    "logo": "https://guitararchitect.com.br/apple-touch-icon.png"
-  },
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "BRL"
-  }
-}
-</script>
-
-  <!-- Primary SEO -->
-<meta name="title" content="Guitar Architect — Interactive Fretboard & Visual Music Theory Platform" />
-<meta name="description" content="Professional interactive fretboard for guitarists. Design scales, chords, triads, and harmonic structures visually in real time. Installable PWA." />
-<link rel="canonical" href="https://guitararchitect.com.br/" />
-
-<!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://guitararchitect.com.br/" />
-<meta property="og:title" content="Guitar Architect — Interactive Fretboard Platform" />
-<meta property="og:description" content="Build scales, chords and harmonic systems visually. A modern music theory platform for guitarists and composers." />
-<meta property="og:image" content="https://guitararchitect.com.br/hero.png" />
-
-<!-- Twitter / X -->
-<meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:url" content="https://guitararchitect.com.br/" />
-<meta property="twitter:title" content="Guitar Architect — Interactive Fretboard" />
-<meta property="twitter:description" content="Visual music theory and harmonic design platform for guitarists. Build and explore scales and chords in real time." />
-<meta property="twitter:image" content="https://guitararchitect.com.br/hero.png" />
-
-<!-- PWA / Mobile -->
-<meta name="apple-mobile-web-app-title" content="Guitar Architect" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Branding Guitar Architect -->
-  <title>Guitar Architect — Interactive Fretboard</title>
-  <meta name="application-name" content="Guitar Architect" />
-  <meta name="theme-color" content="#09090b" />
-
-  <!-- Favicons -->
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="manifest" href="/site.webmanifest" />
-
-  <!-- Tailwind CDN -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guitar Architect</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
     /* Blueprint Grid Pattern */
     .blueprint-grid-light {
       background-color: #f8fafc;
-      background-image:
+      background-image: 
         linear-gradient(#e2e8f0 1px, transparent 1px),
         linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
       background-size: 20px 20px;
     }
-
     .blueprint-grid-dark {
       background-color: #09090b;
-      background-image:
+      background-image: 
         linear-gradient(#1e293b 1px, transparent 1px),
         linear-gradient(90deg, #1e293b 1px, transparent 1px);
       background-size: 20px 20px;
     }
-
     /* Hide grid during export */
     .is-exporting-mode {
       background-image: none !important;
       background-color: white !important;
     }
-  </style>
-
-  <script type="importmap">
-  {
-    "imports": {
-      "react/": "https://esm.sh/react@^19.2.3/",
-      "react": "https://esm.sh/react@^19.2.3",
-      "vite": "https://esm.sh/vite@^7.3.1",
-      "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-      "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
-      "jspdf": "https://esm.sh/jspdf@^4.0.0",
-      "html2canvas": "https://esm.sh/html2canvas@^1.4.1"
+    
+    @keyframes pulse-glow {
+      0% { box-shadow: 0 0 5px rgba(37, 99, 235, 0.2); }
+      50% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.6); }
+      100% { box-shadow: 0 0 5px rgba(37, 99, 235, 0.2); }
     }
+    .ai-glow {
+      animation: pulse-glow 3s infinite;
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+    "html2canvas": "https://esm.sh/html2canvas@^1.4.1",
+    "jspdf": "https://esm.sh/jspdf@^4.0.0",
+    "vite": "https://esm.sh/vite@^7.3.1"
   }
-  </script>
-
-  <link rel="stylesheet" href="/index.css" />
+}
+</script>
+<link rel="stylesheet" href="/index.css">
 </head>
-
 <body class="bg-zinc-950 text-zinc-100 min-h-screen">
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
