@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guitar Architect — License</title>
+  <meta name="theme-color" content="#09090b" />
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #09090b;
+      color: #f4f4f5;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    h1, h2 {
+      color: #fafafa;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      margin-top: 2.5rem;
+      border-bottom: 1px solid #27272a;
+      padding-bottom: 0.5rem;
+    }
+
+    p, li {
+      color: #d4d4d8;
+    }
+
+    ul {
+      padding-left: 1.5rem;
+    }
+
+    .footer {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid #27272a;
+      font-size: 0.9rem;
+      color: #a1a1aa;
+    }
+
+    a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .license-box {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 1.5rem;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Guitar Architect — License</h1>
+    <p><strong>License Model:</strong> Business Source License (Custom)</p>
+    <p><strong>Effective Date:</strong> January 25, 2026</p>
+
+    <h2>Overview</h2>
+    <p>
+      Guitar Architect is released under a protective source-available license model.
+      The source code is available for personal, educational, and non-commercial use,
+      while all commercial rights remain exclusively reserved by the Licensor.
+    </p>
+
+    <h2>Full License Text</h2>
+
+    <div class="license-box">
+Copyright (c) 2026 DPDDA-tech
+
+Business Source License 1.1 (Custom — Guitar Architect)
+
+GRANT OF RIGHTS
+
+Permission is hereby granted to any person obtaining a copy of this software and
+associated documentation files (the "Software") to use, copy, and modify the Software
+for personal, educational, and non-commercial purposes only, subject to the
+limitations below.
+
+RESTRICTIONS
+
+The Software, in whole or in part, may not be used for commercial purposes, including
+but not limited to:
+
+- Offering the Software or any derivative work as a paid or freemium product
+- Selling access, licenses, or subscriptions
+- Bundling the Software into a commercial service or platform
+- Redistributing the Software as part of a commercial offering
+
+CHANGE LICENSE DATE
+
+This license will automatically convert to the Apache License, Version 2.0, on:
+
+January 1, 2030
+
+Until that date, all commercial rights remain exclusively reserved by the Licensor.
+
+ATTRIBUTION
+
+Any permitted use of this Software must retain the following attribution notice:
+
+"Guitar Architect — © 2026 DPDDA-tech. Used under Business Source License."
+
+DISCLAIMER OF WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    </div>
+
+    <h2>Commercial Licensing</h2>
+    <p>
+      For commercial licensing, enterprise usage, or redistribution agreements,
+      please contact:
+    </p>
+    <p>
+      <strong>Email:</strong>
+      <a href="mailto:contato@guitararchitect.com.br">
+        contato@guitararchitect.com.br
+      </a>
+    </p>
+
+    <div class="footer">
+      © 2026 Guitar Architect — DPDDA-tech. All rights reserved.<br />
+      Design your fretboard. Structure your ideas.
+    </div>
+  </div>
+</body>
+</html>
