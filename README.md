@@ -63,15 +63,6 @@ Todo o armazenamento é feito via `localStorage` no navegador do usuário.
 *   **html2canvas / jsPDF** (Exportação)
 
 ---
-## License & Terms
-
-This project is released under a Business Source License (BSL) for non-commercial and educational use.
-
-Use of the Guitar Architect application is also subject to the Terms of Use:
-- LICENSE — governs source code usage
-- TERMS.md — governs application usage and distribution
-
-For commercial licensing, contact: contato@guitararchitect.com.br
 
 ## Autor
 

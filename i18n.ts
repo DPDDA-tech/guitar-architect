@@ -1,4 +1,3 @@
-
 export const translations = {
   pt: {
     tagline: "Visualize a harmonia. Estruture seu fretboard.",
@@ -54,6 +53,8 @@ export const translations = {
     storageCostDesc: "Aplicativo gratuito com processamento local.",
     gotIt: "Entendi!",
     privacyPolicy: "Privacidade",
+    terms: "Termos",
+    license: "Licença",
     allRights: "Todos os direitos reservados",
     instrument: "Instrumento",
     didactic: "Exportar Diagramas",
@@ -138,6 +139,8 @@ export const translations = {
     storageCostDesc: "Free app with local processing.",
     gotIt: "Got it!",
     privacyPolicy: "Privacy",
+    terms: "Terms",
+    license: "License",
     allRights: "All rights reserved",
     instrument: "Instrument",
     didactic: "Export Diagrams",
@@ -165,7 +168,7 @@ export const translations = {
       "Mixolydian": "Mixolydian",
       "Locrian": "Locrian",
       "Harmonic Minor": "Harmonic Minor",
-      "Melodic Minor": "Harmonic Minor"
+      "Melodic Minor": "Melodic Minor"
     }
   }
 };
