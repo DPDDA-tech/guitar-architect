@@ -4,6 +4,7 @@ import { getNoteAt, getIntervalName, INSTRUMENT_PRESETS, CHROMATIC_SCALE, getFre
 import { getScaleNotes } from '../music/scales';
 import { getChordNotes, getCagedPositions } from '../music/harmony';
 import { FretboardState, EditorMode, ThemeMode, CagedShape } from '../types';
+import { translations } from '../i18n';
 
 interface FretboardSVGProps {
   state: FretboardState;
@@ -29,6 +30,9 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
     colorMode = 'SINGLE'
   } = state;
   
+  const lang = (window as any).ga_lang || 'pt';
+  const t = translations[lang as 'pt' | 'en'];
+
   const instrument = INSTRUMENT_PRESETS[instrumentType || 'guitar-6'];
   const numStrings = instrument.strings;
 
@@ -59,7 +63,20 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
     text: isLight ? '#475569' : '#94a3b8',
     inlay: isLight ? '#cbd5e1' : '#3f3f46',
     caged: isLight ? '#2563eb' : '#3b82f6',
-    intervals: { '1': '#ef4444', 'b2': '#71717a', '2': '#3b82f6', 'b3': '#22c55e', '3': '#22c55e', '4': '#f97316', 'b5': '#3b82f6', '5': '#3b82f6', '#5': '#3b82f6', 'b6': '#a855f7', '6': '#a855f7', 'b7': '#eab308', '7': '#eab308' }
+    intervals: { 
+      '1': '#ef4444',    
+      'b2': '#ec4899',   
+      '2': '#f97316',    
+      'b3': '#14532d',   
+      '3': '#22c55e',    
+      '4': '#06b6d4',    
+      'b5': '#8b5cf6',   
+      '5': '#3b82f6',    
+      'b6': '#78350f',   
+      '6': '#94a3b8',    
+      'b7': '#eab308',   
+      '7': '#ca8a04'     
+    } as Record<string, string>
   };
 
   const getY = useCallback((stringIdx: number) => marginY + stringIdx * stringSpacing, [stringSpacing, marginY]);
@@ -73,10 +90,7 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
 
   const cagedNotes = useMemo(() => {
     if (cagedShape === 'OFF') return [];
-    // Calculamos as posições base do shape
     const basePositions = getCagedPositions(root, cagedShape, currentTuning);
-    
-    // Expandimos o shape por todo o braço seguindo a mesma geometria
     const allPositions: { string: number, fret: number }[] = [];
     basePositions.forEach(pos => {
       [0, 12, 24].forEach(offset => {
@@ -104,32 +118,59 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
 
   return (
     <div className={`relative rounded-[40px] overflow-hidden border ${isLight ? 'border-zinc-200 shadow-xl' : 'border-zinc-800'}`}>
-      <svg viewBox={`0 0 ${width} ${height}`} className={`w-full select-none touch-none ${isLight ? 'bg-white' : 'bg-zinc-900'}`} onClick={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const clickX = (e.clientX - rect.left) * (width / rect.width);
-        const clickY = (e.clientY - rect.top) * (height / rect.height);
-        const effectiveX = isLeftHanded ? width - clickX : clickX;
-        const stringIdx = Math.round((clickY - marginY) / stringSpacing);
-        if (stringIdx < 0 || stringIdx >= numStrings) return;
-        if (effectiveX < marginX - 10 && startFret === 0) { onEvent({ type: 'string-status', string: stringIdx }); return; }
-        let fret = 0;
-        if (effectiveX < marginX + 15 && startFret === 0) { fret = 0; } 
-        else { fret = Math.floor((effectiveX - marginX) / fretWidth) + startFret + 1; }
-        if (fret >= startFret && fret <= endFret) onEvent({ type: 'note', string: stringIdx, fret });
-      }}>
+      <svg 
+        viewBox={`0 0 ${width} ${height}`} 
+        className={`w-full select-none touch-none ${isLight ? 'bg-white' : 'bg-zinc-900'}`} 
+        style={{ touchAction: 'none' }} 
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const clickX = (e.clientX - rect.left) * (width / rect.width);
+          const clickY = (e.clientY - rect.top) * (height / rect.height);
+          
+          // Detecção de área Mute/Open: fora das casas mas dentro das margens
+          const isClickOutsideNut = isLeftHanded ? clickX > (width - marginX + 10) : clickX < (marginX - 10);
+          
+          if (isClickOutsideNut && startFret === 0) {
+            const stringIdx = Math.round((clickY - marginY) / stringSpacing);
+            if (stringIdx >= 0 && stringIdx < numStrings) {
+              onEvent({ type: 'string-status', string: stringIdx });
+              return;
+            }
+          }
+
+          const effectiveX = isLeftHanded ? width - clickX : clickX;
+          const stringIdx = Math.round((clickY - marginY) / stringSpacing);
+          if (stringIdx < 0 || stringIdx >= numStrings) return;
+          
+          let fret = 0;
+          if (effectiveX < marginX + 15 && startFret === 0) { fret = 0; } 
+          else { fret = Math.floor((effectiveX - marginX) / fretWidth) + startFret + 1; }
+          if (fret >= startFret && fret <= endFret) onEvent({ type: 'note', string: stringIdx, fret });
+        }}
+      >
         <rect x="0" y="0" width={width} height={height} fill={colors.fretboard} />
         
-        {/* Renderização de Status de Corda */}
+        {/* MUTE / OPEN LABELS & SYMBOLS */}
         {startFret === 0 && Array.from({ length: numStrings }).map((_, s) => {
           const status = stringStatuses[s] || 'normal';
-          const x = getNoteX(0) - 50;
+          const nutX = getX(0);
+          const x = isLeftHanded ? nutX + 55 : nutX - 55;
           const y = getY(s);
+          
           if (status === 'mute') return (
-            <g key={`mute-${s}`} stroke="#ef4444" strokeWidth="4" opacity="0.8">
-               <line x1={x-10} y1={y-10} x2={x+10} y2={y+10} /><line x1={x+10} y1={y-10} x2={x-10} y2={y+10} />
+            <g key={`mute-${s}`}>
+               <text x={x} y={y - 15} textAnchor="middle" fontSize="9" fontWeight="900" fill="#ef4444" opacity="0.9">{t.labelMute}</text>
+               <g stroke="#ef4444" strokeWidth="4" opacity="0.8">
+                  <line x1={x-8} y1={y-8} x2={x+8} y2={y+8} /><line x1={x+8} y1={y-8} x2={x-8} y2={y+8} />
+               </g>
             </g>
           );
-          if (status === 'open') return <circle key={`open-${s}`} cx={x} cy={y} r="10" fill="none" stroke="#22c55e" strokeWidth="4" opacity="0.8" />;
+          if (status === 'open') return (
+            <g key={`open-${s}`}>
+               <text x={x} y={y - 15} textAnchor="middle" fontSize="9" fontWeight="900" fill="#22c55e" opacity="0.9">{t.labelOpen}</text>
+               <circle cx={x} cy={y} r="8" fill="none" stroke="#22c55e" strokeWidth="4" opacity="0.8" />
+            </g>
+          );
           return null;
         })}
 
@@ -154,7 +195,6 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
 
         {Array.from({ length: numStrings }).map((_, i) => <line key={`string-${i}`} x1={marginX} y1={getY(i)} x2={width - marginX} y2={getY(i)} stroke={colors.string} strokeWidth={2.5 + (i * 0.5)} pointerEvents="none" />)}
         
-        {/* Layer de Geometria CAGED */}
         {cagedNotes.map((cn, i) => (
           <rect 
             key={`caged-${i}`} 
@@ -181,15 +221,21 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
           const isChord = chordNotes.includes(note);
           const isTonic = note === root;
           const interval = getIntervalName(root, note);
+          
           let fill = "transparent"; let opacity = 0;
+
           const getNoteFill = () => {
-            if (colorMode === 'SINGLE') return colors.intervals['1'];
-            return colors.intervals[interval.replace(/R/, '1') as keyof typeof colors.intervals] || '#444';
+            if (colorMode === 'SINGLE') {
+               return isTonic ? colors.intervals['1'] : colors.intervals['5'];
+            }
+            return colors.intervals[interval] || (isLight ? '#cbd5e1' : '#444');
           };
+
           if (layers.showAllNotes) { fill = isLight ? "#cbd5e1" : "#444"; opacity = 1; }
           if (layers.showScale && isScale) { fill = getNoteFill(); opacity = 1; }
           if (harmonyMode !== 'OFF' && isChord) { fill = getNoteFill(); opacity = 1; }
           if (layers.showTonic && isTonic) { if (opacity === 0) fill = colors.intervals['1']; opacity = 1; }
+          
           if (opacity === 0) return null;
           const x = getNoteX(f); const y = getY(s);
           const label = labelMode === 'note' ? note : (labelMode === 'interval' ? interval : '');

@@ -1,4 +1,3 @@
-
 import { ChordQuality } from './music/harmony';
 
 export type MarkerShape = 'circle' | 'square' | 'triangle';
@@ -78,4 +77,5 @@ export interface AppState {
   theme: ThemeMode;
   lang: 'pt' | 'en';
   currentUser: string;
+  userLogo?: string;
 }

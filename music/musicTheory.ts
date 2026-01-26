@@ -9,7 +9,6 @@ const NOTE_MAP: Record<string, string> = {
   'E#': 'F', 'B#': 'C', 'Fb': 'E', 'Cb': 'B'
 };
 
-// Fixed: Exported normalizeNote so it can be imported in other files like harmony.ts
 export const normalizeNote = (note: string): string => NOTE_MAP[note] || note;
 
 export const INSTRUMENT_PRESETS: Record<InstrumentType, { strings: number, defaultTuning: string[] }> = {
@@ -45,15 +44,21 @@ export const getNoteAt = (stringIndex: number, fret: number, tuning: string[]): 
   return CHROMATIC_SCALE[(openIndex + fret) % 12];
 };
 
-export const getIntervalName = (root: string, target: string): string => {
+export const getIntervalName = (root: string, note: string): string => {
   const rootIdx = CHROMATIC_SCALE.indexOf(normalizeNote(root));
-  const targetIdx = CHROMATIC_SCALE.indexOf(normalizeNote(target));
-  if (rootIdx === -1 || targetIdx === -1) return "1";
-  const diff = (targetIdx - rootIdx + 12) % 12;
-  const intervals = ["1", "b2", "2", "b3", "3", "4", "b5", "5", "b6", "6", "b7", "7"];
-  return intervals[diff];
+  const noteIdx = CHROMATIC_SCALE.indexOf(normalizeNote(note));
+  if (rootIdx === -1 || noteIdx === -1) return "1";
+  
+  const diff = (noteIdx - rootIdx + 12) % 12;
+  const names = ["1", "b2", "2", "b3", "3", "4", "b5", "5", "b6", "6", "b7", "7"];
+  return names[diff];
 };
 
+/**
+ *getFretForNote aprimorado com âncora de oitava (Octave Shield)
+ *Encontra a casa mais próxima de uma nota alvo baseada em uma casa de referência,
+ *garantindo que shapes não quebrem ao trocar afinações.
+ */
 export const getFretForNote = (stringIndex: number, targetNote: string, tuning: string[], referenceFret: number = 0): number => {
   const openNote = tuning[stringIndex];
   if (!openNote) return 0;
@@ -61,22 +66,12 @@ export const getFretForNote = (stringIndex: number, targetNote: string, tuning: 
   const openIdx = CHROMATIC_SCALE.indexOf(normalizeNote(openNote));
   const targetIdx = CHROMATIC_SCALE.indexOf(normalizeNote(targetNote));
   
-  let fret = (targetIdx - openIdx + 12) % 12;
+  let baseFret = (targetIdx - openIdx + 12) % 12;
+  const possibleFrets = [baseFret, baseFret + 12, baseFret + 24].filter(f => f >= 0 && f <= 24);
   
-  const octaves = [0, 12, 24];
-  let closestFret = fret;
-  let minDiff = Math.abs(fret - referenceFret);
-  
-  octaves.forEach(offset => {
-    const candidate = fret + offset;
-    if (candidate >= 0 && candidate <= 24) {
-      const diff = Math.abs(candidate - referenceFret);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestFret = candidate;
-      }
-    }
-  });
+  if (possibleFrets.length === 0) return baseFret % 25;
 
-  return closestFret;
+  return possibleFrets.reduce((prev, curr) => 
+    Math.abs(curr - referenceFret) < Math.abs(prev - referenceFret) ? curr : prev
+  );
 };

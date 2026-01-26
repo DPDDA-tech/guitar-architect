@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +6,13 @@
   <title>Guitar Architect</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    html, body, #root {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
     /* Blueprint Grid Pattern */
     .blueprint-grid-light {
       background-color: #f8fafc;
@@ -27,6 +33,11 @@
       background-image: none !important;
       background-color: white !important;
     }
+
+    /* Helper para ocultar botões na exportação */
+    .hidden-operational-btns .operational-btns {
+      display: none !important;
+    }
     
     @keyframes pulse-glow {
       0% { box-shadow: 0 0 5px rgba(37, 99, 235, 0.2); }
@@ -35,6 +46,16 @@
     }
     .ai-glow {
       animation: pulse-glow 3s infinite;
+    }
+    
+    select {
+      cursor: pointer;
+    }
+    
+    /* Garantir que selects tenham contraste máximo */
+    select option {
+      color: #000;
+      background: #fff;
     }
   </style>
 <script type="importmap">
