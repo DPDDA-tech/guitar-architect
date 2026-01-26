@@ -285,11 +285,11 @@ const FretboardPanel: React.FC = () => {
                </div>
             </div>
             <div className="flex gap-8 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">
-               <a href="privacy.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.privacyPolicy}</a>
+               <a href="legal/privacy.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.privacyPolicy}</a>
                <span className="opacity-20 text-zinc-300">•</span>
-               <a href="terms.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.terms}</a>
+               <a href="legal/terms.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.terms}</a>
                <span className="opacity-20 text-zinc-300">•</span>
-               <a href="license.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.license}</a>
+               <a href="legal/license.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.license}</a>
             </div>
             <p className={`text-[11px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
                © 2026 {t.allRights}
