@@ -257,7 +257,7 @@ const FretboardPanel: React.FC = () => {
             <div className="flex gap-8 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">
                <a href="/privacy.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">Privacidade</a>
                <span className="opacity-20 text-zinc-300">•</span>
-               <a href="/LICENSE" target="_blank" className="hover:text-blue-500 transition-colors uppercase">Licença MIT</a>
+               <a href="/legal/license.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">Licença</a>
                <span className="opacity-20 text-zinc-300">|</span>
                <a href="https://github.com/dpdda-tech/guitar-architect" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors uppercase flex items-center gap-2">
                   <GitHubIcon isLight={isLight} /> GitHub
