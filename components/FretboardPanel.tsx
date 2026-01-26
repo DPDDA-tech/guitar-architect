@@ -18,6 +18,12 @@ const LogoIcon = () => (
   <img src="/favicon-32x32.png" alt="Guitar Architect" className="w-[32px] h-[32px] lg:w-[42px] lg:h-[42px] object-contain drop-shadow-md" />
 );
 
+const GitHubIcon = ({ isLight }: { isLight: boolean }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isLight ? 'text-zinc-400 hover:text-zinc-900' : 'text-zinc-500 hover:text-zinc-100'}>
+    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+  </svg>
+);
+
 const DEFAULT_FRETBOARD = (lang: Lang, instrumentType: InstrumentType = 'guitar-6'): FretboardState => {
   const instr = INSTRUMENT_PRESETS[instrumentType];
   return {
@@ -130,7 +136,7 @@ const FretboardPanel: React.FC = () => {
       : "CLEAR ENTIRE PROJECT?\n\nThis will delete all diagrams. You will return to the home screen.";
     
     if (window.confirm(confirmMsg)) {
-       setInstances([]); // Importante: Array vazio dispara a Hero Screen
+       setInstances([]); 
        setProjectName(lang === 'pt' ? "Novo Projeto" : "New Project");
        setProjectId(crypto.randomUUID());
        setGlobalTranspose(0);
@@ -173,6 +179,9 @@ const FretboardPanel: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-4">
+               <a href="https://github.com/dpdda-tech/guitar-architect" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl border border-transparent hover:border-zinc-300 transition-all flex items-center justify-center" title="Open Source Code">
+                  <GitHubIcon isLight={isLight} />
+               </a>
                <div className={`flex items-center rounded-xl p-1 border ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
                   <button onClick={() => setShowLoadModal(true)} className={`px-4 py-2 text-[10px] font-black uppercase ${isLight ? 'text-zinc-900' : 'text-zinc-100'} hover:text-blue-600`}>{t.loadProject}</button>
                   <div className="w-[1px] h-4 bg-zinc-300 mx-1"></div>
@@ -242,13 +251,17 @@ const FretboardPanel: React.FC = () => {
                <LogoIcon />
                <div className="text-left">
                   <p className={`font-black text-sm tracking-[0.3em] uppercase ${isLight ? 'text-zinc-800' : 'text-zinc-100'}`}>Guitar Architect</p>
-                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Engine v1.7.2 • Arquitetando Braços e Harmonia</p>
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Engine v1.7.2 • Open Source Project</p>
                </div>
             </div>
-            <div className="flex gap-12 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">
+            <div className="flex gap-8 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">
                <a href="/privacy.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">Privacidade</a>
+               <span className="opacity-20 text-zinc-300">•</span>
+               <a href="/LICENSE" target="_blank" className="hover:text-blue-500 transition-colors uppercase">Licença MIT</a>
                <span className="opacity-20 text-zinc-300">|</span>
-               <a href="https://guitararchitect.com.br" target="_blank" className="hover:text-blue-500 transition-colors uppercase">GUITARARCHITECT.COM.BR</a>
+               <a href="https://github.com/dpdda-tech/guitar-architect" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors uppercase flex items-center gap-2">
+                  <GitHubIcon isLight={isLight} /> GitHub
+               </a>
             </div>
             <p className={`text-[11px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
                © 2026 {t.allRights}
