@@ -20,14 +20,14 @@ const LogoIcon = ({ variant = 'default' }: { variant?: 'default' | 'large' | 'fo
   return (
     <div className={`flex items-center justify-center ${isLarge ? 'mb-6' : ''}`}>
       <img 
-        src="/favicon-32x32.png" 
+        src="favicon-32x32.png" 
         alt="Guitar Architect Icon" 
         className={`
           object-contain drop-shadow-lg transition-transform hover:scale-105
           ${isLarge ? 'w-24 h-24' : (isFooter ? 'w-8 h-8' : 'w-8 h-8 lg:w-9 lg:h-9')}
         `}
         onError={(e) => {
-          (e.target as HTMLImageElement).style.display = 'none';
+          (e.target as HTMLImageElement).src = '/favicon-32x32.png';
         }}
       />
     </div>
@@ -285,11 +285,11 @@ const FretboardPanel: React.FC = () => {
                </div>
             </div>
             <div className="flex gap-8 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">
-               <a href="/privacy.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.privacyPolicy}</a>
+               <a href="privacy.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.privacyPolicy}</a>
                <span className="opacity-20 text-zinc-300">•</span>
-               <a href="/terms.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.terms}</a>
+               <a href="terms.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.terms}</a>
                <span className="opacity-20 text-zinc-300">•</span>
-               <a href="/license.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.license}</a>
+               <a href="license.html" target="_blank" className="hover:text-blue-500 transition-colors uppercase">{t.license}</a>
             </div>
             <p className={`text-[11px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
                © 2026 {t.allRights}
