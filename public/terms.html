@@ -1,137 +1,162 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Guitar Architect — Terms of Use</title>
-  <meta name="theme-color" content="#09090b" />
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #09090b;
-      color: #f4f4f5;
-      line-height: 1.6;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 3rem 1.5rem;
-    }
-
-    h1, h2 {
-      color: #fafafa;
-    }
-
-    h1 {
-      margin-bottom: 2rem;
-    }
-
-    h2 {
-      margin-top: 2.5rem;
-      border-bottom: 1px solid #27272a;
-      padding-bottom: 0.5rem;
-    }
-
-    p, li {
-      color: #d4d4d8;
-    }
-
-    ul {
-      padding-left: 1.5rem;
-    }
-
-    .footer {
-      margin-top: 4rem;
-      padding-top: 2rem;
-      border-top: 1px solid #27272a;
-      font-size: 0.9rem;
-      color: #a1a1aa;
-    }
-
-    a {
-      color: #60a5fa;
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termos de Uso — Guitar Architect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            background-image:
+                linear-gradient(#e2e8f0 1px, transparent 1px),
+                linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <h1>Guitar Architect — Terms of Use</h1>
-    <p><strong>Effective Date:</strong> January 25, 2026</p>
+<body class="text-zinc-800 font-sans leading-relaxed">
+    <div class="max-w-3xl mx-auto px-6 py-20">
 
-    <h2>1. Nature of the Service</h2>
-    <p>
-      Guitar Architect is a browser-based interactive music theory and fretboard
-      visualization platform. The Application runs locally in the user’s browser
-      and does not require account registration or server-side data storage.
-    </p>
+        <a href="/" class="inline-flex items-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest mb-12 hover:underline">
+            ← Voltar ao App
+        </a>
 
-    <h2>2. Data and Privacy</h2>
-    <ul>
-      <li>All projects, diagrams, and configurations are stored locally in your browser.</li>
-      <li>The Application does not transmit, collect, or store personal data on external servers.</li>
-      <li>Clearing browser data or changing devices will permanently remove stored projects.</li>
-    </ul>
+        <div class="content-card p-8 md:p-12 rounded-[40px] border border-zinc-200 shadow-2xl">
+            <h1 class="text-4xl font-black italic text-blue-600 uppercase tracking-tighter mb-2">
+                Termos de Uso
+            </h1>
+            <p class="text-xs font-bold text-zinc-500 uppercase tracking-[0.2em] mb-8">
+                Última atualização: 25 de janeiro de 2026
+            </p>
 
-    <h2>3. Permitted Use</h2>
-    <ul>
-      <li>Personal music study</li>
-      <li>Educational and academic purposes</li>
-      <li>Non-commercial creative work</li>
-    </ul>
+            <div class="space-y-8 text-sm md:text-base">
 
-    <h2>4. Prohibited Use</h2>
-    <ul>
-      <li>Resell, license, or commercialize the Application</li>
-      <li>Redistribute modified or unmodified versions of the software</li>
-      <li>Use the Application as part of a paid product or service</li>
-      <li>Remove or alter branding, copyright notices, or legal disclaimers</li>
-    </ul>
+                <section>
+                    <p class="font-medium">
+                        Estes Termos de Uso regem o acesso e a utilização do aplicativo Guitar Architect, disponível em
+                        <a href="https://guitararchitect.com.br" class="text-blue-600 underline">
+                            https://guitararchitect.com.br
+                        </a>.
+                        Ao utilizar a aplicação, você concorda integralmente com estes termos.
+                    </p>
+                </section>
 
-    <h2>5. Intellectual Property</h2>
-    <p>
-      All branding, design, software architecture, and original content associated
-      with Guitar Architect are the intellectual property of <strong>DPDDA-tech</strong>,
-      unless otherwise stated.
-    </p>
+                <hr class="border-zinc-100" />
 
-    <h2>6. Availability and Support</h2>
-    <p>
-      The Application is provided “as is” and “as available”. No guarantee is made
-      regarding uptime, feature continuity, or long-term availability.
-    </p>
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">
+                        1. Natureza do Serviço
+                    </h2>
+                    <p>
+                        O Guitar Architect é uma aplicação de visualização musical e teoria harmônica executada
+                        inteiramente no navegador do usuário. Não há infraestrutura de servidor própria,
+                        autenticação remota ou armazenamento em nuvem.
+                    </p>
+                </section>
 
-    <h2>7. Limitation of Liability</h2>
-    <p>
-      DPDDA-tech shall not be liable for any direct, indirect, incidental, or
-      consequential damages arising from the use or inability to use the Application.
-    </p>
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">
+                        2. Dados e Privacidade
+                    </h2>
+                    <ul class="list-disc ml-5 space-y-2">
+                        <li>Todos os projetos e configurações são armazenados localmente no navegador</li>
+                        <li>Não coletamos, transmitimos ou processamos dados pessoais em servidores externos</li>
+                        <li>Limpar os dados do navegador removerá permanentemente os projetos salvos</li>
+                    </ul>
+                </section>
 
-    <h2>8. Changes to These Terms</h2>
-    <p>
-      These Terms may be updated at any time. Continued use of the Application after
-      changes constitutes acceptance of the revised Terms.
-    </p>
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">
+                        3. Uso Permitido
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4 text-xs font-bold uppercase tracking-tight text-zinc-600">
+                        <div class="bg-zinc-100 p-3 rounded-xl">✔ Estudo musical pessoal</div>
+                        <div class="bg-zinc-100 p-3 rounded-xl">✔ Uso educacional e acadêmico</div>
+                        <div class="bg-zinc-100 p-3 rounded-xl">✔ Produção criativa não comercial</div>
+                        <div class="bg-zinc-100 p-3 rounded-xl">✔ Criação de material didático</div>
+                    </div>
+                </section>
 
-    <h2>9. Contact</h2>
-    <p>
-      For licensing or commercial inquiries, contact:<br />
-      <strong>Email:</strong>
-      <a href="mailto:contato@guitararchitect.com.br">
-        contato@guitararchitect.com.br
-      </a>
-    </p>
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">
+                        4. Uso Proibido
+                    </h2>
+                    <div class="bg-red-50 border border-red-100 p-6 rounded-3xl mt-4">
+                        <ul class="list-disc ml-5 space-y-2 text-red-800">
+                            <li>Revender, licenciar ou comercializar o aplicativo ou sua interface</li>
+                            <li>Redistribuir versões modificadas ou não modificadas do software</li>
+                            <li>Extrair, clonar ou reproduzir a arquitetura, lógica ou identidade visual do sistema</li>
+                        </ul>
+                    </div>
+                </section>
 
-    <div class="footer">
-      © 2026 Guitar Architect — DPDDA-tech. All rights reserved.<br />
-      Design your fretboard. Structure your ideas.
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">
+                        5. Propriedade Intelectual
+                    </h2>
+                    <p>
+                        O Guitar Architect, incluindo sua arquitetura de sistema, identidade visual,
+                        motor harmônico e estrutura de interface, é propriedade intelectual da
+                        <strong>DPDDA-tech</strong>, salvo quando licenciado de outra forma sob termos específicos.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">
+                        6. Isenção de Garantias
+                    </h2>
+                    <p>
+                        A aplicação é fornecida “como está”, sem garantias de qualquer tipo.
+                        Não nos responsabilizamos por perda de dados, interrupções de uso ou danos
+                        decorrentes da utilização da ferramenta.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">
+                        7. Alterações nos Termos
+                    </h2>
+                    <p>
+                        Estes termos podem ser atualizados periodicamente.
+                        O uso contínuo do aplicativo implica aceitação automática das versões revisadas.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">
+                        8. Contato
+                    </h2>
+                    <p>
+                        Para questões legais, licenciamento ou solicitações formais, entre em contato:
+                    </p>
+                    <p class="mt-4 font-bold text-blue-600">
+                        E-mail:
+                        <a href="mailto:contato@guitararchitect.com.br">
+                            contato@guitararchitect.com.br
+                        </a>
+                    </p>
+                    <p class="mt-2">
+                        GitHub:
+                        <a href="https://github.com/DPDDA-tech/guitar-architect" target="_blank" class="text-blue-600 underline">
+                            github.com/DPDDA-tech/guitar-architect
+                        </a>
+                    </p>
+                </section>
+
+            </div>
+        </div>
+
+        <footer class="mt-20 text-center opacity-40">
+            <p class="text-[10px] font-black uppercase tracking-[0.5em]">
+                Guitar Architect © 2026 — DPDDA-tech
+            </p>
+        </footer>
+
     </div>
-  </div>
 </body>
 </html>
