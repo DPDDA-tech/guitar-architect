@@ -135,6 +135,74 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     });
   };
 
+{/* FRETBOARD RANGE */}
+<div className="space-y-3">
+  <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">
+    FRET RANGE
+  </span>
+
+  <div className="flex items-center gap-2">
+
+    {/* START */}
+    <input
+      type="number"
+      min={0}
+      max={state.endFret - 1}
+      value={state.startFret}
+      onChange={e =>
+        recordAction({
+          ...state,
+          startFret: Math.max(
+            0,
+            Math.min(Number(e.target.value), state.endFret - 1)
+          )
+        })
+      }
+      className="w-16 p-2 border rounded-lg text-xs font-black text-center bg-white"
+    />
+
+    <span className="text-xs font-black text-zinc-400">→</span>
+
+    {/* END */}
+    <input
+      type="number"
+      min={state.startFret + 1}
+      max={36}
+      value={state.endFret}
+      onChange={e =>
+        recordAction({
+          ...state,
+          endFret: Math.min(
+            36,
+            Math.max(Number(e.target.value), state.startFret + 1)
+          )
+        })
+      }
+      className="w-16 p-2 border rounded-lg text-xs font-black text-center bg-white"
+    />
+
+  </div>
+
+  {/* PRESETS */}
+  <div className="grid grid-cols-5 gap-1">
+    {[12, 15, 17, 21, 24].map(f => (
+      <button
+        key={f}
+        onClick={() =>
+          recordAction({
+            ...state,
+            startFret: 0,
+            endFret: f
+          })
+        }
+        className="py-1 rounded-md text-[8px] font-black bg-zinc-200 hover:bg-blue-600 hover:text-white transition-all"
+      >
+        {f}
+      </button>
+    ))}
+  </div>
+</div>
+
   const handleEvent = useCallback((event: any) => {
     if (event.type === 'note') {
       if (editorMode === 'marker') {
@@ -232,7 +300,99 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <select value={state.scaleType} onChange={e => recordAction({...state, scaleType: e.target.value})} className="w-full p-3 border rounded-xl text-sm font-black outline-none bg-white text-zinc-900 shadow-sm">
              {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
           </select>
-          
+          {/* FRETBOARD RANGE */}
+<div className="flex flex-col gap-2 mt-2">
+
+  <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">
+    TRÊS / CASAS
+  </span>
+
+  {/* INPUTS */}
+  <div className="flex items-center gap-2">
+
+    {/* START */}
+    <input
+      type="number"
+      min={0}
+      max={state.endFret - 1}
+      value={state.startFret}
+      onChange={e =>
+        recordAction({
+          ...state,
+          startFret: Math.max(
+            0,
+            Math.min(
+              Number(e.target.value),
+              state.endFret - 1
+            )
+          )
+        })
+      }
+      className="
+        w-16 p-2 rounded-lg border
+        text-[11px] font-black text-center
+        bg-white text-zinc-900
+      "
+    />
+
+    <span className="text-[10px] font-black text-zinc-400">→</span>
+
+    {/* END */}
+    <input
+      type="number"
+      min={state.startFret + 1}
+      max={36}
+      value={state.endFret}
+      onChange={e =>
+        recordAction({
+          ...state,
+          endFret: Math.min(
+            36,
+            Math.max(
+              Number(e.target.value),
+              state.startFret + 1
+            )
+          )
+        })
+      }
+      className="
+        w-16 p-2 rounded-lg border
+        text-[11px] font-black text-center
+        bg-white text-zinc-900
+      "
+    />
+
+  </div>
+
+  {/* PRESETS RÁPIDOS */}
+  <div className="grid grid-cols-5 gap-1 mt-1">
+
+    {[12, 15, 17, 21, 24].map(f => (
+      <button
+        key={f}
+        onClick={() =>
+          recordAction({
+            ...state,
+            startFret: 0,
+            endFret: f
+          })
+        }
+        className="
+          py-1 rounded-md
+          text-[8px] font-black
+          bg-zinc-200 text-zinc-700
+          hover:bg-blue-600 hover:text-white
+          transition-all
+        "
+      >
+        {f}
+      </button>
+    ))}
+
+  </div>
+
+</div>
+
           <div className="flex flex-col gap-1 mt-1">
              <span className="text-[8px] font-black uppercase text-zinc-400 ml-1 tracking-widest">{t.geometry}</span>
              <div className="grid grid-cols-6 gap-1">
