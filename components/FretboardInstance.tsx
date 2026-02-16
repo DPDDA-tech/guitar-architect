@@ -304,7 +304,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 <div className="flex flex-col gap-2 mt-2">
 
   <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">
-    TRÊS / CASAS
+    TRASTES / CASAS
   </span>
 
   {/* INPUTS */}
