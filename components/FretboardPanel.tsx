@@ -104,6 +104,69 @@ const FretboardPanel: React.FC = () => {
 
   const t = translations[lang] || translations['pt'];
 
+const switchUserSession = (newUser: string) => {
+
+  // salva sessão atual
+  if (user && initialized.current) {
+    saveConfig({
+      version: "1.8.1",
+      activeProjectId: projectId,
+      theme,
+      lang,
+      currentUser: user,
+      userLogo,
+      defaultInstrument
+    });
+  }
+
+  // aplica novo usuário
+  setUser(newUser);
+
+  const storedConfig = loadConfig();
+
+  if (storedConfig && storedConfig.currentUser === newUser) {
+
+    const library = getLibrary();
+
+    const project = library.find(
+      p =>
+        p.id === storedConfig.activeProjectId &&
+        p.user === newUser
+    );
+
+    if (project) {
+      setInstances(project.instances);
+      setProjectName(project.name);
+      setProjectId(project.id);
+      setGlobalTranspose(
+        project.globalTransposition || 0
+      );
+
+      if (project.instances.length > 0) {
+        setDefaultInstrument(
+          project.instances[0].instrumentType
+        );
+      }
+
+      return;
+    }
+  }
+
+  // usuário novo → workspace limpo
+  const bootInstrument: InstrumentType =
+    'guitar-6';
+
+  setInstances([
+    DEFAULT_FRETBOARD(lang, bootInstrument)
+  ]);
+
+  setProjectName('Novo Projeto');
+  setProjectId(crypto.randomUUID());
+  setGlobalTranspose(0);
+  setDefaultInstrument(bootInstrument);
+};
+
+
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(err => {
@@ -135,60 +198,143 @@ const FretboardPanel: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (!initialized.current) {
-      const config = loadConfig();
-      const library = getLibrary();
-      if (config) {
-        setTheme(config.theme || 'light'); 
-        setLang((config.lang as Lang) || 'pt'); 
-        setUser(config.currentUser || '');
-        setUserLogo(config.userLogo);
-        const lastProject = library.find(p => p.id === config.activeProjectId);
-        if (lastProject) {
-          setInstances(lastProject.instances); 
-          setProjectName(lastProject.name); 
-          setProjectId(lastProject.id); 
-          setGlobalTranspose(lastProject.globalTransposition || 0);
-          if (lastProject.instances.length > 0) setDefaultInstrument(lastProject.instances[0].instrumentType);
-        } else { 
-          setInstances([DEFAULT_FRETBOARD((config.lang as Lang) || 'pt', defaultInstrument)]); 
-        }
-      } else { 
-        setInstances([DEFAULT_FRETBOARD('pt', 'guitar-6')]); 
-        setShowLoginModal(true); 
-      }
-      initialized.current = true;
-    }
-  }, []);
+useEffect(() => {
+  if (!initialized.current) {
 
-  useEffect(() => {
-    if (initialized.current && !isExporting && user) {
-      setSaveStatus('saving');
-      const timer = setTimeout(() => {
-        const currentProject: Project = { 
-          id: projectId, 
-          name: projectName, 
-          user: user, 
-          lastUpdated: new Date().toISOString(), 
-          instances: instances, 
-          globalTransposition: globalTranspose 
-        };
-        saveProjectToLibrary(currentProject);
-        saveConfig({ 
-          version: "1.8.1", 
-          activeProjectId: projectId, 
-          theme, 
-          lang, 
-          currentUser: user,
-          userLogo: userLogo
-        });
-        setSaveStatus('saved'); 
-        setTimeout(() => setSaveStatus('idle'), 2000);
-      }, 1000);
-      return () => clearTimeout(timer);
+    const config = loadConfig();
+    const library = getLibrary();
+
+    if (config) {
+
+      setTheme(config.theme || 'light');
+      setLang((config.lang as Lang) || 'pt');
+      setUser(config.currentUser || '');
+      setUserLogo(config.userLogo);
+
+      const bootInstrument: InstrumentType =
+        config.defaultInstrument || 'guitar-6';
+
+      setDefaultInstrument(bootInstrument);
+
+      const lastProject = library.find(
+        p =>
+          p.id === config.activeProjectId &&
+          p.user === config.currentUser
+      );
+
+      if (lastProject) {
+
+        setInstances(lastProject.instances);
+        setProjectName(lastProject.name);
+        setProjectId(lastProject.id);
+        setGlobalTranspose(
+          lastProject.globalTransposition || 0
+        );
+
+        if (lastProject.instances.length > 0) {
+          setDefaultInstrument(
+            lastProject.instances[0].instrumentType
+          );
+        }
+
+      } else {
+
+        const userProjects = library
+          .filter(p => p.user === config.currentUser)
+          .sort(
+            (a, b) =>
+              new Date(b.lastUpdated).getTime() -
+              new Date(a.lastUpdated).getTime()
+          );
+
+        if (userProjects.length > 0) {
+
+          const recent = userProjects[0];
+
+          setInstances(recent.instances);
+          setProjectName(recent.name);
+          setProjectId(recent.id);
+          setGlobalTranspose(
+            recent.globalTransposition || 0
+          );
+
+          if (recent.instances.length > 0) {
+            setDefaultInstrument(
+              recent.instances[0].instrumentType
+            );
+          }
+
+        } else {
+
+          setInstances([
+            DEFAULT_FRETBOARD(
+              (config.lang as Lang) || 'pt',
+              bootInstrument
+            )
+          ]);
+
+        }
+      }
+
+    } else {
+
+      setInstances([
+        DEFAULT_FRETBOARD('pt', 'guitar-6')
+      ]);
+
+      setShowLoginModal(true);
     }
-  }, [instances, projectName, projectId, theme, lang, user, userLogo, isExporting, globalTranspose]);
+
+    initialized.current = true;
+  }
+}, []);
+
+
+useEffect(() => {
+  if (initialized.current && !isExporting && user) {
+    setSaveStatus('saving');
+
+    const timer = setTimeout(() => {
+      const currentProject: Project = {
+        id: projectId,
+        name: projectName,
+        user: user,
+        lastUpdated: new Date().toISOString(),
+        instances: instances,
+        globalTransposition: globalTranspose
+      };
+
+      saveProjectToLibrary(currentProject);
+
+      saveConfig({
+        version: "1.8.1",
+        activeProjectId: projectId,
+        theme,
+        lang,
+        currentUser: user,
+        userLogo: userLogo,
+        defaultInstrument,
+      });
+
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }
+}, [
+  instances,
+  projectName,
+  projectId,
+  theme,
+  lang,
+  user,
+  userLogo,
+  isExporting,
+  globalTranspose,
+  defaultInstrument
+]);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -450,7 +596,13 @@ const FretboardPanel: React.FC = () => {
                  placeholder="Nome do Autor (ex: Prof. Jimmy H)..." 
                  value={user} 
                  onChange={e => setUser(e.target.value)} 
-                 onKeyDown={e => e.key === 'Enter' && user.trim() && setShowLoginModal(false)} 
+ onKeyDown={e => {
+  if (e.key === 'Enter' && user.trim()) {
+    switchUserSession(user.trim());
+    setShowLoginModal(false);
+  }
+}}
+
                  className={`w-full p-4 rounded-2xl font-bold outline-none border transition-all text-center text-sm md:text-base placeholder:text-zinc-400 placeholder:font-normal placeholder:opacity-50 ${isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-900 focus:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:border-blue-500'}`} 
                />
                {!user && (
@@ -458,10 +610,24 @@ const FretboardPanel: React.FC = () => {
                )}
              </div>
              
-             <button onClick={() => user.trim() && setShowLoginModal(false)} className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] shadow-xl active:scale-95 transition-all ${user.trim() ? 'bg-blue-600 text-white' : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'}`}>Confirmar Identidade</button>
-          </div>
-        </div>
-      )}
+<button
+  onClick={() => {
+    if (user.trim()) {
+      switchUserSession(user.trim());
+      setShowLoginModal(false);
+    }
+  }}
+  className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] shadow-xl active:scale-95 transition-all ${
+    user.trim()
+      ? 'bg-blue-600 text-white'
+      : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
+  }`}
+>
+  Confirmar Identidade
+</button>
+</div>
+</div>
+)}
 
       {showImportModal && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl">

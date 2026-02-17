@@ -61,12 +61,22 @@ export const getChordNotes = (
 
   let chord: string[] = [];
 
-  if (quality === 'DIATONIC') {
-    const chordLength = isTetrad ? 4 : 3;
-    for (let i = 0; i < chordLength; i++) {
-      const noteIdx = (degree + i * 2) % scaleNotes.length;
-      chord.push(scaleNotes[noteIdx]);
-    }
+if (quality === 'DIATONIC') {
+
+  const chordLength = isTetrad ? 4 : 3;
+
+  const stepPattern =
+    scaleNotes.length === 5
+      ? [0, 2, 3, 4]   // pentatônica
+      : [0, 2, 4, 6];  // heptatônica
+
+  for (let i = 0; i < chordLength; i++) {
+
+    const idx = (degree + stepPattern[i]) % scaleNotes.length;
+
+    chord.push(scaleNotes[idx]);
+  }
+
   } else {
     let intervals: number[];
     switch (quality) {

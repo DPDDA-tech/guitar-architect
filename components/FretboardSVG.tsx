@@ -5,6 +5,8 @@ import { getScaleNotes } from '../music/scales';
 import { getChordNotes, getCagedPositions } from '../music/harmony';
 import { FretboardState, EditorMode, ThemeMode, CagedShape, Note } from '../types';
 import { translations } from '../i18n';
+import { getAllChordBrushVoicings } from '../music/musicTheory';
+import type { ChordVoicing } from '../music/musicTheory';
 
 interface FretboardSVGProps {
   state: FretboardState;
@@ -33,7 +35,13 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
   const lang = (window as any).ga_lang || 'pt';
   const t = translations[lang as 'pt' | 'en'];
 
-  const instrument = INSTRUMENT_PRESETS[instrumentType || 'guitar-6'];
+  const resolvedInstrumentType =
+  instrumentType && INSTRUMENT_PRESETS[instrumentType]
+    ? instrumentType
+    : 'guitar-6';
+
+const instrument = INSTRUMENT_PRESETS[resolvedInstrumentType];
+
   const numStrings = instrument.strings;
 
   const currentTuning = useMemo(() => {
@@ -61,8 +69,6 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
 
 }, [tuning, customTuning, instrument]);
 
-
-
   const numFretsVisible = endFret - startFret + 1;
   const width = 1300; 
   const height = 150 + (numStrings * 45);
@@ -84,7 +90,8 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
     text: isLight ? '#475569' : '#94a3b8',
     inlay: isLight ? '#cbd5e1' : '#3f3f46',
     caged: isLight ? '#2563eb' : '#3b82f6',
-    intervals: { 
+    brush: '#f59e0b',
+    intervals: {
       '1': '#ef4444',    
       'b2': '#ec4899',   
       '2': '#f97316',    
@@ -103,11 +110,91 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
   const getY = useCallback((stringIdx: number) => marginY + stringIdx * stringSpacing, [stringSpacing, marginY]);
 
   const scaleNotes = useMemo(() => getScaleNotes(root, scaleType), [root, scaleType]);
-  
-  const chordNotes = useMemo(() => {
-    if (harmonyMode === 'OFF') return [];
-    return getChordNotes(root, scaleType, chordDegree, harmonyMode === 'TETRADS', inversion, chordQuality, voicingMode);
-  }, [root, scaleType, harmonyMode, chordDegree, inversion, chordQuality, voicingMode]);
+
+const chordVoicing = useMemo<ChordVoicing>(() => {
+
+  if (harmonyMode === 'OFF') {
+    return {
+      notes: [],
+      intervals: [],
+      pitches: []
+    };
+  }
+
+  let safeInversion = inversion;
+
+if (harmonyMode === 'TRIADS' && inversion === 3) {
+  safeInversion = 0;
+}
+
+const notes = getChordNotes(
+    root,
+    scaleType,
+    chordDegree,
+    harmonyMode === 'TETRADS',
+    safeInversion,
+    chordQuality,
+    voicingMode
+  );
+
+  // Adapter 1.8 → 2.0
+  return {
+    notes,
+    intervals: notes.map(() => ''),
+    pitches: notes.map((_, i) => i * 4)
+  };
+
+}, [
+  root,
+  scaleType,
+  harmonyMode,
+  chordDegree,
+  inversion,
+  chordQuality,
+  voicingMode
+]);
+
+const expandOctaves = (
+  path: { string: number; fret: number }[]
+) => {
+
+  const expanded: { string: number; fret: number }[][] = [];
+
+  [-24, -12, 0, 12, 24].forEach(off => {
+
+    expanded.push(
+      path.map(p => ({
+        string: p.string,
+        fret: p.fret + off
+      }))
+    );
+
+  });
+
+  return expanded;
+};
+
+const chordNotes = useMemo(() => {
+
+  if (harmonyMode === 'OFF') return [];
+
+  return getChordNotes(
+  root,
+  scaleType,
+  chordDegree,
+  harmonyMode === 'TETRADS',
+  inversion,
+  chordQuality,
+  voicingMode
+);
+
+}, [
+  root,
+  scaleType,
+  harmonyMode,
+  chordDegree
+]);
+
 
   const cagedNotes = useMemo(() => {
     if (cagedShape === 'OFF') return [];
@@ -136,6 +223,70 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
     const shift = isLeftHanded ? fretWidth / 2 : -fretWidth / 2;
     return x + shift;
   }, [getX, fretWidth, isLeftHanded, startFret]);
+
+const renderBrushPaths = () => {
+
+  if (harmonyMode === 'OFF') return [];
+
+  const brushVoicings = getAllChordBrushVoicings(
+    chordVoicing,
+    currentTuning,
+    startFret,
+    endFret,
+    instrumentType,
+    voicingMode
+  );
+
+  return brushVoicings.flatMap((bv, idx) => {
+
+    const octavePaths = expandOctaves(bv.path).map(path =>
+  [...path].sort((a, b) => b.string - a.string)
+);
+
+    return octavePaths.map((path, subIdx) => {
+
+      const pts = path.filter(
+        p => p.fret >= startFret && p.fret <= endFret
+      );
+
+      if (pts.length < 2) return null;
+
+      let d = `M ${getNoteX(pts[0].fret)} ${getY(pts[0].string)}`;
+
+      for (let i = 1; i < pts.length; i++) {
+
+        const x = getNoteX(pts[i].fret);
+        const y = getY(pts[i].string);
+
+        const px = getNoteX(pts[i-1].fret);
+        const py = getY(pts[i-1].string);
+
+        const mx = (x + px) / 2;
+        const my = (y + py) / 2;
+
+        const off = isLeftHanded ? 20 : -20;
+
+        d += ` Q ${mx + off} ${my} ${x} ${y}`;
+      }
+
+      return (
+        <path
+          key={`brush-${idx}-${subIdx}`}
+          d={d}
+          fill="none"
+          stroke={colors.brush}
+          strokeWidth="16"
+          strokeLinecap="round"
+          strokeOpacity="0.25"
+          pointerEvents="none"
+        />
+      );
+
+    });
+
+  }).filter(Boolean);
+
+};
 
   return (
     <div className={`relative rounded-[40px] overflow-hidden border ${isLight ? 'border-zinc-200 shadow-xl' : 'border-zinc-800'}`}>
@@ -201,6 +352,8 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
           if (f % 12 === 0) return <g key={`inlay-${f}`}><circle cx={x} cy={height / 2 - stringSpacing} r="8" fill={colors.inlay} /><circle cx={x} cy={height / 2 + stringSpacing} r="8" fill={colors.inlay} /></g>;
           return <circle key={`inlay-${f}`} cx={x} cy={height / 2} r="8" fill={colors.inlay} />;
         })}
+
+        {renderBrushPaths()}
 
         {Array.from({ length: endFret + 1 }).map((_, f) => {
           if (f < startFret) return null;

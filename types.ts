@@ -85,4 +85,5 @@ export interface AppState {
   lang: 'pt' | 'en';
   currentUser: string;
   userLogo?: string;
+  defaultInstrument?: InstrumentType;
 }

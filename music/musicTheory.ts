@@ -67,7 +67,7 @@ export const getIntervalName = (root: string, note: string): string => {
   const rootIdx = CHROMATIC_SCALE.indexOf(normalizeNote(root));
   const noteIdx = CHROMATIC_SCALE.indexOf(normalizeNote(note));
   if (rootIdx === -1 || noteIdx === -1) return "1";
-  
+
   const diff = (noteIdx - rootIdx + 12) % 12;
   const names = ["1", "b2", "2", "b3", "3", "4", "b5", "5", "b6", "6", "b7", "7"];
   return names[diff];
@@ -81,16 +81,156 @@ export const getIntervalName = (root: string, note: string): string => {
 export const getFretForNote = (stringIndex: number, targetNote: string, tuning: string[], referenceFret: number = 0): number => {
   const openNote = tuning[stringIndex];
   if (!openNote) return 0;
-  
+
   const openIdx = CHROMATIC_SCALE.indexOf(normalizeNote(openNote));
   const targetIdx = CHROMATIC_SCALE.indexOf(normalizeNote(targetNote));
-  
+
   let baseFret = (targetIdx - openIdx + 12) % 12;
   const possibleFrets = [baseFret, baseFret + 12, baseFret + 24].filter(f => f >= 0 && f <= 24);
-  
+
   if (possibleFrets.length === 0) return baseFret % 25;
 
-  return possibleFrets.reduce((prev, curr) => 
+  return possibleFrets.reduce((prev, curr) =>
     Math.abs(curr - referenceFret) < Math.abs(prev - referenceFret) ? curr : prev
   );
+};
+
+// ==============================
+// TYPES — Brush Engine
+// ==============================
+
+export interface ChordVoicing {
+  notes: string[];
+  intervals: string[];
+  pitches: number[];
+}
+
+export interface BrushPath {
+  path: { string: number; fret: number }[];
+  playability: 'PLAYABLE' | 'THEORETICAL';
+}
+
+export const getAllChordBrushVoicings = (
+  chordVoicing: ChordVoicing,
+  tuning: string[],
+  startFret: number,
+  endFret: number,
+  instrumentType: InstrumentType,
+  voicingMode: 'CLOSE' | 'DROP2' | 'DROP3'
+): BrushPath[] => {
+
+  const { notes } = chordVoicing;
+  if (!notes || notes.length < 3) return [];
+
+  // ==============================
+  // APPLY INVERSION ORDER
+  // ==============================
+
+  let orderedNotes = [...notes];
+
+  const inversion = chordVoicing.pitches?.[0] / 4 || 0;
+
+  if (notes.length === 3) {
+
+    if (inversion === 1)
+      orderedNotes = [notes[1], notes[2], notes[0]];
+
+    if (inversion === 2)
+      orderedNotes = [notes[2], notes[0], notes[1]];
+
+  }
+
+  if (notes.length === 4) {
+
+    if (inversion === 1)
+      orderedNotes = [notes[1], notes[2], notes[3], notes[0]];
+
+    if (inversion === 2)
+      orderedNotes = [notes[2], notes[3], notes[0], notes[1]];
+
+    if (inversion === 3)
+      orderedNotes = [notes[3], notes[0], notes[1], notes[2]];
+
+  }
+
+  // ==============================
+  // BUILD NOTE LOCATIONS
+  // ==============================
+
+  const noteLocations: { string: number; fret: number }[][] = [];
+
+  orderedNotes.forEach(note => {
+
+    const locs: { string: number; fret: number }[] = [];
+
+    // grave → agudo
+    for (let s = tuning.length - 1; s >= 0; s--) {
+
+      // range expandido para cobrir 24ª
+      for (let f = startFret - 12; f <= endFret + 12; f++) {
+
+        if (f < 0 || f > 24) continue;
+
+        if (getNoteAt(s, f, tuning) === note) {
+          locs.push({ string: s, fret: f });
+        }
+
+      }
+    }
+
+    noteLocations.push(locs);
+
+  });
+
+  // ==============================
+  // SOLVER
+  // ==============================
+
+  const paths: BrushPath[] = [];
+
+  const buildPaths = (
+    idx: number,
+    current: { string: number; fret: number }[]
+  ) => {
+
+    if (idx === noteLocations.length) {
+
+      const frets = current.map(p => p.fret);
+      const span = Math.max(...frets) - Math.min(...frets);
+
+      const maxSpan = notes.length === 3 ? 5 : 7;
+      if (span > maxSpan) return;
+
+      paths.push({
+        path: [...current],
+        playability: 'PLAYABLE'
+      });
+
+      return;
+    }
+
+    noteLocations[idx].forEach(pos => {
+
+      if (current.length > 0) {
+
+        const last = current[current.length - 1];
+
+        // direção: grave → agudo
+        if (pos.string >= last.string) return;
+
+        // salto máximo: 1 corda
+        if (Math.abs(pos.string - last.string) > 1) return;
+
+      }
+
+      buildPaths(idx + 1, [...current, pos]);
+
+    });
+
+  };
+
+  buildPaths(0, []);
+
+  return paths;
+
 };
