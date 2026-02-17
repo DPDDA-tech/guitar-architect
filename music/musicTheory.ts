@@ -11,12 +11,31 @@ const NOTE_MAP: Record<string, string> = {
 
 export const normalizeNote = (note: string): string => NOTE_MAP[note] || note;
 
-export const INSTRUMENT_PRESETS: Record<InstrumentType, { strings: number, defaultTuning: string[] }> = {
-  'guitar-6': { strings: 6, defaultTuning: ["E", "B", "G", "D", "A", "E"] },
-  'guitar-7': { strings: 7, defaultTuning: ["E", "B", "G", "D", "A", "E", "B"] },
-  'guitar-8': { strings: 8, defaultTuning: ["E", "B", "G", "D", "A", "E", "B", "F#"] },
-  'bass-4': { strings: 4, defaultTuning: ["G", "D", "A", "E"] },
-  'bass-5': { strings: 5, defaultTuning: ["G", "D", "A", "E", "B"] },
+export const INSTRUMENT_PRESETS: Record<InstrumentType, { strings: number, defaultTuning: Note[] }> = {
+  'guitar-6': {
+    strings: 6,
+    defaultTuning: ['E', 'B', 'G', 'D', 'A', 'E']
+  },
+
+  'guitar-7': {
+    strings: 7,
+    defaultTuning: ['E', 'B', 'G', 'D', 'A', 'E', 'B']
+  },
+
+  'guitar-8': {
+    strings: 8,
+    defaultTuning: ['E', 'B', 'G', 'D', 'A', 'E', 'B', 'F#']
+  },
+
+  'bass-4': {
+    strings: 4,
+    defaultTuning: ['G', 'D', 'A', 'E']
+  },
+
+  'bass-5': {
+    strings: 5,
+    defaultTuning: ['G', 'D', 'A', 'E', 'B']
+  },
 };
 
 export const TUNINGS_PRESETS: Record<string, string[]> = {

@@ -37,10 +37,31 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
   const numStrings = instrument.strings;
 
   const currentTuning = useMemo(() => {
-    if (tuning === 'Custom' && customTuning) return customTuning;
-    if (TUNINGS_PRESETS[tuning]) return TUNINGS_PRESETS[tuning];
-    return instrument.defaultTuning;
-  }, [tuning, customTuning, instrument]);
+
+  // Custom respeita nº de cordas
+  if (tuning === 'Custom' && customTuning) {
+    return customTuning.slice(0, instrument.strings);
+  }
+
+  // Preset tuning — mescla com default
+  if (TUNINGS_PRESETS[tuning]) {
+
+    const preset = TUNINGS_PRESETS[tuning];
+    const base = [...instrument.defaultTuning];
+
+    for (let i = 0; i < Math.min(preset.length, base.length); i++) {
+      base[i] = preset[i];
+    }
+
+    return base.slice(0, instrument.strings);
+  }
+
+  // Standard
+  return instrument.defaultTuning.slice(0, instrument.strings);
+
+}, [tuning, customTuning, instrument]);
+
+
 
   const numFretsVisible = endFret - startFret + 1;
   const width = 1300; 
