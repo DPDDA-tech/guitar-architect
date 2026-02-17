@@ -92,7 +92,8 @@ const FretboardPanel: React.FC = () => {
   const [defaultInstrument, setDefaultInstrument] = useState<InstrumentType>('guitar-6');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  
+  const [showMobileHint, setShowMobileHint] = useState(true);
+
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -106,8 +107,23 @@ const FretboardPanel: React.FC = () => {
 
 const switchUserSession = (newUser: string) => {
 
-  // salva sessão atual
+  // ============================
+  // 1️⃣ SALVA SESSÃO ATUAL
+  // ============================
+
   if (user && initialized.current) {
+
+    const currentProject: Project = {
+      id: projectId,
+      name: projectName,
+      user,
+      lastUpdated: new Date().toISOString(),
+      instances,
+      globalTransposition: globalTranspose
+    };
+
+    saveProjectToLibrary(currentProject);
+
     saveConfig({
       version: "1.8.1",
       activeProjectId: projectId,
@@ -119,53 +135,66 @@ const switchUserSession = (newUser: string) => {
     });
   }
 
-  // aplica novo usuário
-  setUser(newUser);
+  // ============================
+  // 2️⃣ LIMPA WORKSPACE (CRÍTICO)
+  // ============================
 
-  const storedConfig = loadConfig();
-
-  if (storedConfig && storedConfig.currentUser === newUser) {
-
-    const library = getLibrary();
-
-    const project = library.find(
-      p =>
-        p.id === storedConfig.activeProjectId &&
-        p.user === newUser
-    );
-
-    if (project) {
-      setInstances(project.instances);
-      setProjectName(project.name);
-      setProjectId(project.id);
-      setGlobalTranspose(
-        project.globalTransposition || 0
-      );
-
-      if (project.instances.length > 0) {
-        setDefaultInstrument(
-          project.instances[0].instrumentType
-        );
-      }
-
-      return;
-    }
-  }
-
-  // usuário novo → workspace limpo
-  const bootInstrument: InstrumentType =
-    'guitar-6';
-
-  setInstances([
-    DEFAULT_FRETBOARD(lang, bootInstrument)
-  ]);
-
+  setInstances([]);
   setProjectName('Novo Projeto');
   setProjectId(crypto.randomUUID());
   setGlobalTranspose(0);
-  setDefaultInstrument(bootInstrument);
-};
 
+  // ⚠️ força novo ciclo de boot
+  initialized.current = false;
+
+  // ============================
+  // 3️⃣ DEFINE NOVO USUÁRIO
+  // ============================
+
+  setUser(newUser);
+
+  // ============================
+  // 4️⃣ BOOT NOVA SESSÃO
+  // ============================
+
+  const config = loadConfig();
+  const library = getLibrary(newUser);
+
+  const userProjects = library
+    .filter(p => p.user === newUser)
+    .sort(
+      (a, b) =>
+        new Date(b.lastUpdated).getTime() -
+        new Date(a.lastUpdated).getTime()
+    );
+
+  if (userProjects.length > 0) {
+
+    const recent = userProjects[0];
+
+    setInstances(recent.instances);
+    setProjectName(recent.name);
+    setProjectId(recent.id);
+    setGlobalTranspose(
+      recent.globalTransposition || 0
+    );
+
+    if (recent.instances.length > 0) {
+      setDefaultInstrument(
+        recent.instances[0].instrumentType
+      );
+    }
+
+  } else {
+
+    // usuário novo → workspace limpo
+    setInstances([
+      DEFAULT_FRETBOARD(lang, 'guitar-6')
+    ]);
+  }
+
+  initialized.current = true;
+};
 
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
@@ -185,24 +214,36 @@ const switchUserSession = (newUser: string) => {
   }, [lang]);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsSmallScreen(window.innerWidth < 1024);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    const handleFsChange = () => setIsFullScreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', handleFsChange);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      document.removeEventListener('fullscreenchange', handleFsChange);
-    };
-  }, []);
+  const handleResize = () => {
+    setIsSmallScreen(window.innerWidth < 1024);
+  };
+
+  handleResize(); // boot inicial
+
+  window.addEventListener('resize', handleResize);
+
+  return () => {
+    window.removeEventListener('resize', handleResize);
+  };
+}, []);
+
+useEffect(() => {
+  if (isSmallScreen) {
+    setShowMobileHint(true);
+
+    const timer = setTimeout(() => {
+      setShowMobileHint(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }
+}, [isSmallScreen]);
 
 useEffect(() => {
   if (!initialized.current) {
 
     const config = loadConfig();
-    const library = getLibrary();
+    const library = getLibrary(config?.currentUser || '');
 
     if (config) {
 
@@ -336,6 +377,47 @@ useEffect(() => {
   defaultInstrument
 ]);
 
+const handleLogout = () => {
+
+  // salva sessão atual antes de sair
+  if (user && initialized.current) {
+
+    const currentProject: Project = {
+      id: projectId,
+      name: projectName,
+      user,
+      lastUpdated: new Date().toISOString(),
+      instances,
+      globalTransposition: globalTranspose
+    };
+
+    saveProjectToLibrary(currentProject);
+
+    saveConfig({
+      version: "1.8.1",
+      activeProjectId: projectId,
+      theme,
+      lang,
+      currentUser: user,
+      userLogo,
+      defaultInstrument
+    });
+  }
+
+  // limpa sessão
+  setInstances([]);
+  setUser('');
+  setProjectName('Novo Projeto');
+  setProjectId(crypto.randomUUID());
+  setGlobalTranspose(0);
+  setUserLogo(undefined);
+
+  initialized.current = false;
+
+  // abre modal de login novamente
+  setShowLoginModal(true);
+};
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -453,31 +535,79 @@ useEffect(() => {
   };
 
   const isLight = theme === 'light';
+  const userLibrary = getLibrary(user);
 
   return (
     <div className={`min-h-screen transition-all ${isExporting ? 'is-exporting-mode' : (isLight ? 'blueprint-grid-light' : 'blueprint-grid-dark')}`}>
       
-      {isSmallScreen && !isExporting && (
-        <div className="fixed top-0 left-0 w-full z-[60] bg-blue-600 text-white py-1.5 px-4 text-center text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 shadow-lg">
-           <span>🎸 Otimizado para desktop. Para a melhor experiência, use uma tela maior ou o modo paisagem.</span>
-           <button onClick={() => setIsSmallScreen(false)} className="bg-white/20 hover:bg-white/40 px-2 py-0.5 rounded-md transition-colors">X</button>
-        </div>
-      )}
+      {isSmallScreen && showMobileHint && !isExporting && (
+  <div className="
+    fixed bottom-4 left-1/2 -translate-x-1/2
+    z-[120]
+    bg-black/80 text-white
+    px-4 py-2 rounded-xl
+    text-[11px] font-bold
+    flex items-center gap-3
+    backdrop-blur-md
+    shadow-lg
+  ">
+    <span>
+      🎸 Otimizado para desktop. Use paisagem para melhor experiência.
+    </span>
 
-      <div className={`fixed top-0 left-0 w-full z-50 border-b backdrop-blur-2xl py-3 md:py-4 px-4 md:px-10 transition-all ${isLight ? 'bg-white/90 border-zinc-200 shadow-sm' : 'bg-zinc-950/90 border-zinc-800'} ${isExporting ? 'hidden' : ''} ${isSmallScreen ? 'mt-[28px]' : ''}`}>
+    <button
+      onClick={() => setShowMobileHint(false)}
+      className="bg-white/20 hover:bg-white/40 px-2 py-0.5 rounded-md transition-colors"
+    >
+      ✕
+    </button>
+  </div>
+)}
+
+
+      <div className={`fixed top-0 left-0 w-full z-50 border-b backdrop-blur-2xl px-4 md:px-10 transition-all duration-500
+${isLight ? 'bg-white/90 border-zinc-200 shadow-sm' : 'bg-zinc-950/90 border-zinc-800'}
+${isExporting ? 'hidden' : ''}
+${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'}
+`}
+>
+
          <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
             <div className="flex items-center gap-3 md:gap-5 overflow-hidden">
                <LogoIcon />
                <div className="min-w-0">
                   <h1 className="text-[16px] md:text-2xl font-black italic text-blue-600 leading-none tracking-tighter uppercase truncate">GUITAR ARCHITECT</h1>
+                  <input
+  value={projectName}
+  onChange={e => setProjectName(e.target.value)}
+  className={`bg-transparent font-bold text-[10px] md:text-xs
+  focus:outline-none border-b border-transparent
+  focus:border-blue-500 truncate max-w-[140px]
+  ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}
+  placeholder={t.projectName}
+/>
+
                   <p className="text-[8px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-tight mt-1">{t.tagline}</p>
                   <div className="flex items-center gap-1.5 mt-2">
                      <span className={`text-[10px] md:text-[11px] font-black uppercase truncate max-w-[100px] md:max-w-none ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>
                         {user || (lang === 'pt' ? 'Visitante' : 'Guest')}
                      </span>
-                     <button onClick={() => setShowLoginModal(true)} className="text-[9px] md:text-[10px] text-blue-600 font-black hover:underline uppercase tracking-tight opacity-70 hover:opacity-100 transition-opacity">
-                        (MUDAR IDENTIDADE)
-                     </button>
+                     <div className="flex gap-2">
+  <button
+    onClick={() => setShowLoginModal(true)}
+    className="text-[9px] md:text-[10px] text-blue-600 font-black hover:underline uppercase tracking-tight opacity-70 hover:opacity-100 transition-opacity"
+  >
+    IDENTIDADE
+  </button>
+
+  <button
+    onClick={handleLogout}
+    className="text-[9px] md:text-[10px] bg-red-600 text-white font-black px-2.5 py-1 rounded-md uppercase tracking-tight hover:bg-red-700 active:scale-95 transition-all shadow-sm"
+  >
+    LOGOFF
+  </button>
+</div>
+
                   </div>
                </div>
             </div>
@@ -487,51 +617,221 @@ useEffect(() => {
                   <FullScreenIcon isFullScreen={isFullScreen} />
                </button>
 
-               <div className={`flex items-center rounded-xl p-0.5 md:p-1 border ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
-                  <button onClick={() => setShowLoadModal(true)} className={`px-2 md:px-4 py-1.5 md:py-2 text-[10px] md:text-[11px] font-black uppercase ${isLight ? 'text-zinc-900' : 'text-zinc-100'} hover:text-blue-600 transition-colors`}>{window.innerWidth < 768 ? 'LISTA' : t.loadProject}</button>
-                  <button onClick={() => setSaveStatus('saved')} className={`px-2 md:px-4 py-1.5 md:py-2 text-[10px] md:text-[11px] font-black uppercase ${isLight ? 'text-zinc-900' : 'text-zinc-100'} hover:text-blue-600 border-l border-zinc-300 transition-colors`}>{window.innerWidth < 768 ? 'SALVAR' : t.saveProject}</button>
-               </div>
-               
-               <div className="flex gap-1 md:gap-2">
-                  <button onClick={handleExportPNG} className="bg-emerald-600 px-3 md:px-6 py-2 md:py-3 rounded-xl font-black text-[10px] md:text-[11px] text-white shadow-md active:scale-90 transition-transform">PNG</button>
-                  <button onClick={handleExportPDF} className="bg-red-600 px-3 md:px-6 py-2 md:py-3 rounded-xl font-black text-[10px] md:text-[11px] text-white shadow-md active:scale-90 transition-transform">PDF</button>
-               </div>
-               
+               {/* LOAD / SAVE — SEPARADOS */}
+<div className="flex items-center gap-2 md:gap-3">
+
+  {/* LOAD */}
+  <button
+    onClick={() => setShowLoadModal(true)}
+    className={`
+      px-4 md:px-6 py-2 md:py-3
+      rounded-xl border font-black uppercase
+      text-[10px] md:text-[11px]
+      transition-all shadow-sm
+      ${isLight
+        ? 'bg-white border-zinc-300 text-zinc-800 hover:border-blue-500 hover:text-blue-600'
+        : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-blue-500 hover:text-blue-400'}
+    `}
+  >
+    {window.innerWidth < 768 ? 'LISTA' : t.loadProject}
+  </button>
+
+  {/* SAVE */}
+  <button
+    onClick={() => setSaveStatus('saved')}
+    className={`
+      px-4 md:px-6 py-2 md:py-3
+      rounded-xl border font-black uppercase
+      text-[10px] md:text-[11px]
+      transition-all shadow-sm
+      ${isLight
+        ? 'bg-white border-zinc-300 text-zinc-800 hover:border-emerald-500 hover:text-emerald-600'
+        : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-emerald-500 hover:text-emerald-400'}
+    `}
+  >
+    {window.innerWidth < 768 ? 'SALVAR' : t.saveProject}
+  </button>
+
+</div>
+
+
+               {/* EXPORTAÇÃO */}
+<div className="flex flex-col items-center md:items-start leading-none">
+
+  {/* TÍTULO */}
+  <span className={`
+    text-[8px] md:text-[8px]
+    font-black uppercase tracking-wider
+    mb-1
+    ${isLight ? 'text-zinc-500' : 'text-zinc-400'}
+  `}>
+    {lang === 'pt' ? 'Exportação' : 'Export'}
+  </span>
+
+  {/* BOTÕES */}
+  <div className="flex gap-1 md:gap-2">
+    <button
+      onClick={handleExportPNG}
+      className="
+        bg-emerald-600
+        px-3 md:px-6 py-2 md:py-3
+        rounded-xl
+        font-black
+        text-[10px] md:text-[11px]
+        text-white
+        shadow-md
+        active:scale-90
+        transition-transform
+      "
+    >
+      PNG
+    </button>
+
+    <button
+      onClick={handleExportPDF}
+      className="
+        bg-red-600
+        px-3 md:px-6 py-2 md:py-3
+        rounded-xl
+        font-black
+        text-[10px] md:text-[11px]
+        text-white
+        shadow-md
+        active:scale-90
+        transition-transform
+      "
+    >
+      PDF
+    </button>
+  </div>
+
+</div>
+
+
+{/* GLOBAL TRANSPOSE — HEADER */}
+<div className="flex flex-col items-center leading-none select-none">
+
+  {/* LABEL */}
+  <span className={`
+    text-[8px] font-black uppercase tracking-widest mb-1
+    ${isLight ? 'text-zinc-500' : 'text-zinc-400'}
+  `}>
+    {lang === 'pt'
+      ? 'Transposição Global'
+      : 'Global Transpose'}
+  </span>
+
+  {/* CONTROLS */}
+  <div className={`
+    flex items-center gap-1
+    rounded-xl border px-1.5 py-1
+    shadow-sm backdrop-blur
+    ${isLight
+      ? 'bg-white border-zinc-200'
+      : 'bg-zinc-800 border-zinc-700'}
+  `}>
+
+    <button
+      onClick={() => handleGlobalTranspose(1)}
+      className="w-7 h-7 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+    >
+      +
+    </button>
+
+    <div className="flex flex-col items-center justify-center px-1 min-w-[26px]">
+      <span className="font-black text-[10px] leading-none">
+        {globalTranspose === 0
+          ? '0'
+          : globalTranspose > 0
+            ? `+${globalTranspose}`
+            : globalTranspose}
+      </span>
+
+      <button
+        onClick={() => handleGlobalTranspose(0)}
+        className="text-[7px] font-black uppercase text-zinc-400 hover:text-red-500 leading-none"
+      >
+        reset
+      </button>
+    </div>
+
+    <button
+      onClick={() => handleGlobalTranspose(-1)}
+      className="w-7 h-7 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+    >
+      −
+    </button>
+
+  </div>
+</div>
+
+
                <button onClick={() => setTheme(isLight ? 'dark' : 'light')} className={`p-2.5 md:p-3 rounded-xl border text-sm md:text-base transition-colors ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>{isLight ? '☾' : '☼'}</button>
-               
-               <div className={`flex border rounded-lg p-0.5 ml-2 ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
-                 <button onClick={() => setLang('pt')} className={`px-2 py-1 text-[9px] font-black rounded ${lang === 'pt' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>PT</button>
-                 <button onClick={() => setLang('en')} className={`px-2 py-1 text-[9px] font-black rounded ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>EN</button>
+
+               <div className="flex items-center gap-3 ml-3">
+{/* LANG */}
+<div className={`
+  flex border rounded-lg p-0.5
+  ${isLight
+    ? 'bg-zinc-100 border-zinc-200'
+    : 'bg-zinc-800 border-zinc-700'}
+`}>
+  <button
+    onClick={() => setLang('pt')}
+    className={`px-2 py-1 text-[9px] font-black rounded ${
+      lang === 'pt'
+        ? 'bg-blue-600 text-white'
+        : 'text-zinc-500'
+    }`}
+  >
+    PT
+  </button>
+
+  <button
+    onClick={() => setLang('en')}
+    className={`px-2 py-1 text-[9px] font-black rounded ${
+      lang === 'en'
+        ? 'bg-blue-600 text-white'
+        : 'text-zinc-500'
+    }`}
+  >
+    EN
+  </button>
+</div>
+
+{/* CLEAR ALL */}
+<button
+  onClick={clearAll}
+  className="
+    ml-2 px-3 py-1.5
+    text-[10px] font-black
+    text-red-500/80
+    border border-red-300/40
+    rounded-lg
+    hover:bg-red-500
+    hover:text-white
+    transition-all
+    uppercase
+  "
+>
+  LIMPAR TUDO
+</button>
+
                </div>
             </div>
          </div>
       </div>
 
-      <div className={`fixed top-[75px] md:top-[115px] left-0 w-full z-40 border-b py-2 md:py-3 px-4 md:px-10 ${isLight ? 'bg-zinc-50 border-zinc-200 shadow-sm' : 'bg-zinc-900 border-zinc-800'} ${isExporting ? 'hidden' : ''} ${isSmallScreen ? 'mt-[28px]' : ''}`}>
-         <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 md:gap-6 min-w-0">
-               <input value={projectName} onChange={e => setProjectName(e.target.value)} className={`bg-transparent font-bold text-[10px] md:text-xs focus:outline-none border-b border-transparent focus:border-blue-500 truncate max-w-[120px] md:max-w-none ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`} placeholder={t.projectName} />
-               <button onClick={() => setShowImportModal(true)} className={`text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-colors ${isLight ? 'text-zinc-400 hover:text-blue-600' : 'text-zinc-500 hover:text-blue-400'}`}>
-                  {window.innerWidth < 768 ? 'IMP' : t.importJSON}
-               </button>
-            </div>
-            <div className="flex items-center gap-3 md:gap-6 shrink-0">
-               <div className={`flex rounded-lg border p-0.5 items-center ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
-                  <button onClick={() => handleGlobalTranspose(1)} className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors text-lg">+</button>
-                  <div className={`flex flex-col items-center justify-center px-2 md:px-4 border-x ${isLight ? 'border-zinc-100 bg-zinc-50/50' : 'border-zinc-700 bg-zinc-900/50'}`}>
-                     <span className={`font-black text-[11px] md:text-xs leading-none ${isLight ? 'text-blue-600' : 'text-blue-400'}`}>
-                        {globalTranspose === 0 ? '0' : (globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose)}
-                     </span>
-                     <button onClick={() => handleGlobalTranspose(0)} className="text-[7px] md:text-[8px] font-black uppercase text-zinc-400 hover:text-red-500 mt-0.5 tracking-tighter transition-colors">RESET</button>
-                  </div>
-                  <button onClick={() => handleGlobalTranspose(-1)} className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors text-lg">-</button>
-               </div>
-               <button onClick={clearAll} className="text-[10px] md:text-[11px] font-black text-red-500/60 hover:text-red-600 hover:underline uppercase transition-all">{t.clearAll}</button>
-            </div>
-         </div>
-      </div>
+          <div
+  className={`max-w-[1700px] mx-auto px-4 md:px-10 pb-20 space-y-8 md:space-y-12 ${
+    isExporting
+      ? 'pt-10'
+      : isSmallScreen
+        ? 'pt-24 md:pt-48'
+        : 'pt-24 md:pt-48'
+  }`}
+>
 
-      <div className={`max-w-[1700px] mx-auto px-4 md:px-10 pb-20 space-y-8 md:space-y-12 ${isExporting ? 'pt-10' : (isSmallScreen ? 'pt-40 md:pt-56' : 'pt-32 md:pt-48')}`}>
         {instances.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
              <div className="relative mb-8 md:mb-12 scale-90 md:scale-100">
@@ -603,6 +903,7 @@ useEffect(() => {
   }
 }}
 
+
                  className={`w-full p-4 rounded-2xl font-bold outline-none border transition-all text-center text-sm md:text-base placeholder:text-zinc-400 placeholder:font-normal placeholder:opacity-50 ${isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-900 focus:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:border-blue-500'}`} 
                />
                {!user && (
@@ -628,7 +929,6 @@ useEffect(() => {
 </div>
 </div>
 )}
-
       {showImportModal && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl">
            <div className={`w-full max-w-2xl rounded-[32px] p-6 md:p-8 border shadow-3xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
@@ -651,27 +951,62 @@ useEffect(() => {
         </div>
       )}
 
-      {showLoadModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className={`w-full max-w-xl rounded-[24px] p-6 md:p-10 border shadow-3xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-black italic text-blue-500 uppercase tracking-tighter">Projetos</h2>
-              <button onClick={() => setShowLoadModal(false)} className="text-zinc-500 font-black text-[11px] uppercase hover:text-blue-500 transition-colors">Fechar</button>
+     {showLoadModal && (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+    <div className={`w-full max-w-xl rounded-[24px] p-6 md:p-10 border shadow-3xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-black italic text-blue-500 uppercase tracking-tighter">
+          Projetos
+        </h2>
+        <button
+          onClick={() => setShowLoadModal(false)}
+          className="text-zinc-500 font-black text-[11px] uppercase hover:text-blue-500 transition-colors"
+        >
+          Fechar
+        </button>
+      </div>
+
+      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+
+        {userLibrary.map(p => (
+          <div
+            key={p.id}
+            onClick={() => {
+              setProjectId(p.id);
+              setProjectName(p.name);
+              setInstances(p.instances);
+              setGlobalTranspose(p.globalTransposition || 0);
+              setShowLoadModal(false);
+            }}
+            className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer group ${
+              isLight
+                ? 'bg-zinc-50 border-zinc-100 hover:border-blue-500 hover:bg-blue-50/20'
+                : 'bg-zinc-800 border-zinc-700 hover:border-blue-500 hover:bg-blue-900/10'
+            }`}
+          >
+            <div className="font-black text-zinc-800 group-hover:text-blue-500 uppercase text-xs truncate max-w-[200px]">
+              {p.name}
             </div>
-            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-              {getLibrary().filter(p => p.user === user || !p.user).map(p => (
-                <div key={p.id} onClick={() => { setProjectId(p.id); setProjectName(p.name); setInstances(p.instances); setGlobalTranspose(p.globalTransposition || 0); setShowLoadModal(false); }} className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer group ${isLight ? 'bg-zinc-50 border-zinc-100 hover:border-blue-500 hover:bg-blue-50/20' : 'bg-zinc-800 border-zinc-700 hover:border-blue-500 hover:bg-blue-900/10'}`}>
-                  <div className="font-black text-zinc-800 group-hover:text-blue-500 uppercase text-xs truncate max-w-[200px]">{p.name}</div>
-                  <div className="text-[9px] font-bold text-zinc-400 shrink-0">{new Date(p.lastUpdated).toLocaleDateString()}</div>
-                </div>
-              ))}
-              {getLibrary().length === 0 && <p className="text-center py-12 font-black text-zinc-400 uppercase text-[10px]">Vazio</p>}
+
+            <div className="text-[9px] font-bold text-zinc-400 shrink-0">
+              {new Date(p.lastUpdated).toLocaleDateString()}
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-};
+        ))}
 
+        {userLibrary.length === 0 && (
+          <p className="text-center py-12 font-black text-zinc-400 uppercase text-[10px]">
+            Vazio
+          </p>
+        )}
+
+      </div>
+    </div>
+  </div>
+)}
+
+</div>
+);
+};
 export default FretboardPanel;

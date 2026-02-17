@@ -480,11 +480,52 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       </div>
 
       <div className="relative group diagram-svg-wrapper">
-         {/* Undo/Redo Reposicionados baseados na orientação */}
-         <div className={`absolute top-6 ${state.isLeftHanded ? 'left-6' : 'right-6'} flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity`}>
-            <button onClick={undo} className="bg-white/90 backdrop-blur w-10 h-10 flex items-center justify-center rounded-xl border shadow-sm text-zinc-500 hover:text-blue-600 transition-colors">↺</button>
-            <button onClick={redo} className="bg-white/90 backdrop-blur w-10 h-10 flex items-center justify-center rounded-xl border shadow-sm text-zinc-500 hover:text-blue-600 transition-colors">↻</button>
-         </div>
+         {/* Undo / Redo Responsivo */}
+<div
+  className={`
+    flex gap-2 z-20 transition-all
+
+    /* Desktop — posição original */
+    md:absolute md:top-6
+    ${state.isLeftHanded ? 'md:left-6' : 'md:right-6'}
+
+    /* Mobile — fixa fora do fretboard */
+    max-md:fixed
+    max-md:bottom-4
+    max-md:${state.isLeftHanded ? 'left-4' : 'right-4'}
+
+    /* Visibilidade */
+    opacity-100 md:opacity-0
+    md:group-hover:opacity-100
+  `}
+>
+  <button
+    onClick={undo}
+    className="
+      bg-white/90 backdrop-blur
+      w-10 h-10 flex items-center justify-center
+      rounded-xl border shadow-sm
+      text-zinc-500 hover:text-blue-600
+      transition-colors
+    "
+  >
+    ↺
+  </button>
+
+  <button
+    onClick={redo}
+    className="
+      bg-white/90 backdrop-blur
+      w-10 h-10 flex items-center justify-center
+      rounded-xl border shadow-sm
+      text-zinc-500 hover:text-blue-600
+      transition-colors
+    "
+  >
+    ↻
+  </button>
+</div>
+
          <FretboardSVG state={state} onEvent={handleEvent} theme={theme} isActive={false} selectedColor={markerColor} selectedShape={markerShape} editorMode={editorMode} isExport={isExporting} />
          
          <div className={`mt-10 flex flex-col md:flex-row gap-8 ${isExporting ? 'hidden-operational-btns' : ''}`}>

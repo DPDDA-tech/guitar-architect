@@ -2,6 +2,10 @@
 import { AppState, Project } from '../types';
 import { InstrumentType } from '../types';
 
+// library agora é dinâmica por usuário
+const getProjectsKey = (user: string) =>
+  `ga_library_${user || 'guest'}`;
+
 const CONFIG_KEY = 'ga_config';
 const PROJECTS_KEY = 'ga_library';
 
@@ -20,8 +24,6 @@ export const saveConfig = (state: AppState) => {
     JSON.stringify(state)
   );
 };
-
-
 
 export const loadConfig = (): AppState | null => {
 
@@ -53,22 +55,16 @@ export const loadConfig = (): AppState | null => {
 };
 
 
-export const getLibrary = (): Project[] => {
-  const data = localStorage.getItem(PROJECTS_KEY);
-
-  if (!data) return [];
-
-  try {
-    return JSON.parse(data) as Project[];
-  } catch {
-    return [];
-  }
+export const getLibrary = (user: string): Project[] => {
+  const data = localStorage.getItem(
+    getProjectsKey(user)
+  );
+  return data ? JSON.parse(data) : [];
 };
-
 
 export const saveProjectToLibrary = (project: Project) => {
 
-  const library = getLibrary();
+  const library = getLibrary(project.user);
 
   // 🔒 procura projeto do mesmo usuário + mesmo id
   const index = library.findIndex(
@@ -99,11 +95,21 @@ export const saveProjectToLibrary = (project: Project) => {
   );
 };
 
+export const deleteProject = (
+  id: string,
+  user: string
+) => {
 
-export const deleteProject = (id: string) => {
-  const library = getLibrary().filter(p => p.id !== id);
-  localStorage.setItem(PROJECTS_KEY, JSON.stringify(library));
+  const library = getLibrary(user).filter(
+    p => p.id !== id
+  );
+
+  localStorage.setItem(
+    getProjectsKey(user),
+    JSON.stringify(library)
+  );
 };
+
 
 export const clearAllData = () => {
   localStorage.removeItem(CONFIG_KEY);
