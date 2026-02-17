@@ -3,7 +3,7 @@ import React, { useMemo, useCallback } from 'react';
 import { getNoteAt, getIntervalName, INSTRUMENT_PRESETS, CHROMATIC_SCALE, getFretForNote, TUNINGS_PRESETS } from '../music/musicTheory';
 import { getScaleNotes } from '../music/scales';
 import { getChordNotes, getCagedPositions } from '../music/harmony';
-import { FretboardState, EditorMode, ThemeMode, CagedShape } from '../types';
+import { FretboardState, EditorMode, ThemeMode, CagedShape, Note } from '../types';
 import { translations } from '../i18n';
 
 interface FretboardSVGProps {
@@ -50,7 +50,7 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
     const base = [...instrument.defaultTuning];
 
     for (let i = 0; i < Math.min(preset.length, base.length); i++) {
-      base[i] = preset[i];
+      base[i] = preset[i] as Note;
     }
 
     return base.slice(0, instrument.strings);

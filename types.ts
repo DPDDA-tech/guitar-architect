@@ -1,5 +1,12 @@
 import { ChordQuality } from './music/harmony';
 
+export type Note =
+  | 'C' | 'C#' | 'D' | 'D#'
+  | 'E' | 'F' | 'F#'
+  | 'G' | 'G#'
+  | 'A' | 'A#'
+  | 'B';
+
 export type MarkerShape = 'circle' | 'square' | 'triangle';
 export type LabelMode = 'note' | 'interval' | 'fingering' | 'none';
 export type EditorMode = 'marker' | 'line' | 'view';

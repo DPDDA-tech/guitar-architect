@@ -1,5 +1,5 @@
 
-import { TuningKey, InstrumentType } from '../types';
+import { TuningKey, InstrumentType, Note } from '../types';
 
 export const CHROMATIC_SCALE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
