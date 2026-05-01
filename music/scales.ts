@@ -1,5 +1,5 @@
 
-import { CHROMATIC_SCALE } from './musicTheory';
+import { CHROMATIC_SCALE, normalizeNote } from './musicTheory';
 
 export interface ScaleDef {
   name: string;
@@ -25,6 +25,7 @@ export const SCALES: ScaleDef[] = [
 export const getScaleNotes = (root: string, scaleName: string): string[] => {
   const scale = SCALES.find(s => s.name === scaleName);
   if (!scale) return [];
-  const rootIdx = CHROMATIC_SCALE.indexOf(root);
+  const rootIdx = CHROMATIC_SCALE.indexOf(normalizeNote(root));
+  if (rootIdx === -1) return [];
   return scale.intervals.map(interval => CHROMATIC_SCALE[(rootIdx + interval) % 12]);
 };

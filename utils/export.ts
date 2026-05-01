@@ -1,6 +1,5 @@
 
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
+import type { jsPDF } from 'jspdf';
 import { Lang, translations } from '../i18n';
 import { SCALES } from '../music/scales';
 
@@ -93,6 +92,7 @@ const drawPDFWatermark = (pdf: jsPDF) => {
 };
 
 export const exportToPNG = async (lang: Lang, user: string, userLogo?: string) => {
+  const { default: html2canvas } = await import('html2canvas');
   const containers = document.querySelectorAll('.diagram-container');
   if (containers.length === 0) return;
   const exportWrapper = createExportWrapper(lang);
@@ -143,6 +143,11 @@ export const exportToPNG = async (lang: Lang, user: string, userLogo?: string) =
 };
 
 export const exportToPDF = async (lang: Lang, user: string, userLogo?: string) => {
+  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+    import('html2canvas'),
+    import('jspdf')
+  ]);
+
   const containers = document.querySelectorAll('.diagram-container');
   if (containers.length === 0) return;
   

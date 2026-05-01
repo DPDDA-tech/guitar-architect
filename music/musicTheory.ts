@@ -9,7 +9,14 @@ const NOTE_MAP: Record<string, string> = {
   'E#': 'F', 'B#': 'C', 'Fb': 'E', 'Cb': 'B'
 };
 
-export const normalizeNote = (note: string): string => NOTE_MAP[note] || note;
+export const normalizeNote = (note: string): string => {
+  const value = note.trim();
+  const match = value.match(/^([a-gA-G])([#bB]?)$/);
+  if (!match) return value;
+
+  const canonical = `${match[1].toUpperCase()}${match[2] === 'B' ? 'b' : match[2]}`;
+  return NOTE_MAP[canonical] || canonical;
+};
 
 export const INSTRUMENT_PRESETS: Record<InstrumentType, { strings: number, defaultTuning: Note[] }> = {
   'guitar-6': {
@@ -38,12 +45,13 @@ export const INSTRUMENT_PRESETS: Record<InstrumentType, { strings: number, defau
   },
 };
 
-export const TUNINGS_PRESETS: Record<string, string[]> = {
+export const TUNINGS_PRESETS: Record<TuningKey, string[]> = {
   'Standard': ["E", "B", "G", "D", "A", "E"],
   'Drop D': ["E", "B", "G", "D", "A", "D"],
   'Drop C': ["D", "A", "F", "C", "G", "C"],
   'Open D': ["D", "A", "F#", "D", "A", "D"],
   'Open G': ["D", "B", "G", "D", "G", "D"],
+  'Custom': [],
   'DADGAD': ["D", "A", "G", "D", "A", "D"],
   'Half-Step Down': ["Eb", "Bb", "Gb", "Db", "Ab", "Eb"]
 };

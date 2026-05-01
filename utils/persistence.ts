@@ -59,7 +59,18 @@ export const getLibrary = (user: string): Project[] => {
   const data = localStorage.getItem(
     getProjectsKey(user)
   );
-  return data ? JSON.parse(data) : [];
+  if (data) return JSON.parse(data);
+
+  const legacyData = localStorage.getItem(PROJECTS_KEY);
+  if (!legacyData) return [];
+
+  try {
+    return JSON.parse(legacyData).filter(
+      (project: Project) => project.user === user
+    );
+  } catch {
+    return [];
+  }
 };
 
 export const saveProjectToLibrary = (project: Project) => {
@@ -90,7 +101,7 @@ export const saveProjectToLibrary = (project: Project) => {
   }
 
   localStorage.setItem(
-    PROJECTS_KEY,
+    getProjectsKey(project.user),
     JSON.stringify(library)
   );
 };

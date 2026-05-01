@@ -10,7 +10,6 @@ import {
   getLibrary, 
   saveProjectToLibrary 
 } from '../utils/persistence';
-import { exportToPNG, exportToPDF } from '../utils/export';
 
 const HERO_IMAGE = "/hero.png"; 
 const APP_LOGO_PATH = "/logo.png"; 
@@ -523,6 +522,7 @@ const handleLogout = () => {
   const handleExportPNG = async () => {
     setIsExporting(true);
     await new Promise(resolve => setTimeout(resolve, 50));
+    const { exportToPNG } = await import('../utils/export');
     await exportToPNG(lang, user, userLogo);
     setIsExporting(false);
   };
@@ -530,6 +530,7 @@ const handleLogout = () => {
   const handleExportPDF = async () => {
     setIsExporting(true);
     await new Promise(resolve => setTimeout(resolve, 50));
+    const { exportToPDF } = await import('../utils/export');
     await exportToPDF(lang, user, userLogo);
     setIsExporting(false);
   };
