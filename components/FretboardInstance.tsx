@@ -300,12 +300,18 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <select value={state.instrumentType} onChange={e => recordAction({...state, instrumentType: e.target.value as InstrumentType, tuning: 'Standard', stringStatuses: Array(INSTRUMENT_PRESETS[e.target.value as InstrumentType].strings).fill('normal')})} className={controlInputClass}>
-              <option value="guitar-6">{t.instr_guitar6}</option><option value="guitar-7">{t.instr_guitar7}</option><option value="guitar-8">{t.instr_guitar8}</option><option value="bass-4">{t.bass4}</option><option value="bass-5">{t.bass5}</option>
-            </select>
-            <select value={state.tuning} onChange={e => changeTuning(e.target.value as TuningKey)} className={controlInputClass}>
-              {Object.keys(TUNINGS_PRESETS).map(tk => <option key={tk} value={tk}>{tk}</option>)}
-            </select>
+            <div className="space-y-2">
+              <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.instrument}</span>
+              <select value={state.instrumentType} onChange={e => recordAction({...state, instrumentType: e.target.value as InstrumentType, tuning: 'Standard', stringStatuses: Array(INSTRUMENT_PRESETS[e.target.value as InstrumentType].strings).fill('normal')})} className={controlInputClass}>
+                <option value="guitar-6">{t.instr_guitar6}</option><option value="guitar-7">{t.instr_guitar7}</option><option value="guitar-8">{t.instr_guitar8}</option><option value="bass-4">{t.bass4}</option><option value="bass-5">{t.bass5}</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.tuning}</span>
+              <select value={state.tuning} onChange={e => changeTuning(e.target.value as TuningKey)} className={controlInputClass}>
+                {Object.keys(TUNINGS_PRESETS).map(tk => <option key={tk} value={tk}>{tk}</option>)}
+              </select>
+            </div>
           </div>
 
           <button onClick={() => recordAction({...state, isLeftHanded: !state.isLeftHanded})} className={`w-full px-4 py-3 rounded-xl border font-black text-[9px] uppercase transition-all ${state.isLeftHanded ? 'bg-zinc-800 text-white border-zinc-800' : inactiveButtonClass}`}>{t.leftHanded}</button>
@@ -330,18 +336,24 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     if (activeControlTab === 'visual') {
       return (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-2">
-            {['note', 'interval', 'fingering', 'none'].map(m => (
-              <button key={m} onClick={() => recordAction({...state, labelMode: m as any})} className={`${controlButtonBase} ${state.labelMode === m ? activeButtonClass : inactiveButtonClass}`}>
-                {m === 'fingering' ? t.labelFingering : m === 'note' ? t.labelNotes : m === 'interval' ? t.labelIntervals : t.labelNone}
-              </button>
-            ))}
+          <div className="space-y-2">
+            <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.labels}</span>
+            <div className="grid grid-cols-2 gap-2">
+              {['note', 'interval', 'fingering', 'none'].map(m => (
+                <button key={m} onClick={() => recordAction({...state, labelMode: m as any})} className={`${controlButtonBase} ${state.labelMode === m ? activeButtonClass : inactiveButtonClass}`}>
+                  {m === 'fingering' ? t.labelFingering : m === 'note' ? t.labelNotes : m === 'interval' ? t.labelIntervals : t.labelNone}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button onClick={() => recordAction({...state, layers: {...state.layers, showInlays: !state.layers.showInlays}})} className={`${controlButtonBase} ${state.layers.showInlays ? activeButtonClass : inactiveButtonClass}`}>{t.inlays}</button>
-            <button onClick={() => recordAction({...state, layers: {...state.layers, showAllNotes: !state.layers.showAllNotes}})} className={`${controlButtonBase} ${state.layers.showAllNotes ? activeButtonClass : inactiveButtonClass}`}>{t.allNotes}</button>
-            <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${controlButtonBase} ${state.layers.showScale ? activeButtonClass : inactiveButtonClass}`}>{t.scaleNotes}</button>
-            <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${controlButtonBase} ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>{t.tonicHighlight}</button>
+          <div className="space-y-2">
+            <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.layers}</span>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => recordAction({...state, layers: {...state.layers, showInlays: !state.layers.showInlays}})} className={`${controlButtonBase} ${state.layers.showInlays ? activeButtonClass : inactiveButtonClass}`}>{t.inlays}</button>
+              <button onClick={() => recordAction({...state, layers: {...state.layers, showAllNotes: !state.layers.showAllNotes}})} className={`${controlButtonBase} ${state.layers.showAllNotes ? activeButtonClass : inactiveButtonClass}`}>{t.allNotes}</button>
+              <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${controlButtonBase} ${state.layers.showScale ? activeButtonClass : inactiveButtonClass}`}>{t.scaleNotes}</button>
+              <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${controlButtonBase} ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>{t.tonicHighlight}</button>
+            </div>
           </div>
         </div>
       );
@@ -350,28 +362,43 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     if (activeControlTab === 'harmony') {
       return (
         <div className="space-y-4">
-          <select value={state.root} onChange={e => recordAction({...state, root: e.target.value})} className={controlInputClass}>
-            {CHROMATIC_SCALE.map(n => <option key={n} value={n}>{n}</option>)}
-          </select>
-          <select value={state.scaleType} onChange={e => recordAction({...state, scaleType: e.target.value})} className={controlInputClass}>
-            {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
-          </select>
+          <div className="space-y-2">
+            <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.tonic}</span>
+            <select value={state.root} onChange={e => recordAction({...state, root: e.target.value})} className={controlInputClass}>
+              {CHROMATIC_SCALE.map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.scaleNotes}</span>
+            <select value={state.scaleType} onChange={e => recordAction({...state, scaleType: e.target.value})} className={controlInputClass}>
+              {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
+            </select>
+          </div>
           <div className="grid grid-cols-3 gap-1">
             {['OFF', 'TRIADS', 'TETRADS'].map(m => (
               <button key={m} onClick={() => recordAction({...state, harmonyMode: m as any})} className={`${controlButtonBase} ${state.harmonyMode === m ? activeButtonClass : inactiveButtonClass}`}>{m}</button>
             ))}
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <select value={state.chordDegree} onChange={e => recordAction({...state, chordDegree: Number(e.target.value)})} className={controlInputClass}>
-              {DEGREE_NAMES.map((d, i) => <option key={d} value={i}>{d}</option>)}
-            </select>
-            <select value={state.inversion} onChange={e => recordAction({...state, inversion: Number(e.target.value)})} className={controlInputClass}>
-              <option value="0">Root</option><option value="1">1ª Inv</option><option value="2">2ª Inv</option><option value="3">3ª Inv</option>
+            <div className="space-y-2">
+              <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.degree}</span>
+              <select value={state.chordDegree} onChange={e => recordAction({...state, chordDegree: Number(e.target.value)})} className={controlInputClass}>
+                {DEGREE_NAMES.map((d, i) => <option key={d} value={i}>{d}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.inversion}</span>
+              <select value={state.inversion} onChange={e => recordAction({...state, inversion: Number(e.target.value)})} className={controlInputClass}>
+                <option value="0">Root</option><option value="1">1ª Inv</option><option value="2">2ª Inv</option><option value="3">3ª Inv</option>
+              </select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.quality}</span>
+            <select value={state.chordQuality} onChange={e => recordAction({...state, chordQuality: e.target.value as any})} className={controlInputClass}>
+              {CHORD_QUALITIES.map(q => <option key={q} value={q}>{q}</option>)}
             </select>
           </div>
-          <select value={state.chordQuality} onChange={e => recordAction({...state, chordQuality: e.target.value as any})} className={controlInputClass}>
-            {CHORD_QUALITIES.map(q => <option key={q} value={q}>{q}</option>)}
-          </select>
           <div className="grid grid-cols-3 gap-1">
             {['CLOSE', 'DROP2', 'DROP3'].map(v => (
               <button key={v} onClick={() => recordAction({...state, voicingMode: v as any})} title={t.tooltipVoicing} className={`${controlButtonBase} ${(state.voicingMode || 'CLOSE') === v ? 'bg-zinc-800 border-zinc-800 text-white' : inactiveButtonClass}`}>{v}</button>
