@@ -242,6 +242,172 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const isLight = isExporting ? true : (theme === 'light');
   const PRESET_COLORS = ['#ef4444', '#2563eb', '#22c55e', '#eab308', '#000000', '#6366f1', '#ec4899'];
   const OBS_LIMIT = 1500;
+  const [isControlPanelOpen, setIsControlPanelOpen] = useState(true);
+  const [activeControlTab, setActiveControlTab] = useState<'base' | 'visual' | 'harmony' | 'editor' | 'advanced'>('base');
+  const controlTabs = [
+    { id: 'base', label: 'Base' },
+    { id: 'visual', label: 'Visual' },
+    { id: 'harmony', label: lang === 'pt' ? 'Harmonia' : 'Harmony' },
+    { id: 'editor', label: lang === 'pt' ? 'Editor' : 'Editor' },
+    { id: 'advanced', label: lang === 'pt' ? 'Avancado' : 'Advanced' },
+  ] as const;
+
+  const panelShell = isLight
+    ? 'bg-zinc-50 border-zinc-200 text-zinc-900'
+    : 'bg-zinc-950 border-zinc-800 text-zinc-100';
+
+  const controlInputClass = 'w-full p-3 border rounded-xl text-sm font-black outline-none bg-white text-zinc-900 shadow-sm';
+  const controlButtonBase = 'py-2.5 rounded-lg text-[9px] font-black uppercase border transition-all';
+  const activeButtonClass = 'bg-blue-600 border-blue-600 text-white shadow-md';
+  const inactiveButtonClass = 'bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300';
+
+  const renderControls = () => {
+    if (activeControlTab === 'base') {
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <select value={state.instrumentType} onChange={e => recordAction({...state, instrumentType: e.target.value as InstrumentType, tuning: 'Standard', stringStatuses: Array(INSTRUMENT_PRESETS[e.target.value as InstrumentType].strings).fill('normal')})} className={controlInputClass}>
+              <option value="guitar-6">{t.instr_guitar6}</option><option value="guitar-7">{t.instr_guitar7}</option><option value="guitar-8">{t.instr_guitar8}</option><option value="bass-4">{t.bass4}</option><option value="bass-5">{t.bass5}</option>
+            </select>
+            <select value={state.tuning} onChange={e => changeTuning(e.target.value as TuningKey)} className={controlInputClass}>
+              {Object.keys(TUNINGS_PRESETS).map(tk => <option key={tk} value={tk}>{tk}</option>)}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-[1fr_auto] gap-3">
+            <select value={state.root} onChange={e => recordAction({...state, root: e.target.value})} className={controlInputClass}>
+              {CHROMATIC_SCALE.map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+            <button onClick={() => recordAction({...state, isLeftHanded: !state.isLeftHanded})} className={`px-4 rounded-xl border font-black text-[9px] uppercase transition-all ${state.isLeftHanded ? 'bg-zinc-800 text-white border-zinc-800' : inactiveButtonClass}`}>{t.leftHanded}</button>
+          </div>
+
+          <select value={state.scaleType} onChange={e => recordAction({...state, scaleType: e.target.value})} className={controlInputClass}>
+            {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
+          </select>
+
+          <div className="space-y-2">
+            <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">TRASTES / CASAS</span>
+            <div className="flex items-center gap-2">
+              <input type="number" min={0} max={state.endFret - 1} value={state.startFret} onChange={e => recordAction({...state, startFret: Math.max(0, Math.min(Number(e.target.value), state.endFret - 1))})} className="w-20 p-2 rounded-lg border text-[11px] font-black text-center bg-white text-zinc-900" />
+              <span className="text-[10px] font-black text-zinc-400">→</span>
+              <input type="number" min={state.startFret + 1} max={36} value={state.endFret} onChange={e => recordAction({...state, endFret: Math.min(36, Math.max(Number(e.target.value), state.startFret + 1))})} className="w-20 p-2 rounded-lg border text-[11px] font-black text-center bg-white text-zinc-900" />
+            </div>
+            <div className="grid grid-cols-5 gap-1">
+              {[12, 15, 17, 21, 24].map(f => (
+                <button key={f} onClick={() => recordAction({...state, startFret: 0, endFret: f})} className="py-1 rounded-md text-[8px] font-black bg-zinc-200 text-zinc-700 hover:bg-blue-600 hover:text-white transition-all">{f}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeControlTab === 'visual') {
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-2">
+            {['note', 'interval', 'fingering', 'none'].map(m => (
+              <button key={m} onClick={() => recordAction({...state, labelMode: m as any})} className={`${controlButtonBase} ${state.labelMode === m ? activeButtonClass : inactiveButtonClass}`}>
+                {m === 'fingering' ? t.labelFingering : m === 'note' ? t.labelNotes : m === 'interval' ? t.labelIntervals : t.labelNone}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={() => recordAction({...state, layers: {...state.layers, showInlays: !state.layers.showInlays}})} className={`${controlButtonBase} ${state.layers.showInlays ? activeButtonClass : inactiveButtonClass}`}>{t.inlays}</button>
+            <button onClick={() => recordAction({...state, layers: {...state.layers, showAllNotes: !state.layers.showAllNotes}})} className={`${controlButtonBase} ${state.layers.showAllNotes ? activeButtonClass : inactiveButtonClass}`}>{t.allNotes}</button>
+            <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${controlButtonBase} ${state.layers.showScale ? activeButtonClass : inactiveButtonClass}`}>{t.scaleNotes}</button>
+            <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${controlButtonBase} ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>{t.tonicHighlight}</button>
+          </div>
+          <div className="flex gap-2 p-1 bg-white border border-zinc-200 rounded-xl">
+            <button onClick={() => recordAction({...state, colorMode: 'SINGLE'})} className={`flex-1 py-2 rounded-lg text-[8px] font-black uppercase transition-all ${state.colorMode === 'SINGLE' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.colorSingle}</button>
+            <button onClick={() => recordAction({...state, colorMode: 'MULTI'})} className={`flex-1 py-2 rounded-lg text-[8px] font-black uppercase transition-all ${state.colorMode === 'MULTI' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.colorMulti}</button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {PRESET_COLORS.map(c => <button key={c} onClick={() => setMarkerColor(c)} className={`w-8 h-8 rounded-full border-2 transition-transform ${markerColor === c ? 'scale-110 border-blue-500 shadow-md' : 'border-transparent'}`} style={{background: c}} />)}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeControlTab === 'harmony') {
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-1">
+            {['OFF', 'TRIADS', 'TETRADS'].map(m => (
+              <button key={m} onClick={() => recordAction({...state, harmonyMode: m as any})} className={`${controlButtonBase} ${state.harmonyMode === m ? activeButtonClass : inactiveButtonClass}`}>{m}</button>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <select value={state.chordDegree} onChange={e => recordAction({...state, chordDegree: Number(e.target.value)})} className={controlInputClass}>
+              {DEGREE_NAMES.map((d, i) => <option key={d} value={i}>{d}</option>)}
+            </select>
+            <select value={state.inversion} onChange={e => recordAction({...state, inversion: Number(e.target.value)})} className={controlInputClass}>
+              <option value="0">Root</option><option value="1">1ª Inv</option><option value="2">2ª Inv</option><option value="3">3ª Inv</option>
+            </select>
+          </div>
+          <select value={state.chordQuality} onChange={e => recordAction({...state, chordQuality: e.target.value as any})} className={controlInputClass}>
+            {CHORD_QUALITIES.map(q => <option key={q} value={q}>{q}</option>)}
+          </select>
+          <div className="grid grid-cols-3 gap-1">
+            {['CLOSE', 'DROP2', 'DROP3'].map(v => (
+              <button key={v} onClick={() => recordAction({...state, voicingMode: v as any})} className={`${controlButtonBase} ${(state.voicingMode || 'CLOSE') === v ? 'bg-zinc-800 border-zinc-800 text-white' : inactiveButtonClass}`}>{v}</button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeControlTab === 'editor') {
+      return (
+        <div className="space-y-4">
+          <div className="flex gap-2 p-1.5 bg-white border border-zinc-200 rounded-xl">
+            <button onClick={() => setEditorMode('marker')} className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase transition-all ${editorMode === 'marker' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.marker}</button>
+            <button onClick={() => setEditorMode('line')} className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase transition-all ${editorMode === 'line' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.line}</button>
+          </div>
+          <div className="flex justify-center gap-2">
+            {['circle', 'square', 'triangle'].map(s => (
+              <button key={s} onClick={() => setMarkerShape(s as MarkerShape)} className={`w-10 h-10 flex items-center justify-center rounded-xl border transition-all ${markerShape === s ? 'bg-zinc-900 border-zinc-900 text-white shadow-lg' : 'bg-white border-zinc-200 text-zinc-400 hover:border-zinc-300'}`}>
+                {s === 'circle' && <span className="text-xl">●</span>}
+                {s === 'square' && <span className="text-xl">■</span>}
+                {s === 'triangle' && <span className="text-xl">▲</span>}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1">
+            {[2, 4, 7].map(w => (
+              <button key={w} onClick={() => setLineThickness(w as LineThickness)} className={`${controlButtonBase} flex-1 ${lineThickness === w ? 'bg-zinc-800 border-zinc-800 text-white' : inactiveButtonClass}`}>
+                {w === 2 ? t.thin : w === 4 ? t.medium : t.thick}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={undo} className={`${controlButtonBase} ${inactiveButtonClass}`}>UNDO</button>
+            <button onClick={redo} className={`${controlButtonBase} ${inactiveButtonClass}`}>REDO</button>
+            <button onClick={clearContent} className="py-2.5 rounded-lg text-[9px] font-black uppercase border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-all">{t.clearDiagram}</button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div>
+          <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">{t.geometry}</span>
+          <div className="grid grid-cols-6 gap-1 mt-2">
+            {['OFF', 'C', 'A', 'G', 'E', 'D'].map(s => (
+              <button key={s} onClick={() => recordAction({...state, cagedShape: s as CagedShape})} className={`${controlButtonBase} ${state.cagedShape === s ? activeButtonClass : inactiveButtonClass}`}>{s}</button>
+            ))}
+          </div>
+        </div>
+        <button onClick={exportDataJSON} className={`w-full px-4 py-3 rounded-xl font-black text-[10px] uppercase border transition-all active:scale-95 ${copyFeedback ? 'bg-emerald-600 text-white border-emerald-600' : inactiveButtonClass}`}>
+          {copyFeedback ? 'OK' : 'JSON'}
+        </button>
+        <p className="text-[10px] font-bold leading-relaxed text-zinc-400 uppercase">
+          {lang === 'pt' ? 'Importacao permanece no menu global do projeto.' : 'Import remains in the global project menu.'}
+        </p>
+      </div>
+    );
+  };
 
   return (
     <div className={`diagram-container p-5 md:p-10 rounded-[32px] md:rounded-[48px] border shadow-2xl transition-all ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
@@ -253,8 +419,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <input value={state.subtitle} onChange={e => recordAction({...state, subtitle: e.target.value})} className="bg-transparent text-[11px] md:text-lg font-bold text-zinc-400 focus:outline-none w-full uppercase tracking-wide mt-1" placeholder={t.subtitle} />
         </div>
         <div className="flex flex-wrap gap-2 shrink-0 operational-btns">
-           <button onClick={exportDataJSON} className={`px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl font-black text-[10px] md:text-[11px] uppercase border transition-all active:scale-90 ${copyFeedback ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
-              {copyFeedback ? 'OK' : 'JSON'}
+           <button onClick={() => setIsControlPanelOpen(prev => !prev)} className={`px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl font-black text-[10px] md:text-[11px] uppercase border transition-all active:scale-90 ${isControlPanelOpen ? 'bg-blue-600 text-white border-blue-600' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
+              {lang === 'pt' ? 'CONTROLES' : 'TOOLS'}
            </button>
            <button onClick={() => onAdd()} className="bg-blue-600 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">NOVO</button>
            <button onClick={() => onAdd(state)} className="bg-zinc-800 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95">{t.cloneCurrent}</button>
@@ -267,7 +433,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       </div>
 
       {/* CONTROLES TÉCNICOS */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 p-6 md:p-10 rounded-[32px] md:rounded-[40px] border ${isLight ? 'bg-zinc-50 border-zinc-100 shadow-inner' : 'bg-zinc-800/50 border-zinc-700'} ${isExporting ? 'hidden' : ''}`}>
+      <div className={`hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 p-6 md:p-10 rounded-[32px] md:rounded-[40px] border ${isLight ? 'bg-zinc-50 border-zinc-100 shadow-inner' : 'bg-zinc-800/50 border-zinc-700'} ${isExporting ? 'hidden' : ''}`}>
         <div className="space-y-4">
           <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] flex items-center gap-2">
              <span className="w-2 h-2 bg-blue-500 rounded-full"></span> {t.layers}
@@ -479,10 +645,48 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         </div>
       </div>
 
-      <div className="relative group diagram-svg-wrapper">
+      <div className={`operational-btns ${isExporting ? 'hidden' : ''}`}>
+        <div className={`fixed inset-x-0 bottom-0 z-[80] max-h-[78vh] overflow-y-auto border-t p-4 shadow-2xl transition-transform md:fixed md:inset-x-auto md:right-6 md:top-28 md:bottom-6 md:w-[390px] md:max-h-none md:rounded-2xl md:border ${panelShell} ${isControlPanelOpen ? 'translate-y-0 md:translate-y-0' : 'translate-y-[calc(100%-52px)] md:translate-y-0 md:translate-x-[calc(100%+32px)]'}`}>
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">
+                {lang === 'pt' ? 'Painel' : 'Panel'}
+              </p>
+              <h3 className="text-sm font-black uppercase tracking-tight">
+                {lang === 'pt' ? 'Controles do Diagrama' : 'Diagram Controls'}
+              </h3>
+            </div>
+            <button onClick={() => setIsControlPanelOpen(prev => !prev)} className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase border ${isLight ? 'bg-white border-zinc-200 text-zinc-600' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`}>
+              {isControlPanelOpen ? (lang === 'pt' ? 'Fechar' : 'Close') : (lang === 'pt' ? 'Abrir' : 'Open')}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-5 gap-1 mb-4">
+            {controlTabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveControlTab(tab.id);
+                  setIsControlPanelOpen(true);
+                }}
+                className={`py-2 rounded-lg text-[8px] font-black uppercase transition-all ${activeControlTab === tab.id ? 'bg-blue-600 text-white shadow-sm' : isLight ? 'bg-white text-zinc-500 hover:text-blue-600' : 'bg-zinc-900 text-zinc-400 hover:text-blue-400'}`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="pb-16 md:pb-0">
+            {isControlPanelOpen && renderControls()}
+          </div>
+        </div>
+      </div>
+
+      <div className="relative group diagram-svg-wrapper md:pr-[420px]">
          {/* Undo / Redo Responsivo */}
 <div
   className={`
+    hidden
     flex gap-2 z-20 transition-all
 
     /* Desktop — posição original */

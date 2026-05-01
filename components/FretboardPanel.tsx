@@ -92,6 +92,7 @@ const FretboardPanel: React.FC = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
+  const [showProjectMenu, setShowProjectMenu] = useState(false);
 
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -708,9 +709,62 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
 
 </div>
 
+<div className="relative">
+  <button
+    onClick={() => setShowProjectMenu(prev => !prev)}
+    className={`px-4 md:px-5 py-2 md:py-3 rounded-xl border font-black uppercase text-[10px] md:text-[11px] transition-all ${isLight ? 'bg-white border-zinc-300 text-zinc-800 hover:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-blue-500'}`}
+  >
+    MENU
+  </button>
+
+  {showProjectMenu && (
+    <div className={`absolute right-0 top-full mt-3 w-[290px] rounded-2xl border p-4 shadow-2xl z-[80] ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <span className={`text-[8px] font-black uppercase tracking-widest ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+            {lang === 'pt' ? 'Transposicao' : 'Transpose'}
+          </span>
+          <div className={`flex items-center gap-1 rounded-xl border px-1.5 py-1 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
+            <button onClick={() => handleGlobalTranspose(1)} className="w-7 h-7 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors">+</button>
+            <div className="flex flex-col items-center justify-center px-1 min-w-[26px]">
+              <span className="font-black text-[10px] leading-none">
+                {globalTranspose === 0 ? '0' : globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}
+              </span>
+              <button onClick={() => handleGlobalTranspose(0)} className="text-[7px] font-black uppercase text-zinc-400 hover:text-red-500 leading-none">reset</button>
+            </div>
+            <button onClick={() => handleGlobalTranspose(-1)} className="w-7 h-7 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors">-</button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={() => setTheme(isLight ? 'dark' : 'light')} className={`py-2.5 rounded-xl border text-[10px] font-black uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+            {isLight ? 'Dark' : 'Light'}
+          </button>
+          <button onClick={toggleFullScreen} className={`py-2.5 rounded-xl border text-[10px] font-black uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+            Fullscreen
+          </button>
+        </div>
+
+        <div className={`flex border rounded-lg p-0.5 ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
+          <button onClick={() => setLang('pt')} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'pt' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>PT</button>
+          <button onClick={() => setLang('en')} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>EN</button>
+        </div>
+
+        <button onClick={() => setShowImportModal(true)} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+          IMPORTAR JSON
+        </button>
+
+        <button onClick={clearAll} className="w-full px-3 py-2.5 text-[10px] font-black text-red-500/80 border border-red-300/40 rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase">
+          LIMPAR TUDO
+        </button>
+      </div>
+    </div>
+  )}
+</div>
+
 
 {/* GLOBAL TRANSPOSE — HEADER */}
-<div className="flex flex-col items-center leading-none select-none">
+<div className="hidden flex-col items-center leading-none select-none">
 
   {/* LABEL */}
   <span className={`
@@ -767,9 +821,9 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
 </div>
 
 
-               <button onClick={() => setTheme(isLight ? 'dark' : 'light')} className={`p-2.5 md:p-3 rounded-xl border text-sm md:text-base transition-colors ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>{isLight ? '☾' : '☼'}</button>
+               <button onClick={() => setTheme(isLight ? 'dark' : 'light')} className={`hidden p-2.5 md:p-3 rounded-xl border text-sm md:text-base transition-colors ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>{isLight ? '☾' : '☼'}</button>
 
-               <div className="flex items-center gap-3 ml-3">
+               <div className="hidden items-center gap-3 ml-3">
 {/* LANG */}
 <div className={`
   flex border rounded-lg p-0.5
