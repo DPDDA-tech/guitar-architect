@@ -17,13 +17,15 @@ interface FretboardSVGProps {
   theme: ThemeMode;
   isActive: boolean;
   isExport?: boolean;
+  feedbackNote?: { string: number; fret: number } | null;
 }
 
 const FretboardSVG: React.FC<FretboardSVGProps> = ({ 
   state, 
   theme, 
   onEvent,
-  isExport = false 
+  isExport = false,
+  feedbackNote = null
 }) => {
   const { 
     startFret, endFret, isLeftHanded, layers, root, scaleType, tuning, 
@@ -387,6 +389,13 @@ const renderBrushPaths = () => {
           if (line.start.string >= numStrings || line.end.string >= numStrings) return null;
           return <line key={line.id} x1={getNoteX(line.start.fret)} y1={getY(line.start.string)} x2={getNoteX(line.end.fret)} y2={getY(line.end.string)} stroke={line.color} strokeWidth={line.width} strokeLinecap="round" opacity="0.8" />;
         })}
+
+        {feedbackNote && feedbackNote.string < numStrings && feedbackNote.fret >= startFret && feedbackNote.fret <= endFret && (
+          <g pointerEvents="none">
+            <circle cx={getNoteX(feedbackNote.fret)} cy={getY(feedbackNote.string)} r={markerRadius + 10} fill="none" stroke={isLight ? '#38bdf8' : '#60a5fa'} strokeWidth="4" opacity="0.75" />
+            <circle cx={getNoteX(feedbackNote.fret)} cy={getY(feedbackNote.string)} r={markerRadius + 4} fill="none" stroke={isLight ? '#bfdbfe' : '#93c5fd'} strokeWidth="2" opacity="0.85" />
+          </g>
+        )}
 
         {Array.from({ length: numStrings }).map((_, s) => Array.from({ length: numFretsVisible }).map((_, fIdx) => {
           const f = fIdx + startFret;

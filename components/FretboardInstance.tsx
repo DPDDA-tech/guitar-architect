@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import FretboardSVG from './FretboardSVG';
 import { CHROMATIC_SCALE, INSTRUMENT_PRESETS, getNoteAt, getIntervalName, TUNINGS_PRESETS, getFretForNote } from '../music/musicTheory';
 import { SCALES } from '../music/scales';
@@ -55,6 +55,10 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const [lineThickness, setLineThickness] = useState<LineThickness>(4);
   const [lineStart, setLineStart] = useState<{string: number, fret: number} | null>(null);
   const [copyFeedback, setCopyFeedback] = useState(false);
+  const [noteClickFeedback, setNoteClickFeedback] = useState<{ string: number; fret: number } | null>(null);
+  const [creationHint, setCreationHint] = useState<string | null>(null);
+  const noteClickTimeoutRef = useRef<number | null>(null);
+  const creationHintTimeoutRef = useRef<number | null>(null);
   
   const historyRef = useRef<FretboardState[]>([]);
   const futureRef = useRef<FretboardState[]>([]);
@@ -111,6 +115,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     });
     recordAction({ ...state, tuning: newTuningKey, markers: updatedMarkers });
   };
+
+  const handleNewDiagramCreate = useCallback((newState: FretboardState) => {
+    onAdd(newState);
+    setCreationHint(t.newDiagramCreated);
+    if (creationHintTimeoutRef.current) {
+      window.clearTimeout(creationHintTimeoutRef.current);
+    }
+    creationHintTimeoutRef.current = window.setTimeout(() => setCreationHint(null), 4000);
+  }, [onAdd, t]);
 
   const exportDataJSON = () => {
     const instrument = INSTRUMENT_PRESETS[state.instrumentType];
@@ -206,6 +219,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
   const handleEvent = useCallback((event: any) => {
     if (event.type === 'note') {
+      setNoteClickFeedback({ string: event.string, fret: event.fret });
+      if (noteClickTimeoutRef.current) {
+        window.clearTimeout(noteClickTimeoutRef.current);
+      }
+      noteClickTimeoutRef.current = window.setTimeout(() => setNoteClickFeedback(null), 280);
+
       if (editorMode === 'marker') {
         const existingIdx = state.markers.findIndex(m => m.string === event.string && m.fret === event.fret);
         let newMarkers = [...state.markers];
@@ -240,7 +259,19 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     }
   }, [markerShape, markerColor, editorMode, lineStart, lineThickness, state, recordAction]);
 
+  useEffect(() => {
+    return () => {
+      if (noteClickTimeoutRef.current) {
+        window.clearTimeout(noteClickTimeoutRef.current);
+      }
+      if (creationHintTimeoutRef.current) {
+        window.clearTimeout(creationHintTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const isLight = isExporting ? true : (theme === 'light');
+  const isFretboardEmpty = state.markers.length === 0 && state.lines.length === 0;
   const PRESET_COLORS = ['#ef4444', '#2563eb', '#22c55e', '#eab308', '#000000', '#6366f1', '#ec4899'];
   const OBS_LIMIT = 1500;
   const [isControlPanelOpen, setIsControlPanelOpen] = useState(true);
@@ -343,14 +374,20 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           </select>
           <div className="grid grid-cols-3 gap-1">
             {['CLOSE', 'DROP2', 'DROP3'].map(v => (
-              <button key={v} onClick={() => recordAction({...state, voicingMode: v as any})} className={`${controlButtonBase} ${(state.voicingMode || 'CLOSE') === v ? 'bg-zinc-800 border-zinc-800 text-white' : inactiveButtonClass}`}>{v}</button>
+              <button key={v} onClick={() => recordAction({...state, voicingMode: v as any})} title={t.tooltipVoicing} className={`${controlButtonBase} ${(state.voicingMode || 'CLOSE') === v ? 'bg-zinc-800 border-zinc-800 text-white' : inactiveButtonClass}`}>{v}</button>
             ))}
+          </div>
+          <div className="flex flex-col gap-2">
+            <select value={state.inversion} onChange={e => recordAction({...state, inversion: Number(e.target.value)})} title={t.tooltipInversion} className={controlInputClass}>
+              <option value="0">Root</option><option value="1">1ª Inv</option><option value="2">2ª Inv</option><option value="3">3ª Inv</option>
+            </select>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">{lang === 'pt' ? 'Vozes' : 'Voicings'}</span>
           </div>
           <div>
             <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">{t.geometry}</span>
             <div className="grid grid-cols-6 gap-1 mt-2">
               {['OFF', 'C', 'A', 'G', 'E', 'D'].map(s => (
-                <button key={s} onClick={() => recordAction({...state, cagedShape: s as CagedShape})} className={`${controlButtonBase} ${state.cagedShape === s ? activeButtonClass : inactiveButtonClass}`}>{s}</button>
+                <button key={s} onClick={() => recordAction({...state, cagedShape: s as CagedShape})} title={t.tooltipCaged} className={`${controlButtonBase} ${state.cagedShape === s ? activeButtonClass : inactiveButtonClass}`}>{s}</button>
               ))}
             </div>
           </div>
@@ -361,9 +398,14 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     if (activeControlTab === 'editor') {
       return (
         <div className="space-y-4">
-          <div className="flex gap-2 p-1.5 bg-white border border-zinc-200 rounded-xl">
-            <button onClick={() => setEditorMode('marker')} className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase transition-all ${editorMode === 'marker' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.marker}</button>
-            <button onClick={() => setEditorMode('line')} className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase transition-all ${editorMode === 'line' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.line}</button>
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-2 p-1.5 bg-white border border-zinc-200 rounded-xl">
+              <button onClick={() => setEditorMode('marker')} className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase transition-all ${editorMode === 'marker' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.marker}</button>
+              <button onClick={() => setEditorMode('line')} className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase transition-all ${editorMode === 'line' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.line}</button>
+            </div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-500">
+              {lang === 'pt' ? 'Modo ativo:' : 'Active mode:'} <span className="text-zinc-900 font-black">{editorMode === 'marker' ? t.marker : t.line}</span>
+            </div>
           </div>
           <div className="flex justify-center gap-2">
             {['circle', 'square', 'triangle'].map(s => (
@@ -733,7 +775,24 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   </button>
 </div>
 
-         <FretboardSVG state={state} onEvent={handleEvent} theme={theme} isActive={false} selectedColor={markerColor} selectedShape={markerShape} editorMode={editorMode} isExport={isExporting} />
+         <div className="relative">
+            {creationHint && (
+              <div className="mb-4 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 shadow-sm">
+                {creationHint}
+              </div>
+            )}
+            {isFretboardEmpty && (
+              <div className="pointer-events-none absolute inset-x-0 top-[12%] mx-auto w-full text-center">
+                <div className="inline-flex max-w-md flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-500/40 bg-zinc-950/80 px-5 py-4 text-sm font-black uppercase tracking-[0.3em] text-zinc-300 backdrop-blur-lg">
+                  {t.emptyFretboard}
+                  <span className="mt-2 text-[11px] font-semibold text-zinc-400">
+                    {t.emptyFretboardHint}
+                  </span>
+                </div>
+              </div>
+            )}
+            <FretboardSVG state={state} onEvent={handleEvent} theme={theme} isActive={false} selectedColor={markerColor} selectedShape={markerShape} editorMode={editorMode} isExport={isExporting} feedbackNote={noteClickFeedback} />
+         </div>
          
          <div className={`mt-10 flex flex-col md:flex-row gap-8 ${isExporting ? 'hidden-operational-btns' : ''}`}>
             <div className="md:w-[70%] flex flex-col gap-4">
@@ -771,7 +830,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             </div>
          </div>
       </div>
-      {showWizard && <NewDiagramWizard onCreate={onAdd} onClose={() => setShowWizard(false)} lang={lang} />}
+      {showWizard && <NewDiagramWizard onCreate={handleNewDiagramCreate} onClose={() => setShowWizard(false)} lang={lang} />}
     </div>
   );
 };

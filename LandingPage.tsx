@@ -233,6 +233,14 @@ export default function LandingPage() {
                 lang === 'pt'
                   ? 'Visualize modos e padrões de escala no braço.'
                   : 'Visualize modes and scale patterns across the neck.',
+              micro: lang === 'pt' ? 'Padrões melódicos em um clique.' : 'Melodic patterns in one click.',
+              icon: (
+                <svg viewBox="0 0 24 24" className="h-8 w-8 text-blue-300" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 19V5h16v14H4Z" />
+                  <path d="M8 7h8M8 12h8M8 17h5" />
+                </svg>
+              ),
+              gradient: 'from-slate-950 via-zinc-900 to-blue-950',
             },
             {
               type: 'chord',
@@ -241,6 +249,13 @@ export default function LandingPage() {
                 lang === 'pt'
                   ? 'Construa acordes com inversões, voicings e CAGED.'
                   : 'Build chords with inversions, voicings, and CAGED.',
+              micro: lang === 'pt' ? 'Harmonia com precisão e controle.' : 'Harmony with precision and control.',
+              icon: (
+                <svg viewBox="0 0 24 24" className="h-8 w-8 text-emerald-300" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 19h14M12 5v14M5 12h14" />
+                </svg>
+              ),
+              gradient: 'from-slate-950 via-zinc-900 to-emerald-950',
             },
             {
               type: 'harmonic-field',
@@ -249,6 +264,14 @@ export default function LandingPage() {
                 lang === 'pt'
                   ? 'Explore graus e progressões dentro de uma tonalidade.'
                   : 'Explore degrees and progressions inside a key.',
+              micro: lang === 'pt' ? 'Mapeie a tonalidade com clareza.' : 'Map the key with clarity.',
+              icon: (
+                <svg viewBox="0 0 24 24" className="h-8 w-8 text-fuchsia-300" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 7h16M4 12h16M4 17h16" />
+                  <path d="M4 7l8 10 8-10" />
+                </svg>
+              ),
+              gradient: 'from-slate-950 via-zinc-900 to-fuchsia-950',
             },
             {
               type: 'free',
@@ -257,20 +280,32 @@ export default function LandingPage() {
                 lang === 'pt'
                   ? 'Crie livremente com todos os controles já disponíveis.'
                   : 'Create freely with all controls already available.',
+              micro: lang === 'pt' ? 'O fluxo aberto para sua própria criatividade.' : 'Open flow for your own creativity.',
+              icon: (
+                <svg viewBox="0 0 24 24" className="h-8 w-8 text-sky-300" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3v18M3 12h18" />
+                </svg>
+              ),
+              gradient: 'from-slate-950 via-zinc-900 to-sky-950',
             },
           ].map((card) => (
             <motion.button
               key={card.type}
               whileHover={{ y: -4 }}
-              className="group rounded-[32px] border border-zinc-800 bg-zinc-900 p-8 text-left transition-shadow shadow-sm hover:shadow-xl"
+              className={`group rounded-[32px] border border-zinc-800 bg-gradient-to-br ${card.gradient} p-8 text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-blue-500/30`}
               onClick={() => openWizard(card.type as 'scale' | 'chord' | 'harmonic-field' | 'free')}
             >
-              <div className="mb-6 inline-flex rounded-full bg-blue-500/10 px-3 py-2 text-sm font-black uppercase tracking-[0.3em] text-blue-200">
-                {card.title}
+              <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/5 mb-6 text-white shadow-inner">
+                {card.icon}
               </div>
-              <h3 className="text-2xl font-semibold text-white mb-3">{card.title}</h3>
-              <p className="text-zinc-400 leading-7">{card.description}</p>
-              <div className="mt-8 flex items-center gap-2 text-sm font-black uppercase tracking-[0.2em] text-blue-400">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 className="text-2xl font-semibold text-white mb-2">{card.title}</h3>
+                  <p className="text-sm uppercase tracking-[0.24em] text-blue-300 font-black">{card.micro}</p>
+                </div>
+              </div>
+              <p className="text-zinc-300 leading-7">{card.description}</p>
+              <div className="mt-8 flex items-center gap-2 text-sm font-black uppercase tracking-[0.2em] text-blue-200 opacity-90 group-hover:text-white">
                 {lang === 'pt' ? 'Iniciar' : 'Start'} →
               </div>
             </motion.button>
