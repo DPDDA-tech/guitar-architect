@@ -111,6 +111,18 @@ const instrument = INSTRUMENT_PRESETS[resolvedInstrumentType];
 
   const getY = useCallback((stringIdx: number) => marginY + stringIdx * stringSpacing, [stringSpacing, marginY]);
 
+  const getContrastColor = useCallback((hex: string) => {
+    if (hex === 'transparent' || !hex.startsWith('#') || hex.length !== 7) {
+      return colors.text;
+    }
+    const safeHex = hex.replace('#', '');
+    const r = parseInt(safeHex.slice(0, 2), 16);
+    const g = parseInt(safeHex.slice(2, 4), 16);
+    const b = parseInt(safeHex.slice(4, 6), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 155 ? '#000000' : '#ffffff';
+  }, [colors.text]);
+
   const scaleNotes = useMemo(() => getScaleNotes(root, scaleType), [root, scaleType]);
 
 const chordVoicing = useMemo<ChordVoicing>(() => {
@@ -422,11 +434,12 @@ const renderBrushPaths = () => {
           if (opacity === 0) return null;
           const x = getNoteX(f); const y = getY(s);
           const label = labelMode === 'note' ? note : (labelMode === 'interval' ? interval : '');
+          const noteTextColor = fill === 'transparent' ? colors.text : getContrastColor(fill);
           return (
             <g key={`note-${s}-${f}`} opacity={opacity} pointerEvents="none">
               {isTonic && layers.showTonic && <circle cx={x} cy={y} r={markerRadius + 5} fill="none" stroke={colors.intervals['1']} strokeWidth="2.5" />}
               <circle cx={x} cy={y} r={markerRadius} fill={fill} stroke={isLight ? "#fff" : "#000"} strokeWidth="1.5" />
-              {label && <text x={x} y={y + (fontSize/2.5)} textAnchor="middle" fontSize={fontSize} fill="#fff" fontWeight="black">{label}</text>}
+              {label && <text x={x} y={y + (fontSize/2.5)} textAnchor="middle" fontSize={fontSize} fill={noteTextColor} fontWeight="black">{label}</text>}
             </g>
           );
         }))}
@@ -441,7 +454,7 @@ const renderBrushPaths = () => {
               {m.shape === 'circle' && <circle cx={x} cy={y} r={markerRadius} fill={m.color} stroke="#fff" strokeWidth="2.5" />}
               {m.shape === 'square' && <rect x={x - markerRadius} y={y - markerRadius} width={markerRadius*2} height={markerRadius*2} fill={m.color} stroke="#fff" strokeWidth="2.5" />}
               {m.shape === 'triangle' && <path d={`M ${x} ${y - markerRadius} L ${x + markerRadius} ${y + markerRadius} L ${x - markerRadius} ${y + markerRadius} Z`} fill={m.color} stroke="#fff" strokeWidth="2.5" />}
-              {label && <text x={x} y={y + (fontSize/2.5)} textAnchor="middle" fontSize={fontSize} fill="#fff" fontWeight="black" pointerEvents="none">{label}</text>}
+              {label && <text x={x} y={y + (fontSize/2.5)} textAnchor="middle" fontSize={fontSize} fill={getContrastColor(m.color)} fontWeight="black" pointerEvents="none">{label}</text>}
             </g>
           );
         })}

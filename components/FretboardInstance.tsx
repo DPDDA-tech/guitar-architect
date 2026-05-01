@@ -292,7 +292,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
   const controlInputClass = 'w-full p-3 border rounded-xl text-sm font-black outline-none bg-white text-zinc-900 shadow-sm';
   const controlButtonBase = 'py-2.5 rounded-lg text-[9px] font-black uppercase border transition-all';
-  const activeButtonClass = 'bg-blue-600 border-blue-600 text-white shadow-md';
+  const activeButtonClass = 'bg-blue-600 border-blue-600 text-white shadow-xl shadow-blue-500/20';
   const inactiveButtonClass = 'bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300';
 
   const renderControls = () => {

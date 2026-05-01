@@ -23,6 +23,37 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
   const [scale, setScale] = useState('Major (Ionian)');
   const [chord, setChord] = useState('Major');
 
+  const options = [
+    {
+      id: 'scale',
+      label: lang === 'pt' ? 'Escala' : 'Scale',
+      title: lang === 'pt' ? 'Escala' : 'Scale',
+      description: lang === 'pt' ? 'Monte uma escala no braço' : 'Build a scale on the neck',
+      help: lang === 'pt' ? 'Visualize escalas no braço' : 'Visualize scales on the neck'
+    },
+    {
+      id: 'chord',
+      label: lang === 'pt' ? 'Acorde' : 'Chord',
+      title: lang === 'pt' ? 'Acorde' : 'Chord',
+      description: lang === 'pt' ? 'Monte acordes e inversões' : 'Build chords and inversions',
+      help: lang === 'pt' ? 'Monte acordes e inversões' : 'Build chords and inversions'
+    },
+    {
+      id: 'harmonic-field',
+      label: lang === 'pt' ? 'Campo Harmônico' : 'Harmonic Field',
+      title: lang === 'pt' ? 'Campo Harmônico' : 'Harmonic Field',
+      description: lang === 'pt' ? 'Explore graus e funções' : 'Explore degrees and functions',
+      help: lang === 'pt' ? 'Explore graus e funções' : 'Explore degrees and functions'
+    },
+    {
+      id: 'free',
+      label: lang === 'pt' ? 'Diagrama Livre' : 'Free Diagram',
+      title: lang === 'pt' ? 'Diagrama Livre' : 'Free Diagram',
+      description: lang === 'pt' ? 'Crie manualmente' : 'Create manually',
+      help: lang === 'pt' ? 'Crie manualmente' : 'Create manually'
+    }
+  ];
+
   const createDiagram = () => {
     const instr = INSTRUMENT_PRESETS[instrument];
     const newState: FretboardState = {
@@ -84,23 +115,23 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
           <div>
             <h3 className="text-lg font-bold mb-4">{lang === 'pt' ? 'O que você quer criar?' : 'What do you want to create?'}</h3>
             <div className="space-y-3">
-              {[
-                { id: 'scale', label: lang === 'pt' ? 'Escala' : 'Scale' },
-                { id: 'chord', label: lang === 'pt' ? 'Acorde' : 'Chord' },
-                { id: 'harmonic-field', label: lang === 'pt' ? 'Campo Harmônico' : 'Harmonic Field' },
-                { id: 'free', label: lang === 'pt' ? 'Diagrama Livre' : 'Free Diagram' }
-              ].map(option => (
+              {options.map(option => (
                 <button
                   key={option.id}
                   onClick={() => { setDiagramType(option.id as DiagramType); nextStep(); }}
-                  className="w-full p-4 rounded-xl border text-left hover:bg-zinc-50 transition-all"
+                  className="group w-full rounded-3xl border border-zinc-300 bg-white p-5 text-left text-zinc-900 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-zinc-900"
                 >
-                  {option.label}
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">{option.label}</span>
+                    <h3 className="mt-2 text-lg font-black text-zinc-900">{option.title}</h3>
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-600">{option.description}</p>
+                  <p className="mt-2 text-[11px] text-zinc-500">{option.help}</p>
                 </button>
               ))}
             </div>
             <div className="mt-6 flex justify-end">
-              <button onClick={() => { setDiagramType('free'); createDiagram(); }} className="px-4 py-2 bg-zinc-100 text-zinc-600 rounded-lg text-sm">
+              <button onClick={() => { setDiagramType('free'); createDiagram(); }} className="px-4 py-2 rounded-lg border border-zinc-300 bg-zinc-100 text-zinc-900 text-sm font-black uppercase transition hover:bg-zinc-200 hover:text-zinc-900">
                 {lang === 'pt' ? 'Criar Rápido' : 'Quick Create'}
               </button>
             </div>
