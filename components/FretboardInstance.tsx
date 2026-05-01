@@ -423,6 +423,10 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               </button>
             ))}
           </div>
+          <div className="flex gap-2 p-1 bg-white border border-zinc-200 rounded-xl">
+            <button onClick={() => recordAction({...state, colorMode: 'SINGLE'})} className={`flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase transition-all ${state.colorMode === 'SINGLE' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.colorSingle}</button>
+            <button onClick={() => recordAction({...state, colorMode: 'MULTI'})} className={`flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase transition-all ${state.colorMode === 'MULTI' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.colorMulti}</button>
+          </div>
           <div className="flex flex-wrap gap-2">
             {PRESET_COLORS.map(c => <button key={c} onClick={() => setMarkerColor(c)} className={`w-8 h-8 rounded-full border-2 transition-transform ${markerColor === c ? 'scale-110 border-blue-500 shadow-md' : 'border-transparent'}`} style={{background: c}} />)}
           </div>
