@@ -315,6 +315,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const controlButtonBase = 'py-2.5 rounded-lg text-[9px] font-black uppercase border transition-all';
   const activeButtonClass = 'bg-blue-600 border-blue-600 text-white shadow-xl shadow-blue-500/20';
   const inactiveButtonClass = 'bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300';
+  const quickButtonClass = `px-3 py-2 rounded-lg border text-[9px] font-black uppercase transition-all active:scale-95 ${isLight ? 'bg-white border-zinc-200 text-zinc-600 hover:border-blue-400 hover:text-blue-600' : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-blue-500 hover:text-blue-400'}`;
+  const quickActiveButtonClass = 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-500/20';
+  const labelModeName = state.labelMode === 'note'
+    ? t.labelNotes
+    : state.labelMode === 'interval'
+      ? t.labelIntervals
+      : state.labelMode === 'fingering'
+        ? t.labelFingering
+        : t.labelNone;
 
   const renderControls = () => {
     if (activeControlTab === 'base') {
@@ -735,6 +744,41 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         </div>
       </div>
 
+      <div className={`operational-btns mb-5 md:pr-[420px] ${isExporting ? 'hidden' : ''}`}>
+        <div className={`flex flex-col gap-3 rounded-2xl border px-3 py-3 shadow-sm md:flex-row md:items-center md:justify-between ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => { setActiveControlTab('editor'); setIsControlPanelOpen(true); }} className={`${quickButtonClass} ${activeControlTab === 'editor' ? quickActiveButtonClass : ''}`}>
+              {editorMode === 'marker' ? t.marker : t.line}
+            </button>
+            <button onClick={() => { setActiveControlTab('visual'); setIsControlPanelOpen(true); }} className={quickButtonClass}>
+              {labelModeName}
+            </button>
+            <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${quickButtonClass} ${state.layers.showScale ? quickActiveButtonClass : ''}`}>
+              {t.scaleNotes}
+            </button>
+            <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${quickButtonClass} ${state.layers.showTonic ? quickActiveButtonClass : ''}`}>
+              {t.tonicHighlight}
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className={`flex items-center gap-2 rounded-xl border px-2 py-1.5 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
+              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                {lang === 'pt' ? 'Trastes' : 'Frets'}
+              </span>
+              <input type="number" min={0} max={state.endFret - 1} value={state.startFret} onChange={e => recordAction({...state, startFret: Math.max(0, Math.min(Number(e.target.value), state.endFret - 1))})} className="w-12 rounded-md border border-zinc-200 bg-white px-1 py-1 text-center text-[10px] font-black text-zinc-900" />
+              <span className="text-[10px] font-black text-zinc-400">-</span>
+              <input type="number" min={state.startFret + 1} max={24} value={state.endFret} onChange={e => recordAction({...state, endFret: Math.min(24, Math.max(Number(e.target.value), state.startFret + 1))})} className="w-12 rounded-md border border-zinc-200 bg-white px-1 py-1 text-center text-[10px] font-black text-zinc-900" />
+            </div>
+            <button onClick={undo} className={quickButtonClass}>Undo</button>
+            <button onClick={redo} className={quickButtonClass}>Redo</button>
+            <button onClick={clearContent} className="px-3 py-2 rounded-lg border border-red-200 bg-red-50 text-[9px] font-black uppercase text-red-600 transition-all hover:bg-red-100 active:scale-95">
+              {t.clearDiagram}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className={`operational-btns ${isExporting ? 'hidden' : ''}`}>
         <div className={`fixed inset-x-0 bottom-0 z-[80] max-h-[78vh] overflow-y-auto border-t p-4 shadow-2xl transition-transform md:fixed md:inset-x-auto md:right-6 md:top-28 md:bottom-6 md:w-[390px] md:max-h-none md:rounded-2xl md:border ${panelShell} ${isControlPanelOpen ? 'translate-y-0 md:translate-y-0' : 'translate-y-[calc(100%-52px)] md:translate-y-0 md:translate-x-[calc(100%+32px)]'}`}>
           <div className="flex items-center justify-between gap-3 mb-4">
@@ -840,6 +884,28 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                   <span className="mt-2 text-[11px] font-semibold text-zinc-400">
                     {t.emptyFretboardHint}
                   </span>
+                </div>
+              </div>
+            )}
+            {!isExporting && activeControlTab === 'editor' && (
+              <div className={`absolute left-3 top-3 z-20 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-2 rounded-2xl border px-3 py-2 shadow-lg backdrop-blur-xl ${isLight ? 'bg-white/90 border-zinc-200' : 'bg-zinc-950/90 border-zinc-800'}`}>
+                <button onClick={() => setEditorMode('marker')} className={`px-3 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${editorMode === 'marker' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-100'}`}>
+                  {t.marker}
+                </button>
+                <button onClick={() => setEditorMode('line')} className={`px-3 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${editorMode === 'line' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-100'}`}>
+                  {t.line}
+                </button>
+                <div className="flex items-center gap-1">
+                  {PRESET_COLORS.slice(0, 5).map(c => (
+                    <button key={c} onClick={() => setMarkerColor(c)} className={`h-6 w-6 rounded-full border-2 transition-transform ${markerColor === c ? 'scale-110 border-blue-500' : 'border-white/80'}`} style={{background: c}} />
+                  ))}
+                </div>
+                <div className="flex items-center gap-1">
+                  {['circle', 'square', 'triangle'].map(s => (
+                    <button key={s} onClick={() => setMarkerShape(s as MarkerShape)} className={`h-7 w-7 rounded-lg border text-[11px] font-black transition-all ${markerShape === s ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-zinc-200 text-zinc-500'}`}>
+                      {s === 'circle' ? 'O' : s === 'square' ? 'S' : 'T'}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
