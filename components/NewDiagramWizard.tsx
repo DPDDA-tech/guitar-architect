@@ -110,6 +110,7 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
     }
 
     onCreate(newState);
+    setOnboardingCompleted(true);
     onClose();
   };
 
@@ -126,7 +127,7 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
         <div className="overflow-y-auto max-h-[calc(100vh-11rem)] pr-1">
           {step === 1 && (
           <div>
-            <h3 className="text-lg font-bold mb-4">{lang === 'pt' ? 'O que você quer criar?' : 'What do you want to create?'}</h3>
+            <h3 className="text-lg font-black mb-4 text-zinc-900">{lang === 'pt' ? 'O que você quer criar?' : 'What do you want to create?'}</h3>
             <div className="space-y-3">
               {options.map(option => (
                 <button

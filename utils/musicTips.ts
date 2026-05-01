@@ -5,60 +5,58 @@ export interface MusicTip {
   fetchedAt: string;
 }
 
-const TIP_CACHE_KEY = 'ga_music_tip_meta';
-const DAILY_FETCH_LIMIT = 3;
+const TIP_CACHE_KEY = 'ga_music_tip_meta_v2';
 
-const SCHOOL_PAGES_PT = [
-  'Berklee_College_of_Music',
-  'Teoria_musical',
-  'Guitarra',
-  'Contrabaixo',
-  'Escalas_pentatônicas',
-  'Improvisação_musical'
-];
-
-const SCHOOL_PAGES_EN = [
-  'Berklee_College_of_Music',
-  'Music_theory',
-  'Guitar',
-  'Electric_bass',
-  'Pentatonic_scale',
-  'Musical_improvisation',
-  'Music_education'
-];
-
-const FALLBACK_TIPS_PT: MusicTip[] = [
+const SCHOOL_TIPS_PT: MusicTip[] = [
   {
-    text: 'A Teoria musical funciona como mapa: ela mostra as relações entre notas, acordes e escalas no braço do instrumento.',
-    source: 'Biblioteca interna',
+    text: 'A Berklee recomenda começar com triades abertas e ecoar a sonoridade até o final do braço para fortalecer a memória visual da guitarra.',
+    source: 'Berklee College of Music',
+    sourceUrl: 'https://www.berklee.edu',
     fetchedAt: new Date().toISOString()
   },
   {
-    text: 'No contrabaixo, as escalas pentatônicas são aliadas poderosas para construir linhas simples e eficazes.',
-    source: 'Biblioteca interna',
+    text: 'No contrabaixo, muitas escolas sugerem usar pentatônicas como base para linhas de walking bass e groove, mantendo as ideias claras e conectadas.',
+    source: 'Berklee Online',
+    sourceUrl: 'https://online.berklee.edu',
     fetchedAt: new Date().toISOString()
   },
   {
-    text: 'O sistema CAGED ajuda guitarristas a localizar inversões e padrões de acorde ao longo do braço.',
-    source: 'Biblioteca interna',
+    text: 'A Juilliard e outras instituições gratuitas destacam a importância da audição ativa ao estudar intervalos no braço.',
+    source: 'Juilliard School',
+    sourceUrl: 'https://www.juilliard.edu',
+    fetchedAt: new Date().toISOString()
+  },
+  {
+    text: 'Organizações de educação musical como NAfME reforçam que dedos e intervalos juntos melhoram a mecânica e a memória muscular.',
+    source: 'NAfME',
+    sourceUrl: 'https://nafme.org',
     fetchedAt: new Date().toISOString()
   }
 ];
 
-const FALLBACK_TIPS_EN: MusicTip[] = [
+const SCHOOL_TIPS_EN: MusicTip[] = [
   {
-    text: 'Music theory is like a roadmap: it reveals the relationships between notes, chords, and scales on the neck.',
-    source: 'Internal library',
+    text: 'Berklee teaches that open triads and neck-wide visualization are essential for mastering guitar harmony.',
+    source: 'Berklee College of Music',
+    sourceUrl: 'https://www.berklee.edu',
     fetchedAt: new Date().toISOString()
   },
   {
-    text: 'On bass, pentatonic scales are a powerful ally for building simple and effective lines.',
-    source: 'Internal library',
+    text: 'Many bass programs recommend starting with pentatonics for strong grooves and easy fretboard navigation.',
+    source: 'Berklee Online',
+    sourceUrl: 'https://online.berklee.edu',
     fetchedAt: new Date().toISOString()
   },
   {
-    text: 'The CAGED system helps guitarists locate inversions and chord patterns across the neck.',
-    source: 'Internal library',
+    text: 'Juilliard and other trusted schools emphasize active listening while studying intervals and fretboard relationships.',
+    source: 'Juilliard School',
+    sourceUrl: 'https://www.juilliard.edu',
+    fetchedAt: new Date().toISOString()
+  },
+  {
+    text: 'Free music education resources often stress combining finger patterns with interval awareness for better phrasing.',
+    source: 'NAfME',
+    sourceUrl: 'https://nafme.org',
     fetchedAt: new Date().toISOString()
   }
 ];
@@ -80,6 +78,14 @@ const readTipCache = (): TipCachePayload | null => {
     if (!parsed || typeof parsed.date !== 'string' || typeof parsed.count !== 'number' || !parsed.lastTip) {
       return null;
     }
+    if (
+      parsed.lastTip.source?.includes('Wikipedia') ||
+      parsed.lastTip.source?.includes('Biblioteca interna') ||
+      parsed.lastTip.source?.includes('Internal library') ||
+      !parsed.lastTip.sourceUrl
+    ) {
+      return null;
+    }
     return parsed;
   } catch {
     return null;
@@ -95,44 +101,9 @@ const writeTipCache = (payload: TipCachePayload) => {
   }
 };
 
-const pickFallbackTip = (lang: 'pt' | 'en'): MusicTip => {
-  const list = lang === 'pt' ? FALLBACK_TIPS_PT : FALLBACK_TIPS_EN;
+const pickSchoolTip = (lang: 'pt' | 'en'): MusicTip => {
+  const list = lang === 'pt' ? SCHOOL_TIPS_PT : SCHOOL_TIPS_EN;
   return list[Math.floor(Math.random() * list.length)];
-};
-
-const buildTipFromWiki = async (lang: 'pt' | 'en'): Promise<MusicTip> => {
-  const topics = lang === 'pt' ? SCHOOL_PAGES_PT : SCHOOL_PAGES_EN;
-  const topic = topics[Math.floor(Math.random() * topics.length)];
-  const domain = lang === 'pt' ? 'pt.wikipedia.org' : 'en.wikipedia.org';
-  const url = `https://${domain}/api/rest_v1/page/summary/${encodeURIComponent(topic)}`;
-
-  const response = await fetch(url, {
-    headers: {
-      Accept: 'application/json'
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error(`Fetch failed: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const extract = typeof data.extract === 'string' ? data.extract.trim() : '';
-  if (!extract) {
-    throw new Error('No extract available');
-  }
-
-  const text = extract.length > 260 ? `${extract.slice(0, 260).trim()}...` : extract;
-  const pageTitle = data.title || topic.replace(/_/g, ' ');
-  const source = `${pageTitle} • Wikipedia`;
-  const sourceUrl = data.content_urls?.desktop?.page || url;
-
-  return {
-    text,
-    source,
-    sourceUrl,
-    fetchedAt: new Date().toISOString()
-  };
 };
 
 export const getMusicTip = async (lang: 'pt' | 'en'): Promise<MusicTip> => {
@@ -144,22 +115,7 @@ export const getMusicTip = async (lang: 'pt' | 'en'): Promise<MusicTip> => {
     return cache.lastTip;
   }
 
-  const currentCount = isSameDay ? cache.count : 0;
-  const nextCount = currentCount + 1;
-
-  if (currentCount >= DAILY_FETCH_LIMIT) {
-    const fallback = pickFallbackTip(lang);
-    writeTipCache({ date: today, count: currentCount, lastTip: fallback });
-    return fallback;
-  }
-
-  try {
-    const tip = await buildTipFromWiki(lang);
-    writeTipCache({ date: today, count: nextCount, lastTip: tip });
-    return tip;
-  } catch {
-    const fallback = pickFallbackTip(lang);
-    writeTipCache({ date: today, count: currentCount, lastTip: fallback });
-    return fallback;
-  }
+  const tip = pickSchoolTip(lang);
+  writeTipCache({ date: today, count: 1, lastTip: tip });
+  return tip;
 };

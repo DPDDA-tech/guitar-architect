@@ -24,27 +24,6 @@ interface FretboardInstanceProps {
   isExporting?: boolean;
 }
 
-const TIPS_PT = [
-  "A Tônica (1) é o centro gravitacional da escala.",
-  "Acordes Drop 2 são formados movendo a 2ª nota mais aguda para o baixo.",
-  "O sistema CAGED conecta 5 shapes de tríades maiores por todo o braço.",
-  "Use a 3ª e a 7ª para definir a intenção (maior/menor/dominante) do acorde.",
-  "Escalas Pentatônicas são excelentes para improvisação blues/rock.",
-  "A escala Menora Melódica sobe de um jeito e desce de outro no clássico.",
-  "Inversões mudam a textura do acorde sem alterar sua função harmônica.",
-  "O intervalo de 4ª aumentada (#4) cria a sonoridade característica do modo Lídio."
-];
-
-const TIPS_EN = [
-  "The Tonic (1) is the gravitational center of the scale.",
-  "Drop 2 chords are voiced by moving the 2nd highest note to the bottom.",
-  "The CAGED system connects 5 major triad shapes across the neck.",
-  "Use the 3rd and 7th to define the chord's quality and tension.",
-  "Pentatonic scales are essential for blues/rock improvisation.",
-  "The Melodic Minor scale differs ascending vs descending in classical theory.",
-  "Inversions change the chord's texture without altering its function.",
-  "The augmented 4th (#4) creates the characteristic Lydian mode sound."
-];
 
 const FretboardInstance: React.FC<FretboardInstanceProps> = ({ 
   state, updateState, onRemove, onMove, onAdd, isFirst, isLast, theme, lang, isExporting = false
@@ -58,6 +37,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [noteClickFeedback, setNoteClickFeedback] = useState<{ string: number; fret: number } | null>(null);
   const [creationHint, setCreationHint] = useState<string | null>(null);
+  const [wizardMode, setWizardMode] = useState<'initial' | 'add'>('add');
   const noteClickTimeoutRef = useRef<number | null>(null);
   const creationHintTimeoutRef = useRef<number | null>(null);
   
@@ -143,7 +123,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       !state.subtitle &&
       !state.notes;
 
-    if (isFirst && isEmptyDiagram) {
+    if (wizardMode === 'initial' && isFirst && isEmptyDiagram) {
       updateState(newState);
     } else {
       onAdd(newState);
@@ -154,7 +134,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       window.clearTimeout(creationHintTimeoutRef.current);
     }
     creationHintTimeoutRef.current = window.setTimeout(() => setCreationHint(null), 4000);
-  }, [onAdd, t, state, isFirst, updateState]);
+  }, [onAdd, t, state, isFirst, updateState, wizardMode]);
 
   const exportDataJSON = () => {
     const instrument = INSTRUMENT_PRESETS[state.instrumentType];
@@ -305,7 +285,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const isFretboardEmpty = state.markers.length === 0 && state.lines.length === 0;
   const PRESET_COLORS = ['#ef4444', '#2563eb', '#22c55e', '#eab308', '#000000', '#6366f1', '#ec4899'];
   const OBS_LIMIT = 1500;
-  const [isControlPanelOpen, setIsControlPanelOpen] = useState(true);
+  const [isControlPanelOpen, setIsControlPanelOpen] = useState(false);
   const [activeControlTab, setActiveControlTab] = useState<string>('base');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
@@ -313,6 +293,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   useEffect(() => {
     if (isFirst && typeof window !== 'undefined' && window.localStorage) {
       if (!window.localStorage.getItem('ga_onboarding_completed')) {
+        setWizardMode('initial');
         setShowWizard(true);
       }
     }
@@ -512,9 +493,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           {copyFeedback ? 'OK' : 'JSON'}
         </button>
         <p className="text-[10px] font-bold leading-relaxed text-zinc-400 uppercase">
-          {lang === 'pt' ? 'Importacao permanece no menu global do projeto.' : 'Import remains in the global project menu.'}
-        </p>
-      </div>
+            {lang === 'pt' ? 'Copie este JSON e use Importar JSON no menu global do projeto.' : 'Copy this JSON and use Import JSON from the global project menu.'}
+          </p>
+        </div>
     );
   };
 
@@ -531,7 +512,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
            <button onClick={() => setIsControlPanelOpen(prev => !prev)} className={`px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl font-black text-[10px] md:text-[11px] uppercase border transition-all active:scale-90 ${isControlPanelOpen ? 'bg-blue-600 text-white border-blue-600' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
               {lang === 'pt' ? 'CONTROLES' : 'TOOLS'}
            </button>
-           <button onClick={() => setShowWizard(true)} className="bg-blue-600 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">NOVO</button>
+           <button onClick={() => { setWizardMode('add'); setShowWizard(true); }} className="bg-blue-600 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">NOVO</button>
            <button onClick={() => onAdd(state)} className="bg-zinc-800 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95">{t.cloneCurrent}</button>
            <div className="flex gap-1 items-center bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700">
               <button onClick={() => onMove('up')} disabled={isFirst} className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-white transition-colors">↑</button>
@@ -893,13 +874,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                      <p className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 italic leading-relaxed tracking-tight">
                         {musicTip.text}
                      </p>
-                     <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-400">
-                        {lang === 'pt' ? 'Fonte:' : 'Source:'} {musicTip.source}
-                     </p>
-                     {musicTip.sourceUrl && (
-                       <a href={musicTip.sourceUrl} target="_blank" rel="noreferrer" className="text-[10px] font-black text-blue-600 hover:underline">
-                         {lang === 'pt' ? 'Ver origem' : 'View source'}
+                     {musicTip.sourceUrl ? (
+                       <a href={musicTip.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex flex-col items-center gap-0.5 text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400 hover:text-blue-600 transition-colors">
+                         <span>{lang === 'pt' ? 'Fonte:' : 'Source:'} {musicTip.source}</span>
+                         <span className="text-[8px] normal-case tracking-normal font-bold opacity-70">{musicTip.sourceUrl.replace(/^https?:\/\//, '')}</span>
                        </a>
+                     ) : (
+                       <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-400">
+                         {lang === 'pt' ? 'Fonte:' : 'Source:'} {musicTip.source}
+                       </p>
                      )}
                   </div>
                </div>
