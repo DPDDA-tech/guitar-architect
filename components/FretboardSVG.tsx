@@ -384,17 +384,28 @@ const renderBrushPaths = () => {
         {Array.from({ length: numStrings }).map((_, i) => <line key={`string-${i}`} x1={marginX} y1={getY(i)} x2={width - marginX} y2={getY(i)} stroke={colors.string} strokeWidth={2.5 + (i * 0.5)} pointerEvents="none" />)}
         
         {cagedNotes.map((cn, i) => (
-          <rect 
-            key={`caged-${i}`} 
-            x={getNoteX(cn.fret) - markerRadius - 4} 
-            y={getY(cn.string) - markerRadius - 4} 
-            width={(markerRadius * 2) + 8} 
-            height={(markerRadius * 2) + 8} 
-            rx="8"
-            fill={colors.caged} 
-            opacity="0.15" 
-            pointerEvents="none"
-          />
+          <g key={`caged-${i}`} pointerEvents="none">
+            <rect
+              x={getNoteX(cn.fret) - markerRadius - 5}
+              y={getY(cn.string) - markerRadius - 5}
+              width={(markerRadius * 2) + 10}
+              height={(markerRadius * 2) + 10}
+              rx="10"
+              fill={colors.caged}
+              opacity="0.22"
+            />
+            <rect
+              x={getNoteX(cn.fret) - markerRadius - 3}
+              y={getY(cn.string) - markerRadius - 3}
+              width={(markerRadius * 2) + 6}
+              height={(markerRadius * 2) + 6}
+              rx="8"
+              fill="none"
+              stroke={colors.caged}
+              strokeWidth="2"
+              opacity="0.35"
+            />
+          </g>
         ))}
 
         {state.lines.map(line => {

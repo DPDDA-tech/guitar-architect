@@ -7,6 +7,7 @@ import { DEGREE_NAMES, CHORD_QUALITIES } from '../music/harmony';
 import { translations, Lang } from '../i18n';
 import { FretboardState, EditorMode, MarkerShape, ThemeMode, StringStatus, InstrumentType, LineThickness, TuningKey, CagedShape } from '../types';
 import NewDiagramWizard from './NewDiagramWizard';
+import { getMusicTip, MusicTip } from '../utils/musicTips';
 
 interface FretboardInstanceProps {
   state: FretboardState;
@@ -62,10 +63,28 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   
   const historyRef = useRef<FretboardState[]>([]);
   const futureRef = useRef<FretboardState[]>([]);
+  const [musicTip, setMusicTip] = useState<MusicTip>({
+    text: lang === 'pt'
+      ? 'Aguarde, buscando uma dica de teoria de música...'
+      : 'Loading a music theory tip...',
+    source: lang === 'pt' ? 'Biblioteca interna' : 'Internal library',
+    fetchedAt: new Date().toISOString()
+  });
 
-  const currentTip = useMemo(() => {
-    const list = lang === 'pt' ? TIPS_PT : TIPS_EN;
-    return list[Math.floor(Math.random() * list.length)];
+  useEffect(() => {
+    let active = true;
+
+    getMusicTip(lang).then((tip) => {
+      if (active) {
+        setMusicTip(tip);
+      }
+    }).catch(() => {
+      // fallback já tratado na utilitária
+    });
+
+    return () => {
+      active = false;
+    };
   }, [lang]);
 
   const recordAction = useCallback((newState: FretboardState) => {
@@ -117,13 +136,25 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   const handleNewDiagramCreate = useCallback((newState: FretboardState) => {
-    onAdd(newState);
+    const isEmptyDiagram =
+      state.markers.length === 0 &&
+      state.lines.length === 0 &&
+      !state.title &&
+      !state.subtitle &&
+      !state.notes;
+
+    if (isFirst && isEmptyDiagram) {
+      updateState(newState);
+    } else {
+      onAdd(newState);
+    }
+
     setCreationHint(t.newDiagramCreated);
     if (creationHintTimeoutRef.current) {
       window.clearTimeout(creationHintTimeoutRef.current);
     }
     creationHintTimeoutRef.current = window.setTimeout(() => setCreationHint(null), 4000);
-  }, [onAdd, t]);
+  }, [onAdd, t, state, isFirst, updateState]);
 
   const exportDataJSON = () => {
     const instrument = INSTRUMENT_PRESETS[state.instrumentType];
@@ -858,10 +889,18 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                   <span className="w-2 h-2 bg-amber-500 rounded-full"></span> DICAS
                </h4>
                <div className={`flex-1 flex items-center justify-center p-8 rounded-3xl border border-dashed transition-all ${isLight ? 'bg-zinc-50/50 border-zinc-200' : 'bg-zinc-800/30 border-zinc-700'}`}>
-                  <div className="flex flex-col gap-1 text-center">
+                  <div className="flex flex-col gap-3 text-center">
                      <p className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 italic leading-relaxed tracking-tight">
-                        {currentTip}
+                        {musicTip.text}
                      </p>
+                     <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-400">
+                        {lang === 'pt' ? 'Fonte:' : 'Source:'} {musicTip.source}
+                     </p>
+                     {musicTip.sourceUrl && (
+                       <a href={musicTip.sourceUrl} target="_blank" rel="noreferrer" className="text-[10px] font-black text-blue-600 hover:underline">
+                         {lang === 'pt' ? 'Ver origem' : 'View source'}
+                       </a>
+                     )}
                   </div>
                </div>
                <div className="text-center opacity-30 mt-1">

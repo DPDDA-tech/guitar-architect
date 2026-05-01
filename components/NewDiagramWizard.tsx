@@ -19,6 +19,7 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
   const [step, setStep] = useState(initialDiagramType ? 2 : 1);
   const [instrument, setInstrument] = useState<InstrumentType>('guitar-6');
   const [tuning, setTuning] = useState<TuningKey>('Standard');
+  const [labelMode, setLabelMode] = useState<'note' | 'fingering' | 'interval' | 'none'>('none');
   const [root, setRoot] = useState('C');
   const [scale, setScale] = useState('Major (Ionian)');
   const [chord, setChord] = useState('Major');
@@ -81,7 +82,7 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
       instrumentType: instrument,
       tuning,
       stringStatuses: Array(instr.strings).fill('normal'),
-      labelMode: "none",
+      labelMode: labelMode,
       harmonyMode: "OFF",
       chordQuality: "DIATONIC",
       chordDegree: 0,
@@ -168,6 +169,21 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
                 </option>
               ))}
             </select>
+            <div className="space-y-3 mb-6">
+              <span className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-500">{lang === 'pt' ? 'Rótulos' : 'Labels'}</span>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'note', label: lang === 'pt' ? 'Notas' : 'Notes' },
+                  { value: 'fingering', label: lang === 'pt' ? 'Dedos' : 'Fingers' },
+                  { value: 'interval', label: lang === 'pt' ? 'Intervalos' : 'Intervals' },
+                  { value: 'none', label: lang === 'pt' ? 'Pontos' : 'Dots' }
+                ].map(option => (
+                  <button key={option.value} type="button" onClick={() => setLabelMode(option.value as any)} className={`py-3 rounded-xl text-[10px] font-black uppercase border transition-all ${labelMode === option.value ? 'bg-blue-600 text-white border-blue-600' : 'bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200'}`}>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="flex items-center gap-3 mb-6">
               <label className="flex items-center gap-2 text-sm text-zinc-800">
                 <input
