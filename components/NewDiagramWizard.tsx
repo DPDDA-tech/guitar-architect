@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FretboardState, InstrumentType, TuningKey } from '../types';
 import { translations, Lang } from '../i18n';
-import { INSTRUMENT_PRESETS } from '../music/musicTheory';
+import { INSTRUMENT_PRESETS, TUNINGS_PRESETS } from '../music/musicTheory';
 import { SCALES } from '../music/scales';
 
 interface NewDiagramWizardProps {
@@ -22,6 +22,18 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
   const [root, setRoot] = useState('C');
   const [scale, setScale] = useState('Major (Ionian)');
   const [chord, setChord] = useState('Major');
+  const [skipOnboarding, setSkipOnboarding] = useState(false);
+  const onboardingKey = 'ga_onboarding_completed';
+
+  const setOnboardingCompleted = (enabled: boolean) => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      if (enabled) {
+        window.localStorage.setItem(onboardingKey, 'true');
+      } else {
+        window.localStorage.removeItem(onboardingKey);
+      }
+    }
+  };
 
   const options = [
     {
@@ -149,11 +161,27 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
               <option value="bass-5">{t.bass5}</option>
             </select>
             <h3 className="text-lg font-bold mb-4">{lang === 'pt' ? 'Afinação' : 'Tuning'}</h3>
-            <select value={tuning} onChange={e => setTuning(e.target.value as TuningKey)} className="w-full p-3 border rounded-lg mb-6">
-              <option value="Standard">Standard</option>
-              <option value="Drop D">Drop D</option>
-              {/* Adicionar mais se necessário */}
+            <select value={tuning} onChange={e => setTuning(e.target.value as TuningKey)} className="w-full p-3 border rounded-lg mb-4">
+              {Object.keys(TUNINGS_PRESETS).map((preset) => (
+                <option key={preset} value={preset}>
+                  {preset}
+                </option>
+              ))}
             </select>
+            <div className="flex items-center gap-3 mb-6">
+              <label className="flex items-center gap-2 text-sm text-zinc-600">
+                <input
+                  type="checkbox"
+                  checked={skipOnboarding}
+                  onChange={(e) => {
+                    setSkipOnboarding(e.target.checked);
+                    setOnboardingCompleted(e.target.checked);
+                  }}
+                  className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span>{lang === 'pt' ? 'Não mostrar novamente' : 'Do not show again'}</span>
+              </label>
+            </div>
             <div className="flex justify-between">
               <button onClick={prevStep} className="px-4 py-2 bg-zinc-100 rounded-lg">{lang === 'pt' ? 'Voltar' : 'Back'}</button>
               <button onClick={nextStep} className="px-4 py-2 bg-blue-600 text-white rounded-lg">{lang === 'pt' ? 'Próximo' : 'Next'}</button>

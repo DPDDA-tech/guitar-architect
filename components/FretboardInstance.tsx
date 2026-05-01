@@ -278,6 +278,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const [activeControlTab, setActiveControlTab] = useState<string>('base');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+
+  useEffect(() => {
+    if (isFirst && typeof window !== 'undefined' && window.localStorage) {
+      if (!window.localStorage.getItem('ga_onboarding_completed')) {
+        setShowWizard(true);
+      }
+    }
+  }, [isFirst]);
+
   const controlTabs = [
     { id: 'base', label: 'Base' },
     { id: 'visual', label: 'Visual' },
