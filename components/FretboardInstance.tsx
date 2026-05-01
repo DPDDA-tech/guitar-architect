@@ -6,6 +6,7 @@ import { SCALES } from '../music/scales';
 import { DEGREE_NAMES, CHORD_QUALITIES } from '../music/harmony';
 import { translations, Lang } from '../i18n';
 import { FretboardState, EditorMode, MarkerShape, ThemeMode, StringStatus, InstrumentType, LineThickness, TuningKey, CagedShape } from '../types';
+import NewDiagramWizard from './NewDiagramWizard';
 
 interface FretboardInstanceProps {
   state: FretboardState;
@@ -243,13 +244,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const PRESET_COLORS = ['#ef4444', '#2563eb', '#22c55e', '#eab308', '#000000', '#6366f1', '#ec4899'];
   const OBS_LIMIT = 1500;
   const [isControlPanelOpen, setIsControlPanelOpen] = useState(true);
-  const [activeControlTab, setActiveControlTab] = useState<'base' | 'visual' | 'harmony' | 'editor' | 'advanced'>('base');
+  const [activeControlTab, setActiveControlTab] = useState<string>('base');
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const controlTabs = [
     { id: 'base', label: 'Base' },
     { id: 'visual', label: 'Visual' },
     { id: 'harmony', label: lang === 'pt' ? 'Harmonia' : 'Harmony' },
     { id: 'editor', label: lang === 'pt' ? 'Editor' : 'Editor' },
-    { id: 'advanced', label: lang === 'pt' ? 'Avancado' : 'Advanced' },
+    ...(showAdvanced ? [{ id: 'advanced', label: lang === 'pt' ? 'Avancado' : 'Advanced' }] : [])
   ] as const;
 
   const panelShell = isLight
@@ -274,23 +277,14 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             </select>
           </div>
 
-          <div className="grid grid-cols-[1fr_auto] gap-3">
-            <select value={state.root} onChange={e => recordAction({...state, root: e.target.value})} className={controlInputClass}>
-              {CHROMATIC_SCALE.map(n => <option key={n} value={n}>{n}</option>)}
-            </select>
-            <button onClick={() => recordAction({...state, isLeftHanded: !state.isLeftHanded})} className={`px-4 rounded-xl border font-black text-[9px] uppercase transition-all ${state.isLeftHanded ? 'bg-zinc-800 text-white border-zinc-800' : inactiveButtonClass}`}>{t.leftHanded}</button>
-          </div>
-
-          <select value={state.scaleType} onChange={e => recordAction({...state, scaleType: e.target.value})} className={controlInputClass}>
-            {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
-          </select>
+          <button onClick={() => recordAction({...state, isLeftHanded: !state.isLeftHanded})} className={`w-full px-4 py-3 rounded-xl border font-black text-[9px] uppercase transition-all ${state.isLeftHanded ? 'bg-zinc-800 text-white border-zinc-800' : inactiveButtonClass}`}>{t.leftHanded}</button>
 
           <div className="space-y-2">
             <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">TRASTES / CASAS</span>
             <div className="flex items-center gap-2">
               <input type="number" min={0} max={state.endFret - 1} value={state.startFret} onChange={e => recordAction({...state, startFret: Math.max(0, Math.min(Number(e.target.value), state.endFret - 1))})} className="w-20 p-2 rounded-lg border text-[11px] font-black text-center bg-white text-zinc-900" />
               <span className="text-[10px] font-black text-zinc-400">→</span>
-              <input type="number" min={state.startFret + 1} max={36} value={state.endFret} onChange={e => recordAction({...state, endFret: Math.min(36, Math.max(Number(e.target.value), state.startFret + 1))})} className="w-20 p-2 rounded-lg border text-[11px] font-black text-center bg-white text-zinc-900" />
+              <input type="number" min={state.startFret + 1} max={24} value={state.endFret} onChange={e => recordAction({...state, endFret: Math.min(24, Math.max(Number(e.target.value), state.startFret + 1))})} className="w-20 p-2 rounded-lg border text-[11px] font-black text-center bg-white text-zinc-900" />
             </div>
             <div className="grid grid-cols-5 gap-1">
               {[12, 15, 17, 21, 24].map(f => (
@@ -318,13 +312,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${controlButtonBase} ${state.layers.showScale ? activeButtonClass : inactiveButtonClass}`}>{t.scaleNotes}</button>
             <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${controlButtonBase} ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>{t.tonicHighlight}</button>
           </div>
-          <div className="flex gap-2 p-1 bg-white border border-zinc-200 rounded-xl">
-            <button onClick={() => recordAction({...state, colorMode: 'SINGLE'})} className={`flex-1 py-2 rounded-lg text-[8px] font-black uppercase transition-all ${state.colorMode === 'SINGLE' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.colorSingle}</button>
-            <button onClick={() => recordAction({...state, colorMode: 'MULTI'})} className={`flex-1 py-2 rounded-lg text-[8px] font-black uppercase transition-all ${state.colorMode === 'MULTI' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-zinc-600'}`}>{t.colorMulti}</button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {PRESET_COLORS.map(c => <button key={c} onClick={() => setMarkerColor(c)} className={`w-8 h-8 rounded-full border-2 transition-transform ${markerColor === c ? 'scale-110 border-blue-500 shadow-md' : 'border-transparent'}`} style={{background: c}} />)}
-          </div>
         </div>
       );
     }
@@ -332,6 +319,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     if (activeControlTab === 'harmony') {
       return (
         <div className="space-y-4">
+          <select value={state.root} onChange={e => recordAction({...state, root: e.target.value})} className={controlInputClass}>
+            {CHROMATIC_SCALE.map(n => <option key={n} value={n}>{n}</option>)}
+          </select>
+          <select value={state.scaleType} onChange={e => recordAction({...state, scaleType: e.target.value})} className={controlInputClass}>
+            {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
+          </select>
           <div className="grid grid-cols-3 gap-1">
             {['OFF', 'TRIADS', 'TETRADS'].map(m => (
               <button key={m} onClick={() => recordAction({...state, harmonyMode: m as any})} className={`${controlButtonBase} ${state.harmonyMode === m ? activeButtonClass : inactiveButtonClass}`}>{m}</button>
@@ -352,6 +345,14 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             {['CLOSE', 'DROP2', 'DROP3'].map(v => (
               <button key={v} onClick={() => recordAction({...state, voicingMode: v as any})} className={`${controlButtonBase} ${(state.voicingMode || 'CLOSE') === v ? 'bg-zinc-800 border-zinc-800 text-white' : inactiveButtonClass}`}>{v}</button>
             ))}
+          </div>
+          <div>
+            <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">{t.geometry}</span>
+            <div className="grid grid-cols-6 gap-1 mt-2">
+              {['OFF', 'C', 'A', 'G', 'E', 'D'].map(s => (
+                <button key={s} onClick={() => recordAction({...state, cagedShape: s as CagedShape})} className={`${controlButtonBase} ${state.cagedShape === s ? activeButtonClass : inactiveButtonClass}`}>{s}</button>
+              ))}
+            </div>
           </div>
         </div>
       );
@@ -380,6 +381,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               </button>
             ))}
           </div>
+          <div className="flex flex-wrap gap-2">
+            {PRESET_COLORS.map(c => <button key={c} onClick={() => setMarkerColor(c)} className={`w-8 h-8 rounded-full border-2 transition-transform ${markerColor === c ? 'scale-110 border-blue-500 shadow-md' : 'border-transparent'}`} style={{background: c}} />)}
+          </div>
           <div className="grid grid-cols-3 gap-2">
             <button onClick={undo} className={`${controlButtonBase} ${inactiveButtonClass}`}>UNDO</button>
             <button onClick={redo} className={`${controlButtonBase} ${inactiveButtonClass}`}>REDO</button>
@@ -391,14 +395,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
     return (
       <div className="space-y-4">
-        <div>
-          <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">{t.geometry}</span>
-          <div className="grid grid-cols-6 gap-1 mt-2">
-            {['OFF', 'C', 'A', 'G', 'E', 'D'].map(s => (
-              <button key={s} onClick={() => recordAction({...state, cagedShape: s as CagedShape})} className={`${controlButtonBase} ${state.cagedShape === s ? activeButtonClass : inactiveButtonClass}`}>{s}</button>
-            ))}
-          </div>
-        </div>
         <button onClick={exportDataJSON} className={`w-full px-4 py-3 rounded-xl font-black text-[10px] uppercase border transition-all active:scale-95 ${copyFeedback ? 'bg-emerald-600 text-white border-emerald-600' : inactiveButtonClass}`}>
           {copyFeedback ? 'OK' : 'JSON'}
         </button>
@@ -422,7 +418,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
            <button onClick={() => setIsControlPanelOpen(prev => !prev)} className={`px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl font-black text-[10px] md:text-[11px] uppercase border transition-all active:scale-90 ${isControlPanelOpen ? 'bg-blue-600 text-white border-blue-600' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
               {lang === 'pt' ? 'CONTROLES' : 'TOOLS'}
            </button>
-           <button onClick={() => onAdd()} className="bg-blue-600 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">NOVO</button>
+           <button onClick={() => setShowWizard(true)} className="bg-blue-600 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">NOVO</button>
            <button onClick={() => onAdd(state)} className="bg-zinc-800 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95">{t.cloneCurrent}</button>
            <div className="flex gap-1 items-center bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700">
               <button onClick={() => onMove('up')} disabled={isFirst} className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-white transition-colors">↑</button>
@@ -678,6 +674,13 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
           <div className="pb-16 md:pb-0">
             {isControlPanelOpen && renderControls()}
+            {!showAdvanced && (
+              <div className="mt-4 pt-4 border-t border-zinc-200">
+                <button onClick={() => setShowAdvanced(true)} className="w-full py-3 rounded-xl bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-all text-[10px] font-black uppercase">
+                  {lang === 'pt' ? 'Mais opções' : 'More options'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -768,6 +771,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             </div>
          </div>
       </div>
+      {showWizard && <NewDiagramWizard onCreate={onAdd} onClose={() => setShowWizard(false)} lang={lang} />}
     </div>
   );
 };
