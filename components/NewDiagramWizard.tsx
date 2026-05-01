@@ -116,14 +116,14 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
   const prevStep = () => setStep(step - 1);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-black">{lang === 'pt' ? 'Novo Diagrama' : 'New Diagram'}</h2>
-          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600">×</button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-auto max-h-[calc(100vh-3rem)] shadow-2xl overflow-hidden">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-black text-zinc-900">{lang === 'pt' ? 'Novo Diagrama' : 'New Diagram'}</h2>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-800">×</button>
         </div>
-
-        {step === 1 && (
+        <div className="overflow-y-auto max-h-[calc(100vh-11rem)] pr-1">
+          {step === 1 && (
           <div>
             <h3 className="text-lg font-bold mb-4">{lang === 'pt' ? 'O que você quer criar?' : 'What do you want to create?'}</h3>
             <div className="space-y-3">
@@ -131,14 +131,14 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
                 <button
                   key={option.id}
                   onClick={() => { setDiagramType(option.id as DiagramType); nextStep(); }}
-                  className="group w-full rounded-3xl border border-zinc-300 bg-white p-5 text-left text-zinc-900 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-zinc-900"
+                  className="group w-full rounded-3xl border border-zinc-300 bg-white p-4 text-left text-zinc-900 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-zinc-900"
                 >
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">{option.label}</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700">{option.label}</span>
                     <h3 className="mt-2 text-lg font-black text-zinc-900">{option.title}</h3>
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-600">{option.description}</p>
-                  <p className="mt-2 text-[11px] text-zinc-500">{option.help}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-700">{option.description}</p>
+                  <p className="mt-2 text-[11px] text-zinc-600">{option.help}</p>
                 </button>
               ))}
             </div>
@@ -152,16 +152,16 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
 
         {step === 2 && (
           <div>
-            <h3 className="text-lg font-bold mb-4">{lang === 'pt' ? 'Instrumento' : 'Instrument'}</h3>
-            <select value={instrument} onChange={e => setInstrument(e.target.value as InstrumentType)} className="w-full p-3 border rounded-lg mb-4">
+            <h3 className="text-lg font-bold mb-3 text-zinc-900">{lang === 'pt' ? 'Instrumento' : 'Instrument'}</h3>
+            <select value={instrument} onChange={e => setInstrument(e.target.value as InstrumentType)} className="w-full p-3 border rounded-lg mb-4 text-zinc-900">
               <option value="guitar-6">{t.instr_guitar6}</option>
               <option value="guitar-7">{t.instr_guitar7}</option>
               <option value="guitar-8">{t.instr_guitar8}</option>
               <option value="bass-4">{t.bass4}</option>
               <option value="bass-5">{t.bass5}</option>
             </select>
-            <h3 className="text-lg font-bold mb-4">{lang === 'pt' ? 'Afinação' : 'Tuning'}</h3>
-            <select value={tuning} onChange={e => setTuning(e.target.value as TuningKey)} className="w-full p-3 border rounded-lg mb-4">
+            <h3 className="text-lg font-bold mb-3 text-zinc-900">{lang === 'pt' ? 'Afinação' : 'Tuning'}</h3>
+            <select value={tuning} onChange={e => setTuning(e.target.value as TuningKey)} className="w-full p-3 border rounded-lg mb-4 text-zinc-900">
               {Object.keys(TUNINGS_PRESETS).map((preset) => (
                 <option key={preset} value={preset}>
                   {preset}
@@ -169,7 +169,7 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
               ))}
             </select>
             <div className="flex items-center gap-3 mb-6">
-              <label className="flex items-center gap-2 text-sm text-zinc-600">
+              <label className="flex items-center gap-2 text-sm text-zinc-800">
                 <input
                   type="checkbox"
                   checked={skipOnboarding}
@@ -191,22 +191,22 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
 
         {step === 3 && (
           <div>
-            <h3 className="text-lg font-bold mb-4">{lang === 'pt' ? 'Tom' : 'Key'}</h3>
-            <select value={root} onChange={e => setRoot(e.target.value)} className="w-full p-3 border rounded-lg mb-4">
+            <h3 className="text-lg font-bold mb-3 text-zinc-900">{lang === 'pt' ? 'Tom' : 'Key'}</h3>
+            <select value={root} onChange={e => setRoot(e.target.value)} className="w-full p-3 border rounded-lg mb-4 text-zinc-900">
               {['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
             {(diagramType === 'scale' || diagramType === 'harmonic-field') && (
               <>
-                <h3 className="text-lg font-bold mb-4">{lang === 'pt' ? 'Escala' : 'Scale'}</h3>
-                <select value={scale} onChange={e => setScale(e.target.value)} className="w-full p-3 border rounded-lg mb-4">
+                <h3 className="text-lg font-bold mb-3 text-zinc-900">{lang === 'pt' ? 'Escala' : 'Scale'}</h3>
+                <select value={scale} onChange={e => setScale(e.target.value)} className="w-full p-3 border rounded-lg mb-4 text-zinc-900">
                   {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
                 </select>
               </>
             )}
             {diagramType === 'chord' && (
               <>
-                <h3 className="text-lg font-bold mb-4">{lang === 'pt' ? 'Acorde' : 'Chord'}</h3>
-                <select value={chord} onChange={e => setChord(e.target.value)} className="w-full p-3 border rounded-lg mb-4">
+                <h3 className="text-lg font-bold mb-3 text-zinc-900">{lang === 'pt' ? 'Acorde' : 'Chord'}</h3>
+                <select value={chord} onChange={e => setChord(e.target.value)} className="w-full p-3 border rounded-lg mb-4 text-zinc-900">
                   <option value="Major">Major</option>
                   <option value="Minor">Minor</option>
                   {/* Adicionar mais */}
@@ -221,6 +221,7 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
         )}
       </div>
     </div>
+  </div>
   );
 };
 
