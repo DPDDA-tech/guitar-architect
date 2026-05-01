@@ -22,11 +22,15 @@ interface FretboardInstanceProps {
   isActive: boolean;
   onActivate: () => void;
   isExporting?: boolean;
+  globalTranspose?: number;
+  onGlobalTranspose?: (semitones: number) => void;
+  showTips?: boolean;
+  onToggleTips?: () => void;
 }
 
 
 const FretboardInstance: React.FC<FretboardInstanceProps> = ({ 
-  state, updateState, onRemove, onMove, onAdd, isFirst, isLast, theme, lang, isExporting = false
+  state, updateState, onRemove, onMove, onAdd, isFirst, isLast, theme, lang, isExporting = false, globalTranspose = 0, onGlobalTranspose, showTips = true, onToggleTips
 }) => {
   const t = translations[lang];
   const [editorMode, setEditorMode] = useState<EditorMode>('marker');
@@ -317,13 +321,26 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const inactiveButtonClass = 'bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300';
   const quickButtonClass = `px-3 py-2 rounded-lg border text-[9px] font-black uppercase transition-all active:scale-95 ${isLight ? 'bg-white border-zinc-200 text-zinc-600 hover:border-blue-400 hover:text-blue-600' : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-blue-500 hover:text-blue-400'}`;
   const quickActiveButtonClass = 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-500/20';
-  const labelModeName = state.labelMode === 'note'
-    ? t.labelNotes
-    : state.labelMode === 'interval'
-      ? t.labelIntervals
-      : state.labelMode === 'fingering'
-        ? t.labelFingering
-        : t.labelNone;
+  const markerShapeIcon = (shape: MarkerShape) => {
+    if (shape === 'circle') return <span className="h-3.5 w-3.5 rounded-full border-2 border-current" />;
+    if (shape === 'square') return <span className="h-3.5 w-3.5 border-2 border-current" />;
+    return <span className="h-0 w-0 border-x-[7px] border-b-[13px] border-x-transparent border-b-current" />;
+  };
+  const toggleQuickPanel = (tab: string) => {
+    if (activeControlTab === tab && isControlPanelOpen) {
+      setIsControlPanelOpen(false);
+      return;
+    }
+    setActiveControlTab(tab);
+    setIsControlPanelOpen(true);
+  };
+  const toggleHarmonyLayer = (layer: 'showScale' | 'showTonic') => {
+    recordAction({...state, layers: {...state.layers, [layer]: !state.layers[layer]}});
+    if (!(activeControlTab === 'harmony' && isControlPanelOpen)) {
+      setActiveControlTab('harmony');
+      setIsControlPanelOpen(true);
+    }
+  };
 
   const renderControls = () => {
     if (activeControlTab === 'base') {
@@ -523,7 +540,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
            </button>
            <button onClick={() => { setWizardMode('add'); setShowWizard(true); }} className="bg-blue-600 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">NOVO</button>
            <button onClick={() => onAdd(state)} className="bg-zinc-800 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95">{t.cloneCurrent}</button>
-           <div className="flex gap-1 items-center bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700">
+           <div className="flex gap-1.5 items-center bg-blue-50 dark:bg-zinc-800 p-1.5 rounded-xl border border-blue-200 dark:border-zinc-700 shadow-sm [&>button]:bg-white [&>button]:text-zinc-800 [&>button]:border [&>button]:border-zinc-300 [&>button]:shadow-sm">
               <button onClick={() => onMove('up')} disabled={isFirst} className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-white transition-colors">↑</button>
               <button onClick={() => onMove('down')} disabled={isLast} className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-white transition-colors">↓</button>
            </div>
@@ -746,23 +763,40 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
       <div className={`operational-btns mb-5 md:pr-[420px] ${isExporting ? 'hidden' : ''}`}>
         <div className={`flex flex-col gap-3 rounded-2xl border px-3 py-3 shadow-sm md:flex-row md:items-center md:justify-between ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
-          <div className="flex flex-wrap items-center gap-2">
-            <button onClick={() => { setActiveControlTab('editor'); setIsControlPanelOpen(true); }} className={`${quickButtonClass} ${activeControlTab === 'editor' ? quickActiveButtonClass : ''}`}>
-              {editorMode === 'marker' ? t.marker : t.line}
+          <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
+            <button onClick={() => toggleQuickPanel('editor')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'editor' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
+              {lang === 'pt' ? 'Editor' : 'Editor'}
             </button>
-            <button onClick={() => { setActiveControlTab('visual'); setIsControlPanelOpen(true); }} className={quickButtonClass}>
-              {labelModeName}
+            <button onClick={() => toggleQuickPanel('visual')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'visual' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
+              {lang === 'pt' ? 'Rótulos' : 'Labels'}
             </button>
-            <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${quickButtonClass} ${state.layers.showScale ? quickActiveButtonClass : ''}`}>
+            <button onClick={() => toggleHarmonyLayer('showScale')} className={`${quickButtonClass} shrink-0 ${state.layers.showScale ? quickActiveButtonClass : ''}`}>
               {t.scaleNotes}
             </button>
-            <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${quickButtonClass} ${state.layers.showTonic ? quickActiveButtonClass : ''}`}>
+            <button onClick={() => toggleHarmonyLayer('showTonic')} className={`${quickButtonClass} shrink-0 ${state.layers.showTonic ? quickActiveButtonClass : ''}`}>
               {t.tonicHighlight}
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <div className={`flex items-center gap-2 rounded-xl border px-2 py-1.5 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
+          <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
+            {onGlobalTranspose && (
+              <div className={`flex shrink-0 items-center gap-1 rounded-xl border px-1.5 py-1 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
+                <span className="px-1 text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                  {lang === 'pt' ? 'Transp.' : 'Transp.'}
+                </span>
+                <button onClick={() => onGlobalTranspose(-1)} className="flex h-7 w-7 items-center justify-center rounded-md text-[13px] font-black text-blue-600 transition-colors hover:bg-blue-50">-</button>
+                <div className="flex min-w-[28px] flex-col items-center justify-center px-1">
+                  <span className={`text-[10px] font-black leading-none ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>
+                    {globalTranspose === 0 ? '0' : globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}
+                  </span>
+                  <button onClick={() => onGlobalTranspose(0)} className="text-[7px] font-black uppercase leading-none text-zinc-400 hover:text-red-500">
+                    reset
+                  </button>
+                </div>
+                <button onClick={() => onGlobalTranspose(1)} className="flex h-7 w-7 items-center justify-center rounded-md text-[13px] font-black text-blue-600 transition-colors hover:bg-blue-50">+</button>
+              </div>
+            )}
+            <div className={`flex shrink-0 items-center gap-2 rounded-xl border px-2 py-1.5 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
               <span className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400">
                 {lang === 'pt' ? 'Trastes' : 'Frets'}
               </span>
@@ -770,9 +804,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               <span className="text-[10px] font-black text-zinc-400">-</span>
               <input type="number" min={state.startFret + 1} max={24} value={state.endFret} onChange={e => recordAction({...state, endFret: Math.min(24, Math.max(Number(e.target.value), state.startFret + 1))})} className="w-12 rounded-md border border-zinc-200 bg-white px-1 py-1 text-center text-[10px] font-black text-zinc-900" />
             </div>
-            <button onClick={undo} className={quickButtonClass}>Undo</button>
-            <button onClick={redo} className={quickButtonClass}>Redo</button>
-            <button onClick={clearContent} className="px-3 py-2 rounded-lg border border-red-200 bg-red-50 text-[9px] font-black uppercase text-red-600 transition-all hover:bg-red-100 active:scale-95">
+            <button onClick={undo} className={`${quickButtonClass} shrink-0`} title={t.undo} aria-label={t.undo}>↶</button>
+            <button onClick={redo} className={`${quickButtonClass} shrink-0`} title={t.redo} aria-label={t.redo}>↷</button>
+            <button onClick={clearContent} className="shrink-0 px-3 py-2 rounded-lg border border-red-200 bg-red-50 text-[9px] font-black uppercase text-red-600 transition-all hover:bg-red-100 active:scale-95">
               {t.clearDiagram}
             </button>
           </div>
@@ -887,8 +921,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                 </div>
               </div>
             )}
-            {!isExporting && activeControlTab === 'editor' && (
-              <div className={`absolute left-3 top-3 z-20 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-2 rounded-2xl border px-3 py-2 shadow-lg backdrop-blur-xl ${isLight ? 'bg-white/90 border-zinc-200' : 'bg-zinc-950/90 border-zinc-800'}`}>
+            {!isExporting && isControlPanelOpen && activeControlTab === 'editor' && (
+              <div className={`absolute left-3 top-3 z-20 hidden max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-2 rounded-2xl border px-3 py-2 shadow-lg backdrop-blur-xl md:flex ${isLight ? 'bg-white/90 border-zinc-200' : 'bg-zinc-950/90 border-zinc-800'}`}>
                 <button onClick={() => setEditorMode('marker')} className={`px-3 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${editorMode === 'marker' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-100'}`}>
                   {t.marker}
                 </button>
@@ -900,13 +934,27 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                     <button key={c} onClick={() => setMarkerColor(c)} className={`h-6 w-6 rounded-full border-2 transition-transform ${markerColor === c ? 'scale-110 border-blue-500' : 'border-white/80'}`} style={{background: c}} />
                   ))}
                 </div>
-                <div className="flex items-center gap-1">
-                  {['circle', 'square', 'triangle'].map(s => (
-                    <button key={s} onClick={() => setMarkerShape(s as MarkerShape)} className={`h-7 w-7 rounded-lg border text-[11px] font-black transition-all ${markerShape === s ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-zinc-200 text-zinc-500'}`}>
-                      {s === 'circle' ? 'O' : s === 'square' ? 'S' : 'T'}
-                    </button>
-                  ))}
-                </div>
+                {editorMode === 'marker' ? (
+                  <div className="flex items-center gap-1">
+                    {(['circle', 'square', 'triangle'] as MarkerShape[]).map(s => (
+                      <button key={s} onClick={() => setMarkerShape(s)} className={`flex h-7 w-7 items-center justify-center rounded-lg border text-[11px] font-black transition-all ${markerShape === s ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-zinc-200 text-zinc-500'}`} title={s}>
+                        {markerShapeIcon(s)}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    {[
+                      { value: 2, label: lang === 'pt' ? 'F' : 'T', title: t.thin },
+                      { value: 4, label: lang === 'pt' ? 'M' : 'M', title: t.medium },
+                      { value: 7, label: lang === 'pt' ? 'G' : 'T', title: t.thick }
+                    ].map(option => (
+                      <button key={option.value} onClick={() => setLineThickness(option.value as LineThickness)} className={`flex h-7 w-7 items-center justify-center rounded-lg border text-[11px] font-black transition-all ${lineThickness === option.value ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-zinc-200 text-zinc-500'}`} title={option.title}>
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             <FretboardSVG state={state} onEvent={handleEvent} theme={theme} isActive={false} selectedColor={markerColor} selectedShape={markerShape} editorMode={editorMode} isExport={isExporting} feedbackNote={noteClickFeedback} />
@@ -932,9 +980,17 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             </div>
             
             <div className="md:w-[30%] flex flex-col gap-4">
-               <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] flex items-center gap-2">
-                  <span className="w-2 h-2 bg-amber-500 rounded-full"></span> DICAS
-               </h4>
+               <div className="flex items-center justify-between gap-3">
+                 <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] flex items-center gap-2">
+                    <span className="w-2 h-2 bg-amber-500 rounded-full"></span> DICAS
+                 </h4>
+                 {onToggleTips && (
+                   <button onClick={onToggleTips} className={`rounded-lg border px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.14em] transition-all ${showTips ? 'border-zinc-200 text-zinc-400 hover:text-red-500' : 'border-blue-200 bg-blue-50 text-blue-600'}`}>
+                     {showTips ? (lang === 'pt' ? 'Ocultar' : 'Hide') : (lang === 'pt' ? 'Mostrar' : 'Show')}
+                   </button>
+                 )}
+               </div>
+               {showTips ? (
                <div className={`flex-1 flex items-center justify-center p-8 rounded-3xl border border-dashed transition-all ${isLight ? 'bg-zinc-50/50 border-zinc-200' : 'bg-zinc-800/30 border-zinc-700'}`}>
                   <div className="flex flex-col gap-3 text-center">
                      <p className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 italic leading-relaxed tracking-tight">
@@ -952,6 +1008,13 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                      )}
                   </div>
                </div>
+               ) : (
+                 <div className={`flex-1 flex items-center justify-center p-8 rounded-3xl border border-dashed transition-all ${isLight ? 'bg-zinc-50/50 border-zinc-200 text-zinc-400' : 'bg-zinc-800/30 border-zinc-700 text-zinc-500'}`}>
+                   <p className="text-center text-[10px] font-black uppercase tracking-[0.2em]">
+                     {lang === 'pt' ? 'Dicas ocultas neste perfil' : 'Tips hidden for this profile'}
+                   </p>
+                 </div>
+               )}
                <div className="text-center opacity-30 mt-1">
                   <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">v1.8.1 Engine • {lang === 'pt' ? 'Sistema Automático' : 'Automatic System'}</span>
                </div>

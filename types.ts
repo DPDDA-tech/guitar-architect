@@ -86,4 +86,5 @@ export interface AppState {
   currentUser: string;
   userLogo?: string;
   defaultInstrument?: InstrumentType;
+  showTips?: boolean;
 }

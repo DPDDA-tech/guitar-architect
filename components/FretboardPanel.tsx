@@ -25,7 +25,7 @@ const LogoIcon = ({ variant = 'default' }: { variant?: 'default' | 'large' | 'fo
         alt="Guitar Architect Logo" 
         className={`
           object-contain transition-transform hover:scale-110 drop-shadow-[0_0_10px_rgba(59,130,246,0.4)]
-          ${isLarge ? 'w-24 h-24 md:w-32 md:h-32' : (isFooter ? 'w-8 h-8 md:w-10 md:h-10' : 'w-10 h-10 md:w-14 md:h-14')}
+          ${isLarge ? 'w-24 h-24 md:w-32 md:h-32' : (isFooter ? 'w-8 h-8 md:w-10 md:h-10' : 'w-12 h-12 md:w-16 md:h-16')}
         `}
         onError={(e) => {
           const target = e.target as HTMLImageElement;
@@ -44,6 +44,19 @@ const FullScreenIcon = ({ isFullScreen }: { isFullScreen: boolean }) => (
     ) : (
       <path d="M15 3h6v6M9 21H3v-6M21 15v6h-6M3 9V3h6" />
     )}
+  </svg>
+);
+
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
   </svg>
 );
 
@@ -93,6 +106,7 @@ const FretboardPanel: React.FC = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
+  const [showTips, setShowTips] = useState(true);
 
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -131,7 +145,8 @@ const switchUserSession = (newUser: string) => {
       lang,
       currentUser: user,
       userLogo,
-      defaultInstrument
+      defaultInstrument,
+      showTips
     });
   }
 
@@ -251,6 +266,7 @@ useEffect(() => {
       setLang((config.lang as Lang) || 'pt');
       setUser(config.currentUser || '');
       setUserLogo(config.userLogo);
+      setShowTips(config.showTips ?? true);
 
       const bootInstrument: InstrumentType =
         config.defaultInstrument || 'guitar-6';
@@ -355,6 +371,7 @@ useEffect(() => {
         currentUser: user,
         userLogo: userLogo,
         defaultInstrument,
+        showTips,
       });
 
       setSaveStatus('saved');
@@ -372,6 +389,7 @@ useEffect(() => {
   lang,
   user,
   userLogo,
+  showTips,
   isExporting,
   globalTranspose,
   defaultInstrument
@@ -400,7 +418,8 @@ const handleLogout = () => {
       lang,
       currentUser: user,
       userLogo,
-      defaultInstrument
+      defaultInstrument,
+      showTips
     });
   }
 
@@ -579,32 +598,24 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
                <LogoIcon />
                <div className="min-w-0">
                   <h1 className="text-[16px] md:text-2xl font-black italic text-blue-600 leading-none tracking-tighter uppercase truncate">GUITAR ARCHITECT</h1>
-                  <input
-  value={projectName}
-  onChange={e => setProjectName(e.target.value)}
-  className={`bg-transparent font-bold text-[10px] md:text-xs
-  focus:outline-none border-b border-transparent
-  focus:border-blue-500 truncate max-w-[140px]
-  ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}
-  placeholder={t.projectName}
-/>
-
                   <p className="text-[8px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-tight mt-1">{t.tagline}</p>
+                  <label className={`mt-2 flex max-w-[260px] items-center gap-2 rounded-lg border px-2 py-1 ${isLight ? 'bg-white/70 border-zinc-200' : 'bg-zinc-900/70 border-zinc-800'}`}>
+                    <span className="text-[8px] font-black uppercase tracking-[0.18em] text-zinc-400">{lang === 'pt' ? 'Projeto' : 'Project'}</span>
+                    <input
+                      value={projectName}
+                      onChange={e => setProjectName(e.target.value)}
+                      className={`min-w-0 flex-1 bg-transparent font-black text-[10px] md:text-xs focus:outline-none truncate ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}
+                      placeholder={t.projectName}
+                    />
+                  </label>
                   <div className="flex items-center gap-1.5 mt-2">
-                     <span className={`text-[10px] md:text-[11px] font-black uppercase truncate max-w-[100px] md:max-w-none ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>
-                        {user || (lang === 'pt' ? 'Visitante' : 'Guest')}
+                     <span className={`text-[10px] md:text-[11px] font-black uppercase truncate max-w-[130px] md:max-w-none ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>
+                        <span className="text-zinc-400">{lang === 'pt' ? 'Usuário:' : 'User:'}</span> {user || (lang === 'pt' ? 'Visitante' : 'Guest')}
                      </span>
                      <div className="flex gap-2">
   <button
-    onClick={() => setShowLoginModal(true)}
-    className="text-[9px] md:text-[10px] text-blue-600 font-black hover:underline uppercase tracking-tight opacity-70 hover:opacity-100 transition-opacity"
-  >
-    IDENTIDADE
-  </button>
-
-  <button
     onClick={handleLogout}
-    className="text-[9px] md:text-[10px] bg-red-600 text-white font-black px-2.5 py-1 rounded-md uppercase tracking-tight hover:bg-red-700 active:scale-95 transition-all shadow-sm"
+    className={`text-[8px] md:text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tight active:scale-95 transition-all border ${isLight ? 'border-zinc-200 text-zinc-500 hover:border-red-300 hover:text-red-600' : 'border-zinc-700 text-zinc-400 hover:border-red-500 hover:text-red-400'}`}
   >
     LOGOFF
   </button>
@@ -615,11 +626,22 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
             </div>
 
             <div className="flex items-center gap-1.5 md:gap-4 shrink-0">
+               <button
+                 onClick={() => setTheme(isLight ? 'dark' : 'light')}
+                 className={`p-2 md:p-2.5 rounded-xl border transition-all ai-glow ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+                 title={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
+                 aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
+               >
+                  {isLight ? <MoonIcon /> : <SunIcon />}
+               </button>
                <button onClick={toggleFullScreen} className={`p-2 md:p-2.5 rounded-xl border transition-all ai-glow ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`} title="Toggle Full Screen">
                   <FullScreenIcon isFullScreen={isFullScreen} />
                </button>
 
                {/* LOAD / SAVE — SEPARADOS */}
+               <a href="/legal/help.html" target="_blank" rel="noreferrer" className={`p-2 md:p-2.5 rounded-xl border transition-all ai-glow font-black text-sm ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`} title={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'} aria-label={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'}>
+                 ?
+               </a>
 <div className="flex items-center gap-2 md:gap-3">
 
   {/* LOAD */}
@@ -629,7 +651,7 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
       px-4 md:px-6 py-2 md:py-3
       rounded-xl border font-black uppercase
       text-[10px] md:text-[11px]
-      transition-all shadow-sm
+      transition-all shadow-sm ai-glow
       ${isLight
         ? 'bg-white border-zinc-300 text-zinc-800 hover:border-blue-500 hover:text-blue-600'
         : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-blue-500 hover:text-blue-400'}
@@ -645,7 +667,7 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
       px-4 md:px-6 py-2 md:py-3
       rounded-xl border font-black uppercase
       text-[10px] md:text-[11px]
-      transition-all shadow-sm
+      transition-all shadow-sm ai-glow
       ${isLight
         ? 'bg-white border-zinc-300 text-zinc-800 hover:border-emerald-500 hover:text-emerald-600'
         : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-emerald-500 hover:text-emerald-400'}
@@ -683,7 +705,7 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
         text-white
         shadow-md
         active:scale-90
-        transition-transform
+        transition-transform ai-glow
       "
     >
       PNG
@@ -700,7 +722,7 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
         text-white
         shadow-md
         active:scale-90
-        transition-transform
+        transition-transform ai-glow
       "
     >
       PDF
@@ -712,7 +734,7 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
 <div className="relative">
   <button
     onClick={() => setShowProjectMenu(prev => !prev)}
-    className={`px-4 md:px-5 py-2 md:py-3 rounded-xl border font-black uppercase text-[10px] md:text-[11px] transition-all ${isLight ? 'bg-white border-zinc-300 text-zinc-800 hover:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-blue-500'}`}
+    className={`px-4 md:px-5 py-2 md:py-3 rounded-xl border font-black uppercase text-[10px] md:text-[11px] transition-all ai-glow ${isLight ? 'bg-white border-zinc-300 text-zinc-800 hover:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-blue-500'}`}
   >
     MENU
   </button>
@@ -720,38 +742,13 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
   {showProjectMenu && (
     <div className={`absolute right-0 top-full mt-3 w-[290px] rounded-2xl border p-4 shadow-2xl z-[80] ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
       <div className="space-y-4">
-        <div className="flex items-center justify-between gap-3">
-          <span className={`text-[8px] font-black uppercase tracking-widest ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
-            {lang === 'pt' ? 'Transposicao' : 'Transpose'}
-          </span>
-          <div className={`flex items-center gap-1 rounded-xl border px-1.5 py-1 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
-            <button onClick={() => handleGlobalTranspose(1)} className="w-7 h-7 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors">+</button>
-            <div className="flex flex-col items-center justify-center px-1 min-w-[26px]">
-              <span className="font-black text-[10px] leading-none">
-                {globalTranspose === 0 ? '0' : globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}
-              </span>
-              <button onClick={() => handleGlobalTranspose(0)} className="text-[7px] font-black uppercase text-zinc-400 hover:text-red-500 leading-none">reset</button>
-            </div>
-            <button onClick={() => handleGlobalTranspose(-1)} className="w-7 h-7 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors">-</button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button onClick={() => setTheme(isLight ? 'dark' : 'light')} className={`py-2.5 rounded-xl border text-[10px] font-black uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
-            {isLight ? 'Dark' : 'Light'}
-          </button>
-          <button onClick={toggleFullScreen} className={`py-2.5 rounded-xl border text-[10px] font-black uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
-            Fullscreen
-          </button>
-        </div>
-
         <div className={`flex border rounded-lg p-0.5 ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
           <button onClick={() => setLang('pt')} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'pt' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>PT</button>
           <button onClick={() => setLang('en')} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>EN</button>
         </div>
 
         <button onClick={() => setShowImportModal(true)} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-          IMPORTAR JSON
+          {lang === 'pt' ? 'IMPORTAR JSON DE DIAGRAMA' : 'IMPORT DIAGRAM JSON'}
         </button>
 
         <button onClick={clearAll} className="w-full px-3 py-2.5 text-[10px] font-black text-red-500/80 border border-red-300/40 rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase">
@@ -820,8 +817,6 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
   </div>
 </div>
 
-
-               <button onClick={() => setTheme(isLight ? 'dark' : 'light')} className={`hidden p-2.5 md:p-3 rounded-xl border text-sm md:text-base transition-colors ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>{isLight ? '☾' : '☼'}</button>
 
                <div className="hidden items-center gap-3 ml-3">
 {/* LANG */}
@@ -896,7 +891,7 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
           </div>
         ) : (
           instances.map((inst, idx) => (
-            <FretboardInstance key={inst.id} state={inst} updateState={(s) => updateInstance(inst.id, s)} onRemove={() => setInstances(prev => prev.filter(i => i.id !== inst.id))} onMove={(dir) => { const newList = [...instances]; const tIdx = dir === 'up' ? idx - 1 : idx + 1; if (tIdx >= 0 && tIdx < newList.length) { [newList[idx], newList[tIdx]] = [newList[tIdx], newList[idx]]; setInstances(newList); } }} onAdd={addInstance} isFirst={idx === 0} isLast={idx === instances.length - 1} theme={theme} lang={lang} isActive={false} onActivate={() => {}} isExporting={isExporting} />
+            <FretboardInstance key={inst.id} state={inst} updateState={(s) => updateInstance(inst.id, s)} onRemove={() => setInstances(prev => prev.filter(i => i.id !== inst.id))} onMove={(dir) => { const newList = [...instances]; const tIdx = dir === 'up' ? idx - 1 : idx + 1; if (tIdx >= 0 && tIdx < newList.length) { [newList[idx], newList[tIdx]] = [newList[tIdx], newList[idx]]; setInstances(newList); } }} onAdd={addInstance} isFirst={idx === 0} isLast={idx === instances.length - 1} theme={theme} lang={lang} isActive={false} onActivate={() => {}} isExporting={isExporting} globalTranspose={globalTranspose} onGlobalTranspose={handleGlobalTranspose} showTips={showTips} onToggleTips={() => setShowTips(prev => !prev)} />
           ))
         )}
       </div>
@@ -911,6 +906,7 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
                <a href="/legal/privacy.html" target="_blank" className="hover:text-blue-600 transition-colors">Privacidade</a>
                <a href="/legal/terms.html" target="_blank" className="hover:text-blue-600 transition-colors">Termos</a>
                <a href="/legal/license.html" target="_blank" className="hover:text-blue-600 transition-colors">Licença</a>
+               <a href="/legal/help.html" target="_blank" className="hover:text-blue-600 transition-colors">Ajuda</a>
             </div>
             <p className={`text-[10px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>© 2026</p>
          </div>

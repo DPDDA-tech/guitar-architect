@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajuda e Perguntas Frequentes — Guitar Architect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            background-image:
+                linear-gradient(#e2e8f0 1px, transparent 1px),
+                linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="text-zinc-800 font-sans leading-relaxed">
+    <div class="max-w-3xl mx-auto px-6 py-20">
+        <a href="/" class="inline-flex items-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest mb-12 hover:underline">
+            ← Voltar ao App
+        </a>
+
+        <div class="content-card p-8 md:p-12 rounded-[40px] border border-zinc-200 shadow-2xl">
+            <h1 class="text-4xl font-black italic text-blue-600 uppercase tracking-tighter mb-2">Ajuda e FAQ</h1>
+            <p class="text-xs font-bold text-zinc-500 uppercase tracking-[0.2em] mb-8">Guia rápido de uso do Guitar Architect</p>
+
+            <div class="space-y-8 text-sm md:text-base">
+                <section>
+                    <p class="font-medium">O Guitar Architect é uma área de trabalho para criar, estudar e exportar diagramas de escalas, acordes, campos harmônicos, CAGED e marcações livres no braço de instrumentos de cordas.</p>
+                </section>
+
+                <hr class="border-zinc-100" />
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">1. Como começo um diagrama?</h2>
+                    <p>Clique em <strong>Novo</strong> no cabeçalho do diagrama. O assistente permite criar escala, acorde, campo harmônico ou diagrama livre. Depois de criado, o diagrama aparece na área central e pode ser editado sem sair da página.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">2. Como altero instrumento, afinação e número de cordas?</h2>
+                    <p>Abra <strong>Controles</strong> e use a aba <strong>Base</strong>. Ali você escolhe guitarra de 6, 7 ou 8 cordas, baixo de 4 ou 5 cordas, afinações predefinidas e o modo canhoto. A opção <strong>Custom</strong> permite trabalhar com afinação personalizada quando disponível no projeto.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">3. Onde altero tom, escala e harmonia?</h2>
+                    <p>Use a aba <strong>Harmonia</strong>. Ela concentra tônica, escala, tríades, tétrades, graus, inversões, voicings close/drop 2/drop 3 e shapes CAGED. Os botões <strong>Escala</strong> e <strong>Tônica</strong> da toolbar também abrem essa área.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">4. O que são Rótulos?</h2>
+                    <p>Rótulos controlam o texto dentro dos marcadores do braço: notas, intervalos, dedos ou apenas pontos. Use o botão <strong>Rótulos</strong> da toolbar ou a aba <strong>Visual</strong>.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">5. Como uso o Editor?</h2>
+                    <p>O botão <strong>Editor</strong> abre as ferramentas de marcação. No modo marcador, escolha forma e cor e clique no braço para inserir/remover pontos. No modo linha, escolha espessura fina, média ou grossa e clique em dois pontos do braço para ligar posições.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">6. Como marco cordas soltas ou abafadas?</h2>
+                    <p>À esquerda do nut há indicadores discretos de <strong>O/X</strong>. Clique nessa área da corda para alternar entre normal, open e mute. Esse controle é útil para acordes com cordas soltas ou abafadas.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">7. Para que serve a transposição?</h2>
+                    <p>A transposição move o projeto em semitons, ajustando raízes e marcações. Use os botões de <strong>Transp.</strong> na toolbar acima do fretboard. O botão <strong>reset</strong> volta ao ponto inicial.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">8. Como organizo vários diagramas?</h2>
+                    <p>Use <strong>Novo</strong> para adicionar outro diagrama, <strong>Duplicar</strong> para copiar o atual e as setas para mudar a ordem. Cada diagrama mantém título, subtítulo, notas, controles visuais e conteúdo próprio.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">9. Como salvar e carregar projetos?</h2>
+                    <p>O app salva projetos localmente no navegador. <strong>Carregar Projetos</strong> abre a biblioteca local do usuário atual. O campo <strong>Projeto</strong> no cabeçalho permite renomear o projeto.</p>
+                    <div class="bg-blue-50 border border-blue-100 p-6 rounded-3xl mt-4">
+                        <p class="text-blue-800 font-bold mb-2">Importante:</p>
+                        <p class="text-blue-700">Os projetos ficam no localStorage. Se você limpar os dados do navegador ou usar outro computador, esses projetos não serão recuperados automaticamente.</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">10. Qual a diferença entre Carregar Projetos e Importar JSON?</h2>
+                    <p><strong>Carregar Projetos</strong> abre projetos já salvos na biblioteca local. <strong>Importar JSON de Diagrama</strong> recebe dados externos em formato JSON, úteis para trocar diagramas ou restaurar conteúdo exportado manualmente.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">11. Como exporto PNG ou PDF?</h2>
+                    <p>Use os botões <strong>PNG</strong> e <strong>PDF</strong> no cabeçalho. As bibliotecas de exportação são carregadas sob demanda, apenas no momento da exportação.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">12. Posso usar logomarca própria?</h2>
+                    <p>Sim. No fluxo de identidade, você pode definir usuário local e carregar uma logomarca. Ela aparece em exportações e ajuda a personalizar materiais didáticos.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">13. Como oculto as dicas?</h2>
+                    <p>No bloco <strong>Dicas</strong>, use o botão <strong>Ocultar</strong>. Isso é útil para professores, materiais internos ou aulas em que fontes externas não devem aparecer.</p>
+                </section>
+            </div>
+        </div>
+
+        <footer class="mt-20 text-center opacity-40">
+            <p class="text-[10px] font-black uppercase tracking-[0.5em]">Guitar Architect © 2026</p>
+        </footer>
+    </div>
+</body>
+</html>

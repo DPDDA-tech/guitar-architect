@@ -357,7 +357,12 @@ const renderBrushPaths = () => {
                <circle cx={x} cy={y} r="8" fill="none" stroke="#22c55e" strokeWidth="4" opacity="0.8" />
             </g>
           );
-          return null;
+          return (
+            <g key={`normal-${s}`} opacity={isLight ? 0.5 : 0.35}>
+               <text x={x} y={y - 15} textAnchor="middle" fontSize="8" fontWeight="900" fill={colors.text}>O/X</text>
+               <circle cx={x} cy={y} r="8" fill="none" stroke={colors.text} strokeWidth="2" strokeDasharray="3 3" />
+            </g>
+          );
         })}
 
         {layers.showInlays && [3, 5, 7, 9, 12, 15, 17, 19, 21, 24].map(f => {
