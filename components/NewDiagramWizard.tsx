@@ -8,14 +8,15 @@ interface NewDiagramWizardProps {
   onCreate: (state: FretboardState) => void;
   onClose: () => void;
   lang: Lang;
+  initialDiagramType?: DiagramType;
 }
 
 type DiagramType = 'scale' | 'chord' | 'harmonic-field' | 'free';
 
-const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, lang }) => {
+const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, lang, initialDiagramType }) => {
   const t = translations[lang];
-  const [step, setStep] = useState(1);
-  const [diagramType, setDiagramType] = useState<DiagramType>('scale');
+  const [diagramType, setDiagramType] = useState<DiagramType>(initialDiagramType || 'scale');
+  const [step, setStep] = useState(initialDiagramType ? 2 : 1);
   const [instrument, setInstrument] = useState<InstrumentType>('guitar-6');
   const [tuning, setTuning] = useState<TuningKey>('Standard');
   const [root, setRoot] = useState('C');

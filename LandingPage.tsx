@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import NewDiagramWizard from "./components/NewDiagramWizard";
 
 const COPY = {
   en: {
@@ -145,10 +146,17 @@ function CardContent({ children }: { children: React.ReactNode }) {
 
 export default function LandingPage() {
   const [lang, setLang] = useState<"en" | "pt">("en");
+  const [showWizard, setShowWizard] = useState(false);
+  const [wizardType, setWizardType] = useState<'scale' | 'chord' | 'harmonic-field' | 'free'>('scale');
   const t = COPY[lang];
 
   const goToApp = () => {
     window.location.href = "/app";
+  };
+
+  const openWizard = (diagramType: 'scale' | 'chord' | 'harmonic-field' | 'free') => {
+    setWizardType(diagramType);
+    setShowWizard(true);
   };
 
   return (
@@ -196,6 +204,78 @@ export default function LandingPage() {
             {t.secondaryCTA}
           </Button>
         </motion.div>
+      </section>
+
+      {/* CREATE FLOW */}
+      <section className="max-w-6xl mx-auto px-6 py-16">
+        <div className="mx-auto max-w-3xl text-center mb-12">
+          <p className="text-sm uppercase tracking-[0.4em] text-blue-300 mb-4">
+            {lang === 'pt' ? 'O que você quer criar?' : 'What do you want to create?'}
+          </p>
+          <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-white">
+            {lang === 'pt'
+              ? 'Comece seu próximo diagrama com um ponto de partida guiado.'
+              : 'Start your next diagram with a guided starting point.'}
+          </h2>
+          <p className="mt-4 text-zinc-400 text-lg leading-8">
+            {lang === 'pt'
+              ? 'Escolha um tipo de diagrama e veja como o Guitar Architect prepara o fluxo para você.'
+              : 'Choose a diagram type and see how Guitar Architect prepares the experience for you.'}
+          </p>
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            {
+              type: 'scale',
+              title: lang === 'pt' ? 'Escala' : 'Scale',
+              description:
+                lang === 'pt'
+                  ? 'Visualize modos e padrões de escala no braço.'
+                  : 'Visualize modes and scale patterns across the neck.',
+            },
+            {
+              type: 'chord',
+              title: lang === 'pt' ? 'Acorde' : 'Chord',
+              description:
+                lang === 'pt'
+                  ? 'Construa acordes com inversões, voicings e CAGED.'
+                  : 'Build chords with inversions, voicings, and CAGED.',
+            },
+            {
+              type: 'harmonic-field',
+              title: lang === 'pt' ? 'Campo Harmônico' : 'Harmonic Field',
+              description:
+                lang === 'pt'
+                  ? 'Explore graus e progressões dentro de uma tonalidade.'
+                  : 'Explore degrees and progressions inside a key.',
+            },
+            {
+              type: 'free',
+              title: lang === 'pt' ? 'Diagrama Livre' : 'Free Diagram',
+              description:
+                lang === 'pt'
+                  ? 'Crie livremente com todos os controles já disponíveis.'
+                  : 'Create freely with all controls already available.',
+            },
+          ].map((card) => (
+            <motion.button
+              key={card.type}
+              whileHover={{ y: -4 }}
+              className="group rounded-[32px] border border-zinc-800 bg-zinc-900 p-8 text-left transition-shadow shadow-sm hover:shadow-xl"
+              onClick={() => openWizard(card.type as 'scale' | 'chord' | 'harmonic-field' | 'free')}
+            >
+              <div className="mb-6 inline-flex rounded-full bg-blue-500/10 px-3 py-2 text-sm font-black uppercase tracking-[0.3em] text-blue-200">
+                {card.title}
+              </div>
+              <h3 className="text-2xl font-semibold text-white mb-3">{card.title}</h3>
+              <p className="text-zinc-400 leading-7">{card.description}</p>
+              <div className="mt-8 flex items-center gap-2 text-sm font-black uppercase tracking-[0.2em] text-blue-400">
+                {lang === 'pt' ? 'Iniciar' : 'Start'} →
+              </div>
+            </motion.button>
+          ))}
+        </div>
       </section>
 
       {/* VALUES */}
@@ -258,6 +338,18 @@ export default function LandingPage() {
         <h2 className="text-4xl font-bold mb-8">{t.finalCTA}</h2>
         <Button onClick={goToApp}>{t.primaryCTA}</Button>
       </section>
+
+      {showWizard && (
+        <NewDiagramWizard
+          onCreate={() => setShowWizard(false)}
+          onClose={() => setShowWizard(false)}
+          lang={lang}
+          initialDiagramType={wizardType}
+        />
+      )}
+      
+      {/* FOOTER */}
+
 
       {/* FOOTER */}
       <footer className="border-t border-zinc-800 py-8 text-center text-zinc-500 text-sm">
