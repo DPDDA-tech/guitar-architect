@@ -10,6 +10,7 @@ import {
   getLibrary, 
   saveProjectToLibrary 
 } from '../utils/persistence';
+import { buildProjectFileName, parseProjectFile, serializeProjectFile } from '../utils/projectFile';
 
 const HERO_IMAGE = "/hero.png"; 
 const APP_LOGO_PATH = "/logo.png"; 
@@ -116,6 +117,7 @@ const FretboardPanel: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const initialized = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const projectFileInputRef = useRef<HTMLInputElement>(null);
 
   const t = translations[lang] || translations['pt'];
 
@@ -512,6 +514,70 @@ const handleLogout = () => {
     }
   };
 
+  const exportProjectFile = () => {
+    const payload = serializeProjectFile({
+      projectId,
+      projectName,
+      user,
+      instances,
+      globalTranspose,
+      theme,
+      lang,
+      defaultInstrument,
+      userLogo,
+      showTips,
+    });
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = buildProjectFileName(projectName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    setShowProjectMenu(false);
+  };
+
+  const importProjectFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.json')) {
+      alert(lang === 'pt' ? 'Selecione um arquivo .json válido.' : 'Select a valid .json file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const payload = parseProjectFile(String(reader.result || ''));
+        const confirmMsg = lang === 'pt'
+          ? 'Importar este projeto substituirá o projeto aberto agora. Continuar?'
+          : 'Importing this project will replace the currently open project. Continue?';
+
+        if (!window.confirm(confirmMsg)) return;
+
+        setProjectId(payload.project.id || crypto.randomUUID());
+        setProjectName(payload.project.name || (lang === 'pt' ? 'Projeto Importado' : 'Imported Project'));
+        setUser(payload.project.user || user);
+        setInstances(payload.project.instances);
+        setGlobalTranspose(payload.project.globalTransposition || 0);
+        setTheme(payload.settings.theme || theme);
+        setLang(payload.settings.lang || lang);
+        setDefaultInstrument(payload.settings.defaultInstrument || payload.project.instances[0]?.instrumentType || defaultInstrument);
+        setUserLogo(payload.settings.userLogo);
+        setShowTips(payload.settings.showTips ?? true);
+        setSaveStatus('saving');
+        setShowProjectMenu(false);
+      } catch {
+        alert(lang === 'pt' ? 'Arquivo de projeto inválido.' : 'Invalid project file.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const updateInstance = (id: string, newState: FretboardState) => {
     setInstances(prev => prev.map(inst => inst.id === id ? newState : inst));
   };
@@ -560,6 +626,13 @@ const handleLogout = () => {
 
   return (
     <div className={`min-h-screen transition-all ${isExporting ? 'is-exporting-mode' : (isLight ? 'blueprint-grid-light' : 'blueprint-grid-dark')}`}>
+      <input
+        ref={projectFileInputRef}
+        type="file"
+        accept=".json,application/json"
+        onChange={importProjectFile}
+        className="hidden"
+      />
       
       {isSmallScreen && showMobileHint && !isExporting && (
   <div className="
@@ -589,7 +662,7 @@ const handleLogout = () => {
       <div className={`fixed top-0 left-0 w-full z-50 border-b backdrop-blur-2xl px-4 md:px-10 transition-all duration-500
 ${isLight ? 'bg-white/90 border-zinc-200 shadow-sm' : 'bg-zinc-950/90 border-zinc-800'}
 ${isExporting ? 'hidden' : ''}
-${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'}
+${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 `}
 >
 
@@ -646,7 +719,7 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
 
   {/* LOAD */}
   <button
-    onClick={() => setShowLoadModal(true)}
+    onClick={() => projectFileInputRef.current?.click()}
     className={`
       px-4 md:px-6 py-2 md:py-3
       rounded-xl border font-black uppercase
@@ -657,12 +730,12 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
         : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-blue-500 hover:text-blue-400'}
     `}
   >
-    {window.innerWidth < 768 ? 'LISTA' : t.loadProject}
+    {lang === 'pt' ? 'ABRIR JSON' : 'OPEN JSON'}
   </button>
 
   {/* SAVE */}
   <button
-    onClick={() => setSaveStatus('saved')}
+    onClick={exportProjectFile}
     className={`
       px-4 md:px-6 py-2 md:py-3
       rounded-xl border font-black uppercase
@@ -673,7 +746,7 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
         : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-emerald-500 hover:text-emerald-400'}
     `}
   >
-    {window.innerWidth < 768 ? 'SALVAR' : t.saveProject}
+    {lang === 'pt' ? 'SALVAR JSON' : 'SAVE JSON'}
   </button>
 
 </div>
@@ -747,9 +820,18 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
           <button onClick={() => setLang('en')} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>EN</button>
         </div>
 
-        <button onClick={() => setShowImportModal(true)} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-          {lang === 'pt' ? 'IMPORTAR JSON DE DIAGRAMA' : 'IMPORT DIAGRAM JSON'}
+        <button onClick={() => setShowLoadModal(true)} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+          {lang === 'pt' ? 'CARREGAR PROJETOS LOCAIS' : 'LOAD LOCAL PROJECTS'}
         </button>
+
+        <div className="grid grid-cols-1 gap-2">
+          <button onClick={exportProjectFile} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-emerald-500 hover:text-emerald-600' : 'border-zinc-700 text-zinc-200 hover:border-emerald-500 hover:text-emerald-400'}`}>
+            {lang === 'pt' ? 'EXPORTAR PROJETO (.JSON)' : 'EXPORT PROJECT (.JSON)'}
+          </button>
+          <button onClick={() => projectFileInputRef.current?.click()} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+            {lang === 'pt' ? 'IMPORTAR PROJETO (.JSON)' : 'IMPORT PROJECT (.JSON)'}
+          </button>
+        </div>
 
         <button onClick={clearAll} className="w-full px-3 py-2.5 text-[10px] font-black text-red-500/80 border border-red-300/40 rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase">
           LIMPAR TUDO
@@ -877,7 +959,7 @@ ${isSmallScreen ? '-translate-y-[72%] hover:translate-y-0 py-2' : 'py-3 md:py-4'
     isExporting
       ? 'pt-10'
       : isSmallScreen
-        ? 'pt-24 md:pt-48'
+        ? 'pt-6 md:pt-48'
         : 'pt-24 md:pt-48'
   }`}
 >

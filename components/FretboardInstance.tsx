@@ -761,7 +761,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         </div>
       </div>
 
-      <div className={`operational-btns mb-5 md:pr-[420px] ${isExporting ? 'hidden' : ''}`}>
+      <div className={`operational-btns mb-5 hidden md:block md:pr-[420px] ${isExporting ? 'hidden' : ''}`}>
         <div className={`flex flex-col gap-3 rounded-2xl border px-3 py-3 shadow-sm md:flex-row md:items-center md:justify-between ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
             <button onClick={() => toggleQuickPanel('editor')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'editor' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
@@ -960,7 +960,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <FretboardSVG state={state} onEvent={handleEvent} theme={theme} isActive={false} selectedColor={markerColor} selectedShape={markerShape} editorMode={editorMode} isExport={isExporting} feedbackNote={noteClickFeedback} />
          </div>
          
-         <div className={`mt-10 flex flex-col md:flex-row gap-8 ${isExporting ? 'hidden-operational-btns' : ''}`}>
+         <div className={`mt-10 hidden flex-col md:flex md:flex-row gap-8 ${isExporting ? 'hidden-operational-btns' : ''}`}>
             <div className="md:w-[70%] flex flex-col gap-4">
                <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] flex items-center gap-2">
                   <span className="w-2 h-2 bg-blue-600 rounded-full"></span> {t.notes}

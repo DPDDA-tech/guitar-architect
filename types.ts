@@ -88,3 +88,17 @@ export interface AppState {
   defaultInstrument?: InstrumentType;
   showTips?: boolean;
 }
+
+export interface ProjectFilePayload {
+  schema: 'guitar-architect-project';
+  appVersion: string;
+  exportedAt: string;
+  project: Project;
+  settings: {
+    theme: ThemeMode;
+    lang: 'pt' | 'en';
+    defaultInstrument?: InstrumentType;
+    userLogo?: string;
+    showTips?: boolean;
+  };
+}
