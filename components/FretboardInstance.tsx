@@ -17,6 +17,7 @@ interface FretboardInstanceProps {
   onAdd: (cloneData?: FretboardState) => void;
   isFirst: boolean;
   isLast: boolean;
+  diagramNumber: number;
   theme: ThemeMode;
   lang: Lang;
   isActive: boolean;
@@ -30,7 +31,7 @@ interface FretboardInstanceProps {
 
 
 const FretboardInstance: React.FC<FretboardInstanceProps> = ({ 
-  state, updateState, onRemove, onMove, onAdd, isFirst, isLast, theme, lang, isExporting = false, globalTranspose = 0, onGlobalTranspose, showTips = true, onToggleTips
+  state, updateState, onRemove, onMove, onAdd, isFirst, isLast, diagramNumber, theme, lang, isExporting = false, globalTranspose = 0, onGlobalTranspose, showTips = true, onToggleTips
 }) => {
   const t = translations[lang];
   const [editorMode, setEditorMode] = useState<EditorMode>('marker');
@@ -127,7 +128,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       !state.subtitle &&
       !state.notes;
 
-    if (wizardMode === 'initial' && isFirst && isEmptyDiagram) {
+    if (isFirst && isLast && isEmptyDiagram) {
       updateState(newState);
     } else {
       onAdd(newState);
@@ -531,6 +532,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       {/* HEADER DIAGRAMA */}
       <div className={`flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-5 ${isExporting ? 'hidden-operational-btns' : ''}`}>
         <div className="flex-1">
+          <div className={`mb-3 inline-flex items-center rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-blue-100 bg-blue-50 text-blue-600' : 'border-blue-900/40 bg-blue-950/30 text-blue-300'}`}>
+            {lang === 'pt' ? 'Diagrama' : 'Diagram'} {diagramNumber}
+          </div>
           <input value={state.title} onChange={e => recordAction({...state, title: e.target.value})} className={`bg-transparent text-xl md:text-3xl font-black italic uppercase tracking-tighter focus:outline-none w-full ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`} placeholder={t.titlePlaceholder} />
           <input value={state.subtitle} onChange={e => recordAction({...state, subtitle: e.target.value})} className="bg-transparent text-[11px] md:text-lg font-bold text-zinc-400 focus:outline-none w-full uppercase tracking-wide mt-1" placeholder={t.subtitle} />
         </div>
@@ -1016,7 +1020,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                  </div>
                )}
                <div className="text-center opacity-30 mt-1">
-                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">v1.8.1 Engine • {lang === 'pt' ? 'Sistema Automático' : 'Automatic System'}</span>
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">v1.8.2 Engine • {lang === 'pt' ? 'Sistema Automático' : 'Automatic System'}</span>
                </div>
             </div>
          </div>

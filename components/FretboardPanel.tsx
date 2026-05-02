@@ -141,7 +141,7 @@ const switchUserSession = (newUser: string) => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.1",
+      version: "1.8.2",
       activeProjectId: projectId,
       theme,
       lang,
@@ -366,7 +366,7 @@ useEffect(() => {
       saveProjectToLibrary(currentProject);
 
       saveConfig({
-        version: "1.8.1",
+        version: "1.8.2",
         activeProjectId: projectId,
         theme,
         lang,
@@ -414,7 +414,7 @@ const handleLogout = () => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.1",
+      version: "1.8.2",
       activeProjectId: projectId,
       theme,
       lang,
@@ -973,7 +973,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           </div>
         ) : (
           instances.map((inst, idx) => (
-            <FretboardInstance key={inst.id} state={inst} updateState={(s) => updateInstance(inst.id, s)} onRemove={() => setInstances(prev => prev.filter(i => i.id !== inst.id))} onMove={(dir) => { const newList = [...instances]; const tIdx = dir === 'up' ? idx - 1 : idx + 1; if (tIdx >= 0 && tIdx < newList.length) { [newList[idx], newList[tIdx]] = [newList[tIdx], newList[idx]]; setInstances(newList); } }} onAdd={addInstance} isFirst={idx === 0} isLast={idx === instances.length - 1} theme={theme} lang={lang} isActive={false} onActivate={() => {}} isExporting={isExporting} globalTranspose={globalTranspose} onGlobalTranspose={handleGlobalTranspose} showTips={showTips} onToggleTips={() => setShowTips(prev => !prev)} />
+            <FretboardInstance key={inst.id} state={inst} updateState={(s) => updateInstance(inst.id, s)} onRemove={() => setInstances(prev => prev.filter(i => i.id !== inst.id))} onMove={(dir) => { const newList = [...instances]; const tIdx = dir === 'up' ? idx - 1 : idx + 1; if (tIdx >= 0 && tIdx < newList.length) { [newList[idx], newList[tIdx]] = [newList[tIdx], newList[idx]]; setInstances(newList); } }} onAdd={addInstance} isFirst={idx === 0} isLast={idx === instances.length - 1} diagramNumber={idx + 1} theme={theme} lang={lang} isActive={false} onActivate={() => {}} isExporting={isExporting} globalTranspose={globalTranspose} onGlobalTranspose={handleGlobalTranspose} showTips={showTips} onToggleTips={() => setShowTips(prev => !prev)} />
           ))
         )}
       </div>
