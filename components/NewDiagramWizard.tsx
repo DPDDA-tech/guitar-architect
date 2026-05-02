@@ -183,7 +183,7 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
               ))}
             </select>
             <div className="space-y-3 mb-6">
-              <span className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-500">{lang === 'pt' ? 'Rótulos' : 'Labels'}</span>
+              <span className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-500">{lang === 'pt' ? 'Visual' : 'Visual'}</span>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { value: 'note', label: lang === 'pt' ? 'Notas' : 'Notes' },

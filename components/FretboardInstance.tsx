@@ -685,17 +685,17 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       <div className={`operational-btns mb-5 hidden md:block ${isExporting ? 'hidden' : ''}`}>
         <div className={`flex flex-col gap-3 rounded-2xl border px-3 py-3 shadow-sm md:flex-row md:items-center md:justify-between ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
-            <button onClick={() => toggleQuickPanel('editor')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'editor' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
-              {lang === 'pt' ? 'Editor' : 'Editor'}
-            </button>
             <button onClick={() => toggleQuickPanel('visual')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'visual' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
-              {lang === 'pt' ? 'Rótulos' : 'Labels'}
+              {lang === 'pt' ? 'Visual' : 'Visual'}
             </button>
             <button onClick={() => toggleHarmonyLayer('showScale')} className={`${quickButtonClass} shrink-0 ${state.layers.showScale ? quickActiveButtonClass : ''}`}>
               {t.scaleNotes}
             </button>
             <button onClick={() => toggleHarmonyLayer('showTonic')} className={`${quickButtonClass} shrink-0 ${state.layers.showTonic ? quickActiveButtonClass : ''}`}>
               {t.tonicHighlight}
+            </button>
+            <button onClick={() => toggleQuickPanel('editor')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'editor' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
+              {lang === 'pt' ? 'Editor' : 'Editor'}
             </button>
           </div>
 

@@ -54,7 +54,7 @@ export const translations = {
     labelIntervals: "Intervalos",
     labelFingering: "Dedos",
     labelNone: "Pontos",
-    labels: "Rótulos",
+    labels: "Visual",
     quality: "Qualidade",
     voice: "Vozes",
     fretLabel: "Casas",

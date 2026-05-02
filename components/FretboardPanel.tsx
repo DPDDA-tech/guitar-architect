@@ -11,6 +11,7 @@ import {
   saveProjectToLibrary 
 } from '../utils/persistence';
 import { buildProjectFileName, parseProjectFile, serializeProjectFile } from '../utils/projectFile';
+import SupportModal from './SupportModal';
 
 const HERO_IMAGE = "/hero.png"; 
 const APP_LOGO_PATH = "/logo.png"; 
@@ -107,6 +108,7 @@ const FretboardPanel: React.FC = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const [showTips, setShowTips] = useState(true);
 
   const [showLoadModal, setShowLoadModal] = useState(false);
@@ -833,6 +835,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           </button>
         </div>
 
+        <button onClick={() => { setShowSupportModal(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+          APOIAR O PROJETO
+        </button>
+
         <button onClick={clearAll} className="w-full px-3 py-2.5 text-[10px] font-black text-red-500/80 border border-red-300/40 rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase">
           LIMPAR TUDO
         </button>
@@ -989,6 +995,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                <a href="/legal/terms.html" target="_blank" className="hover:text-blue-600 transition-colors">Termos</a>
                <a href="/legal/license.html" target="_blank" className="hover:text-blue-600 transition-colors">Licença</a>
                <a href="/legal/help.html" target="_blank" className="hover:text-blue-600 transition-colors">Ajuda</a>
+               <a href="#" onClick={() => setShowSupportModal(true)} className="hover:text-blue-600 transition-colors cursor-pointer">Apoie o projeto</a>
             </div>
             <p className={`text-[10px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>© 2026</p>
          </div>
@@ -1138,6 +1145,8 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
     </div>
   </div>
 )}
+
+<SupportModal isOpen={showSupportModal} onClose={() => setShowSupportModal(false)} isLight={theme === 'light'} />
 
 </div>
 );
