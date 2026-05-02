@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import FretboardSVG from './FretboardSVG';
-import { CHROMATIC_SCALE, INSTRUMENT_PRESETS, getNoteAt, getIntervalName, TUNINGS_PRESETS, getFretForNote } from '../music/musicTheory';
+import { CHROMATIC_SCALE, INSTRUMENT_PRESETS, getNoteAt, TUNINGS_PRESETS, getFretForNote } from '../music/musicTheory';
 import { SCALES } from '../music/scales';
 import { DEGREE_NAMES, CHORD_QUALITIES } from '../music/harmony';
 import { translations, Lang } from '../i18n';
@@ -39,7 +39,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const [markerColor, setMarkerColor] = useState('#2563eb');
   const [lineThickness, setLineThickness] = useState<LineThickness>(4);
   const [lineStart, setLineStart] = useState<{string: number, fret: number} | null>(null);
-  const [copyFeedback, setCopyFeedback] = useState(false);
   const [noteClickFeedback, setNoteClickFeedback] = useState<{ string: number; fret: number } | null>(null);
   const [creationHint, setCreationHint] = useState<string | null>(null);
   const [wizardMode, setWizardMode] = useState<'initial' | 'add'>('add');
@@ -141,97 +140,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     creationHintTimeoutRef.current = window.setTimeout(() => setCreationHint(null), 4000);
   }, [onAdd, t, state, isFirst, updateState, wizardMode]);
 
-  const exportDataJSON = () => {
-    const instrument = INSTRUMENT_PRESETS[state.instrumentType];
-    const tuning = state.tuning === 'Custom' ? (state.customTuning || instrument.defaultTuning) : (TUNINGS_PRESETS[state.tuning] || instrument.defaultTuning);
-    const data = {
-      diagramId: state.id,
-      meta: { title: state.title, instrument: state.instrumentType },
-      tuning: { label: state.tuning, structure: tuning },
-      theory: { root: state.root, scale: state.scaleType, harmony: state.harmonyMode },
-      points: state.markers.map(m => {
-        const note = getNoteAt(m.string, m.fret, tuning);
-        return { 
-          string: instrument.strings - m.string, 
-          fret: m.fret, 
-          note, 
-          interval: getIntervalName(state.root, note) 
-        };
-      })
-    };
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
-      setCopyFeedback(true);
-      setTimeout(() => setCopyFeedback(false), 2000);
-    });
-  };
-
-{/* FRETBOARD RANGE */}
-<div className="space-y-3">
-  <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">
-    FRET RANGE
-  </span>
-
-  <div className="flex items-center gap-2">
-
-    {/* START */}
-    <input
-      type="number"
-      min={0}
-      max={state.endFret - 1}
-      value={state.startFret}
-      onChange={e =>
-        recordAction({
-          ...state,
-          startFret: Math.max(
-            0,
-            Math.min(Number(e.target.value), state.endFret - 1)
-          )
-        })
-      }
-      className="w-16 p-2 border rounded-lg text-xs font-black text-center bg-white"
-    />
-
-    <span className="text-xs font-black text-zinc-400">→</span>
-
-    {/* END */}
-    <input
-      type="number"
-      min={state.startFret + 1}
-      max={36}
-      value={state.endFret}
-      onChange={e =>
-        recordAction({
-          ...state,
-          endFret: Math.min(
-            36,
-            Math.max(Number(e.target.value), state.startFret + 1)
-          )
-        })
-      }
-      className="w-16 p-2 border rounded-lg text-xs font-black text-center bg-white"
-    />
-
-  </div>
-
-  {/* PRESETS */}
-  <div className="grid grid-cols-5 gap-1">
-    {[12, 15, 17, 21, 24].map(f => (
-      <button
-        key={f}
-        onClick={() =>
-          recordAction({
-            ...state,
-            startFret: 0,
-            endFret: f
-          })
-        }
-        className="py-1 rounded-md text-[8px] font-black bg-zinc-200 hover:bg-blue-600 hover:text-white transition-all"
-      >
-        {f}
-      </button>
-    ))}
-  </div>
-</div>
 
   const handleEvent = useCallback((event: any) => {
     if (event.type === 'note') {
@@ -292,8 +200,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const OBS_LIMIT = 1500;
   const [isControlPanelOpen, setIsControlPanelOpen] = useState(false);
   const [activeControlTab, setActiveControlTab] = useState<string>('base');
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const quickWizardKey = 'ga_new_diagram_wizard_disabled';
 
   useEffect(() => {
     if (isFirst && typeof window !== 'undefined' && window.localStorage) {
@@ -308,8 +216,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     { id: 'base', label: 'Base' },
     { id: 'visual', label: 'Visual' },
     { id: 'harmony', label: lang === 'pt' ? 'Harmonia' : 'Harmony' },
-    { id: 'editor', label: lang === 'pt' ? 'Editor' : 'Editor' },
-    ...(showAdvanced ? [{ id: 'advanced', label: lang === 'pt' ? 'Avancado' : 'Advanced' }] : [])
+    { id: 'editor', label: lang === 'pt' ? 'Editor' : 'Editor' }
   ] as const;
 
   const panelShell = isLight
@@ -341,6 +248,29 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       setActiveControlTab('harmony');
       setIsControlPanelOpen(true);
     }
+  };
+
+  const createQuickDiagram = () => {
+    handleNewDiagramCreate({
+      ...state,
+      id: crypto.randomUUID(),
+      title: '',
+      subtitle: '',
+      notes: '',
+      markers: [],
+      lines: [],
+      harmonyMode: 'OFF',
+      cagedShape: 'OFF'
+    });
+  };
+
+  const handleNewDiagramClick = () => {
+    if (typeof window !== 'undefined' && window.localStorage?.getItem(quickWizardKey) === 'true') {
+      createQuickDiagram();
+      return;
+    }
+    setWizardMode('add');
+    setShowWizard(true);
   };
 
   const renderControls = () => {
@@ -409,7 +339,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
     if (activeControlTab === 'harmony') {
       return (
-        <div className="space-y-4">
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
           <div className="space-y-2">
             <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.tonic}</span>
             <select value={state.root} onChange={e => recordAction({...state, root: e.target.value})} className={controlInputClass}>
@@ -421,6 +352,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <select value={state.scaleType} onChange={e => recordAction({...state, scaleType: e.target.value})} className={controlInputClass}>
               {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
             </select>
+          </div>
           </div>
           <div className="grid grid-cols-3 gap-1">
             {['OFF', 'TRIADS', 'TETRADS'].map(m => (
@@ -451,12 +383,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             {['CLOSE', 'DROP2', 'DROP3'].map(v => (
               <button key={v} onClick={() => recordAction({...state, voicingMode: v as any})} title={t.tooltipVoicing} className={`${controlButtonBase} ${(state.voicingMode || 'CLOSE') === v ? 'bg-zinc-800 border-zinc-800 text-white' : inactiveButtonClass}`}>{v}</button>
             ))}
-          </div>
-          <div className="flex flex-col gap-2">
-            <select value={state.inversion} onChange={e => recordAction({...state, inversion: Number(e.target.value)})} title={t.tooltipInversion} className={controlInputClass}>
-              <option value="0">Root</option><option value="1">1ª Inv</option><option value="2">2ª Inv</option><option value="3">3ª Inv</option>
-            </select>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">{lang === 'pt' ? 'Vozes' : 'Voicings'}</span>
           </div>
           <div>
             <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">{t.geometry}</span>
@@ -514,16 +440,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       );
     }
 
-    return (
-      <div className="space-y-4">
-        <button onClick={exportDataJSON} className={`w-full px-4 py-3 rounded-xl font-black text-[10px] uppercase border transition-all active:scale-95 ${copyFeedback ? 'bg-emerald-600 text-white border-emerald-600' : inactiveButtonClass}`}>
-          {copyFeedback ? 'OK' : 'JSON'}
-        </button>
-        <p className="text-[10px] font-bold leading-relaxed text-zinc-400 uppercase">
-            {lang === 'pt' ? 'Copie este JSON e use Importar JSON no menu global do projeto.' : 'Copy this JSON and use Import JSON from the global project menu.'}
-          </p>
-        </div>
-    );
+    return null;
   };
 
   return (
@@ -542,8 +459,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
            <button onClick={() => setIsControlPanelOpen(prev => !prev)} className={`px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl font-black text-[10px] md:text-[11px] uppercase border transition-all active:scale-90 ${isControlPanelOpen ? 'bg-blue-600 text-white border-blue-600' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
               {lang === 'pt' ? 'CONTROLES' : 'TOOLS'}
            </button>
-           <button onClick={() => { setWizardMode('add'); setShowWizard(true); }} className="bg-blue-600 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">NOVO</button>
-           <button onClick={() => onAdd(state)} className="bg-zinc-800 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95">{t.cloneCurrent}</button>
+           <button onClick={handleNewDiagramClick} className="bg-blue-600 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">{lang === 'pt' ? 'Novo diagrama' : 'New diagram'}</button>
+           <button onClick={() => onAdd(state)} className="bg-zinc-800 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95">{lang === 'pt' ? 'Duplicar este diagrama' : 'Duplicate this diagram'}</button>
            <div className="flex gap-1.5 items-center bg-blue-50 dark:bg-zinc-800 p-1.5 rounded-xl border border-blue-200 dark:border-zinc-700 shadow-sm [&>button]:bg-white [&>button]:text-zinc-800 [&>button]:border [&>button]:border-zinc-300 [&>button]:shadow-sm">
               <button onClick={() => onMove('up')} disabled={isFirst} className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-white transition-colors">↑</button>
               <button onClick={() => onMove('down')} disabled={isLast} className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-white transition-colors">↓</button>
@@ -765,7 +682,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         </div>
       </div>
 
-      <div className={`operational-btns mb-5 hidden md:block md:pr-[420px] ${isExporting ? 'hidden' : ''}`}>
+      <div className={`operational-btns mb-5 hidden md:block ${isExporting ? 'hidden' : ''}`}>
         <div className={`flex flex-col gap-3 rounded-2xl border px-3 py-3 shadow-sm md:flex-row md:items-center md:justify-between ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
             <button onClick={() => toggleQuickPanel('editor')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'editor' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
@@ -833,7 +750,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-5 gap-1 mb-4">
+          <div className="grid grid-cols-4 gap-1 mb-4">
             {controlTabs.map(tab => (
               <button
                 key={tab.id}
@@ -850,18 +767,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
           <div className="pb-16 md:pb-0">
             {isControlPanelOpen && renderControls()}
-            {!showAdvanced && (
-              <div className="mt-4 pt-4 border-t border-zinc-200">
-                <button onClick={() => setShowAdvanced(true)} className="w-full py-3 rounded-xl bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-all text-[10px] font-black uppercase">
-                  {lang === 'pt' ? 'Mais opções' : 'More options'}
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      <div className="relative group diagram-svg-wrapper md:pr-[420px]">
+      <div className="relative group diagram-svg-wrapper">
          {/* Undo / Redo Responsivo */}
 <div
   className={`

@@ -25,6 +25,7 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
   const [chord, setChord] = useState('Major');
   const [skipOnboarding, setSkipOnboarding] = useState(false);
   const onboardingKey = 'ga_onboarding_completed';
+  const quickWizardKey = 'ga_new_diagram_wizard_disabled';
 
   const setOnboardingCompleted = (enabled: boolean) => {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -32,6 +33,16 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
         window.localStorage.setItem(onboardingKey, 'true');
       } else {
         window.localStorage.removeItem(onboardingKey);
+      }
+    }
+  };
+
+  const setQuickCreationPreference = (enabled: boolean) => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      if (enabled) {
+        window.localStorage.setItem(quickWizardKey, 'true');
+      } else {
+        window.localStorage.removeItem(quickWizardKey);
       }
     }
   };
@@ -111,6 +122,7 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
 
     onCreate(newState);
     setOnboardingCompleted(true);
+    setQuickCreationPreference(skipOnboarding);
     onClose();
   };
 
@@ -192,11 +204,11 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
                   checked={skipOnboarding}
                   onChange={(e) => {
                     setSkipOnboarding(e.target.checked);
-                    setOnboardingCompleted(e.target.checked);
+                    setQuickCreationPreference(e.target.checked);
                   }}
                   className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span>{lang === 'pt' ? 'Não mostrar novamente' : 'Do not show again'}</span>
+                <span>{lang === 'pt' ? 'Criar rápido nas próximas vezes' : 'Quick create next time'}</span>
               </label>
             </div>
             <div className="flex justify-between">

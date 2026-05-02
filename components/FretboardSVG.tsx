@@ -455,7 +455,19 @@ const renderBrushPaths = () => {
             <g key={`note-${s}-${f}`} opacity={opacity} pointerEvents="none">
               {isTonic && layers.showTonic && <circle cx={x} cy={y} r={markerRadius + 5} fill="none" stroke={colors.intervals['1']} strokeWidth="2.5" />}
               <circle cx={x} cy={y} r={markerRadius} fill={fill} stroke={isLight ? "#fff" : "#000"} strokeWidth="1.5" />
-              {label && <text x={x} y={y + (fontSize/2.5)} textAnchor="middle" fontSize={fontSize} fill={noteTextColor} fontWeight="black">{label}</text>}
+              {label && (
+                <text
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={fontSize}
+                  fill={noteTextColor}
+                  fontWeight="black"
+                >
+                  {label}
+                </text>
+              )}
             </g>
           );
         }))}
@@ -470,7 +482,20 @@ const renderBrushPaths = () => {
               {m.shape === 'circle' && <circle cx={x} cy={y} r={markerRadius} fill={m.color} stroke="#fff" strokeWidth="2.5" />}
               {m.shape === 'square' && <rect x={x - markerRadius} y={y - markerRadius} width={markerRadius*2} height={markerRadius*2} fill={m.color} stroke="#fff" strokeWidth="2.5" />}
               {m.shape === 'triangle' && <path d={`M ${x} ${y - markerRadius} L ${x + markerRadius} ${y + markerRadius} L ${x - markerRadius} ${y + markerRadius} Z`} fill={m.color} stroke="#fff" strokeWidth="2.5" />}
-              {label && <text x={x} y={y + (fontSize/2.5)} textAnchor="middle" fontSize={fontSize} fill={getContrastColor(m.color)} fontWeight="black" pointerEvents="none">{label}</text>}
+              {label && (
+                <text
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={fontSize}
+                  fill={getContrastColor(m.color)}
+                  fontWeight="black"
+                  pointerEvents="none"
+                >
+                  {label}
+                </text>
+              )}
             </g>
           );
         })}
