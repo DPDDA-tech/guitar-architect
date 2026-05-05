@@ -47,6 +47,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   
   const historyRef = useRef<FretboardState[]>([]);
   const futureRef = useRef<FretboardState[]>([]);
+  const initialPlaceholderConsumedRef = useRef(false);
   const [musicTip, setMusicTip] = useState<MusicTip>({
     text: lang === 'pt'
       ? 'Aguarde, buscando uma dica de teoria de música...'
@@ -127,7 +128,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       !state.subtitle &&
       !state.notes;
 
-    if (isFirst && isLast && isEmptyDiagram) {
+    if (isFirst && isLast && isEmptyDiagram && !initialPlaceholderConsumedRef.current) {
+      initialPlaceholderConsumedRef.current = true;
       updateState(newState);
     } else {
       onAdd(newState);
@@ -201,7 +203,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const [isControlPanelOpen, setIsControlPanelOpen] = useState(false);
   const [activeControlTab, setActiveControlTab] = useState<string>('base');
   const [showWizard, setShowWizard] = useState(false);
-  const quickWizardKey = 'ga_new_diagram_wizard_disabled';
 
   useEffect(() => {
     if (isFirst && typeof window !== 'undefined' && window.localStorage) {
@@ -265,10 +266,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   const handleNewDiagramClick = () => {
-    if (typeof window !== 'undefined' && window.localStorage?.getItem(quickWizardKey) === 'true') {
-      createQuickDiagram();
-      return;
-    }
     setWizardMode('add');
     setShowWizard(true);
   };
@@ -460,6 +457,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               {lang === 'pt' ? 'CONTROLES' : 'TOOLS'}
            </button>
            <button onClick={handleNewDiagramClick} className="bg-blue-600 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">{lang === 'pt' ? 'Novo diagrama' : 'New diagram'}</button>
+           <button onClick={createQuickDiagram} className="bg-blue-50 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl border border-blue-200 text-blue-700 font-black text-[10px] md:text-[11px] uppercase active:scale-95">{lang === 'pt' ? 'Novo diagrama rápido' : 'Quick new diagram'}</button>
            <button onClick={() => onAdd(state)} className="bg-zinc-800 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95">{lang === 'pt' ? 'Duplicar este diagrama' : 'Duplicate this diagram'}</button>
            <div className="flex gap-1.5 items-center bg-blue-50 dark:bg-zinc-800 p-1.5 rounded-xl border border-blue-200 dark:border-zinc-700 shadow-sm [&>button]:bg-white [&>button]:text-zinc-800 [&>button]:border [&>button]:border-zinc-300 [&>button]:shadow-sm">
               <button onClick={() => onMove('up')} disabled={isFirst} className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-white transition-colors">↑</button>
