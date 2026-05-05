@@ -121,6 +121,13 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   const handleNewDiagramCreate = useCallback((newState: FretboardState) => {
+    const newStateWithInlays = {
+      ...newState,
+      layers: {
+        ...newState.layers,
+        showInlays: true
+      }
+    };
     const isEmptyDiagram =
       state.markers.length === 0 &&
       state.lines.length === 0 &&
@@ -128,11 +135,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       !state.subtitle &&
       !state.notes;
 
-    if (isFirst && isLast && isEmptyDiagram && !initialPlaceholderConsumedRef.current) {
+    if (wizardMode === 'initial' && isFirst && isLast && isEmptyDiagram && !initialPlaceholderConsumedRef.current) {
       initialPlaceholderConsumedRef.current = true;
-      updateState(newState);
+      updateState(newStateWithInlays);
     } else {
-      onAdd(newState);
+      onAdd(newStateWithInlays);
     }
 
     setCreationHint(t.newDiagramCreated);
@@ -252,17 +259,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   const createQuickDiagram = () => {
-    handleNewDiagramCreate({
-      ...state,
-      id: crypto.randomUUID(),
-      title: '',
-      subtitle: '',
-      notes: '',
-      markers: [],
-      lines: [],
-      harmonyMode: 'OFF',
-      cagedShape: 'OFF'
-    });
+    onAdd();
+    setCreationHint(t.newDiagramCreated);
+    if (creationHintTimeoutRef.current) {
+      window.clearTimeout(creationHintTimeoutRef.current);
+    }
+    creationHintTimeoutRef.current = window.setTimeout(() => setCreationHint(null), 4000);
   };
 
   const handleNewDiagramClick = () => {
