@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CHROMATIC_SCALE, getNoteAt } from '../music/musicTheory';
+import { CHROMATIC_SCALE, getNoteAt, normalizeNote } from '../music/musicTheory';
 import { getScaleNotes } from '../music/scales';
+import { generateChordVoicings, type ChordType, type ChordVoicingCandidate } from '../music/chordLibrary';
 import { getFrequencyForNoteName, getFrequencyForPosition, getOpenStringMidi, playFrequencies } from '../utils/audio';
 import type { FretboardState, InstrumentType, StringStatus } from '../types';
 
@@ -27,6 +28,79 @@ type StudyPattern = '3nps' | '4nps';
 const EXERCISE_CHALLENGE_COUNT = 4;
 const INTERVAL_CHALLENGE_COUNT = 12;
 const CHORD_CHANGE_CHALLENGE_COUNT = 4;
+const STUDENT_PROGRESSIONS = [
+  'C G Am F',
+  'G D Em C',
+  'D A Bm G',
+  'A E F#m D',
+  'E A B7 E',
+  'Am G F E',
+  'C Am F G',
+  'Em C G D'
+];
+
+const parseChordSymbol = (symbol: string): { root: string; type: ChordType } | null => {
+  const match = symbol.trim().match(/^([A-G](?:#|b)?)(maj13|maj11|maj9|maj7|mMaj7|m13|m11|m9|m7b5|madd9|m7|m6|m|dim7|dim|aug|sus2|sus4|add9|13|11|9|7|6)?$/i);
+  if (!match) return null;
+
+  const root = normalizeNote(match[1]);
+  const suffix = match[2] || '';
+  const typeBySuffix: Record<string, ChordType> = {
+    '': 'major',
+    m: 'minor',
+    dim: 'diminished',
+    aug: 'augmented',
+    sus2: 'sus2',
+    sus4: 'sus4',
+    '6': '6',
+    m6: 'm6',
+    '7': '7',
+    maj7: 'maj7',
+    m7: 'm7',
+    m7b5: 'm7b5',
+    dim7: 'dim7',
+    mMaj7: 'mMaj7',
+    add9: 'add9',
+    madd9: 'madd9',
+    '9': '9',
+    maj9: 'maj9',
+    m9: 'm9',
+    '11': '11',
+    maj11: 'maj11',
+    m11: 'm11',
+    '13': '13',
+    maj13: 'maj13',
+    m13: 'm13'
+  };
+
+  return { root, type: typeBySuffix[suffix] || 'major' };
+};
+
+const getStudentChordVoicing = (symbol: string, tuning: string[]): ChordVoicingCandidate | null => {
+  const parsed = parseChordSymbol(symbol);
+  if (!parsed) return null;
+
+  const voicings = generateChordVoicings(parsed.root, parsed.type, tuning, {
+    maxFretSpan: 4,
+    maxResults: 120,
+    preferOpenChords: true,
+    preferRootInBass: true
+  });
+
+  return voicings
+    .filter(voicing => voicing.isKnownShape || voicing.voicingStyle === 'open' || voicing.voicingStyle === 'barre')
+    .sort((a, b) => {
+      const styleRank = (voicing: ChordVoicingCandidate) => (
+        voicing.isKnownShape && voicing.voicingStyle === 'open' ? 0 :
+        voicing.isKnownShape ? 1 :
+        voicing.voicingStyle === 'barre' ? 2 :
+        voicing.voicingStyle === 'open' ? 3 :
+        voicing.voicingStyle === 'movable' ? 4 :
+        4
+      );
+      return styleRank(a) - styleRank(b) || a.minFret - b.minFret || b.score - a.score;
+    })[0] || voicings[0] || null;
+};
 
 const findPositionsForNotes = (notes: string[], tuning: string[], maxFret = 12) => {
   const used = new Set<string>();
@@ -283,11 +357,27 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
   };
   const progressionChords = changeProgression.split(/\s+/).filter(Boolean).slice(0, 4);
 
-  const applyPositionsToFretboard = (positions: Array<{ note?: string; string: number; fret: number }>, title: string, subtitle: string) => {
+  const applyPositionsToFretboard = (
+    positions: Array<{ note?: string; string: number; fret: number; finger?: string }>,
+    title: string,
+    subtitle: string,
+    mutedStrings: number[] = [],
+    barre?: ChordVoicingCandidate['barre']
+  ) => {
     const stringStatuses = Array(tuning.length).fill('normal') as StringStatus[];
+    mutedStrings.forEach(stringIndex => {
+      if (stringIndex < stringStatuses.length) stringStatuses[stringIndex] = 'mute';
+    });
     positions.forEach(position => {
       if (position.fret === 0) stringStatuses[position.string] = 'open';
     });
+    const barreLines = barre ? [{
+      id: crypto.randomUUID(),
+      start: { string: barre.fromString, fret: barre.fret },
+      end: { string: barre.toString, fret: barre.fret },
+      color: isLight ? '#0f172a' : '#f8fafc',
+      width: 11
+    }] : [];
     onApplyExample({
       ...state,
       title,
@@ -299,9 +389,9 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
         fret: position.fret,
         shape: 'circle',
         color: index === 0 ? '#ef4444' : '#2563eb',
-        finger: String((index % 4) + 1)
+        finger: position.finger && position.finger !== '0' ? position.finger : String((index % 4) + 1)
       })),
-      lines: [],
+      lines: barreLines,
       stringStatuses,
       labelMode: 'note',
       root: positions[0]?.note || state.root
@@ -409,9 +499,21 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
   const showCurrentChangeOnFretboard = () => {
     const chord = progressionChords[activeChangeIndex] || progressionChords[0];
     if (!chord) return;
-    const rootMatch = chord.match(/^[A-G](#)?/);
-    const root = rootMatch?.[0] || 'C';
-    const isMinor = chord.includes('m') && !chord.includes('maj');
+    const voicing = getStudentChordVoicing(chord, tuning);
+    if (voicing) {
+      applyPositionsToFretboard(
+        voicing.positions,
+        lang === 'pt' ? 'Troca de acorde' : 'Chord change',
+        `${voicing.name} - ${voicing.voicingStyle === 'open' ? (lang === 'pt' ? 'shape aberto' : 'open shape') : voicing.voicingStyle === 'barre' ? (lang === 'pt' ? 'shape com pestana' : 'barre shape') : (lang === 'pt' ? 'shape de estudo' : 'study shape')}`,
+        voicing.mutedStrings,
+        voicing.barre
+      );
+      return;
+    }
+
+    const parsed = parseChordSymbol(chord);
+    const root = parsed?.root || 'C';
+    const isMinor = parsed?.type === 'minor';
     const intervals = isMinor ? [0, 3, 7] : [0, 4, 7];
     const rootIndex = CHROMATIC_SCALE.indexOf(root);
     const notes = intervals.map(interval => CHROMATIC_SCALE[(rootIndex + interval) % 12]);
@@ -582,13 +684,28 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
       ) : (
         <div className="space-y-3">
           <input value={changeProgression} onChange={e => setChangeProgression(e.target.value)} disabled={isChangePracticeRunning} className={inputClass} />
+          <div className="grid grid-cols-2 gap-1">
+            {STUDENT_PROGRESSIONS.slice(0, 4).map(progression => (
+              <button
+                key={progression}
+                onClick={() => {
+                  setChangeProgression(progression);
+                  setActiveChangeIndex(0);
+                }}
+                disabled={isChangePracticeRunning}
+                className={`${buttonBase} normal-case ${changeProgression === progression ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 bg-white text-zinc-600' : 'border-zinc-800 bg-zinc-950 text-zinc-300'}`}
+              >
+                {progression}
+              </button>
+            ))}
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <input type="number" min={30} max={220} value={changeBpm} onChange={e => setChangeBpm(Number(e.target.value))} disabled={isChangePracticeRunning} className={inputClass} />
             <input type="number" min={1} max={8} value={changeBarsPerChord} onChange={e => setChangeBarsPerChord(Number(e.target.value))} disabled={isChangePracticeRunning} className={inputClass} />
           </div>
           <div className="grid grid-cols-4 gap-1">
             {progressionChords.map((chord, index) => (
-              <div key={`${chord}-${index}`} className={`rounded-lg border px-2 py-3 text-center text-sm font-black uppercase ${index === activeChangeIndex ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 bg-zinc-50 text-zinc-500' : 'border-zinc-800 bg-zinc-950 text-zinc-300'}`}>{chord}</div>
+              <div key={`${chord}-${index}`} className={`rounded-lg border px-2 py-3 text-center text-sm font-black ${index === activeChangeIndex ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 bg-zinc-50 text-zinc-500' : 'border-zinc-800 bg-zinc-950 text-zinc-300'}`}>{chord}</div>
             ))}
           </div>
           <button onClick={showCurrentChangeOnFretboard} className={`${buttonBase} w-full border-blue-200 bg-white text-blue-600`}>{lang === 'pt' ? 'Mostrar acorde atual' : 'Show current chord'}</button>
