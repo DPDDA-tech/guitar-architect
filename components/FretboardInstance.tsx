@@ -261,6 +261,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const [activeControlTab, setActiveControlTab] = useState<string>('base');
   const [showWizard, setShowWizard] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const tourReturnStateRef = useRef<{ isControlPanelOpen: boolean; activeControlTab: string; chordLibraryMode: 'find' | 'identify' } | null>(null);
+  const tourAutoScheduledRef = useRef(false);
   const [scaleShortcutCloseTarget, setScaleShortcutCloseTarget] = useState<'showScale' | 'showTonic' | null>(null);
   const currentTuning = useMemo(() => {
     return getCurrentTuning();
@@ -298,7 +300,17 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
     return Array.from(byId.values())
       .filter(voicing => chordDifficultyFilter === 'all' || voicing.difficulty === chordDifficultyFilter)
-      .sort((a, b) => a.minFret - b.minFret || Number(b.isKnownShape) - Number(a.isKnownShape) || b.score - a.score);
+      .sort((a, b) => {
+        const rank = (voicing: ChordVoicingCandidate) => (
+          voicing.isKnownShape && voicing.voicingStyle === 'open' ? 0 :
+          voicing.isKnownShape ? 1 :
+          voicing.voicingStyle === 'barre' ? 2 :
+          voicing.voicingStyle === 'open' ? 3 :
+          voicing.voicingStyle === 'movable' ? 4 :
+          5
+        );
+        return rank(a) - rank(b) || a.minFret - b.minFret || b.score - a.score;
+      });
   }, [chordDifficultyFilter, chordVoicings]);
 
   useEffect(() => {
@@ -311,20 +323,33 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     }
   }, [favoriteChordVoicings]);
 
+  const openTour = useCallback(() => {
+    tourReturnStateRef.current = { isControlPanelOpen, activeControlTab, chordLibraryMode };
+    setShowTour(true);
+  }, [activeControlTab, chordLibraryMode, isControlPanelOpen]);
+
   useEffect(() => {
     if (isFirst && typeof window !== 'undefined' && window.localStorage) {
       if (!window.localStorage.getItem('ga_onboarding_completed')) {
         setWizardMode('initial');
         setShowWizard(true);
-      } else if (!window.localStorage.getItem('ga_tour_completed')) {
-        window.setTimeout(() => setShowTour(true), 900);
+      } else if (!window.localStorage.getItem('ga_tour_completed') && !tourAutoScheduledRef.current) {
+        tourAutoScheduledRef.current = true;
+        window.setTimeout(openTour, 900);
       }
     }
-  }, [isFirst]);
+  }, [isFirst, openTour]);
 
   const tourSteps = useMemo<TourStep[]>(() => [
     {
       id: 'welcome',
+      title: lang === 'pt' ? 'Bem-vindo' : 'Welcome',
+      body: lang === 'pt'
+        ? 'Vamos começar a aprender a usar o Guitar Architect? Em poucos passos voce vai entender o fluxo principal.'
+        : 'Ready to learn Guitar Architect? In a few steps you will see the main workflow.'
+    },
+    {
+      id: 'map',
       title: lang === 'pt' ? 'Primeiro mapa' : 'First map',
       body: lang === 'pt'
         ? 'Cada diagrama combina camadas, escala, harmonia e edição livre no braço.'
@@ -371,6 +396,14 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         : 'This is where triads, tetrads, CAGED, and Close, Drop 2, Drop 3 voicings live.'
     },
     {
+      id: 'editor',
+      target: '[data-tour="quick-editor"]',
+      title: lang === 'pt' ? 'Editor' : 'Editor',
+      body: lang === 'pt'
+        ? 'Personalize o fretboard com marcadores, linhas, cores, dedos e observacoes.'
+        : 'Customize the fretboard with markers, lines, colors, fingers, and notes.'
+    },
+    {
       id: 'chords',
       target: '[data-tour="quick-chords"]',
       title: lang === 'pt' ? 'Biblioteca de acordes' : 'Chord library',
@@ -385,14 +418,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       body: lang === 'pt'
         ? 'Use afinador, metrônomo, intervalos, exercícios e trocas de acordes.'
         : 'Use tuner, metronome, intervals, exercises, and chord-change practice.'
-    },
-    {
-      id: 'editor',
-      target: '[data-tour="quick-editor"]',
-      title: lang === 'pt' ? 'Editor' : 'Editor',
-      body: lang === 'pt'
-        ? 'Personalize o fretboard com marcadores, linhas, cores, dedos e observações.'
-        : 'Customize the fretboard with markers, lines, colors, fingers, and notes.'
     }
   ], [lang]);
 
@@ -416,6 +441,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
   const handleTourClose = (completed: boolean) => {
     setShowTour(false);
+    if (tourReturnStateRef.current) {
+      setIsControlPanelOpen(tourReturnStateRef.current.isControlPanelOpen);
+      setActiveControlTab(tourReturnStateRef.current.activeControlTab);
+      setChordLibraryMode(tourReturnStateRef.current.chordLibraryMode);
+      tourReturnStateRef.current = null;
+    }
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem('ga_tour_completed', completed ? 'true' : 'skipped');
     }
@@ -424,7 +455,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const handleWizardClose = () => {
     setShowWizard(false);
     if (typeof window !== 'undefined' && window.localStorage && !window.localStorage.getItem('ga_tour_completed')) {
-      window.setTimeout(() => setShowTour(true), 500);
+      window.setTimeout(openTour, 500);
     }
   };
 
@@ -433,9 +464,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     { id: 'visual', label: lang === 'pt' ? 'Camadas' : 'Layers' },
     { id: 'scale', label: lang === 'pt' ? 'Escala' : 'Scale' },
     { id: 'harmony', label: lang === 'pt' ? 'Harmonia' : 'Harmony' },
+    { id: 'editor', label: lang === 'pt' ? 'Editor' : 'Editor' },
     { id: 'chords', label: lang === 'pt' ? 'Acordes' : 'Chords' },
-    { id: 'tools', label: lang === 'pt' ? 'Pratica' : 'Practice' },
-    { id: 'editor', label: lang === 'pt' ? 'Editor' : 'Editor' }
+    { id: 'tools', label: lang === 'pt' ? 'Prática' : 'Practice' },
   ] as const;
 
   const panelShell = isLight
@@ -798,7 +829,19 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           </div>
           <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
             {browseChordVoicings.length > 0 ? browseChordVoicings.slice(0, 20).map((voicing, index) => (
-              <div key={voicing.id} className={`rounded-xl border p-3 ${index === selectedChordVoicingIndex ? 'border-blue-500 bg-blue-50/80' : voicing.id === recommendedChordVoicingId ? 'border-blue-300 bg-blue-50/70' : (isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800')}`}>
+              <div
+                key={voicing.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => applyChordVoicingAtIndex(index)}
+                onKeyDown={event => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    applyChordVoicingAtIndex(index);
+                  }
+                }}
+                className={`cursor-pointer rounded-xl border p-3 transition-all hover:border-blue-500 ${index === selectedChordVoicingIndex ? 'border-blue-500 bg-blue-50/80' : voicing.id === recommendedChordVoicingId ? 'border-blue-300 bg-blue-50/70' : (isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800')}`}
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -830,13 +873,13 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-col gap-2">
-                    <button onClick={() => toggleFavoriteChordVoicing(voicing)} className={`rounded-lg border px-3 py-2 text-[8px] font-black uppercase transition-all active:scale-95 ${isFavoriteChordVoicing(voicing) ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-zinc-200 bg-white text-zinc-500'}`}>
+                    <button onClick={event => { event.stopPropagation(); toggleFavoriteChordVoicing(voicing); }} className={`rounded-lg border px-3 py-2 text-[8px] font-black uppercase transition-all active:scale-95 ${isFavoriteChordVoicing(voicing) ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-zinc-200 bg-white text-zinc-500'}`}>
                       {isFavoriteChordVoicing(voicing) ? (lang === 'pt' ? 'Salvo' : 'Saved') : (lang === 'pt' ? 'Salvar' : 'Save')}
                     </button>
-                    <button onClick={() => playChordVoicing(voicing)} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-[8px] font-black uppercase text-blue-600 transition-all active:scale-95">
+                    <button onClick={event => { event.stopPropagation(); playChordVoicing(voicing); }} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-[8px] font-black uppercase text-blue-600 transition-all active:scale-95">
                       {lang === 'pt' ? 'Ouvir' : 'Listen'}
                     </button>
-                    <button onClick={() => applyChordVoicingAtIndex(index)} className="rounded-lg bg-blue-600 px-3 py-2 text-[8px] font-black uppercase text-white transition-all active:scale-95">
+                    <button onClick={event => { event.stopPropagation(); applyChordVoicingAtIndex(index); }} className="rounded-lg bg-blue-600 px-3 py-2 text-[8px] font-black uppercase text-white transition-all active:scale-95">
                       {lang === 'pt' ? 'Aplicar' : 'Apply'}
                     </button>
                   </div>
@@ -989,8 +1032,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-2">
-            <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${controlButtonBase} ${state.layers.showScale ? activeButtonClass : inactiveButtonClass}`}>{t.scaleNotes}</button>
-            <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${controlButtonBase} ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>{t.tonicHighlight}</button>
+            <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${controlButtonBase} ${state.layers.showScale ? activeButtonClass : inactiveButtonClass}`}>
+              {state.layers.showScale ? (lang === 'pt' ? 'Escala ON' : 'Scale ON') : (lang === 'pt' ? 'Escala OFF' : 'Scale OFF')}
+            </button>
+            <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${controlButtonBase} ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>
+              {state.layers.showTonic ? (lang === 'pt' ? 'Tônica ON' : 'Tonic ON') : (lang === 'pt' ? 'Tônica OFF' : 'Tonic OFF')}
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-2">
@@ -1146,7 +1193,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
            <button onClick={() => setIsControlPanelOpen(prev => !prev)} className={`px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl font-black text-[10px] md:text-[11px] uppercase border transition-all active:scale-90 ${isControlPanelOpen ? 'bg-blue-600 text-white border-blue-600' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
               {lang === 'pt' ? 'CONTROLES' : 'TOOLS'}
            </button>
-           <button onClick={() => setShowTour(true)} className={`px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl font-black text-[10px] md:text-[11px] uppercase border transition-all active:scale-95 ${isLight ? 'bg-white text-zinc-500 border-zinc-200 hover:text-blue-600' : 'bg-zinc-950 text-zinc-300 border-zinc-700 hover:text-blue-300'}`}>
+           <button onClick={openTour} className={`px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl font-black text-[10px] md:text-[11px] uppercase border transition-all active:scale-95 ${isLight ? 'bg-white text-zinc-500 border-zinc-200 hover:text-blue-600' : 'bg-zinc-950 text-zinc-300 border-zinc-700 hover:text-blue-300'}`}>
               {lang === 'pt' ? 'Tutorial' : 'Tutorial'}
            </button>
            <button data-tour="new-diagram" onClick={handleNewDiagramClick} className="bg-blue-600 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">{lang === 'pt' ? 'Novo diagrama' : 'New diagram'}</button>
@@ -1388,14 +1435,14 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <button data-tour="quick-harmony" onClick={() => toggleQuickPanel('harmony')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'harmony' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
               {lang === 'pt' ? 'Harmonia' : 'Harmony'}
             </button>
+            <button data-tour="quick-editor" onClick={() => toggleQuickPanel('editor')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'editor' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
+              {lang === 'pt' ? 'Editor' : 'Editor'}
+            </button>
             <button data-tour="quick-chords" onClick={() => { setChordLibraryMode('find'); toggleQuickPanel('chords'); }} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'chords' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
               {lang === 'pt' ? 'Acorde' : 'Chord'}
             </button>
             <button data-tour="quick-practice" onClick={() => toggleQuickPanel('tools')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'tools' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
-              {lang === 'pt' ? 'Pratica' : 'Practice'}
-            </button>
-            <button data-tour="quick-editor" onClick={() => toggleQuickPanel('editor')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'editor' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
-              {lang === 'pt' ? 'Editor' : 'Editor'}
+              {lang === 'pt' ? 'Prática' : 'Practice'}
             </button>
             <button onClick={() => setSoundEnabled(prev => !prev)} className={`${quickButtonClass} shrink-0 ${soundEnabled ? quickActiveButtonClass : ''}`}>
               {soundEnabled ? (lang === 'pt' ? 'Som ON' : 'Sound ON') : (lang === 'pt' ? 'Som OFF' : 'Sound OFF')}

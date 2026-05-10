@@ -44,7 +44,7 @@ const parseChordSymbol = (symbol: string): { root: string; type: ChordType } | n
   if (!match) return null;
 
   const root = normalizeNote(match[1]);
-  const suffix = match[2] || '';
+  const suffix = match[2] === 'M' ? 'm' : match[2] || '';
   const typeBySuffix: Record<string, ChordType> = {
     '': 'major',
     m: 'minor',
@@ -356,13 +356,21 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
     rhythm: lang === 'pt' ? 'Toque o mesmo shape em semínimas, colcheias e tercinas, 2 compassos cada.' : 'Play the same shape as quarters, eighths, and triplets, 2 bars each.'
   };
   const progressionChords = changeProgression.split(/\s+/).filter(Boolean).slice(0, 4);
+  const hasFretboardStudyContent = state.markers.length > 0 || state.lines.length > 0 || (state.stringStatuses || []).some(status => status !== 'normal');
+  const confirmClearForStudy = () => (
+    !hasFretboardStudyContent ||
+    window.confirm(lang === 'pt'
+      ? 'Este estudo vai substituir as marcacoes do fretboard, mantendo as camadas visuais ativas. Deseja continuar?'
+      : 'This study will replace the fretboard markings while keeping visual layers active. Continue?')
+  );
 
   const applyPositionsToFretboard = (
     positions: Array<{ note?: string; string: number; fret: number; finger?: string }>,
     title: string,
     subtitle: string,
     mutedStrings: number[] = [],
-    barre?: ChordVoicingCandidate['barre']
+    barre?: ChordVoicingCandidate['barre'],
+    rootOverride?: string
   ) => {
     const stringStatuses = Array(tuning.length).fill('normal') as StringStatus[];
     mutedStrings.forEach(stringIndex => {
@@ -394,7 +402,7 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
       lines: barreLines,
       stringStatuses,
       labelMode: 'note',
-      root: positions[0]?.note || state.root
+      root: rootOverride || positions[0]?.note || state.root
     });
   };
 
@@ -404,11 +412,15 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
   };
 
   const showIntervalOnFretboard = () => {
+    if (!confirmClearForStudy()) return;
     const positions = findPositionsForNotes([intervalRoot, intervalTarget], tuning);
     applyPositionsToFretboard(
       positions,
       lang === 'pt' ? 'Treino de intervalo' : 'Interval training',
-      `${intervalRoot} -> ${intervalTarget} (${intervalLabels[intervalDistance]})`
+      `${intervalRoot} -> ${intervalTarget} (${intervalLabels[intervalDistance]})`,
+      [],
+      undefined,
+      intervalRoot
     );
   };
 
@@ -419,11 +431,13 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
   };
 
   const showExerciseOnFretboard = () => {
+    if (!confirmClearForStudy()) return;
     if (exerciseFocus === 'scale') {
       onApplyExample({
         ...state,
         title: lang === 'pt' ? 'Escala selecionada' : 'Selected scale',
         subtitle: `${state.root} - ${state.scaleType}`,
+        stringStatuses: Array(tuning.length).fill('normal') as StringStatus[],
         layers: {
           ...state.layers,
           showScale: true,
@@ -457,8 +471,43 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
     applyPositionsToFretboard(
       positions,
       lang === 'pt' ? 'Exercicio aplicado' : 'Applied exercise',
-      exerciseText || exerciseTemplates[exerciseFocus]
+      exerciseText || exerciseTemplates[exerciseFocus],
+      [],
+      undefined,
+      state.root
     );
+  };
+
+  const applyChangeChordToFretboard = (chord: string, shouldConfirm = true) => {
+    if (shouldConfirm && !confirmClearForStudy()) return false;
+    const voicing = getStudentChordVoicing(chord, tuning);
+    if (voicing) {
+      applyPositionsToFretboard(
+        voicing.positions,
+        lang === 'pt' ? 'Troca de acorde' : 'Chord change',
+        `${voicing.name} - ${voicing.voicingStyle === 'open' ? (lang === 'pt' ? 'shape aberto' : 'open shape') : voicing.voicingStyle === 'barre' ? (lang === 'pt' ? 'shape com pestana' : 'barre shape') : (lang === 'pt' ? 'shape de estudo' : 'study shape')}`,
+        voicing.mutedStrings,
+        voicing.barre,
+        voicing.root
+      );
+      return true;
+    }
+
+    const parsed = parseChordSymbol(chord);
+    const root = parsed?.root || 'C';
+    const isMinor = parsed?.type === 'minor';
+    const intervals = isMinor ? [0, 3, 7] : [0, 4, 7];
+    const rootIndex = CHROMATIC_SCALE.indexOf(root);
+    const notes = intervals.map(interval => CHROMATIC_SCALE[(rootIndex + interval) % 12]);
+    applyPositionsToFretboard(
+      findPositionsForNotes(notes, tuning),
+      lang === 'pt' ? 'Troca de acorde' : 'Chord change',
+      chord,
+      [],
+      undefined,
+      root
+    );
+    return true;
   };
 
   const scheduleChangePractice = () => {
@@ -467,12 +516,16 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
     const barIndex = Math.floor(changeBeatRef.current / beatsPerBar);
     const chordIndex = Math.floor(barIndex / changeBarsPerChord) % progressionChords.length;
     setActiveChangeIndex(chordIndex);
+    if (beatInBar === 0 && barIndex % changeBarsPerChord === 0) {
+      applyChangeChordToFretboard(progressionChords[chordIndex], false);
+    }
     playMetronomeClick(beatInBar === 0, false);
     changeBeatRef.current += 1;
     changeTimeoutRef.current = window.setTimeout(scheduleChangePractice, 60000 / changeBpm);
   };
 
   const startChangePractice = () => {
+    if (!confirmClearForStudy()) return;
     changeBeatRef.current = 0;
     setIsChangePracticeRunning(true);
     scheduleChangePractice();
@@ -499,29 +552,7 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
   const showCurrentChangeOnFretboard = () => {
     const chord = progressionChords[activeChangeIndex] || progressionChords[0];
     if (!chord) return;
-    const voicing = getStudentChordVoicing(chord, tuning);
-    if (voicing) {
-      applyPositionsToFretboard(
-        voicing.positions,
-        lang === 'pt' ? 'Troca de acorde' : 'Chord change',
-        `${voicing.name} - ${voicing.voicingStyle === 'open' ? (lang === 'pt' ? 'shape aberto' : 'open shape') : voicing.voicingStyle === 'barre' ? (lang === 'pt' ? 'shape com pestana' : 'barre shape') : (lang === 'pt' ? 'shape de estudo' : 'study shape')}`,
-        voicing.mutedStrings,
-        voicing.barre
-      );
-      return;
-    }
-
-    const parsed = parseChordSymbol(chord);
-    const root = parsed?.root || 'C';
-    const isMinor = parsed?.type === 'minor';
-    const intervals = isMinor ? [0, 3, 7] : [0, 4, 7];
-    const rootIndex = CHROMATIC_SCALE.indexOf(root);
-    const notes = intervals.map(interval => CHROMATIC_SCALE[(rootIndex + interval) % 12]);
-    applyPositionsToFretboard(
-      findPositionsForNotes(notes, tuning),
-      lang === 'pt' ? 'Troca de acorde' : 'Chord change',
-      chord
-    );
+    applyChangeChordToFretboard(chord);
   };
 
   useEffect(() => () => {
@@ -540,7 +571,7 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
       <div className="mb-3 flex gap-2 rounded-xl border border-zinc-200 bg-white p-1">
         {(['tuner', 'metronome', 'intervals', 'exercises', 'changes'] as const).map(tool => (
           <button key={tool} onClick={() => setActiveTool(tool)} className={`flex-1 rounded-lg py-2 text-[9px] font-black uppercase ${activeTool === tool ? 'bg-blue-600 text-white' : 'text-zinc-500 hover:text-blue-600'}`}>
-            {tool === 'tuner' ? (lang === 'pt' ? 'Afinador' : 'Tuner') : tool === 'metronome' ? (lang === 'pt' ? 'Metronomo' : 'Metronome') : tool === 'intervals' ? (lang === 'pt' ? 'Intervalos' : 'Intervals') : tool === 'exercises' ? (lang === 'pt' ? 'Exercicios' : 'Exercises') : (lang === 'pt' ? 'Trocas' : 'Changes')}
+            {tool === 'tuner' ? (lang === 'pt' ? 'Afinador' : 'Tuner') : tool === 'metronome' ? (lang === 'pt' ? 'Metrônomo' : 'Metronome') : tool === 'intervals' ? (lang === 'pt' ? 'Intervalos' : 'Intervals') : tool === 'exercises' ? (lang === 'pt' ? 'Exercícios' : 'Exercises') : (lang === 'pt' ? 'Trocas' : 'Changes')}
           </button>
         ))}
       </div>
@@ -683,7 +714,22 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
         </div>
       ) : (
         <div className="space-y-3">
-          <input value={changeProgression} onChange={e => setChangeProgression(e.target.value)} disabled={isChangePracticeRunning} className={inputClass} />
+          <label className="space-y-1 text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400">
+            {lang === 'pt' ? 'Acordes para estudar' : 'Chords to practice'}
+            <input
+              value={changeProgression}
+              onChange={e => {
+                setChangeProgression(e.target.value);
+                setActiveChangeIndex(0);
+              }}
+              disabled={isChangePracticeRunning}
+              placeholder="C G Am F"
+              className={inputClass}
+            />
+          </label>
+          <p className="text-[9px] font-bold leading-relaxed text-zinc-400">
+            {lang === 'pt' ? 'Digite ate 4 acordes separados por espaco. Use m para menores: Am, Em, Dm.' : 'Type up to 4 chords separated by spaces. Use m for minors: Am, Em, Dm.'}
+          </p>
           <div className="grid grid-cols-2 gap-1">
             {STUDENT_PROGRESSIONS.slice(0, 4).map(progression => (
               <button

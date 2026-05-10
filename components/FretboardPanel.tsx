@@ -818,19 +818,19 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
     <div className={`absolute right-0 top-full mt-3 w-[290px] rounded-2xl border p-4 shadow-2xl z-[80] ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
       <div className="space-y-4">
         <div className={`flex border rounded-lg p-0.5 ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
-          <button onClick={() => setLang('pt')} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'pt' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>PT</button>
-          <button onClick={() => setLang('en')} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>EN</button>
+          <button onClick={() => { setLang('pt'); setShowProjectMenu(false); }} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'pt' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>PT</button>
+          <button onClick={() => { setLang('en'); setShowProjectMenu(false); }} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>EN</button>
         </div>
 
-        <button onClick={() => setShowLoadModal(true)} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+        <button onClick={() => { setShowLoadModal(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
           {lang === 'pt' ? 'CARREGAR PROJETOS LOCAIS' : 'LOAD LOCAL PROJECTS'}
         </button>
 
         <div className="grid grid-cols-1 gap-2">
-          <button onClick={exportProjectFile} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-emerald-500 hover:text-emerald-600' : 'border-zinc-700 text-zinc-200 hover:border-emerald-500 hover:text-emerald-400'}`}>
+          <button onClick={() => { exportProjectFile(); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-emerald-500 hover:text-emerald-600' : 'border-zinc-700 text-zinc-200 hover:border-emerald-500 hover:text-emerald-400'}`}>
             {lang === 'pt' ? 'EXPORTAR PROJETO (.JSON)' : 'EXPORT PROJECT (.JSON)'}
           </button>
-          <button onClick={() => projectFileInputRef.current?.click()} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+          <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
             {lang === 'pt' ? 'IMPORTAR PROJETO (.JSON)' : 'IMPORT PROJECT (.JSON)'}
           </button>
         </div>
@@ -839,7 +839,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           APOIAR O PROJETO
         </button>
 
-        <button onClick={clearAll} className="w-full px-3 py-2.5 text-[10px] font-black text-red-500/80 border border-red-300/40 rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase">
+        <button onClick={() => { setShowProjectMenu(false); clearAll(); }} className="w-full px-3 py-2.5 text-[10px] font-black text-red-500/80 border border-red-300/40 rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase">
           LIMPAR TUDO
         </button>
       </div>
