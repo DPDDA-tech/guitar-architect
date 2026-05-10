@@ -253,6 +253,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    const closePanels = () => setIsControlPanelOpen(false);
+    window.addEventListener('ga-close-diagram-panels', closePanels);
+    return () => window.removeEventListener('ga-close-diagram-panels', closePanels);
+  }, []);
+
   const isLight = isExporting ? true : (theme === 'light');
   const isFretboardEmpty = state.markers.length === 0 && state.lines.length === 0;
   const PRESET_COLORS = ['#ef4444', '#2563eb', '#22c55e', '#eab308', '#000000', '#6366f1', '#ec4899'];
@@ -364,6 +370,14 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         : 'Use New diagram for a guided setup or Quick new diagram to add another fretboard immediately.'
     },
     {
+      id: 'base',
+      target: '[data-tour="quick-base"]',
+      title: lang === 'pt' ? 'Base do diagrama' : 'Diagram base',
+      body: lang === 'pt'
+        ? 'Em Base ficam instrumento, afinacao, canhoto, transposicao, trastes e desfazer/refazer.'
+        : 'Base contains instrument, tuning, left-handed mode, transposition, fret range, undo, and redo.'
+    },
+    {
       id: 'layers',
       target: '[data-tour="quick-layers"]',
       title: lang === 'pt' ? 'Comece por Camadas' : 'Start with Layers',
@@ -423,6 +437,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
   const handleTourStepChange = useCallback((step: TourStep) => {
     const tabByStep: Record<string, string> = {
+      base: 'base',
       layers: 'visual',
       scale: 'scale',
       tonic: 'scale',
@@ -968,6 +983,25 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     if (activeControlTab === 'base') {
       return (
         <div className="space-y-4">
+          {onGlobalTranspose && (
+            <div className="space-y-2">
+              <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">
+                {lang === 'pt' ? 'Transposição' : 'Transpose'}
+              </span>
+              <div className={`flex items-center gap-2 rounded-xl border p-2 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
+                <button onClick={() => onGlobalTranspose(-1)} className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-sm font-black text-blue-600 transition-colors hover:bg-blue-100">-</button>
+                <div className="flex flex-1 flex-col items-center justify-center">
+                  <span className={`text-sm font-black ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>
+                    {globalTranspose === 0 ? '0' : globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}
+                  </span>
+                  <button onClick={() => onGlobalTranspose(0)} className="text-[8px] font-black uppercase text-zinc-400 hover:text-red-500">
+                    reset
+                  </button>
+                </div>
+                <button onClick={() => onGlobalTranspose(1)} className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-sm font-black text-blue-600 transition-colors hover:bg-blue-100">+</button>
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-2">
               <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.instrument}</span>
@@ -1024,6 +1058,10 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               ))}
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={undo} className={`${controlButtonBase} ${inactiveButtonClass}`} title={t.undo} aria-label={t.undo}>↶ {t.undo}</button>
+            <button onClick={redo} className={`${controlButtonBase} ${inactiveButtonClass}`} title={t.redo} aria-label={t.redo}>↷ {t.redo}</button>
+          </div>
         </div>
       );
     }
@@ -1035,7 +1073,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${controlButtonBase} ${state.layers.showScale ? activeButtonClass : inactiveButtonClass}`}>
               {state.layers.showScale ? (lang === 'pt' ? 'Escala ON' : 'Scale ON') : (lang === 'pt' ? 'Escala OFF' : 'Scale OFF')}
             </button>
-            <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${controlButtonBase} ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>
+            <button data-tour="quick-tonic" onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${controlButtonBase} ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>
               {state.layers.showTonic ? (lang === 'pt' ? 'Tônica ON' : 'Tonic ON') : (lang === 'pt' ? 'Tônica OFF' : 'Tonic OFF')}
             </button>
           </div>
@@ -1178,27 +1216,27 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   return (
-    <div className={`diagram-container p-5 md:p-10 rounded-[32px] md:rounded-[48px] border shadow-2xl transition-all ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+    <div className={`diagram-container p-4 lg:p-10 rounded-[28px] lg:rounded-[48px] border shadow-2xl transition-all ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
       
       {/* HEADER DIAGRAMA */}
-      <div className={`flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-5 ${isExporting ? 'hidden-operational-btns' : ''}`}>
+      <div className={`flex flex-col lg:flex-row lg:items-center justify-between mb-5 lg:mb-10 gap-4 ${isExporting ? 'hidden-operational-btns' : ''}`}>
         <div className="flex-1">
           <div className={`mb-3 inline-flex items-center rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-blue-100 bg-blue-50 text-blue-600' : 'border-blue-900/40 bg-blue-950/30 text-blue-300'}`}>
             {lang === 'pt' ? 'Diagrama' : 'Diagram'} {diagramNumber}
           </div>
-          <input value={state.title} onChange={e => recordAction({...state, title: e.target.value})} className={`bg-transparent text-xl md:text-3xl font-black italic uppercase tracking-tighter focus:outline-none w-full ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`} placeholder={t.titlePlaceholder} />
-          <input value={state.subtitle} onChange={e => recordAction({...state, subtitle: e.target.value})} className="bg-transparent text-[11px] md:text-lg font-bold text-zinc-400 focus:outline-none w-full uppercase tracking-wide mt-1" placeholder={t.subtitle} />
+          <input value={state.title} onChange={e => recordAction({...state, title: e.target.value})} className={`bg-transparent text-lg lg:text-3xl font-black italic uppercase tracking-tighter focus:outline-none w-full ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`} placeholder={t.titlePlaceholder} />
+          <input value={state.subtitle} onChange={e => recordAction({...state, subtitle: e.target.value})} className="bg-transparent text-[10px] lg:text-lg font-bold text-zinc-400 focus:outline-none w-full uppercase tracking-wide mt-1" placeholder={t.subtitle} />
         </div>
-        <div className="flex flex-wrap gap-2 shrink-0 operational-btns">
-           <button onClick={() => setIsControlPanelOpen(prev => !prev)} className={`px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl font-black text-[10px] md:text-[11px] uppercase border transition-all active:scale-90 ${isControlPanelOpen ? 'bg-blue-600 text-white border-blue-600' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
+        <div className="grid grid-cols-2 gap-2 shrink-0 operational-btns sm:flex sm:flex-wrap">
+           <button onClick={() => setIsControlPanelOpen(prev => !prev)} className={`px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl font-black text-[10px] lg:text-[11px] uppercase border transition-all active:scale-90 ${isControlPanelOpen ? 'bg-blue-600 text-white border-blue-600' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
               {lang === 'pt' ? 'CONTROLES' : 'TOOLS'}
            </button>
-           <button onClick={openTour} className={`px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl font-black text-[10px] md:text-[11px] uppercase border transition-all active:scale-95 ${isLight ? 'bg-white text-zinc-500 border-zinc-200 hover:text-blue-600' : 'bg-zinc-950 text-zinc-300 border-zinc-700 hover:text-blue-300'}`}>
+           <button onClick={openTour} className={`px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl font-black text-[10px] lg:text-[11px] uppercase border transition-all active:scale-95 ${isLight ? 'bg-white text-zinc-500 border-zinc-200 hover:text-blue-600' : 'bg-zinc-950 text-zinc-300 border-zinc-700 hover:text-blue-300'}`}>
               {lang === 'pt' ? 'Tutorial' : 'Tutorial'}
            </button>
-           <button data-tour="new-diagram" onClick={handleNewDiagramClick} className="bg-blue-600 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">{lang === 'pt' ? 'Novo diagrama' : 'New diagram'}</button>
+           <button data-tour="new-diagram" onClick={handleNewDiagramClick} className="bg-blue-600 px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl text-white font-black text-[10px] lg:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">{lang === 'pt' ? 'Novo diagrama' : 'New diagram'}</button>
            <button onClick={createQuickDiagram} className="bg-blue-50 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl border border-blue-200 text-blue-700 font-black text-[10px] md:text-[11px] uppercase active:scale-95">{lang === 'pt' ? 'Novo diagrama rápido' : 'Quick new diagram'}</button>
-           <button onClick={() => onAdd(state)} className="bg-zinc-800 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl text-white font-black text-[10px] md:text-[11px] uppercase active:scale-95">{lang === 'pt' ? 'Duplicar este diagrama' : 'Duplicate this diagram'}</button>
+           <button onClick={() => onAdd(state)} className="bg-zinc-800 px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl text-white font-black text-[10px] lg:text-[11px] uppercase active:scale-95">{lang === 'pt' ? 'Duplicar este diagrama' : 'Duplicate this diagram'}</button>
            <div className="flex gap-1.5 items-center bg-blue-50 dark:bg-zinc-800 p-1.5 rounded-xl border border-blue-200 dark:border-zinc-700 shadow-sm [&>button]:bg-white [&>button]:text-zinc-800 [&>button]:border [&>button]:border-zinc-300 [&>button]:shadow-sm">
               <button onClick={() => onMove('up')} disabled={isFirst} className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-white transition-colors">↑</button>
               <button onClick={() => onMove('down')} disabled={isLast} className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-white transition-colors">↓</button>
@@ -1420,9 +1458,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         </div>
       </div>
 
-      <div className={`operational-btns mb-5 hidden md:block ${isExporting ? 'hidden' : ''}`}>
+      <div className={`operational-btns mb-5 hidden lg:block ${isExporting ? 'hidden' : ''}`}>
         <div className={`flex flex-col gap-3 rounded-2xl border px-3 py-3 shadow-sm ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
+            <button data-tour="quick-base" onClick={() => toggleQuickPanel('base')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'base' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
+              Base
+            </button>
             <button data-tour="quick-layers" onClick={() => toggleQuickPanel('visual')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'visual' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
               {lang === 'pt' ? 'Camadas' : 'Layers'}
             </button>
@@ -1449,44 +1490,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             </button>
           </div>
           {renderQuickControls()}
-
-          <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
-            {onGlobalTranspose && (
-              <div className={`flex shrink-0 items-center gap-1 rounded-xl border px-1.5 py-1 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
-                <span className="px-1 text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                  {lang === 'pt' ? 'Transp.' : 'Transp.'}
-                </span>
-                <button onClick={() => onGlobalTranspose(-1)} className="flex h-7 w-7 items-center justify-center rounded-md text-[13px] font-black text-blue-600 transition-colors hover:bg-blue-50">-</button>
-                <div className="flex min-w-[28px] flex-col items-center justify-center px-1">
-                  <span className={`text-[10px] font-black leading-none ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>
-                    {globalTranspose === 0 ? '0' : globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}
-                  </span>
-                  <button onClick={() => onGlobalTranspose(0)} className="text-[7px] font-black uppercase leading-none text-zinc-400 hover:text-red-500">
-                    reset
-                  </button>
-                </div>
-                <button onClick={() => onGlobalTranspose(1)} className="flex h-7 w-7 items-center justify-center rounded-md text-[13px] font-black text-blue-600 transition-colors hover:bg-blue-50">+</button>
-              </div>
-            )}
-            <div className={`flex shrink-0 items-center gap-2 rounded-xl border px-2 py-1.5 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
-              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                {lang === 'pt' ? 'Trastes' : 'Frets'}
-              </span>
-              <input type="number" min={0} max={state.endFret - 1} value={state.startFret} onChange={e => recordAction({...state, startFret: Math.max(0, Math.min(Number(e.target.value), state.endFret - 1))})} className="w-12 rounded-md border border-zinc-200 bg-white px-1 py-1 text-center text-[10px] font-black text-zinc-900" />
-              <span className="text-[10px] font-black text-zinc-400">-</span>
-              <input type="number" min={state.startFret + 1} max={24} value={state.endFret} onChange={e => recordAction({...state, endFret: Math.min(24, Math.max(Number(e.target.value), state.startFret + 1))})} className="w-12 rounded-md border border-zinc-200 bg-white px-1 py-1 text-center text-[10px] font-black text-zinc-900" />
-            </div>
-            <button onClick={undo} className={`${quickButtonClass} shrink-0`} title={t.undo} aria-label={t.undo}>↶</button>
-            <button onClick={redo} className={`${quickButtonClass} shrink-0`} title={t.redo} aria-label={t.redo}>↷</button>
-            <button onClick={clearContent} className="shrink-0 px-3 py-2 rounded-lg border border-red-200 bg-red-50 text-[9px] font-black uppercase text-red-600 transition-all hover:bg-red-100 active:scale-95">
-              {t.clearDiagram}
-            </button>
-          </div>
         </div>
       </div>
 
       <div className={`operational-btns ${isExporting ? 'hidden' : ''}`}>
-        <div className={`fixed inset-x-0 bottom-0 z-[80] max-h-[78vh] overflow-y-auto border-t p-4 shadow-2xl transition-transform md:fixed md:inset-x-auto md:right-6 md:top-28 md:bottom-6 md:w-[390px] md:max-h-none md:rounded-2xl md:border ${panelShell} ${isControlPanelOpen ? 'translate-y-0 md:translate-y-0' : 'translate-y-[calc(100%-52px)] md:translate-y-0 md:translate-x-[calc(100%+32px)]'}`}>
+        <div className={`fixed inset-x-0 bottom-0 z-[80] max-h-[78vh] overflow-y-auto border-t p-4 shadow-2xl transition-transform lg:fixed lg:inset-x-auto lg:right-6 lg:top-28 lg:bottom-6 lg:w-[390px] lg:max-h-none lg:rounded-2xl lg:border ${panelShell} ${isControlPanelOpen ? 'translate-y-0 lg:translate-y-0' : 'translate-y-full lg:translate-y-0 lg:translate-x-[calc(100%+32px)]'}`}>
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">
@@ -1510,6 +1518,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             {controlTabs.map(tab => (
               <button
                 key={tab.id}
+                data-tour={tab.id === 'base' ? 'quick-base' : tab.id === 'visual' ? 'quick-layers' : tab.id === 'tools' ? 'quick-practice' : `quick-${tab.id}`}
                 onClick={() => {
                   setActiveControlTab(tab.id);
                   setIsControlPanelOpen(true);

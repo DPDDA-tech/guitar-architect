@@ -21,7 +21,7 @@ type TunerTarget = {
   frequency: number;
 };
 
-type ClickSound = 'classic' | 'wood' | 'bell' | 'soft';
+type ClickSound = 'classic' | 'wood' | 'bell' | 'soft' | 'drums';
 type ExerciseFocus = 'scale' | 'arpeggio' | 'stringSkip' | 'rhythm';
 type StudyPattern = '3nps' | '4nps';
 
@@ -300,7 +300,8 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
       classic: { accent: [1320], regular: [880], prep: [660], duration: 0.08 },
       wood: { accent: [1760, 880], regular: [990, 495], prep: [660, 330], duration: 0.055 },
       bell: { accent: [1568, 2352], regular: [1175], prep: [784], duration: 0.12 },
-      soft: { accent: [1046], regular: [784], prep: [523], duration: 0.1 }
+      soft: { accent: [1046], regular: [784], prep: [523], duration: 0.1 },
+      drums: { accent: [82, 164, 2200], regular: [180, 360, 1400], prep: [120, 240], duration: 0.075 }
     };
     const sound = sounds[clickSound];
     playFrequencies(isPrep ? sound.prep : isAccent ? sound.accent : sound.regular, {
@@ -649,6 +650,7 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
                 <option value="wood">Wood</option>
                 <option value="bell">Bell</option>
                 <option value="soft">{lang === 'pt' ? 'Suave' : 'Soft'}</option>
+                <option value="drums">Drums</option>
               </select>
             </label>
           </div>

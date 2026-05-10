@@ -31,7 +31,11 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ steps, lang, isLight, o
       setTargetRect(null);
       return;
     }
-    const element = document.querySelector<HTMLElement>(step.target);
+    const elements = Array.from(document.querySelectorAll<HTMLElement>(step.target));
+    const element = elements.find(candidate => {
+      const rect = candidate.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0;
+    }) || null;
     setTargetRect(element ? element.getBoundingClientRect() : null);
   }, [step]);
 
@@ -39,7 +43,10 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ steps, lang, isLight, o
     if (!step) return;
     onStepChange?.(step, index);
     if (step.target) {
-      const element = document.querySelector<HTMLElement>(step.target);
+      const element = Array.from(document.querySelectorAll<HTMLElement>(step.target)).find(candidate => {
+        const rect = candidate.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      });
       element?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
     }
     const raf = window.setTimeout(updateTargetRect, 80);

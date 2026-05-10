@@ -234,7 +234,8 @@ const switchUserSession = (newUser: string) => {
 
   useEffect(() => {
   const handleResize = () => {
-    setIsSmallScreen(window.innerWidth < 1024);
+    const isTouchLayout = window.matchMedia?.('(pointer: coarse)').matches && window.innerWidth < 1200;
+    setIsSmallScreen(window.innerWidth < 1024 || isTouchLayout);
   };
 
   handleResize(); // boot inicial
@@ -808,7 +809,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
 <div className="relative">
   <button
-    onClick={() => setShowProjectMenu(prev => !prev)}
+    onClick={() => {
+      window.dispatchEvent(new CustomEvent('ga-close-diagram-panels'));
+      setShowProjectMenu(prev => !prev);
+    }}
     className={`px-4 md:px-5 py-2 md:py-3 rounded-xl border font-black uppercase text-[10px] md:text-[11px] transition-all ai-glow ${isLight ? 'bg-white border-zinc-300 text-zinc-800 hover:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-blue-500'}`}
   >
     MENU
