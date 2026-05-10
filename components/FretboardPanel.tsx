@@ -143,7 +143,7 @@ const switchUserSession = (newUser: string) => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.2",
+      version: "1.8.3",
       activeProjectId: projectId,
       theme,
       lang,
@@ -368,7 +368,7 @@ useEffect(() => {
       saveProjectToLibrary(currentProject);
 
       saveConfig({
-        version: "1.8.2",
+        version: "1.8.3",
         activeProjectId: projectId,
         theme,
         lang,
@@ -416,7 +416,7 @@ const handleLogout = () => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.2",
+      version: "1.8.3",
       activeProjectId: projectId,
       theme,
       lang,

@@ -8,6 +8,7 @@ import {
   transposeNote,
 } from '../music/musicTheory';
 import { getScaleNotes } from '../music/scales';
+import { getFrequencyForNoteName, getFrequencyForPosition, getOpenStringMidi } from '../utils/audio';
 
 describe('music theory basics', () => {
   it('calculates common scales and modes', () => {
@@ -39,5 +40,12 @@ describe('music theory basics', () => {
     expect(transposeNote('Bb', 2)).toBe('C');
     expect(getNoteAt(0, 1, TUNINGS_PRESETS['Half-Step Down'])).toBe('E');
     expect(getFretForNote(0, 'F', TUNINGS_PRESETS.Standard, 1)).toBe(1);
+  });
+
+  it('maps fretboard positions to safe audio frequencies', () => {
+    expect(getOpenStringMidi('guitar-6', TUNINGS_PRESETS.Standard, 5)).toBe(40);
+    expect(getOpenStringMidi('bass-5', ['G', 'D', 'A', 'E', 'B'], 4)).toBe(23);
+    expect(getFrequencyForNoteName('A', 4)).toBeCloseTo(440, 4);
+    expect(getFrequencyForPosition('guitar-6', TUNINGS_PRESETS.Standard, 0, 5)).toBeCloseTo(440, 4);
   });
 });

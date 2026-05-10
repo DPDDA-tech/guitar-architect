@@ -123,6 +123,18 @@ const instrument = INSTRUMENT_PRESETS[resolvedInstrumentType];
     return brightness > 155 ? '#000000' : '#ffffff';
   }, [colors.text]);
 
+  const getLineStroke = useCallback((hex: string) => {
+    if (isLight || !hex.startsWith('#') || hex.length !== 7) return hex;
+
+    const safeHex = hex.replace('#', '');
+    const r = parseInt(safeHex.slice(0, 2), 16);
+    const g = parseInt(safeHex.slice(2, 4), 16);
+    const b = parseInt(safeHex.slice(4, 6), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+    return brightness < 70 ? '#f8fafc' : hex;
+  }, [isLight]);
+
   const scaleNotes = useMemo(() => getScaleNotes(root, scaleType), [root, scaleType]);
 
 const chordVoicing = useMemo<ChordVoicing>(() => {
@@ -415,7 +427,7 @@ const renderBrushPaths = () => {
 
         {state.lines.map(line => {
           if (line.start.string >= numStrings || line.end.string >= numStrings) return null;
-          return <line key={line.id} x1={getNoteX(line.start.fret)} y1={getY(line.start.string)} x2={getNoteX(line.end.fret)} y2={getY(line.end.string)} stroke={line.color} strokeWidth={line.width} strokeLinecap="round" opacity="0.8" />;
+          return <line key={line.id} x1={getNoteX(line.start.fret)} y1={getY(line.start.string)} x2={getNoteX(line.end.fret)} y2={getY(line.end.string)} stroke={getLineStroke(line.color)} strokeWidth={line.width} strokeLinecap="round" opacity="0.8" />;
         })}
 
         {feedbackNote && feedbackNote.string < numStrings && feedbackNote.fret >= startFret && feedbackNote.fret <= endFret && (
