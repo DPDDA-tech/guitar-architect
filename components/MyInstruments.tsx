@@ -97,6 +97,35 @@ const formatDate = (iso?: string) => {
   return date.toLocaleDateString();
 };
 
+const getInstrumentCardAccent = (strings: string) => {
+  const count = Number.parseInt(strings, 10);
+
+  if (count === 4 || count === 5) {
+    return {
+      border: 'border-green-300 hover:border-green-500',
+      footer: 'bg-green-600 text-white',
+      badge: 'bg-white text-green-700',
+      muted: 'text-green-100',
+    };
+  }
+
+  if (count === 7 || count === 8) {
+    return {
+      border: 'border-purple-300 hover:border-purple-500',
+      footer: 'bg-purple-600 text-white',
+      badge: 'bg-white text-purple-700',
+      muted: 'text-purple-100',
+    };
+  }
+
+  return {
+    border: 'border-blue-300 hover:border-blue-500',
+    footer: 'bg-blue-600 text-white',
+    badge: 'bg-white text-blue-700',
+    muted: 'text-blue-100',
+  };
+};
+
 const exportInstrumentToPdf = async (instrument: UserInstrument, lang: 'pt' | 'en') => {
   const { jsPDF } = await import('jspdf');
   const pdf = new jsPDF('p', 'mm', 'a4');
@@ -538,21 +567,25 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
               <div className={`rounded-2xl border p-10 text-center text-sm font-black uppercase text-zinc-500 ${panel}`}>{t.empty}</div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {filteredItems.map(item => (
-                  <button key={item.id} onClick={() => setSelected(item)} className={`overflow-hidden rounded-2xl border text-left transition-all hover:-translate-y-0.5 ${isLight ? 'border-zinc-200 bg-white hover:border-blue-300' : 'border-zinc-800 bg-zinc-900 hover:border-blue-500'}`}>
-                    <div className="aspect-[16/9] bg-zinc-100">
-                      {item.photo ? <img src={item.photo} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-xs font-black uppercase text-zinc-400">{t.noPhoto}</div>}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-lg font-black">{display(item.brand)}</h3>
-                      <p className="mt-1 text-sm font-bold text-zinc-500">{[item.model, item.version].filter(Boolean).join(' - ') || '-'}</p>
-                      <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase text-zinc-500">
-                        <span className="rounded-full bg-blue-50 px-2 py-1 text-blue-600">{display(item.strings)} cordas</span>
-                        {item.lastStringChange && <span className="rounded-full bg-orange-50 px-2 py-1 text-orange-600">{lang === 'pt' ? 'Cordas' : 'Strings'}: {item.lastStringChange}</span>}
+                {filteredItems.map(item => {
+                  const accent = getInstrumentCardAccent(item.strings);
+
+                  return (
+                    <button key={item.id} onClick={() => setSelected(item)} className={`overflow-hidden rounded-2xl border bg-white text-left transition-all hover:-translate-y-0.5 ${accent.border}`}>
+                      <div className="aspect-[16/9] bg-zinc-100">
+                        {item.photo ? <img src={item.photo} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-xs font-black uppercase text-zinc-400">{t.noPhoto}</div>}
                       </div>
-                    </div>
-                  </button>
-                ))}
+                      <div className={`p-4 ${accent.footer}`}>
+                        <h3 className="text-lg font-black">{display(item.brand)}</h3>
+                        <p className={`mt-1 text-sm font-bold ${accent.muted}`}>{[item.model, item.version].filter(Boolean).join(' - ') || '-'}</p>
+                        <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase">
+                          <span className={`rounded-full px-2 py-1 ${accent.badge}`}>{display(item.strings)} cordas</span>
+                          {item.lastStringChange && <span className="rounded-full bg-white/15 px-2 py-1 text-white">{lang === 'pt' ? 'Cordas' : 'Strings'}: {item.lastStringChange}</span>}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
