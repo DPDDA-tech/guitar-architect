@@ -16,6 +16,9 @@ interface MyInstrumentsProps {
   lang: 'pt' | 'en';
 }
 
+type InstrumentSortKey = 'purchaseDate' | 'paidValue' | 'manufactureYear' | 'brandModel' | 'updatedAt';
+type SortDirection = 'desc' | 'asc';
+
 const fieldGroups: Array<{ titlePt: string; titleEn: string; fields: Array<[keyof UserInstrument, string, string]> }> = [
   {
     titlePt: 'Informações Básicas',
@@ -124,6 +127,30 @@ const getInstrumentCardAccent = (strings: string) => {
     badge: 'bg-white text-blue-700',
     muted: 'text-blue-100',
   };
+};
+
+const getComparableValue = (instrument: UserInstrument, key: InstrumentSortKey): number | string => {
+  if (key === 'purchaseDate') {
+    const timestamp = Date.parse(instrument.purchaseDate || '');
+    return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp;
+  }
+
+  if (key === 'paidValue') {
+    const value = Number.parseFloat((instrument.paidValue || '').replace(/[^\d,.-]/g, '').replace(',', '.'));
+    return Number.isNaN(value) ? Number.NEGATIVE_INFINITY : value;
+  }
+
+  if (key === 'manufactureYear') {
+    const value = Number.parseInt(instrument.manufactureYear || '', 10);
+    return Number.isNaN(value) ? Number.NEGATIVE_INFINITY : value;
+  }
+
+  if (key === 'brandModel') {
+    return `${instrument.brand} ${instrument.model} ${instrument.version}`.trim().toLowerCase();
+  }
+
+  const timestamp = Date.parse(instrument.updatedAt || '');
+  return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp;
 };
 
 const exportInstrumentToPdf = async (instrument: UserInstrument, lang: 'pt' | 'en') => {
@@ -251,6 +278,14 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
   const [maintenanceTitle, setMaintenanceTitle] = useState('');
   const [maintenanceNotes, setMaintenanceNotes] = useState('');
   const [isLoadingPhoto, setIsLoadingPhoto] = useState(false);
+  const [sortKey, setSortKey] = useState<InstrumentSortKey>(() => {
+    if (typeof window === 'undefined') return 'purchaseDate';
+    return (window.localStorage.getItem('ga_instrument_sort_key') as InstrumentSortKey | null) || 'purchaseDate';
+  });
+  const [sortDirection, setSortDirection] = useState<SortDirection>(() => {
+    if (typeof window === 'undefined') return 'desc';
+    return (window.localStorage.getItem('ga_instrument_sort_direction') as SortDirection | null) || 'desc';
+  });
 
   const t = {
     title: lang === 'pt' ? 'Meus Instrumentos' : 'My Instruments',
@@ -258,6 +293,10 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
     add: lang === 'pt' ? 'Adicionar instrumento' : 'Add instrument',
     exportJson: lang === 'pt' ? 'Exportar JSON' : 'Export JSON',
     importJson: lang === 'pt' ? 'Importar JSON' : 'Import JSON',
+    sortBy: lang === 'pt' ? 'Ordenar por' : 'Sort by',
+    direction: lang === 'pt' ? 'Direção' : 'Direction',
+    newest: lang === 'pt' ? 'Maior / recente primeiro' : 'Highest / newest first',
+    oldest: lang === 'pt' ? 'Menor / antigo primeiro' : 'Lowest / oldest first',
     edit: lang === 'pt' ? 'Editar' : 'Edit',
     save: lang === 'pt' ? 'Salvar' : 'Save',
     cancel: lang === 'pt' ? 'Cancelar' : 'Cancel',
@@ -280,10 +319,15 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
     listInstruments().then(setItems).catch(() => setItems([]));
   }, [isOpen]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('ga_instrument_sort_key', sortKey);
+    window.localStorage.setItem('ga_instrument_sort_direction', sortDirection);
+  }, [sortKey, sortDirection]);
+
   const filteredItems = useMemo(() => {
     const term = query.trim().toLowerCase();
-    if (!term) return items;
-    return items.filter(item => [
+    const filtered = term ? items.filter(item => [
       item.brand,
       item.model,
       item.version,
@@ -293,8 +337,29 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
       item.neckPickup,
       item.bodyWood,
       item.fretboardWood
-    ].some(value => value.toLowerCase().includes(term)));
-  }, [items, query]);
+    ].some(value => value.toLowerCase().includes(term))) : items;
+
+    return [...filtered].sort((a, b) => {
+      const valueA = getComparableValue(a, sortKey);
+      const valueB = getComparableValue(b, sortKey);
+      const direction = sortDirection === 'desc' ? -1 : 1;
+
+      if (typeof valueA === 'string' || typeof valueB === 'string') {
+        return String(valueA).localeCompare(String(valueB)) * (sortDirection === 'desc' ? -1 : 1);
+      }
+
+      if (valueA !== valueB) return (valueA - valueB) * direction;
+      return b.updatedAt.localeCompare(a.updatedAt);
+    });
+  }, [items, query, sortDirection, sortKey]);
+
+  const sortOptions: Array<{ key: InstrumentSortKey; label: string }> = [
+    { key: 'purchaseDate', label: lang === 'pt' ? 'Data da compra' : 'Purchase date' },
+    { key: 'paidValue', label: lang === 'pt' ? 'Preço' : 'Price' },
+    { key: 'manufactureYear', label: lang === 'pt' ? 'Ano de fabricação' : 'Year' },
+    { key: 'brandModel', label: lang === 'pt' ? 'Marca / modelo' : 'Brand / model' },
+    { key: 'updatedAt', label: lang === 'pt' ? 'Última atualização' : 'Last update' },
+  ];
 
   const refresh = async () => {
     const next = await listInstruments();
@@ -563,6 +628,24 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
         ) : details || (
           <div className="space-y-5">
             <input value={query} onChange={event => setQuery(event.target.value)} className={input} placeholder={t.search} />
+            <div className="grid gap-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 md:grid-cols-[1fr_auto] md:items-end">
+              <label className="space-y-1">
+                <span className="text-[10px] font-black uppercase text-zinc-400">{t.sortBy}</span>
+                <select value={sortKey} onChange={event => setSortKey(event.target.value as InstrumentSortKey)} className={input}>
+                  {sortOptions.map(option => (
+                    <option key={option.key} value={option.key}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+              <button
+                onClick={() => setSortDirection(prev => prev === 'desc' ? 'asc' : 'desc')}
+                className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-xs font-black uppercase text-zinc-700"
+                aria-label={t.direction}
+                title={t.direction}
+              >
+                {sortDirection === 'desc' ? `↓ ${t.newest}` : `↑ ${t.oldest}`}
+              </button>
+            </div>
             {filteredItems.length === 0 ? (
               <div className={`rounded-2xl border p-10 text-center text-sm font-black uppercase text-zinc-500 ${panel}`}>{t.empty}</div>
             ) : (
