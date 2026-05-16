@@ -110,6 +110,7 @@ const FretboardPanel: React.FC = () => {
   const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showTips, setShowTips] = useState(true);
+  const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
 
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -143,7 +144,7 @@ const switchUserSession = (newUser: string) => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.4",
+      version: "1.8.5",
       activeProjectId: projectId,
       theme,
       lang,
@@ -369,7 +370,7 @@ useEffect(() => {
       saveProjectToLibrary(currentProject);
 
       saveConfig({
-        version: "1.8.4",
+        version: "1.8.5",
         activeProjectId: projectId,
         theme,
         lang,
@@ -417,7 +418,7 @@ const handleLogout = () => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.4",
+      version: "1.8.5",
       activeProjectId: projectId,
       theme,
       lang,
@@ -626,6 +627,34 @@ const handleLogout = () => {
 
   const isLight = theme === 'light';
   const userLibrary = getLibrary(user);
+  const activeInstanceIndex = Math.max(0, instances.findIndex(instance => instance.id === activeInstanceId));
+  const activeInstance = instances[activeInstanceIndex] || instances[0];
+  const primaryInstrument = activeInstance?.instrumentType || defaultInstrument;
+  const primaryLeftHanded = activeInstance?.isLeftHanded || false;
+  const updatePrimaryInstrument = (instrumentType: InstrumentType) => {
+    const instrument = INSTRUMENT_PRESETS[instrumentType];
+    setDefaultInstrument(instrumentType);
+    setInstances(prev => prev.map((instance, index) => index === activeInstanceIndex ? {
+      ...instance,
+      instrumentType,
+      tuning: 'Standard',
+      stringStatuses: Array(instrument.strings).fill('normal')
+    } : instance));
+  };
+  const togglePrimaryLeftHanded = () => {
+    setInstances(prev => prev.map((instance, index) => index === activeInstanceIndex ? {
+      ...instance,
+      isLeftHanded: !instance.isLeftHanded
+    } : instance));
+  };
+
+  useEffect(() => {
+    if (!activeInstanceId && instances[0]) {
+      setActiveInstanceId(instances[0].id);
+    } else if (activeInstanceId && instances.length > 0 && !instances.some(instance => instance.id === activeInstanceId)) {
+      setActiveInstanceId(instances[0].id);
+    }
+  }, [activeInstanceId, instances]);
 
   return (
     <div className={`min-h-screen transition-all ${isExporting ? 'is-exporting-mode' : (isLight ? 'blueprint-grid-light' : 'blueprint-grid-dark')}`}>
@@ -681,6 +710,7 @@ const handleLogout = () => {
               <input
                 value={projectName}
                 onChange={e => setProjectName(e.target.value)}
+                maxLength={28}
                 className={`mx-auto block w-full max-w-[150px] truncate bg-transparent text-center text-[9px] font-black uppercase focus:outline-none ${isLight ? 'text-zinc-700' : 'text-zinc-200'}`}
                 placeholder={t.projectName}
                 aria-label={lang === 'pt' ? 'Nome do projeto' : 'Project name'}
@@ -688,6 +718,14 @@ const handleLogout = () => {
             </div>
 
             <div className="flex items-center gap-1">
+              <button
+                onClick={() => setTheme(isLight ? 'dark' : 'light')}
+                className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
+                aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
+                title={isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
+              >
+                {isLight ? <MoonIcon /> : <SunIcon />}
+              </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'metronome' } }))}
                 className={`rounded-xl border px-2.5 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
@@ -716,15 +754,37 @@ const handleLogout = () => {
                 <button onClick={() => { exportProjectFile(); setShowProjectMenu(false); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                   {lang === 'pt' ? 'Salvar JSON' : 'Save JSON'}
                 </button>
-                <button onClick={() => { setShowProjectMenu(false); setTheme(isLight ? 'dark' : 'light'); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                  {isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
-                </button>
                 <button onClick={() => { setShowProjectMenu(false); window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'base' } })); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                   {lang === 'pt' ? 'Config.' : 'Settings'}
                 </button>
+                <button onClick={togglePrimaryLeftHanded} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                  {lang === 'pt' ? 'Canhoto' : 'Lefty'}
+                </button>
               </div>
-              <button onClick={() => { setShowProjectMenu(false); clearAll(); }} className="mt-2 w-full rounded-xl border border-red-300/50 px-3 py-2.5 text-[10px] font-black uppercase text-red-500">
-                {lang === 'pt' ? 'Limpar tudo' : 'Clear all'}
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
+                  <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Guitarra' : 'Guitar'}</p>
+                  <div className="grid grid-cols-3 gap-1">
+                    {(['guitar-6', 'guitar-7', 'guitar-8'] as InstrumentType[]).map(instrument => (
+                      <button key={instrument} onClick={() => updatePrimaryInstrument(instrument)} className={`rounded-lg px-2 py-2 text-[9px] font-black uppercase ${primaryInstrument === instrument ? 'bg-blue-600 text-white' : isLight ? 'bg-zinc-50 text-zinc-700' : 'bg-zinc-800 text-zinc-200'}`}>
+                        {instrument.replace('guitar-', '')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
+                  <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Baixo' : 'Bass'}</p>
+                  <div className="grid grid-cols-2 gap-1">
+                    {(['bass-4', 'bass-5'] as InstrumentType[]).map(instrument => (
+                      <button key={instrument} onClick={() => updatePrimaryInstrument(instrument)} className={`rounded-lg px-2 py-2 text-[9px] font-black uppercase ${primaryInstrument === instrument ? 'bg-blue-600 text-white' : isLight ? 'bg-zinc-50 text-zinc-700' : 'bg-zinc-800 text-zinc-200'}`}>
+                        {instrument.replace('bass-', '')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => { setShowSupportModal(true); setShowProjectMenu(false); }} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                APOIAR O PROJETO
               </button>
             </div>
           )}
@@ -750,6 +810,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                     <input
                       value={projectName}
                       onChange={e => setProjectName(e.target.value)}
+                      maxLength={28}
                       className={`min-w-0 flex-1 bg-transparent font-black text-[10px] md:text-xs focus:outline-none truncate ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}
                       placeholder={t.projectName}
                     />
@@ -779,6 +840,14 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
                >
                   {isLight ? <MoonIcon /> : <SunIcon />}
+               </button>
+               <button
+                 onClick={() => window.dispatchEvent(new CustomEvent('ga-open-active-tour'))}
+                 className={`p-2 md:p-2.5 rounded-xl border transition-all ai-glow font-black text-sm ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+                 title={lang === 'pt' ? 'Tutorial' : 'Tutorial'}
+                 aria-label={lang === 'pt' ? 'Abrir tutorial' : 'Open tutorial'}
+               >
+                 T
                </button>
                <button onClick={toggleFullScreen} className={`p-2 md:p-2.5 rounded-xl border transition-all ai-glow ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`} title="Toggle Full Screen">
                   <FullScreenIcon isFullScreen={isFullScreen} />
@@ -909,12 +978,35 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           </button>
         </div>
 
-        <button onClick={() => { setShowSupportModal(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-          APOIAR O PROJETO
+        <button onClick={togglePrimaryLeftHanded} className={`w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+          {lang === 'pt' ? 'CANHOTO' : 'LEFT-HANDED'}
         </button>
 
-        <button onClick={() => { setShowProjectMenu(false); clearAll(); }} className="w-full px-3 py-2.5 text-[10px] font-black text-red-500/80 border border-red-300/40 rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase">
-          LIMPAR TUDO
+        <div className="grid grid-cols-2 gap-2">
+          <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
+            <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Guitarra' : 'Guitar'}</p>
+            <div className="grid grid-cols-3 gap-1">
+              {(['guitar-6', 'guitar-7', 'guitar-8'] as InstrumentType[]).map(instrument => (
+                <button key={instrument} onClick={() => updatePrimaryInstrument(instrument)} className={`rounded-lg px-2 py-2 text-[9px] font-black uppercase ${primaryInstrument === instrument ? 'bg-blue-600 text-white' : isLight ? 'bg-zinc-50 text-zinc-700' : 'bg-zinc-800 text-zinc-200'}`}>
+                  {instrument.replace('guitar-', '')}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
+            <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Baixo' : 'Bass'}</p>
+            <div className="grid grid-cols-2 gap-1">
+              {(['bass-4', 'bass-5'] as InstrumentType[]).map(instrument => (
+                <button key={instrument} onClick={() => updatePrimaryInstrument(instrument)} className={`rounded-lg px-2 py-2 text-[9px] font-black uppercase ${primaryInstrument === instrument ? 'bg-blue-600 text-white' : isLight ? 'bg-zinc-50 text-zinc-700' : 'bg-zinc-800 text-zinc-200'}`}>
+                  {instrument.replace('bass-', '')}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <button onClick={() => { setShowSupportModal(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+          APOIAR O PROJETO
         </button>
       </div>
     </div>
@@ -1039,7 +1131,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
     isExporting
       ? 'pt-10'
       : isSmallScreen
-        ? 'pt-20 md:pt-48'
+        ? 'pt-16 md:pt-48'
         : 'pt-24 md:pt-48'
   }`}
 >
@@ -1053,12 +1145,12 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           </div>
         ) : (
           instances.map((inst, idx) => (
-            <FretboardInstance key={inst.id} state={inst} updateState={(s) => updateInstance(inst.id, s)} onRemove={() => setInstances(prev => prev.filter(i => i.id !== inst.id))} onMove={(dir) => { const newList = [...instances]; const tIdx = dir === 'up' ? idx - 1 : idx + 1; if (tIdx >= 0 && tIdx < newList.length) { [newList[idx], newList[tIdx]] = [newList[tIdx], newList[idx]]; setInstances(newList); } }} onAdd={addInstance} isFirst={idx === 0} isLast={idx === instances.length - 1} diagramNumber={idx + 1} theme={theme} lang={lang} isActive={false} onActivate={() => {}} isExporting={isExporting} globalTranspose={globalTranspose} onGlobalTranspose={handleGlobalTranspose} showTips={showTips} onToggleTips={() => setShowTips(prev => !prev)} />
+            <FretboardInstance key={inst.id} state={inst} updateState={(s) => updateInstance(inst.id, s)} onRemove={() => setInstances(prev => prev.filter(i => i.id !== inst.id))} onMove={(dir) => { const newList = [...instances]; const tIdx = dir === 'up' ? idx - 1 : idx + 1; if (tIdx >= 0 && tIdx < newList.length) { [newList[idx], newList[tIdx]] = [newList[tIdx], newList[idx]]; setInstances(newList); setActiveInstanceId(newList[tIdx].id); } }} onAdd={addInstance} isFirst={idx === 0} isLast={idx === instances.length - 1} diagramNumber={idx + 1} theme={theme} lang={lang} isActive={(activeInstanceId || instances[0]?.id) === inst.id} onActivate={() => setActiveInstanceId(inst.id)} isExporting={isExporting} globalTranspose={globalTranspose} onGlobalTranspose={handleGlobalTranspose} showTips={showTips} onToggleTips={() => setShowTips(prev => !prev)} />
           ))
         )}
       </div>
 
-      <footer className={`py-10 border-t ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-900'}`}>
+      <footer className={`py-10 border-t ${isExporting ? 'hidden' : 'hidden md:block'} ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-900'}`}>
          <div className="max-w-[1700px] mx-auto px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
                <LogoIcon variant="footer" />

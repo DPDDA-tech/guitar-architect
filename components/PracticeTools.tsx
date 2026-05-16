@@ -127,17 +127,30 @@ const getScaleSequencePositions = (
   endFret: number,
   notesPerString: 3 | 4
 ) => {
-  const positions: Array<{ note: string; string: number; fret: number; midi: number }> = [];
+  const positions: Array<{ note: string; string: number; fret: number; midi: number; degree: number }> = [];
+  let lastMidi = -Infinity;
+  let lastDegree = -1;
+
   for (let string = tuning.length - 1; string >= 0; string--) {
-    let notesOnString = 0;
+    const stringCandidates: Array<{ note: string; string: number; fret: number; midi: number; degree: number }> = [];
     for (let fret = startFret; fret <= Math.min(endFret, startFret + 12); fret++) {
       const note = getNoteAt(string, fret, tuning);
-      if (scaleNotes.includes(note)) {
-        positions.push({ note, string, fret, midi: getOpenStringMidi(instrumentType, tuning, string) + fret });
-        notesOnString += 1;
-        if (notesOnString >= notesPerString) break;
+      const degree = scaleNotes.indexOf(note);
+      if (degree >= 0) {
+        stringCandidates.push({ note, string, fret, midi: getOpenStringMidi(instrumentType, tuning, string) + fret, degree });
       }
     }
+
+    const usable = stringCandidates.filter(candidate => (
+      candidate.midi > lastMidi && candidate.degree !== lastDegree
+    ));
+    const fallback = stringCandidates.filter(candidate => candidate.midi > lastMidi);
+    const selected = (usable.length >= notesPerString ? usable : fallback).slice(0, notesPerString);
+    selected.forEach(position => {
+      positions.push(position);
+      lastMidi = position.midi;
+      lastDegree = position.degree;
+    });
   }
 
   return positions
@@ -357,7 +370,7 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
   const chordToneIntervals = [0, 4, 7, 11];
   const exerciseTemplates = {
     scale: lang === 'pt' ? `Toque a escala em ${notesPerString} notas por corda, subindo e descendo, sem mudar de regiao.` : `Play the scale in ${notesPerString} notes per string, ascending and descending, without changing region.`,
-    arpeggio: lang === 'pt' ? `Toque o arpejo em ${notesPerString} dedos por corda, subindo 1-3-5-7 e voltando 7-5-3-1.` : `Play the arpeggio in ${notesPerString} notes per string, ascending 1-3-5-7 and descending 7-5-3-1.`,
+    arpeggio: lang === 'pt' ? `Toque o arpejo em ${notesPerString} notas por corda, subindo 1-3-5-7 e voltando 7-5-3-1.` : `Play the arpeggio in ${notesPerString} notes per string, ascending 1-3-5-7 and descending 7-5-3-1.`,
     stringSkip: lang === 'pt' ? 'Toque saltando uma corda: 6-4-5-3-4-2-3-1, depois volte.' : 'Play with string skipping: 6-4-5-3-4-2-3-1, then return.',
     rhythm: lang === 'pt' ? 'Toque o mesmo shape em semínimas, colcheias e tercinas, 2 compassos cada.' : 'Play the same shape as quarters, eighths, and triplets, 2 bars each.'
   };
@@ -697,7 +710,7 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
             <div className="grid grid-cols-2 gap-2">
               {(['3nps', '4nps'] as StudyPattern[]).map(pattern => (
                 <button key={pattern} onClick={() => setStudyPattern(pattern)} className={`${buttonBase} ${studyPattern === pattern ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 bg-white text-zinc-600' : 'border-zinc-800 bg-zinc-950 text-zinc-300'}`}>
-                  {pattern === '3nps' ? '3DPC' : '4DPC'}
+                  {pattern === '3nps' ? '3NPC' : '4NPC'}
                 </button>
               ))}
             </div>

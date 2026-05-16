@@ -9,13 +9,13 @@ Guitar Architect é uma plataforma **Open Source** e **Offline-First** para arqu
 
 ## 🚀 Status do Projeto
 
-*   **Versão:** 1.8.4 (Latest)
+*   **Versão:** 1.8.5 (Latest)
 *   **Licença:** [MIT](LICENSE) (Código Aberto)
 *   **Deploy:** [guitararchitect.com.br](https://www.guitararchitect.com.br)
 
 ---
 
-## ✨ Funcionalidades Principais (v1.8.4)
+## ✨ Funcionalidades Principais (v1.8.5)
 
 *   **Identidade Visual (Co-Branding):** Insira seu próprio logotipo e exporte diagramas profissionais com sua marca ao lado da assinatura Guitar Architect.
 *   **Motor Geométrico (CAGED):** Visualize os shapes clássicos que se adaptam dinamicamente à tônica e escala.
@@ -26,7 +26,7 @@ Guitar Architect é uma plataforma **Open Source** e **Offline-First** para arqu
 *   **Suporte Multi-Instrumento:** Guitarra (6, 7 e 8 cordas) e Baixo (4 e 5 cordas).
 *   **Biblioteca de Acordes:** Consulte, identifique, ouca e favorite shapes com filtros de dificuldade.
 *   **Ferramentas de Pratica:** Afinador, metronomo, treinador de intervalos, exercicios guiados e pratica de trocas de acordes.
-*   **Tutorial Visual:** Guia interativo para orientar o fluxo Camadas, Escala, Harmonia, Acordes, Pratica e Editor.
+*   **Tutorial Visual:** Guia interativo para orientar o fluxo Camadas, Escala, Harmonia, Acordes, Pratica e painel rapido de marcadores/linhas.
 
 ---
 

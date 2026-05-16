@@ -68,7 +68,7 @@ interface GuidedStudy {
 
 
 const FretboardInstance: React.FC<FretboardInstanceProps> = ({ 
-  state, updateState, onRemove, onMove, onAdd, isFirst, isLast, diagramNumber, theme, lang, isExporting = false, globalTranspose = 0, onGlobalTranspose, showTips = true, onToggleTips
+  state, updateState, onRemove, onMove, onAdd, isFirst, isLast, diagramNumber, theme, lang, isActive, onActivate, isExporting = false, globalTranspose = 0, onGlobalTranspose, showTips = true, onToggleTips
 }) => {
   const t = translations[lang];
   const [editorMode, setEditorMode] = useState<EditorMode>('marker');
@@ -279,7 +279,13 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   }, []);
 
   const isLight = isExporting ? true : (theme === 'light');
-  const isFretboardEmpty = state.markers.length === 0 && state.lines.length === 0;
+  const isFretboardVisuallyEmpty =
+    state.markers.length === 0 &&
+    state.lines.length === 0 &&
+    !state.layers.showAllNotes &&
+    !state.layers.showScale &&
+    !state.layers.showTonic &&
+    state.harmonyMode === 'OFF';
   const PRESET_COLORS = ['#ef4444', '#2563eb', '#22c55e', '#eab308', '#000000', '#6366f1', '#ec4899'];
   const OBS_LIMIT = 1500;
   const [isControlPanelOpen, setIsControlPanelOpen] = useState(false);
@@ -394,6 +400,14 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setShowTour(true);
   }, [activeControlTab, chordLibraryMode, editorMode, isControlPanelOpen, state]);
 
+  useEffect(() => {
+    const openActiveTour = () => {
+      if (isActive) openTour();
+    };
+    window.addEventListener('ga-open-active-tour', openActiveTour);
+    return () => window.removeEventListener('ga-open-active-tour', openActiveTour);
+  }, [isActive, openTour]);
+
   const tourSteps = useMemo<TourStep[]>(() => {
     const isMobileTour = typeof window !== 'undefined' && window.innerWidth < 1024;
 
@@ -501,10 +515,10 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     {
       id: 'editor',
       target: '[data-tour="quick-editor"]',
-      title: lang === 'pt' ? 'Editor' : 'Editor',
+      title: lang === 'pt' ? 'Marcadores e linhas' : 'Markers and lines',
       body: lang === 'pt'
-        ? 'Personalize o fretboard com marcadores, linhas, cores, dedos e observacoes.'
-        : 'Customize the fretboard with markers, lines, colors, fingers, and notes.'
+        ? 'Use o painel rapido acima do fretboard para escolher forma, cor e espessura sem abrir outra aba.'
+        : 'Use the quick panel above the fretboard to choose shape, color, and line thickness without opening another tab.'
     },
     {
       id: 'chords',
@@ -534,7 +548,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       harmony: 'harmony',
       chords: 'chords',
       practice: 'tools',
-      editor: 'editor',
       'mobile-scale': 'scale',
       'mobile-sound': 'tools'
     };
@@ -594,7 +607,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   ] as const;
   const visibleControlTabs = isBeginnerMode
     ? controlTabs.filter(tab => ['learn', 'scale', 'chords', 'tools', 'base'].includes(tab.id))
-    : controlTabs;
+    : controlTabs.filter(tab => tab.id !== 'editor');
 
   const panelShell = isLight
     ? 'bg-zinc-50 border-zinc-200 text-zinc-900'
@@ -619,25 +632,67 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setActiveControlTab(tab);
     setIsControlPanelOpen(true);
   };
+  const setLabelModeSmart = (mode: FretboardState['labelMode']) => {
+    if (mode === 'none') {
+      const shouldHidePoints = state.labelMode === 'none' && state.layers.showAllNotes;
+      recordAction({
+        ...state,
+        labelMode: 'none',
+        layers: {
+          ...state.layers,
+          showAllNotes: !shouldHidePoints
+        }
+      });
+      return;
+    }
+
+    if (state.labelMode === mode) {
+      recordAction({
+        ...state,
+        labelMode: 'none',
+        layers: {
+          ...state.layers,
+          showAllNotes: true
+        }
+      });
+      return;
+    }
+
+    recordAction({
+      ...state,
+      labelMode: mode,
+      layers: {
+        ...state.layers,
+        showAllNotes: true
+      }
+    });
+  };
   const handleScaleLayerShortcut = (layer: 'showScale' | 'showTonic') => {
     const isScalePanelOpen = activeControlTab === 'scale' && isControlPanelOpen;
     const isLayerActive = state.layers[layer];
 
-    if (isScalePanelOpen && !isLayerActive && scaleShortcutCloseTarget === layer) {
-      setIsControlPanelOpen(false);
-      setScaleShortcutCloseTarget(null);
-      return;
-    }
-
-    if (!isScalePanelOpen || !isLayerActive) {
+    if (!isLayerActive) {
       recordAction({...state, layers: {...state.layers, [layer]: true}});
       setActiveControlTab('scale');
       setIsControlPanelOpen(true);
+      setScaleShortcutCloseTarget(layer);
+      return;
+    }
+
+    if (isScalePanelOpen && scaleShortcutCloseTarget === layer) {
+      setIsControlPanelOpen(false);
+      setScaleShortcutCloseTarget(layer);
+      return;
+    }
+
+    if (!isScalePanelOpen && scaleShortcutCloseTarget === layer) {
+      recordAction({...state, layers: {...state.layers, [layer]: false}});
       setScaleShortcutCloseTarget(null);
       return;
     }
 
-    recordAction({...state, layers: {...state.layers, [layer]: false}});
+    setActiveControlTab('scale');
+    setIsControlPanelOpen(true);
     setScaleShortcutCloseTarget(layer);
   };
 
@@ -693,6 +748,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   const playChordVoicing = (voicing: ChordVoicingCandidate) => {
+    setSoundEnabled(true);
     const frequencies = voicing.positions.map(position => (
       getFrequencyForPosition(state.instrumentType, currentTuning, position.string, position.fret)
     ));
@@ -1153,6 +1209,29 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     }
   };
 
+  const clearEverything = () => {
+    const label = lang === 'pt' ? 'Limpar tudo?' : 'Clear everything?';
+    if (window.confirm(label)) {
+      recordAction({
+        ...state,
+        title: '',
+        subtitle: '',
+        notes: '',
+        markers: [],
+        lines: [],
+        harmonyMode: 'OFF',
+        cagedShape: 'OFF',
+        labelMode: 'note',
+        layers: {
+          ...state.layers,
+          showAllNotes: false,
+          showScale: false,
+          showTonic: false
+        }
+      });
+    }
+  };
+
   const playGuidedStudy = (study: GuidedStudy) => {
     if (study.action.type === 'scale') {
       playFrequencies(
@@ -1283,7 +1362,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       return (
         <div className={`mt-3 inline-flex max-w-full flex-wrap items-center gap-2 rounded-2xl border px-3 py-2 shadow-lg ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
           {['note', 'interval', 'fingering', 'none'].map(m => (
-            <button key={m} onClick={() => recordAction({...state, labelMode: m as any})} className={`${controlButtonBase} px-3 ${state.labelMode === m ? activeButtonClass : inactiveButtonClass}`}>
+            <button key={m} onClick={() => setLabelModeSmart(m as FretboardState['labelMode'])} className={`${controlButtonBase} px-3 ${(m === 'none' ? state.labelMode === 'none' && state.layers.showAllNotes : state.labelMode === m) ? activeButtonClass : inactiveButtonClass}`}>
               {m === 'fingering' ? t.labelFingering : m === 'note' ? t.labelNotes : m === 'interval' ? t.labelIntervals : t.labelNone}
             </button>
           ))}
@@ -1316,6 +1395,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <select value={state.inversion} onChange={e => recordAction({...state, inversion: Number(e.target.value)})} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
             <option value="0">Root</option><option value="1">1a Inv</option><option value="2">2a Inv</option><option value="3">3a Inv</option>
           </select>
+          <span className="px-1 text-[9px] font-black uppercase text-zinc-400">CAGED</span>
+          {(['OFF', 'C', 'A', 'G', 'E', 'D'] as CagedShape[]).map(shape => (
+            <button key={shape} onClick={() => recordAction({...state, cagedShape: shape})} title={t.tooltipCaged} className={`${controlButtonBase} px-3 ${state.cagedShape === shape ? activeButtonClass : inactiveButtonClass}`}>
+              {shape}
+            </button>
+          ))}
         </div>
       );
     }
@@ -1732,6 +1817,36 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     if (activeControlTab === 'base') {
       return (
         <div className="space-y-4">
+          <div className={`rounded-2xl border p-3 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-[0.22em] text-blue-600">
+                  {lang === 'pt' ? 'Base' : 'Base'}
+                </p>
+                <h4 className="mt-1 text-sm font-black uppercase tracking-tight">
+                  {lang === 'pt' ? 'Acoes do diagrama' : 'Diagram actions'}
+                </h4>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={handleNewDiagramClick} className={`${controlButtonBase} ${activeButtonClass}`} aria-label={lang === 'pt' ? 'Criar novo diagrama guiado' : 'Create guided new diagram'}>
+                {lang === 'pt' ? 'Novo' : 'New'}
+              </button>
+              <button onClick={createQuickDiagram} className={`${controlButtonBase} ${inactiveButtonClass}`} aria-label={lang === 'pt' ? 'Criar novo diagrama rapido' : 'Create quick new diagram'}>
+                {lang === 'pt' ? 'Rapido' : 'Quick'}
+              </button>
+              <button onClick={() => onAdd(state)} className={`${controlButtonBase} ${inactiveButtonClass}`} aria-label={lang === 'pt' ? 'Duplicar diagrama atual' : 'Duplicate current diagram'}>
+                {lang === 'pt' ? 'Duplicar' : 'Duplicate'}
+              </button>
+              <button onClick={clearContent} className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[9px] font-black uppercase text-red-600 transition-all hover:bg-red-100" aria-label={lang === 'pt' ? 'Limpar marcadores e linhas do diagrama' : 'Clear diagram markers and lines'}>
+                {lang === 'pt' ? 'Limpar mapa' : 'Clear map'}
+              </button>
+              <button onClick={clearEverything} className="col-span-2 rounded-lg border border-red-200 bg-white px-3 py-2.5 text-[9px] font-black uppercase text-red-600 transition-all hover:bg-red-50 dark:bg-zinc-950 dark:hover:bg-red-950/20" aria-label={lang === 'pt' ? 'Limpar todo o diagrama' : 'Clear the whole diagram'}>
+                {lang === 'pt' ? 'Limpar tudo' : 'Clear all'}
+              </button>
+            </div>
+          </div>
+
           {onGlobalTranspose && (
             <div className="space-y-2">
               <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">
@@ -1801,7 +1916,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.labels}</span>
             <div className="grid grid-cols-2 gap-2">
               {['note', 'interval', 'fingering', 'none'].map(m => (
-                <button key={m} onClick={() => recordAction({...state, labelMode: m as any})} className={`${controlButtonBase} ${state.labelMode === m ? activeButtonClass : inactiveButtonClass}`}>
+                <button key={m} onClick={() => setLabelModeSmart(m as FretboardState['labelMode'])} className={`${controlButtonBase} ${(m === 'none' ? state.labelMode === 'none' && state.layers.showAllNotes : state.labelMode === m) ? activeButtonClass : inactiveButtonClass}`}>
                   {m === 'fingering' ? t.labelFingering : m === 'note' ? t.labelNotes : m === 'interval' ? t.labelIntervals : t.labelNone}
                 </button>
               ))}
@@ -1966,32 +2081,75 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   return (
-    <div className={`diagram-container p-3 lg:p-10 rounded-[24px] lg:rounded-[48px] border shadow-lg lg:shadow-2xl transition-all ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+    <div onClick={onActivate} className={`diagram-container relative p-3 lg:p-10 rounded-[24px] lg:rounded-[48px] border shadow-lg lg:shadow-2xl transition-all ${isActive ? 'ring-2 ring-blue-500/70 shadow-blue-500/10' : ''} ${isLight ? 'bg-white/95 border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+      {isActive && !isExporting && <div className="pointer-events-none absolute inset-x-10 -bottom-2 h-1 rounded-full bg-blue-500/70 blur-[1px]" />}
       
       {/* HEADER DIAGRAMA */}
       <div className={`hidden lg:flex lg:flex-row lg:items-center justify-between mb-5 lg:mb-10 gap-4 ${isExporting ? 'hidden-operational-btns' : ''}`}>
-        <div className="flex-1">
+        <div className="min-w-0 flex-1 lg:max-w-[360px] xl:max-w-[420px] 2xl:max-w-[520px]">
           <div className={`mb-3 inline-flex items-center rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-blue-100 bg-blue-50 text-blue-600' : 'border-blue-900/40 bg-blue-950/30 text-blue-300'}`}>
             {lang === 'pt' ? 'Diagrama' : 'Diagram'} {diagramNumber}
           </div>
-          <input value={state.title} onChange={e => recordAction({...state, title: e.target.value})} className={`bg-transparent text-lg lg:text-3xl font-black italic uppercase tracking-tighter focus:outline-none w-full ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`} placeholder={t.titlePlaceholder} />
+          <input value={state.title} onChange={e => recordAction({...state, title: e.target.value})} className={`bg-transparent text-lg lg:text-2xl xl:text-3xl font-black italic uppercase tracking-tighter focus:outline-none w-full truncate ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`} placeholder={t.titlePlaceholder} />
           <input value={state.subtitle} onChange={e => recordAction({...state, subtitle: e.target.value})} className="bg-transparent text-[10px] lg:text-lg font-bold text-zinc-400 focus:outline-none w-full uppercase tracking-wide mt-1" placeholder={t.subtitle} />
         </div>
-        <div className="grid grid-cols-2 gap-2 shrink-0 operational-btns sm:flex sm:flex-wrap">
-           <button onClick={() => setIsControlPanelOpen(prev => !prev)} className={`px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl font-black text-[10px] lg:text-[11px] uppercase border transition-all active:scale-90 ${isControlPanelOpen ? 'bg-blue-600 text-white border-blue-600' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
+        <div className="flex max-w-[1040px] shrink flex-col items-end gap-3 operational-btns">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+           <button onClick={() => setIsControlPanelOpen(prev => !prev)} className={`px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl font-black text-[10px] lg:text-[11px] uppercase border transition-all active:scale-90 ${isControlPanelOpen ? 'bg-blue-600 text-white border-blue-600' : isLight ? 'bg-zinc-100 text-zinc-500 border-zinc-200' : 'bg-zinc-100 text-zinc-700 border-zinc-300'}`}>
               {lang === 'pt' ? 'CONTROLES' : 'TOOLS'}
            </button>
-           <button onClick={openTour} className={`px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl font-black text-[10px] lg:text-[11px] uppercase border transition-all active:scale-95 ${isLight ? 'bg-white text-zinc-500 border-zinc-200 hover:text-blue-600' : 'bg-zinc-950 text-zinc-300 border-zinc-700 hover:text-blue-300'}`}>
-              {lang === 'pt' ? 'Tutorial' : 'Tutorial'}
-           </button>
-           <button data-tour="new-diagram" onClick={handleNewDiagramClick} className="bg-blue-600 px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl text-white font-black text-[10px] lg:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">{lang === 'pt' ? 'Novo diagrama' : 'New diagram'}</button>
-           <button onClick={createQuickDiagram} className="bg-blue-50 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl border border-blue-200 text-blue-700 font-black text-[10px] md:text-[11px] uppercase active:scale-95">{lang === 'pt' ? 'Novo diagrama rápido' : 'Quick new diagram'}</button>
-           <button onClick={() => onAdd(state)} className="bg-zinc-800 px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl text-white font-black text-[10px] lg:text-[11px] uppercase active:scale-95">{lang === 'pt' ? 'Duplicar este diagrama' : 'Duplicate this diagram'}</button>
+           <button onClick={createQuickDiagram} className="bg-blue-600 px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl text-white font-black text-[10px] lg:text-[11px] uppercase active:scale-95 shadow-lg shadow-blue-500/20">{lang === 'pt' ? 'Novo' : 'New'}</button>
+           <button data-tour="new-diagram" onClick={handleNewDiagramClick} className="bg-blue-50 px-4 py-2.5 md:px-5 md:py-3.5 rounded-xl border border-blue-200 text-blue-700 font-black text-[10px] md:text-[11px] uppercase active:scale-95">{lang === 'pt' ? 'N. guiado' : 'Guided'}</button>
+           <button onClick={() => onAdd(state)} className={`${isLight ? 'bg-zinc-800 text-white' : 'bg-zinc-100 text-zinc-900'} px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl font-black text-[10px] lg:text-[11px] uppercase active:scale-95`}>{lang === 'pt' ? 'Duplicar este diagrama' : 'Duplicate this diagram'}</button>
+           <button onClick={clearContent} className="bg-red-50 px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl border border-red-200 text-red-600 font-black text-[10px] lg:text-[11px] uppercase active:scale-95">{lang === 'pt' ? 'Limpar' : 'Clear'}</button>
+           <button onClick={clearEverything} className="bg-white px-3 py-2.5 lg:px-5 lg:py-3.5 rounded-xl border border-red-200 text-red-600 font-black text-[10px] lg:text-[11px] uppercase active:scale-95">{lang === 'pt' ? 'Limpar tudo' : 'Clear all'}</button>
            <div className="flex gap-1.5 items-center bg-blue-50 dark:bg-zinc-800 p-1.5 rounded-xl border border-blue-200 dark:border-zinc-700 shadow-sm [&>button]:bg-white [&>button]:text-zinc-800 [&>button]:border [&>button]:border-zinc-300 [&>button]:shadow-sm">
               <button onClick={() => onMove('up')} disabled={isFirst} className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-white transition-colors">↑</button>
               <button onClick={() => onMove('down')} disabled={isLast} className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-500 disabled:opacity-20 hover:bg-white transition-colors">↓</button>
            </div>
            <button onClick={onRemove} className="bg-red-50 text-red-600 w-11 h-11 flex items-center justify-center rounded-xl font-black text-xl transition-colors hover:bg-red-100">×</button>
+        </div>
+        <div className={`hidden w-full grid-cols-[0.88fr_0.88fr_1.7fr_1.45fr] gap-2 rounded-2xl border p-2 lg:grid ${isLight ? 'border-zinc-200 bg-white/70' : 'border-zinc-800 bg-zinc-950/70'}`}>
+          <div className={`flex items-center gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
+            <span className="mr-auto text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Transp.' : 'Transp.'}</span>
+            <button onClick={() => onGlobalTranspose?.(-1)} disabled={!onGlobalTranspose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-base font-black text-blue-600 disabled:opacity-40">-</button>
+            <span className={`min-w-8 text-center text-sm font-black ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{globalTranspose === 0 ? '0' : globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}</span>
+            <button onClick={() => onGlobalTranspose?.(1)} disabled={!onGlobalTranspose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-base font-black text-blue-600 disabled:opacity-40">+</button>
+            <button onClick={() => onGlobalTranspose?.(0)} disabled={!onGlobalTranspose || globalTranspose === 0} className="rounded-lg px-2 py-2 text-[8px] font-black uppercase text-zinc-400 disabled:opacity-35">reset</button>
+          </div>
+          <div className={`flex items-center gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
+            <span className="mr-auto text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Casas' : 'Frets'}</span>
+            <button onClick={() => recordAction({ ...state, endFret: Math.max(state.startFret + 1, state.endFret - 1) })} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-base font-black text-blue-600">-</button>
+            <span className={`min-w-8 text-center text-sm font-black ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{state.endFret}</span>
+            <button onClick={() => recordAction({ ...state, endFret: Math.min(24, state.endFret + 1) })} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-base font-black text-blue-600">+</button>
+          </div>
+          <div data-tour="quick-editor" className={`grid grid-cols-[auto_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
+            <span className="row-span-2 self-center text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Marcador' : 'Marker'}</span>
+            <div className="flex gap-1">
+              {(['circle', 'triangle', 'square'] as MarkerShape[]).map(shape => (
+                <button key={shape} onClick={() => { setEditorMode('marker'); setMarkerShape(shape); }} className={`flex h-8 flex-1 items-center justify-center rounded-lg ${markerShape === shape ? 'bg-blue-600 text-white' : isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`}>{markerShapeIcon(shape)}</button>
+              ))}
+            </div>
+            <div className="flex gap-1">
+              {PRESET_COLORS.slice(0, 4).map(color => (
+                <button key={color} onClick={() => { setEditorMode('marker'); setMarkerColor(color); }} className={`h-8 flex-1 rounded-full border-2 ${markerColor === color ? 'border-blue-500' : 'border-white'}`} style={{ background: color }} />
+              ))}
+            </div>
+          </div>
+          <div className={`grid gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
+            <div className="flex items-center gap-1">
+              <span className="mr-auto text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Linha' : 'Line'}</span>
+              {([[2, 'F'], [4, 'M'], [7, 'G']] as Array<[LineThickness, string]>).map(([width, label]) => (
+                <button key={width} onClick={() => { setEditorMode('line'); setLineThickness(width); }} className={`flex h-8 w-8 items-center justify-center rounded-lg text-[9px] font-black uppercase ${lineThickness === width ? 'bg-blue-600 text-white' : isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`}>{label}</button>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-1">
+              <button onClick={undo} className={`rounded-lg px-2 py-1.5 text-sm font-black ${isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={t.undo} title={t.undo}>↶</button>
+              <button onClick={redo} className={`rounded-lg px-2 py-1.5 text-sm font-black ${isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={t.redo} title={t.redo}>↷</button>
+              <button onClick={clearContent} className="rounded-lg bg-red-50 px-2 py-1.5 text-[8px] font-black uppercase text-red-600">{lang === 'pt' ? 'Limpar' : 'Clear'}</button>
+            </div>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -2016,9 +2174,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <button data-tour="quick-harmony" onClick={() => toggleQuickPanel('harmony')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'harmony' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
               {lang === 'pt' ? 'Harmonia' : 'Harmony'}
             </button>
-            <button data-tour="quick-editor" onClick={() => toggleQuickPanel('editor')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'editor' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
-              {lang === 'pt' ? 'Editor' : 'Editor'}
-            </button>
             <button data-tour="quick-chords" onClick={() => { setChordLibraryMode('find'); toggleQuickPanel('chords'); }} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'chords' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
               {lang === 'pt' ? 'Acorde' : 'Chord'}
             </button>
@@ -2033,7 +2188,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         </div>
       </div>
 
-      <div className={`operational-btns fixed inset-x-0 bottom-0 z-[75] border-t px-2 pb-2 pt-1 shadow-2xl lg:hidden ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-white/95 border-zinc-200' : 'bg-zinc-950/95 border-zinc-800'}`}>
+      <div className={`operational-btns fixed inset-x-0 bottom-0 z-[75] border-t px-2 pb-1 pt-1 shadow-lg lg:hidden ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-white/90 border-zinc-200' : 'bg-zinc-950/90 border-zinc-800'}`}>
         <div className="grid grid-cols-5 gap-1">
           <button data-tour="quick-learn" onClick={() => openMobileTab('learn')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'learn' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Aprender' : 'Learn'}>
             {lang === 'pt' ? 'Aprender' : 'Learn'}
@@ -2044,11 +2199,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <button data-tour="quick-chords" onClick={() => openMobileTab('chords')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'chords' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Acordes' : 'Chords'}>
             {lang === 'pt' ? 'Acordes' : 'Chords'}
           </button>
+          <button data-tour="quick-editor" onClick={() => openMobileTab('editor')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'editor' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label="Editor">
+            Editor
+          </button>
           <button data-tour="quick-practice" onClick={() => openMobileTab('tools')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'tools' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Pratica' : 'Practice'}>
             {lang === 'pt' ? 'Pratica' : 'Practice'}
-          </button>
-          <button data-tour="quick-base" onClick={() => openMobileTab('base')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'base' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Mais opcoes' : 'More options'}>
-            {lang === 'pt' ? 'Mais' : 'More'}
           </button>
         </div>
       </div>
@@ -2074,7 +2229,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-5 gap-1 mb-4">
+          <div className="grid grid-cols-3 gap-1 mb-4 sm:grid-cols-6 lg:grid-cols-3">
             {visibleControlTabs.map(tab => (
               <button
                 key={tab.id}
@@ -2150,7 +2305,71 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                 {creationHint}
               </div>
             )}
-            {isFretboardEmpty && (
+            {!isExporting && (
+              <div className={`mb-2 space-y-2 rounded-2xl border p-2 lg:hidden ${isLight ? 'border-zinc-200 bg-white/85' : 'border-zinc-800 bg-zinc-950/80'}`}>
+              <div className="grid grid-cols-2 gap-2">
+                <div className={`flex items-center gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
+                  <span className="mr-auto text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Transp.' : 'Transp.'}</span>
+                  <button onClick={() => onGlobalTranspose?.(-1)} disabled={!onGlobalTranspose} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-black text-blue-600 disabled:opacity-40">-</button>
+                  <span className={`min-w-7 text-center text-[10px] font-black ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{globalTranspose === 0 ? '0' : globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}</span>
+                  <button onClick={() => onGlobalTranspose?.(1)} disabled={!onGlobalTranspose} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-black text-blue-600 disabled:opacity-40">+</button>
+                  <button onClick={() => onGlobalTranspose?.(0)} disabled={!onGlobalTranspose || globalTranspose === 0} className="rounded-lg px-2 py-2 text-[8px] font-black uppercase text-zinc-400 disabled:opacity-35" aria-label={lang === 'pt' ? 'Resetar transposicao' : 'Reset transpose'}>reset</button>
+                </div>
+                <div className={`flex items-center gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
+                  <span className="mr-auto text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Casas' : 'Frets'}</span>
+                  <button onClick={() => recordAction({ ...state, endFret: Math.max(state.startFret + 1, state.endFret - 1) })} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-black text-blue-600" aria-label={lang === 'pt' ? 'Diminuir casas visiveis' : 'Decrease visible frets'}>-</button>
+                  <span className={`min-w-6 text-center text-[10px] font-black ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{state.endFret}</span>
+                  <button onClick={() => recordAction({ ...state, endFret: Math.min(24, state.endFret + 1) })} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-black text-blue-600" aria-label={lang === 'pt' ? 'Aumentar casas visiveis' : 'Increase visible frets'}>+</button>
+                </div>
+              </div>
+              <div className="grid grid-cols-[minmax(0,1.25fr)_minmax(0,1.15fr)_auto] gap-2">
+                <div className={`grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
+                  <span className="row-span-2 self-center text-[7px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Marc.' : 'Mark.'}</span>
+                  <div className="flex min-w-0 items-center gap-1">
+                    {([
+                      ['circle', 'circle'],
+                      ['triangle', 'triangle'],
+                      ['square', 'square']
+                    ] as Array<[MarkerShape, MarkerShape]>).map(([shape, label]) => (
+                      <button key={shape} onClick={() => { setEditorMode('marker'); setMarkerShape(shape); }} className={`flex h-7 flex-1 min-w-0 items-center justify-center rounded-lg text-[8px] font-black uppercase ${markerShape === shape ? 'bg-blue-600 text-white' : isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={label}>
+                        {markerShapeIcon(label)}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex min-w-0 items-center gap-1">
+                  {PRESET_COLORS.slice(0, 4).map(color => (
+                    <button key={color} onClick={() => { setEditorMode('marker'); setMarkerColor(color); }} className={`h-7 flex-1 min-w-0 rounded-full border-2 ${markerColor === color ? 'border-blue-500' : 'border-white'}`} style={{ background: color }} aria-label={lang === 'pt' ? 'Selecionar cor do marcador' : 'Select marker color'} />
+                  ))}
+                  </div>
+                </div>
+                <div className={`grid gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
+                  <div className="flex items-center gap-1">
+                    <span className="mr-auto text-[7px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Linha' : 'Line'}</span>
+                    {([
+                      [2, 'F'],
+                      [4, 'M'],
+                      [7, 'G']
+                    ] as Array<[LineThickness, string]>).map(([width, label]) => (
+                      <button key={width} onClick={() => { setEditorMode('line'); setLineThickness(width); }} className={`flex h-7 w-7 items-center justify-center rounded-lg text-[8px] font-black uppercase ${lineThickness === width ? 'bg-blue-600 text-white' : isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={`${lang === 'pt' ? 'Linha' : 'Line'} ${label}`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-1">
+                    <button onClick={undo} className={`rounded-lg px-1 py-1.5 text-sm font-black ${isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={t.undo} title={t.undo}>↶</button>
+                    <button onClick={redo} className={`rounded-lg px-1 py-1.5 text-sm font-black ${isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={t.redo} title={t.redo}>↷</button>
+                    <button onClick={clearContent} className="rounded-lg bg-red-50 px-1 py-1.5 text-[7px] font-black uppercase text-red-600" aria-label={t.clearDiagram}>{lang === 'pt' ? 'Limp.' : 'Clear'}</button>
+                  </div>
+                </div>
+                <div className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
+                  <span className="text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Mover' : 'Move'}</span>
+                  <button onClick={() => onMove('up')} disabled={isFirst} className="flex h-8 w-10 items-center justify-center rounded-lg bg-white text-sm font-black text-zinc-500 disabled:opacity-30" aria-label={lang === 'pt' ? 'Subir diagrama' : 'Move diagram up'}>↑</button>
+                  <button onClick={() => onMove('down')} disabled={isLast} className="flex h-8 w-10 items-center justify-center rounded-lg bg-white text-sm font-black text-zinc-500 disabled:opacity-30" aria-label={lang === 'pt' ? 'Descer diagrama' : 'Move diagram down'}>↓</button>
+                </div>
+              </div>
+              </div>
+            )}
+            {isFretboardVisuallyEmpty && (
               <div className="pointer-events-none absolute inset-x-0 top-[12%] mx-auto w-full text-center">
                 <div className="inline-flex max-w-md flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-500/40 bg-zinc-950/80 px-5 py-4 text-sm font-black uppercase tracking-[0.3em] text-zinc-300 backdrop-blur-lg">
                   {t.emptyFretboard}
@@ -2163,19 +2382,28 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <FretboardSVG state={state} onEvent={handleEvent} theme={theme} isActive={false} selectedColor={markerColor} selectedShape={markerShape} editorMode={editorMode} isExport={isExporting} feedbackNote={noteClickFeedback} />
          </div>
 
-         {isFretboardEmpty && !isExporting && (
-           <div className={`mt-4 grid grid-cols-2 gap-2 rounded-2xl border p-3 lg:hidden ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
-             <button onClick={applyBeginnerScale} className="rounded-xl bg-blue-600 px-3 py-3 text-[10px] font-black uppercase text-white shadow-sm" aria-label={lang === 'pt' ? 'Explorar escala de Do maior' : 'Explore C major scale'}>
-               {lang === 'pt' ? 'Explorar escalas' : 'Explore scales'}
+         {!isExporting && (
+           <div className={`mt-3 grid grid-cols-4 gap-2 rounded-2xl border p-2 lg:hidden ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
+             <button onClick={createQuickDiagram} className="rounded-xl bg-blue-600 px-2 py-2.5 text-[9px] font-black uppercase text-white shadow-sm" aria-label={lang === 'pt' ? 'Criar novo diagrama' : 'Create new diagram'}>
+               {lang === 'pt' ? 'Novo' : 'New'}
              </button>
-             <button onClick={() => openMobileTab('chords')} className={`rounded-xl border px-3 py-3 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-200 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`} aria-label={lang === 'pt' ? 'Abrir biblioteca de acordes' : 'Open chord library'}>
-               {lang === 'pt' ? 'Aprender acordes' : 'Learn chords'}
+             <button onClick={handleNewDiagramClick} className={`rounded-xl border px-2 py-2.5 text-[9px] font-black uppercase ${isLight ? 'bg-white border-zinc-200 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`} aria-label={lang === 'pt' ? 'Criar novo diagrama guiado' : 'Create guided new diagram'}>
+               {lang === 'pt' ? 'N. guiado' : 'Guided'}
              </button>
-             <button onClick={() => openMobileTab('tools')} className={`rounded-xl border px-3 py-3 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-200 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`} aria-label={lang === 'pt' ? 'Iniciar pratica' : 'Start practice'}>
-               {lang === 'pt' ? 'Iniciar pratica' : 'Start practice'}
+             <button onClick={() => onAdd(state)} className={`rounded-xl border px-2 py-2.5 text-[9px] font-black uppercase ${isLight ? 'bg-white border-zinc-200 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`} aria-label={lang === 'pt' ? 'Duplicar diagrama atual' : 'Duplicate current diagram'}>
+               {lang === 'pt' ? 'Duplicar' : 'Duplicate'}
              </button>
-             <button onClick={openTour} className={`rounded-xl border px-3 py-3 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-200 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`} aria-label={lang === 'pt' ? 'Abrir tutorial guiado' : 'Open guided tutorial'}>
-               Tutorial
+             <button onClick={clearContent} className="rounded-xl border border-red-200 bg-red-50 px-2 py-2.5 text-[9px] font-black uppercase text-red-600" aria-label={lang === 'pt' ? 'Limpar marcadores e linhas' : 'Clear markers and lines'}>
+               {lang === 'pt' ? 'Limpar' : 'Clear'}
+             </button>
+             <button onClick={undo} className={`rounded-xl border px-2 py-2.5 text-[9px] font-black uppercase ${isLight ? 'bg-white border-zinc-200 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`} aria-label={t.undo}>
+               {lang === 'pt' ? 'Desfazer' : 'Undo'}
+             </button>
+             <button onClick={redo} className={`rounded-xl border px-2 py-2.5 text-[9px] font-black uppercase ${isLight ? 'bg-white border-zinc-200 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`} aria-label={t.redo}>
+               {lang === 'pt' ? 'Refazer' : 'Redo'}
+             </button>
+             <button onClick={clearEverything} className="col-span-2 rounded-xl border border-red-200 bg-white px-2 py-2.5 text-[9px] font-black uppercase text-red-600 dark:bg-zinc-950" aria-label={lang === 'pt' ? 'Limpar todo o diagrama' : 'Clear the whole diagram'}>
+               {lang === 'pt' ? 'Limpar tudo' : 'Clear all'}
              </button>
            </div>
          )}
@@ -2236,7 +2464,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                  </div>
                )}
                <div className="text-center opacity-30 mt-1">
-                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">v1.8.4 Engine • {lang === 'pt' ? 'Sistema Automático' : 'Automatic System'}</span>
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">v1.8.5 Engine • {lang === 'pt' ? 'Sistema Automático' : 'Automatic System'}</span>
                </div>
             </div>
          </div>
