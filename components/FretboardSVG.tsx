@@ -315,7 +315,7 @@ const renderBrushPaths = () => {
 };
 
   return (
-    <div className={`relative rounded-[40px] overflow-hidden border ${isLight ? 'border-zinc-200 shadow-xl' : 'border-zinc-800'}`}>
+    <div className={`relative rounded-[40px] overflow-hidden border ${isLight ? 'border-zinc-200 shadow-sm md:shadow-xl' : 'border-zinc-800 shadow-sm shadow-black/20 md:shadow-none'}`}>
       <svg 
         viewBox={`0 0 ${width} ${height}`} 
         className={`w-full select-none touch-none ${isLight ? 'bg-white' : 'bg-zinc-900'}`} 

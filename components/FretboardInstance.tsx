@@ -255,8 +255,20 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
   useEffect(() => {
     const closePanels = () => setIsControlPanelOpen(false);
+    const openPanel = (event: Event) => {
+      const detail = (event as CustomEvent<{ tab?: string; chordMode?: 'find' | 'identify'; tool?: 'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes' }>).detail;
+      if (!detail?.tab) return;
+      if (detail.tab === 'chords' && detail.chordMode) setChordLibraryMode(detail.chordMode);
+      if (detail.tab === 'tools' && detail.tool) setPreferredPracticeTool(detail.tool);
+      setActiveControlTab(detail.tab);
+      setIsControlPanelOpen(true);
+    };
     window.addEventListener('ga-close-diagram-panels', closePanels);
-    return () => window.removeEventListener('ga-close-diagram-panels', closePanels);
+    window.addEventListener('ga-open-diagram-panel', openPanel);
+    return () => {
+      window.removeEventListener('ga-close-diagram-panels', closePanels);
+      window.removeEventListener('ga-open-diagram-panel', openPanel);
+    };
   }, []);
 
   const isLight = isExporting ? true : (theme === 'light');
@@ -265,9 +277,10 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const OBS_LIMIT = 1500;
   const [isControlPanelOpen, setIsControlPanelOpen] = useState(false);
   const [activeControlTab, setActiveControlTab] = useState<string>('base');
+  const [preferredPracticeTool, setPreferredPracticeTool] = useState<'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes' | undefined>(undefined);
   const [showWizard, setShowWizard] = useState(false);
   const [showTour, setShowTour] = useState(false);
-  const tourReturnStateRef = useRef<{ isControlPanelOpen: boolean; activeControlTab: string; chordLibraryMode: 'find' | 'identify' } | null>(null);
+  const tourReturnStateRef = useRef<{ isControlPanelOpen: boolean; activeControlTab: string; chordLibraryMode: 'find' | 'identify'; state: FretboardState; editorMode: EditorMode } | null>(null);
   const tourAutoScheduledRef = useRef(false);
   const [scaleShortcutCloseTarget, setScaleShortcutCloseTarget] = useState<'showScale' | 'showTonic' | null>(null);
   const currentTuning = useMemo(() => {
@@ -330,9 +343,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   }, [favoriteChordVoicings]);
 
   const openTour = useCallback(() => {
-    tourReturnStateRef.current = { isControlPanelOpen, activeControlTab, chordLibraryMode };
+    tourReturnStateRef.current = { isControlPanelOpen, activeControlTab, chordLibraryMode, state, editorMode };
     setShowTour(true);
-  }, [activeControlTab, chordLibraryMode, isControlPanelOpen]);
+  }, [activeControlTab, chordLibraryMode, editorMode, isControlPanelOpen, state]);
 
   useEffect(() => {
     if (isFirst && typeof window !== 'undefined' && window.localStorage) {
@@ -346,7 +359,47 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     }
   }, [isFirst, openTour]);
 
-  const tourSteps = useMemo<TourStep[]>(() => [
+  const tourSteps = useMemo<TourStep[]>(() => {
+    const isMobileTour = typeof window !== 'undefined' && window.innerWidth < 1024;
+
+    if (isMobileTour) {
+      return [
+        {
+          id: 'mobile-map',
+          target: '[data-tour="main-fretboard"]',
+          title: lang === 'pt' ? 'O braco vem primeiro' : 'Fretboard first',
+          body: lang === 'pt'
+            ? 'No celular, o Guitar Architect funciona como um instrumento visual: veja o braco antes dos controles.'
+            : 'On mobile, Guitar Architect works as a visual instrument: see the fretboard before the controls.'
+        },
+        {
+          id: 'mobile-scale',
+          target: '[data-tour="mobile-scales"]',
+          title: lang === 'pt' ? 'Aplique uma escala' : 'Apply a scale',
+          body: lang === 'pt'
+            ? 'Vamos mostrar Do maior com tonica destacada. A barra inferior abre as acoes musicais principais.'
+            : 'Let us show C major with the tonic highlighted. The bottom bar opens the main musical actions.'
+        },
+        {
+          id: 'mobile-sound',
+          target: '[data-tour="quick-practice"]',
+          title: lang === 'pt' ? 'Ouvir e praticar' : 'Listen and practice',
+          body: lang === 'pt'
+            ? 'Em Pratica ficam metronomo, afinador, intervalos, exercicios e trocas de acordes.'
+            : 'Practice contains metronome, tuner, intervals, exercises, and chord changes.'
+        },
+        {
+          id: 'mobile-finish',
+          target: '[data-tour="main-fretboard"]',
+          title: lang === 'pt' ? 'Volte ao braco' : 'Back to the fretboard',
+          body: lang === 'pt'
+            ? 'Ao concluir, restauramos o estado anterior para voce continuar sem paineis presos.'
+            : 'When you finish, we restore your previous state so you can continue without stuck panels.'
+        }
+      ];
+    }
+
+    return [
     {
       id: 'welcome',
       title: lang === 'pt' ? 'Bem-vindo' : 'Welcome',
@@ -356,6 +409,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     },
     {
       id: 'map',
+      target: '[data-tour="main-fretboard"]',
       title: lang === 'pt' ? 'Primeiro mapa' : 'First map',
       body: lang === 'pt'
         ? 'Cada diagrama combina camadas, escala, harmonia e edição livre no braço.'
@@ -433,7 +487,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         ? 'Use afinador, metrônomo, intervalos, exercícios e trocas de acordes.'
         : 'Use tuner, metronome, intervals, exercises, and chord-change practice.'
     }
-  ], [lang]);
+    ];
+  }, [lang]);
 
   const handleTourStepChange = useCallback((step: TourStep) => {
     const tabByStep: Record<string, string> = {
@@ -444,15 +499,34 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       harmony: 'harmony',
       chords: 'chords',
       practice: 'tools',
-      editor: 'editor'
+      editor: 'editor',
+      'mobile-scale': 'scale',
+      'mobile-sound': 'tools'
     };
     const tab = tabByStep[step.id];
+    if (step.id === 'mobile-map' || step.id === 'mobile-finish') {
+      setIsControlPanelOpen(false);
+      return;
+    }
     if (tab) {
       if (step.id === 'chords') setChordLibraryMode('find');
+      if (step.id === 'mobile-scale') {
+        recordAction({
+          ...state,
+          root: 'C',
+          scaleType: 'Major (Ionian)',
+          labelMode: 'note',
+          layers: {
+            ...state.layers,
+            showScale: true,
+            showTonic: true
+          }
+        });
+      }
       setActiveControlTab(tab);
       setIsControlPanelOpen(true);
     }
-  }, []);
+  }, [recordAction, state]);
 
   const handleTourClose = (completed: boolean) => {
     setShowTour(false);
@@ -460,6 +534,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       setIsControlPanelOpen(tourReturnStateRef.current.isControlPanelOpen);
       setActiveControlTab(tourReturnStateRef.current.activeControlTab);
       setChordLibraryMode(tourReturnStateRef.current.chordLibraryMode);
+      setEditorMode(tourReturnStateRef.current.editorMode);
+      updateState(tourReturnStateRef.current.state);
       tourReturnStateRef.current = null;
     }
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -607,6 +683,38 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setSelectedChordVoicingIndex(nextIndex);
     applyChordVoicing(voicing);
     if (soundEnabled) playChordVoicing(voicing);
+  };
+
+  const applyBeginnerScale = () => {
+    recordAction({
+      ...state,
+      root: 'C',
+      scaleType: 'Major (Ionian)',
+      labelMode: 'note',
+      layers: {
+        ...state.layers,
+        showScale: true,
+        showTonic: true
+      }
+    });
+    setActiveControlTab('scale');
+    setIsControlPanelOpen(true);
+  };
+
+  const openMobileTab = (tab: string) => {
+    if (tab === 'chords') setChordLibraryMode('find');
+    if (tab === 'scale' && !state.layers.showScale) {
+      recordAction({
+        ...state,
+        layers: {
+          ...state.layers,
+          showScale: true,
+          showTonic: true
+        }
+      });
+    }
+    setActiveControlTab(tab);
+    setIsControlPanelOpen(true);
   };
 
   const getVoicingInversionLabel = (voicing: ChordVoicingCandidate) => {
@@ -1157,6 +1265,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           lang={lang}
           state={state}
           onApplyExample={recordAction}
+          initialTool={preferredPracticeTool}
           onHighlightPosition={(position) => {
             setNoteClickFeedback(position);
             if (noteClickTimeoutRef.current) {
@@ -1244,6 +1353,23 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
            <button onClick={onRemove} className="bg-red-50 text-red-600 w-11 h-11 flex items-center justify-center rounded-xl font-black text-xl transition-colors hover:bg-red-100">×</button>
         </div>
       </div>
+
+      {isFretboardEmpty && !isExporting && (
+        <div className={`mb-4 grid grid-cols-2 gap-2 rounded-2xl border p-3 lg:hidden ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
+          <button onClick={applyBeginnerScale} className="rounded-xl bg-blue-600 px-3 py-3 text-[10px] font-black uppercase text-white shadow-sm" aria-label={lang === 'pt' ? 'Explorar escala de Do maior' : 'Explore C major scale'}>
+            {lang === 'pt' ? 'Explorar escalas' : 'Explore scales'}
+          </button>
+          <button onClick={() => openMobileTab('chords')} className={`rounded-xl border px-3 py-3 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-200 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`} aria-label={lang === 'pt' ? 'Abrir biblioteca de acordes' : 'Open chord library'}>
+            {lang === 'pt' ? 'Aprender acordes' : 'Learn chords'}
+          </button>
+          <button onClick={() => openMobileTab('tools')} className={`rounded-xl border px-3 py-3 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-200 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`} aria-label={lang === 'pt' ? 'Iniciar pratica' : 'Start practice'}>
+            {lang === 'pt' ? 'Iniciar pratica' : 'Start practice'}
+          </button>
+          <button onClick={openTour} className={`rounded-xl border px-3 py-3 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-200 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`} aria-label={lang === 'pt' ? 'Abrir tutorial guiado' : 'Open guided tutorial'}>
+            Tutorial
+          </button>
+        </div>
+      )}
 
       {/* CONTROLES TÉCNICOS */}
       <div className={`hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 p-6 md:p-10 rounded-[32px] md:rounded-[40px] border ${isLight ? 'bg-zinc-50 border-zinc-100 shadow-inner' : 'bg-zinc-800/50 border-zinc-700'} ${isExporting ? 'hidden' : ''}`}>
@@ -1493,8 +1619,28 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         </div>
       </div>
 
+      <div className={`operational-btns fixed inset-x-0 bottom-0 z-[75] border-t px-2 pb-2 pt-1 shadow-2xl lg:hidden ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-white/95 border-zinc-200' : 'bg-zinc-950/95 border-zinc-800'}`}>
+        <div className="grid grid-cols-5 gap-1">
+          <button data-tour="mobile-scales" onClick={() => openMobileTab('scale')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'scale' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Escalas' : 'Scales'}>
+            {lang === 'pt' ? 'Escalas' : 'Scales'}
+          </button>
+          <button data-tour="quick-chords" onClick={() => openMobileTab('chords')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'chords' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Acordes' : 'Chords'}>
+            {lang === 'pt' ? 'Acordes' : 'Chords'}
+          </button>
+          <button data-tour="quick-harmony" onClick={() => openMobileTab('harmony')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'harmony' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Harmonia' : 'Harmony'}>
+            Harm.
+          </button>
+          <button data-tour="quick-practice" onClick={() => openMobileTab('tools')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'tools' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Pratica' : 'Practice'}>
+            {lang === 'pt' ? 'Pratica' : 'Practice'}
+          </button>
+          <button data-tour="quick-base" onClick={() => openMobileTab('base')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'base' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Mais opcoes' : 'More options'}>
+            {lang === 'pt' ? 'Mais' : 'More'}
+          </button>
+        </div>
+      </div>
+
       <div className={`operational-btns ${isExporting ? 'hidden' : ''}`}>
-        <div className={`fixed inset-x-0 bottom-0 z-[80] max-h-[78vh] overflow-y-auto border-t p-4 shadow-2xl transition-transform lg:fixed lg:inset-x-auto lg:right-6 lg:top-28 lg:bottom-6 lg:w-[390px] lg:max-h-none lg:rounded-2xl lg:border ${panelShell} ${isControlPanelOpen ? 'translate-y-0 lg:translate-y-0' : 'translate-y-full lg:translate-y-0 lg:translate-x-[calc(100%+32px)]'}`}>
+        <div className={`fixed inset-x-0 bottom-[52px] z-[80] max-h-[62vh] overflow-y-auto border-t p-4 shadow-2xl transition-transform lg:fixed lg:inset-x-auto lg:right-6 lg:top-28 lg:bottom-6 lg:w-[390px] lg:max-h-none lg:rounded-2xl lg:border ${panelShell} ${isControlPanelOpen ? 'translate-y-0 lg:translate-y-0' : 'translate-y-[calc(100%+72px)] lg:translate-y-0 lg:translate-x-[calc(100%+32px)]'}`}>
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">
@@ -1536,7 +1682,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         </div>
       </div>
 
-      <div className="relative group diagram-svg-wrapper">
+      <div className="relative group diagram-svg-wrapper" data-tour="main-fretboard">
          {/* Undo / Redo Responsivo */}
 <div
   className={`
@@ -1659,7 +1805,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                  </div>
                )}
                <div className="text-center opacity-30 mt-1">
-                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">v1.8.3 Engine • {lang === 'pt' ? 'Sistema Automático' : 'Automatic System'}</span>
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">v1.8.4 Engine • {lang === 'pt' ? 'Sistema Automático' : 'Automatic System'}</span>
                </div>
             </div>
          </div>

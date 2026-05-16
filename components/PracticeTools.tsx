@@ -13,6 +13,7 @@ interface PracticeToolsProps {
   state: FretboardState;
   onApplyExample: (state: FretboardState) => void;
   onHighlightPosition: (position: { string: number; fret: number }) => void;
+  initialTool?: 'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes';
 }
 
 type TunerTarget = {
@@ -174,7 +175,7 @@ const detectPitch = (buffer: Float32Array, sampleRate: number) => {
 
 const getCents = (frequency: number, target: number) => Math.round(1200 * Math.log2(frequency / target));
 
-const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, isLight, lang, state, onApplyExample, onHighlightPosition }) => {
+const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, isLight, lang, state, onApplyExample, onHighlightPosition, initialTool }) => {
   const [activeTool, setActiveTool] = useState<'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes'>('tuner');
   const [isTunerRunning, setIsTunerRunning] = useState(false);
   const [detectedFrequency, setDetectedFrequency] = useState<number | null>(null);
@@ -213,6 +214,10 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
   const bpmRef = useRef(bpm);
   const countInRemainingRef = useRef(0);
   const changeBeatRef = useRef(0);
+
+  useEffect(() => {
+    if (initialTool) setActiveTool(initialTool);
+  }, [initialTool]);
 
   const targets = useMemo<TunerTarget[]>(() => tuning.map((note, stringIndex) => ({
     string: stringIndex,
@@ -753,7 +758,17 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
           </div>
           <div className="grid grid-cols-4 gap-1">
             {progressionChords.map((chord, index) => (
-              <div key={`${chord}-${index}`} className={`rounded-lg border px-2 py-3 text-center text-sm font-black ${index === activeChangeIndex ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 bg-zinc-50 text-zinc-500' : 'border-zinc-800 bg-zinc-950 text-zinc-300'}`}>{chord}</div>
+              <button
+                key={`${chord}-${index}`}
+                onClick={() => {
+                  setActiveChangeIndex(index);
+                  applyChangeChordToFretboard(chord);
+                }}
+                className={`rounded-lg border px-2 py-3 text-center text-sm font-black transition-all active:scale-95 ${index === activeChangeIndex ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 bg-zinc-50 text-zinc-500' : 'border-zinc-800 bg-zinc-950 text-zinc-300'}`}
+                aria-label={lang === 'pt' ? `Aplicar acorde ${chord}` : `Apply chord ${chord}`}
+              >
+                {chord}
+              </button>
             ))}
           </div>
           <button onClick={showCurrentChangeOnFretboard} className={`${buttonBase} w-full border-blue-200 bg-white text-blue-600`}>{lang === 'pt' ? 'Mostrar acorde atual' : 'Show current chord'}</button>

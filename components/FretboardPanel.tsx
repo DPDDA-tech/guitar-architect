@@ -143,7 +143,7 @@ const switchUserSession = (newUser: string) => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.3",
+      version: "1.8.4",
       activeProjectId: projectId,
       theme,
       lang,
@@ -369,7 +369,7 @@ useEffect(() => {
       saveProjectToLibrary(currentProject);
 
       saveConfig({
-        version: "1.8.3",
+        version: "1.8.4",
         activeProjectId: projectId,
         theme,
         lang,
@@ -417,7 +417,7 @@ const handleLogout = () => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.3",
+      version: "1.8.4",
       activeProjectId: projectId,
       theme,
       lang,
@@ -660,6 +660,76 @@ const handleLogout = () => {
     </button>
   </div>
 )}
+
+
+      {isSmallScreen && !isExporting && (
+        <div className={`fixed top-0 left-0 w-full z-50 border-b px-3 py-2 backdrop-blur-2xl ${isLight ? 'bg-white/95 border-zinc-200 shadow-sm' : 'bg-zinc-950/95 border-zinc-800'}`}>
+          <div className="flex items-center justify-between gap-2">
+            <button
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('ga-close-diagram-panels'));
+                setShowProjectMenu(prev => !prev);
+              }}
+              className={`rounded-xl border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-800' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
+              aria-label="Menu"
+            >
+              MENU
+            </button>
+
+            <div className="min-w-0 flex-1 text-center">
+              <div className="truncate text-[12px] font-black italic uppercase tracking-tight text-blue-600">Guitar Architect</div>
+              <input
+                value={projectName}
+                onChange={e => setProjectName(e.target.value)}
+                className={`mx-auto block w-full max-w-[150px] truncate bg-transparent text-center text-[9px] font-black uppercase focus:outline-none ${isLight ? 'text-zinc-700' : 'text-zinc-200'}`}
+                placeholder={t.projectName}
+                aria-label={lang === 'pt' ? 'Nome do projeto' : 'Project name'}
+              />
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'metronome' } }))}
+                className={`rounded-xl border px-2.5 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
+                aria-label={lang === 'pt' ? 'Abrir metrônomo e ferramentas' : 'Open metronome and tools'}
+                title={lang === 'pt' ? 'Metrônomo' : 'Metronome'}
+              >
+                BPM
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'tuner' } }))}
+                className={`rounded-xl border px-2.5 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
+                aria-label={lang === 'pt' ? 'Abrir afinador' : 'Open tuner'}
+                title={lang === 'pt' ? 'Afinador' : 'Tuner'}
+              >
+                AFIN
+              </button>
+            </div>
+          </div>
+
+          {showProjectMenu && (
+            <div className={`absolute left-3 right-3 top-full mt-2 rounded-2xl border p-3 shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                  {lang === 'pt' ? 'Abrir JSON' : 'Open JSON'}
+                </button>
+                <button onClick={() => { exportProjectFile(); setShowProjectMenu(false); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                  {lang === 'pt' ? 'Salvar JSON' : 'Save JSON'}
+                </button>
+                <button onClick={() => { setShowProjectMenu(false); setTheme(isLight ? 'dark' : 'light'); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                  {isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
+                </button>
+                <button onClick={() => { setShowProjectMenu(false); window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'base' } })); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                  {lang === 'pt' ? 'Config.' : 'Settings'}
+                </button>
+              </div>
+              <button onClick={() => { setShowProjectMenu(false); clearAll(); }} className="mt-2 w-full rounded-xl border border-red-300/50 px-3 py-2.5 text-[10px] font-black uppercase text-red-500">
+                {lang === 'pt' ? 'Limpar tudo' : 'Clear all'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
 
       <div className={`fixed top-0 left-0 w-full z-50 border-b backdrop-blur-2xl px-4 md:px-10 transition-all duration-500
@@ -969,7 +1039,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
     isExporting
       ? 'pt-10'
       : isSmallScreen
-        ? 'pt-6 md:pt-48'
+        ? 'pt-20 md:pt-48'
         : 'pt-24 md:pt-48'
   }`}
 >
