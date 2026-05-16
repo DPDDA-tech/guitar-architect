@@ -163,6 +163,23 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     }
   };
 
+  const clearEditorContent = () => {
+    if (state.markers.length === 0 && state.lines.length === 0) return;
+
+    const label = lang === 'pt'
+      ? 'Limpar apenas marcadores e linhas da edição?'
+      : 'Clear only editor markers and lines?';
+
+    if (window.confirm(label)) {
+      recordAction({
+        ...state,
+        markers: [],
+        lines: []
+      });
+      setLineStart(null);
+    }
+  };
+
   const changeTuning = (newTuningKey: TuningKey) => {
     const instrument = INSTRUMENT_PRESETS[state.instrumentType];
     const oldTuning = state.tuning === 'Custom' ? (state.customTuning || instrument.defaultTuning) : (TUNINGS_PRESETS[state.tuning] || instrument.defaultTuning);
@@ -2145,7 +2162,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <div className="grid grid-cols-3 gap-2">
             <button onClick={undo} className={`${controlButtonBase} ${inactiveButtonClass}`}>UNDO</button>
             <button onClick={redo} className={`${controlButtonBase} ${inactiveButtonClass}`}>REDO</button>
-            <button onClick={clearContent} className="py-2.5 rounded-lg text-[9px] font-black uppercase border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-all">{t.clearDiagram}</button>
+            <button onClick={clearEditorContent} className="py-2.5 rounded-lg text-[9px] font-black uppercase border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-all">{t.clearDiagram}</button>
           </div>
         </div>
       );
@@ -2158,6 +2175,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     <div
       data-instrument-type={state.instrumentType}
       data-scale-active={state.layers.showScale ? 'true' : 'false'}
+      data-root={state.root}
+      data-scale-type={state.scaleType}
+      data-tuning={state.tuning}
       onClick={onActivate}
       className={`diagram-container relative p-3 lg:p-10 rounded-[24px] lg:rounded-[48px] border shadow-lg lg:shadow-2xl transition-all ${isActive ? `ring-2 ${activeInstrumentAccent.ring} ${activeInstrumentAccent.shadow}` : ''} ${isLight ? 'bg-white/95 border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}
     >
@@ -2191,22 +2211,30 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         <div className={`hidden w-full grid-cols-[0.88fr_0.88fr_1.7fr_1.45fr] gap-2 rounded-2xl border p-2 lg:grid ${isLight ? 'border-zinc-200 bg-white/70' : 'border-zinc-800 bg-zinc-950/70'}`}>
           <div className={`flex items-center gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
             <span className="mr-auto text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Transp.' : 'Transp.'}</span>
-            <button onClick={() => onGlobalTranspose?.(-1)} disabled={!onGlobalTranspose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-base font-black text-blue-600 disabled:opacity-40">-</button>
-            <span className={`min-w-8 text-center text-sm font-black ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{globalTranspose === 0 ? '0' : globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}</span>
-            <button onClick={() => onGlobalTranspose?.(1)} disabled={!onGlobalTranspose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-base font-black text-blue-600 disabled:opacity-40">+</button>
-            <button onClick={() => onGlobalTranspose?.(0)} disabled={!onGlobalTranspose || globalTranspose === 0} className="rounded-lg px-2 py-2 text-[8px] font-black uppercase text-zinc-400 disabled:opacity-35">reset</button>
+            <button onClick={() => onGlobalTranspose?.(-1)} disabled={!onGlobalTranspose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-base font-black text-blue-600 disabled:opacity-40">-</button>
+            <button
+              onClick={() => onGlobalTranspose?.(0)}
+              disabled={!onGlobalTranspose || globalTranspose === 0}
+              className={`flex h-10 min-w-10 shrink-0 flex-col items-center justify-center rounded-lg border px-1 font-black leading-none disabled:opacity-70 ${isLight ? 'border-zinc-300 bg-white text-zinc-900' : 'border-zinc-700 bg-zinc-800 text-zinc-100'}`}
+              aria-label={lang === 'pt' ? 'Resetar transposicao' : 'Reset transpose'}
+              title={lang === 'pt' ? 'Resetar transposição' : 'Reset transpose'}
+            >
+              <span className="text-sm">{globalTranspose === 0 ? '0' : globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}</span>
+              <span className="mt-0.5 text-[6px] uppercase tracking-[0.08em] text-zinc-400">reset</span>
+            </button>
+            <button onClick={() => onGlobalTranspose?.(1)} disabled={!onGlobalTranspose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-base font-black text-blue-600 disabled:opacity-40">+</button>
           </div>
           <div className={`flex items-center gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
             <span className="mr-auto text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Casas' : 'Frets'}</span>
-            <button onClick={() => recordAction({ ...state, endFret: Math.max(state.startFret + 1, state.endFret - 1) })} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-base font-black text-blue-600">-</button>
+            <button onClick={() => recordAction({ ...state, endFret: Math.max(state.startFret + 1, state.endFret - 1) })} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-base font-black text-blue-600">-</button>
             <span className={`min-w-8 text-center text-sm font-black ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{state.endFret}</span>
-            <button onClick={() => recordAction({ ...state, endFret: Math.min(24, state.endFret + 1) })} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-base font-black text-blue-600">+</button>
+            <button onClick={() => recordAction({ ...state, endFret: Math.min(24, state.endFret + 1) })} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-base font-black text-blue-600">+</button>
           </div>
           <div data-tour="quick-editor" className={`grid grid-cols-[auto_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
             <span className="row-span-2 self-center text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Marcador' : 'Marker'}</span>
             <div className="flex gap-1">
               {(['circle', 'triangle', 'square'] as MarkerShape[]).map(shape => (
-                <button key={shape} onClick={() => { setEditorMode('marker'); setMarkerShape(shape); }} className={`flex h-8 flex-1 items-center justify-center rounded-lg ${markerShape === shape ? 'bg-blue-600 text-white' : isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`}>{markerShapeIcon(shape)}</button>
+                <button key={shape} onClick={() => { setEditorMode('marker'); setMarkerShape(shape); }} className={`flex h-8 flex-1 items-center justify-center rounded-lg border transition-all ${markerShape === shape ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-300 bg-white text-zinc-600 hover:border-blue-400' : 'border-zinc-700 bg-zinc-800 text-zinc-200 hover:border-blue-500'}`}>{markerShapeIcon(shape)}</button>
               ))}
             </div>
             <div className="flex gap-1">
@@ -2223,9 +2251,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               ))}
             </div>
             <div className="grid grid-cols-3 gap-1">
-              <button onClick={undo} className={`rounded-lg px-2 py-1.5 text-sm font-black ${isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={t.undo} title={t.undo}>↶</button>
-              <button onClick={redo} className={`rounded-lg px-2 py-1.5 text-sm font-black ${isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={t.redo} title={t.redo}>↷</button>
-              <button onClick={clearContent} className="rounded-lg bg-red-50 px-2 py-1.5 text-[8px] font-black uppercase text-red-600">{lang === 'pt' ? 'Limpar' : 'Clear'}</button>
+              <button onClick={undo} className={`rounded-lg border px-2 py-1.5 text-sm font-black ${isLight ? 'border-zinc-300 bg-white text-zinc-600' : 'border-zinc-700 bg-zinc-800 text-zinc-200'}`} aria-label={t.undo} title={t.undo}>↶</button>
+              <button onClick={redo} className={`rounded-lg border px-2 py-1.5 text-sm font-black ${isLight ? 'border-zinc-300 bg-white text-zinc-600' : 'border-zinc-700 bg-zinc-800 text-zinc-200'}`} aria-label={t.redo} title={t.redo}>↷</button>
+              <button onClick={clearEditorContent} className="rounded-lg border border-red-200 bg-red-50 px-2 py-1.5 text-[8px] font-black uppercase text-red-600">{lang === 'pt' ? 'Limpar' : 'Clear'}</button>
             </div>
           </div>
         </div>
@@ -2387,16 +2415,24 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <div className={`flex items-center gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
                   <span className="mr-auto text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Transp.' : 'Transp.'}</span>
-                  <button onClick={() => onGlobalTranspose?.(-1)} disabled={!onGlobalTranspose} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-black text-blue-600 disabled:opacity-40">-</button>
-                  <span className={`min-w-7 text-center text-[10px] font-black ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{globalTranspose === 0 ? '0' : globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}</span>
-                  <button onClick={() => onGlobalTranspose?.(1)} disabled={!onGlobalTranspose} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-black text-blue-600 disabled:opacity-40">+</button>
-                  <button onClick={() => onGlobalTranspose?.(0)} disabled={!onGlobalTranspose || globalTranspose === 0} className="rounded-lg px-2 py-2 text-[8px] font-black uppercase text-zinc-400 disabled:opacity-35" aria-label={lang === 'pt' ? 'Resetar transposicao' : 'Reset transpose'}>reset</button>
+                  <button onClick={() => onGlobalTranspose?.(-1)} disabled={!onGlobalTranspose} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-sm font-black text-blue-600 disabled:opacity-40">-</button>
+                  <button
+                    onClick={() => onGlobalTranspose?.(0)}
+                    disabled={!onGlobalTranspose || globalTranspose === 0}
+                    className={`flex h-8 min-w-9 shrink-0 flex-col items-center justify-center rounded-lg border px-1 font-black leading-none disabled:opacity-70 ${isLight ? 'border-zinc-300 bg-white text-zinc-900' : 'border-zinc-700 bg-zinc-800 text-zinc-100'}`}
+                    aria-label={lang === 'pt' ? 'Resetar transposicao' : 'Reset transpose'}
+                    title={lang === 'pt' ? 'Resetar transposição' : 'Reset transpose'}
+                  >
+                    <span className="text-[10px]">{globalTranspose === 0 ? '0' : globalTranspose > 0 ? `+${globalTranspose}` : globalTranspose}</span>
+                    <span className="mt-0.5 text-[5px] uppercase tracking-[0.08em] text-zinc-400">reset</span>
+                  </button>
+                  <button onClick={() => onGlobalTranspose?.(1)} disabled={!onGlobalTranspose} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-sm font-black text-blue-600 disabled:opacity-40">+</button>
                 </div>
                 <div className={`flex items-center gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
                   <span className="mr-auto text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Casas' : 'Frets'}</span>
-                  <button onClick={() => recordAction({ ...state, endFret: Math.max(state.startFret + 1, state.endFret - 1) })} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-black text-blue-600" aria-label={lang === 'pt' ? 'Diminuir casas visiveis' : 'Decrease visible frets'}>-</button>
+                  <button onClick={() => recordAction({ ...state, endFret: Math.max(state.startFret + 1, state.endFret - 1) })} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-sm font-black text-blue-600" aria-label={lang === 'pt' ? 'Diminuir casas visiveis' : 'Decrease visible frets'}>-</button>
                   <span className={`min-w-6 text-center text-[10px] font-black ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}>{state.endFret}</span>
-                  <button onClick={() => recordAction({ ...state, endFret: Math.min(24, state.endFret + 1) })} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-black text-blue-600" aria-label={lang === 'pt' ? 'Aumentar casas visiveis' : 'Increase visible frets'}>+</button>
+                  <button onClick={() => recordAction({ ...state, endFret: Math.min(24, state.endFret + 1) })} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-sm font-black text-blue-600" aria-label={lang === 'pt' ? 'Aumentar casas visiveis' : 'Increase visible frets'}>+</button>
                 </div>
               </div>
               <div className="grid grid-cols-[minmax(0,1.25fr)_minmax(0,1.15fr)_auto] gap-2">
@@ -2408,7 +2444,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                       ['triangle', 'triangle'],
                       ['square', 'square']
                     ] as Array<[MarkerShape, MarkerShape]>).map(([shape, label]) => (
-                      <button key={shape} onClick={() => { setEditorMode('marker'); setMarkerShape(shape); }} className={`flex h-7 flex-1 min-w-0 items-center justify-center rounded-lg text-[8px] font-black uppercase ${markerShape === shape ? 'bg-blue-600 text-white' : isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={label}>
+                      <button key={shape} onClick={() => { setEditorMode('marker'); setMarkerShape(shape); }} className={`flex h-7 flex-1 min-w-0 items-center justify-center rounded-lg border text-[8px] font-black uppercase transition-all ${markerShape === shape ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-300 bg-white text-zinc-600 hover:border-blue-400' : 'border-zinc-700 bg-zinc-800 text-zinc-200 hover:border-blue-500'}`} aria-label={label}>
                         {markerShapeIcon(label)}
                       </button>
                     ))}
@@ -2433,15 +2469,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                     ))}
                   </div>
                   <div className="grid grid-cols-3 gap-1">
-                    <button onClick={undo} className={`rounded-lg px-1 py-1.5 text-sm font-black ${isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={t.undo} title={t.undo}>↶</button>
-                    <button onClick={redo} className={`rounded-lg px-1 py-1.5 text-sm font-black ${isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={t.redo} title={t.redo}>↷</button>
-                    <button onClick={clearContent} className="rounded-lg bg-red-50 px-1 py-1.5 text-[7px] font-black uppercase text-red-600" aria-label={t.clearDiagram}>{lang === 'pt' ? 'Limp.' : 'Clear'}</button>
+                    <button onClick={undo} className={`rounded-lg border px-1 py-1.5 text-sm font-black ${isLight ? 'border-zinc-300 bg-white text-zinc-600' : 'border-zinc-700 bg-zinc-800 text-zinc-200'}`} aria-label={t.undo} title={t.undo}>↶</button>
+                    <button onClick={redo} className={`rounded-lg border px-1 py-1.5 text-sm font-black ${isLight ? 'border-zinc-300 bg-white text-zinc-600' : 'border-zinc-700 bg-zinc-800 text-zinc-200'}`} aria-label={t.redo} title={t.redo}>↷</button>
+                    <button onClick={clearEditorContent} className="rounded-lg border border-red-200 bg-red-50 px-1 py-1.5 text-[7px] font-black uppercase text-red-600" aria-label={lang === 'pt' ? 'Limpar apenas marcadores e linhas' : 'Clear only markers and lines'}>{lang === 'pt' ? 'Limp.' : 'Clear'}</button>
                   </div>
                 </div>
                 <div className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
                   <span className="text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Mover' : 'Move'}</span>
-                  <button onClick={() => onMove('up')} disabled={isFirst} className="flex h-8 w-10 items-center justify-center rounded-lg bg-white text-sm font-black text-zinc-500 disabled:opacity-30" aria-label={lang === 'pt' ? 'Subir diagrama' : 'Move diagram up'}>↑</button>
-                  <button onClick={() => onMove('down')} disabled={isLast} className="flex h-8 w-10 items-center justify-center rounded-lg bg-white text-sm font-black text-zinc-500 disabled:opacity-30" aria-label={lang === 'pt' ? 'Descer diagrama' : 'Move diagram down'}>↓</button>
+                  <button onClick={() => onMove('up')} disabled={isFirst} className="flex h-8 w-10 items-center justify-center rounded-lg border border-zinc-300 bg-white text-sm font-black text-zinc-500 disabled:opacity-30" aria-label={lang === 'pt' ? 'Subir diagrama' : 'Move diagram up'}>↑</button>
+                  <button onClick={() => onMove('down')} disabled={isLast} className="flex h-8 w-10 items-center justify-center rounded-lg border border-zinc-300 bg-white text-sm font-black text-zinc-500 disabled:opacity-30" aria-label={lang === 'pt' ? 'Descer diagrama' : 'Move diagram down'}>↓</button>
                 </div>
               </div>
               </div>
@@ -2561,3 +2597,5 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 };
 
 export default React.memo(FretboardInstance);
+
+

@@ -727,6 +727,14 @@ const handleLogout = () => {
                 {isLight ? <MoonIcon /> : <SunIcon />}
               </button>
               <button
+                onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
+                className={`flex h-10 min-w-10 items-center justify-center rounded-xl border px-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
+                aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para português'}
+                title={lang === 'pt' ? 'English' : 'Português'}
+              >
+                {lang === 'pt' ? 'EN' : 'PORT'}
+              </button>
+              <button
                 onClick={() => window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'metronome' } }))}
                 className={`rounded-xl border px-2.5 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
                 aria-label={lang === 'pt' ? 'Abrir metrônomo e ferramentas' : 'Open metronome and tools'}
@@ -760,6 +768,10 @@ const handleLogout = () => {
                 <button onClick={togglePrimaryLeftHanded} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                   {lang === 'pt' ? 'Canhoto' : 'Lefty'}
                 </button>
+              </div>
+              <div className={`mt-2 flex rounded-lg border p-0.5 ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
+                <button onClick={() => { setLang('pt'); setShowProjectMenu(false); }} className={`flex-1 rounded px-2 py-2 text-[9px] font-black ${lang === 'pt' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>PORT</button>
+                <button onClick={() => { setLang('en'); setShowProjectMenu(false); }} className={`flex-1 rounded px-2 py-2 text-[9px] font-black ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>ENG</button>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
@@ -961,8 +973,8 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
     <div className={`absolute right-0 top-full mt-3 w-[290px] rounded-2xl border p-4 shadow-2xl z-[80] ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
       <div className="space-y-4">
         <div className={`flex border rounded-lg p-0.5 ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
-          <button onClick={() => { setLang('pt'); setShowProjectMenu(false); }} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'pt' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>PT</button>
-          <button onClick={() => { setLang('en'); setShowProjectMenu(false); }} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>EN</button>
+          <button onClick={() => { setLang('pt'); setShowProjectMenu(false); }} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'pt' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>PORT</button>
+          <button onClick={() => { setLang('en'); setShowProjectMenu(false); }} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>ENG</button>
         </div>
 
         <button onClick={() => { setShowLoadModal(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
@@ -1088,7 +1100,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         : 'text-zinc-500'
     }`}
   >
-    PT
+    PORT
   </button>
 
   <button
@@ -1099,7 +1111,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         : 'text-zinc-500'
     }`}
   >
-    EN
+    ENG
   </button>
 </div>
 

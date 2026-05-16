@@ -34,10 +34,9 @@ const createDidacticCard = (container: Element, lang: Lang, user: string, userLo
   const notesTextarea = parent?.querySelector('textarea') as HTMLTextAreaElement;
   const notes = notesTextarea?.value || "";
   
-  const selects = parent?.querySelectorAll('select');
-  const root = (selects?.[0] as HTMLSelectElement)?.value || "C";
-  const scaleNameInternal = (selects?.[1] as HTMLSelectElement)?.value || "Major (Ionian)";
-  const tuning = (selects?.[3] as HTMLSelectElement)?.value || "Standard";
+  const root = parent?.getAttribute('data-root') || "C";
+  const scaleNameInternal = parent?.getAttribute('data-scale-type') || "Major (Ionian)";
+  const tuning = parent?.getAttribute('data-tuning') || "Standard";
   
   const localizedScaleName = (t.scales && (t.scales as any)[scaleNameInternal]) || scaleNameInternal;
   const scaleDef = SCALES.find(s => s.name === scaleNameInternal);
