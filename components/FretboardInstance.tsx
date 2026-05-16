@@ -434,7 +434,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           target: '[data-tour="quick-practice"]',
           title: lang === 'pt' ? 'Ouvir e praticar' : 'Listen and practice',
           body: lang === 'pt'
-            ? 'Em Prática ficam metrônomo, afinador, intervalos, exercícios e trocas de acordes.'
+            ? 'Em Praticar ficam metrônomo, afinador, intervalos, exercícios e trocas de acordes.'
             : 'Practice contains metronome, tuner, intervals, exercises, and chord changes.'
         },
         {
@@ -531,7 +531,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     {
       id: 'practice',
       target: '[data-tour="quick-practice"]',
-      title: lang === 'pt' ? 'Prática' : 'Practice',
+      title: lang === 'pt' ? 'Praticar' : 'Practice',
       body: lang === 'pt'
         ? 'Use afinador, metrônomo, intervalos, exercícios e trocas de acordes.'
         : 'Use tuner, metronome, intervals, exercises, and chord-change practice.'
@@ -601,9 +601,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     { id: 'visual', label: lang === 'pt' ? 'Camadas' : 'Layers' },
     { id: 'scale', label: lang === 'pt' ? 'Escala' : 'Scale' },
     { id: 'harmony', label: lang === 'pt' ? 'Harmonia' : 'Harmony' },
-    { id: 'editor', label: lang === 'pt' ? 'Editor' : 'Editor' },
+    { id: 'editor', label: lang === 'pt' ? 'Editar' : 'Edit' },
     { id: 'chords', label: lang === 'pt' ? 'Acordes' : 'Chords' },
-    { id: 'tools', label: lang === 'pt' ? 'Prática' : 'Practice' },
+    { id: 'tools', label: lang === 'pt' ? 'Praticar' : 'Practice' },
   ] as const;
   const visibleControlTabs = isBeginnerMode
     ? controlTabs.filter(tab => ['learn', 'scale', 'chords', 'tools', 'base'].includes(tab.id))
@@ -853,7 +853,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       actionLabel: lang === 'pt' ? 'Mostrar C aberto' : 'Show open C',
       action: { type: 'chord', root: 'C', symbol: 'C', chordType: 'major' },
       steps: lang === 'pt'
-        ? ['Aplique o acorde.', 'Ouça o som inteiro.', 'Toque corda por corda.', 'Troque para G ou Am na aba Prática.']
+        ? ['Aplique o acorde.', 'Ouça o som inteiro.', 'Toque corda por corda.', 'Troque para G ou Am na aba Praticar.']
         : ['Apply the chord.', 'Hear the full sound.', 'Play string by string.', 'Move to G or Am in Practice.']
     },
     {
@@ -2178,7 +2178,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               {lang === 'pt' ? 'Acorde' : 'Chord'}
             </button>
             <button data-tour="quick-practice" onClick={() => toggleQuickPanel('tools')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'tools' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
-              {lang === 'pt' ? 'Prática' : 'Practice'}
+              {lang === 'pt' ? 'Praticar' : 'Practice'}
             </button>
             <button onClick={() => setSoundEnabled(prev => !prev)} className={`${quickButtonClass} shrink-0 ${soundEnabled ? quickActiveButtonClass : ''}`}>
               {soundEnabled ? (lang === 'pt' ? 'Som ON' : 'Sound ON') : (lang === 'pt' ? 'Som OFF' : 'Sound OFF')}
@@ -2199,11 +2199,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <button data-tour="quick-chords" onClick={() => openMobileTab('chords')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'chords' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Acordes' : 'Chords'}>
             {lang === 'pt' ? 'Acordes' : 'Chords'}
           </button>
-          <button data-tour="quick-editor" onClick={() => openMobileTab('editor')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'editor' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label="Editor">
-            Editor
-          </button>
-          <button data-tour="quick-practice" onClick={() => openMobileTab('tools')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'tools' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Prática' : 'Practice'}>
-            {lang === 'pt' ? 'Prática' : 'Practice'}
+          <button data-tour="quick-editor" onClick={() => openMobileTab('editor')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'editor' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Editar' : 'Edit'}>{lang === 'pt' ? 'Editar' : 'Edit'}</button>
+          <button data-tour="quick-practice" onClick={() => openMobileTab('tools')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'tools' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Praticar' : 'Practice'}>
+            {lang === 'pt' ? 'Praticar' : 'Practice'}
           </button>
         </div>
       </div>

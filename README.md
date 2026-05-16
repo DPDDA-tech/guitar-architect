@@ -26,7 +26,7 @@ Guitar Architect é uma plataforma **Open Source** e **Offline-First** para arqu
 *   **Suporte Multi-Instrumento:** Guitarra (6, 7 e 8 cordas) e Baixo (4 e 5 cordas).
 *   **Biblioteca de Acordes:** Consulte, identifique, ouca e favorite shapes com filtros de dificuldade.
 *   **Ferramentas de Prática:** Afinador, metrônomo, treinador de intervalos, exercícios guiados e prática de trocas de acordes.
-*   **Tutorial Visual:** Guia interativo para orientar o fluxo Camadas, Escala, Harmonia, Acordes, Prática e painel rápido de marcadores/linhas.
+*   **Tutorial Visual:** Guia interativo para orientar o fluxo Camadas, Escala, Harmonia, Acordes, Praticar e painel rápido de marcadores/linhas.
 
 ---
 
