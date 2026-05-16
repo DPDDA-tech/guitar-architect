@@ -12,23 +12,22 @@ import {
 } from '../utils/persistence';
 import { buildProjectFileName, parseProjectFile, serializeProjectFile } from '../utils/projectFile';
 import SupportModal from './SupportModal';
+import { BrandAssets, getBrandAssets } from '../utils/brandAssets';
 
-const HERO_IMAGE = "/hero.png"; 
-const APP_LOGO_PATH = "/logo.png"; 
-
-const LogoIcon = ({ variant = 'default' }: { variant?: 'default' | 'large' | 'footer' }) => {
+const LogoIcon = ({ brand, variant = 'default' }: { brand: BrandAssets; variant?: 'default' | 'large' | 'footer' }) => {
   const isLarge = variant === 'large';
   const isFooter = variant === 'footer';
   
   return (
     <div className={`flex items-center justify-center ${isLarge ? 'mb-6' : ''}`}>
       <img 
-        src={APP_LOGO_PATH}
-        alt="Guitar Architect Logo" 
+        src={brand.logo}
+        alt={`Guitar Architect Logo - ${brand.label}`} 
         className={`
-          object-contain transition-transform hover:scale-110 drop-shadow-[0_0_10px_rgba(59,130,246,0.4)]
+          object-contain transition-transform hover:scale-110
           ${isLarge ? 'w-24 h-24 md:w-32 md:h-32' : (isFooter ? 'w-8 h-8 md:w-10 md:h-10' : 'w-12 h-12 md:w-16 md:h-16')}
         `}
+        style={{ filter: `drop-shadow(0 0 10px ${brand.accentShadow})` }}
         onError={(e) => {
           const target = e.target as HTMLImageElement;
           target.style.display = 'none';
@@ -613,7 +612,7 @@ const handleLogout = () => {
     setIsExporting(true);
     await new Promise(resolve => setTimeout(resolve, 50));
     const { exportToPNG } = await import('../utils/export');
-    await exportToPNG(lang, user, userLogo);
+    await exportToPNG(lang, user, userLogo, primaryInstrument);
     setIsExporting(false);
   };
 
@@ -621,7 +620,7 @@ const handleLogout = () => {
     setIsExporting(true);
     await new Promise(resolve => setTimeout(resolve, 50));
     const { exportToPDF } = await import('../utils/export');
-    await exportToPDF(lang, user, userLogo);
+    await exportToPDF(lang, user, userLogo, primaryInstrument);
     setIsExporting(false);
   };
 
@@ -631,6 +630,7 @@ const handleLogout = () => {
   const activeInstance = instances[activeInstanceIndex] || instances[0];
   const primaryInstrument = activeInstance?.instrumentType || defaultInstrument;
   const primaryLeftHanded = activeInstance?.isLeftHanded || false;
+  const brandAssets = getBrandAssets(primaryInstrument);
   const updatePrimaryInstrument = (instrumentType: InstrumentType) => {
     const instrument = INSTRUMENT_PRESETS[instrumentType];
     setDefaultInstrument(instrumentType);
@@ -801,7 +801,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
          <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
             <div className="flex items-center gap-3 md:gap-5 overflow-hidden">
-               <LogoIcon />
+               <LogoIcon brand={brandAssets} />
                <div className="min-w-0">
                   <h1 className="text-[16px] md:text-2xl font-black italic text-blue-600 leading-none tracking-tighter uppercase truncate">GUITAR ARCHITECT</h1>
                   <p className="text-[8px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-tight mt-1">{t.tagline}</p>
@@ -1139,7 +1139,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         {instances.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
              <div className="relative mb-8 md:mb-12 scale-90 md:scale-100">
-                <img src={HERO_IMAGE} alt="Hero" className="w-full max-w-[280px] md:max-w-lg rounded-[24px] md:rounded-[40px] shadow-2xl" />
+                <img src={brandAssets.hero} alt={`Guitar Architect Hero - ${brandAssets.label}`} className="w-full max-w-[280px] md:max-w-lg rounded-[24px] md:rounded-[40px] shadow-2xl" />
              </div>
              <button onClick={() => addInstance()} className="bg-blue-600 text-white px-8 md:px-12 py-4 md:py-5 rounded-xl font-black uppercase text-[10px] md:text-xs shadow-xl active:scale-95 transition-transform">Criar Primeiro Diagrama</button>
           </div>
@@ -1153,7 +1153,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       <footer className={`py-10 border-t ${isExporting ? 'hidden' : 'hidden md:block'} ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-900'}`}>
          <div className="max-w-[1700px] mx-auto px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-               <LogoIcon variant="footer" />
+               <LogoIcon brand={brandAssets} variant="footer" />
                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Guitar Architect • DPDDA-tech</p>
             </div>
             <div className="flex gap-4 md:gap-8 text-[10px] font-black uppercase text-zinc-500">
@@ -1171,7 +1171,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xl">
           <div className={`w-full max-w-md rounded-[40px] p-8 md:p-12 border shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
              <div className="flex flex-col items-center mb-8">
-                <LogoIcon variant="large" />
+                <LogoIcon brand={brandAssets} variant="large" />
                 <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-center">Identidade Visual</h2>
              </div>
              

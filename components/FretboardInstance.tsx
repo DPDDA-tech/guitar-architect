@@ -2155,7 +2155,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   return (
-    <div onClick={onActivate} className={`diagram-container relative p-3 lg:p-10 rounded-[24px] lg:rounded-[48px] border shadow-lg lg:shadow-2xl transition-all ${isActive ? `ring-2 ${activeInstrumentAccent.ring} ${activeInstrumentAccent.shadow}` : ''} ${isLight ? 'bg-white/95 border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+    <div
+      data-instrument-type={state.instrumentType}
+      data-scale-active={state.layers.showScale ? 'true' : 'false'}
+      onClick={onActivate}
+      className={`diagram-container relative p-3 lg:p-10 rounded-[24px] lg:rounded-[48px] border shadow-lg lg:shadow-2xl transition-all ${isActive ? `ring-2 ${activeInstrumentAccent.ring} ${activeInstrumentAccent.shadow}` : ''} ${isLight ? 'bg-white/95 border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}
+    >
       {isActive && !isExporting && <div className={`pointer-events-none absolute inset-x-10 -bottom-2 h-1 rounded-full ${activeInstrumentAccent.glow} blur-[1px]`} />}
       
       {/* HEADER DIAGRAMA */}
