@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background-color: #f8fafc;
+            background-color: #eef3f8;
             background-image:
                 linear-gradient(#e2e8f0 1px, transparent 1px),
                 linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
@@ -36,195 +36,36 @@
 
                 <hr class="border-zinc-100" />
 
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">1. Como começo um diagrama?</h2>
-                    <p>Clique em <strong>Novo</strong> no cabeçalho do diagrama. O assistente permite criar escala, acorde, campo harmônico ou diagrama livre. Depois de criado, o diagrama aparece na área central e pode ser editado sem sair da página.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">2. Como altero instrumento, afinação e número de cordas?</h2>
-                    <p>Abra <strong>Controles</strong> e use a aba <strong>Base</strong>. Ali você escolhe guitarra de 6, 7 ou 8 cordas, baixo de 4 ou 5 cordas, afinações predefinidas e o modo canhoto. A opção <strong>Custom</strong> permite trabalhar com afinação personalizada quando disponível no projeto.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">3. Onde altero tom, escala e harmonia?</h2>
-                    <p>Use a aba <strong>Harmonia</strong>. Ela concentra tônica, escala, tríades, tétrades, graus, inversões, voicings close/drop 2/drop 3 e shapes CAGED. Os botões <strong>Escala</strong> e <strong>Tônica</strong> da toolbar também abrem essa área.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">4. O que são Rótulos?</h2>
-                    <p>Rótulos controlam o texto dentro dos marcadores do braço: notas, intervalos, dedos ou apenas pontos. Use o botão <strong>Rótulos</strong> da toolbar ou a aba <strong>Visual</strong>.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">5. Como uso o Editor?</h2>
-                    <p>O botão <strong>Editor</strong> abre as ferramentas de marcação. No modo marcador, escolha forma e cor e clique no braço para inserir/remover pontos. No modo linha, escolha espessura fina, média ou grossa e clique em dois pontos do braço para ligar posições.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">6. Como marco cordas soltas ou abafadas?</h2>
-                    <p>À esquerda do nut há indicadores discretos de <strong>O/X</strong>. Clique nessa área da corda para alternar entre normal, open e mute. Esse controle é útil para acordes com cordas soltas ou abafadas.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">7. Para que serve a transposição?</h2>
-                    <p>A transposição move o projeto em semitons, ajustando raízes e marcações. Use os botões de <strong>Transp.</strong> na toolbar acima do fretboard. O botão <strong>reset</strong> volta ao ponto inicial.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">8. Como organizo vários diagramas?</h2>
-                    <p>Use <strong>Novo</strong> para adicionar outro diagrama, <strong>Duplicar</strong> para copiar o atual e as setas para mudar a ordem. Cada diagrama mantém título, subtítulo, notas, controles visuais e conteúdo próprio.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">9. Como salvar e carregar projetos?</h2>
-                    <p>O app salva projetos localmente no navegador. <strong>Carregar Projetos</strong> abre a biblioteca local do usuário atual. O campo <strong>Projeto</strong> no cabeçalho permite renomear o projeto.</p>
-                    <div class="bg-blue-50 border border-blue-100 p-6 rounded-3xl mt-4">
-                        <p class="text-blue-800 font-bold mb-2">Importante:</p>
-                        <p class="text-blue-700">Os projetos ficam no localStorage. Se você limpar os dados do navegador ou usar outro computador, esses projetos não serão recuperados automaticamente.</p>
-                    </div>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">10. Qual a diferença entre Carregar Projetos e Importar JSON?</h2>
-                    <p><strong>Carregar Projetos</strong> abre projetos já salvos na biblioteca local. <strong>Importar JSON de Diagrama</strong> recebe dados externos em formato JSON, úteis para trocar diagramas ou restaurar conteúdo exportado manualmente.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">11. Como exporto PNG ou PDF?</h2>
-                    <p>Use os botões <strong>PNG</strong> e <strong>PDF</strong> no cabeçalho. As bibliotecas de exportação são carregadas sob demanda, apenas no momento da exportação.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">12. Posso usar logomarca própria?</h2>
-                    <p>Sim. No fluxo de identidade, você pode definir usuário local e carregar uma logomarca. Ela aparece em exportações e ajuda a personalizar materiais didáticos.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">13. Como oculto as dicas?</h2>
-                    <p>No bloco <strong>Dicas</strong>, use o botão <strong>Ocultar</strong>. Isso é útil para professores, materiais internos ou aulas em que fontes externas não devem aparecer.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">14. Como uso tríades, tétrades e inversões?</h2>
-                    <p>Na aba <strong>Harmonia</strong>, escolha entre modo desligado, tríades ou tétrades. Depois selecione o grau, a qualidade do acorde e a inversão. Em tríades, o aplicativo trabalha com três vozes; em tétrades, adiciona a sétima quando aplicável.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">15. O que são voicings Close, Drop 2 e Drop 3?</h2>
-                    <p>Os voicings alteram a disposição das notas do acorde no braço. <strong>Close</strong> mantém as vozes próximas. <strong>Drop 2</strong> e <strong>Drop 3</strong> deslocam vozes internas para criar aberturas mais comuns em arranjos, guitarra harmônica e estudo de condução de vozes.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">16. Como uso CAGED?</h2>
-                    <p>Na aba <strong>Harmonia</strong>, selecione um shape C, A, G, E ou D. O Guitar Architect destaca posições associadas ao shape escolhido, ajudando a conectar regiões do braço com acordes, escalas e arpejos.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">17. Como funcionam marcadores e linhas?</h2>
-                    <p>No <strong>Editor</strong>, o modo marcador cria pontos no braço. É possível escolher círculo, quadrado ou triângulo e selecionar cores. No modo linha, escolha espessura fina, média ou grossa para sobrepor caminhos, digitações ou relações entre notas.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">18. Para que servem notas, intervalos, dedos e todas as notas?</h2>
-                    <p>Em <strong>Rótulos</strong>, você decide se os marcadores mostram notas, intervalos, dedos ou apenas pontos. A camada <strong>Todas</strong> revela notas do braço como referência geral; <strong>Escala</strong> mostra notas da escala selecionada; <strong>Tônica</strong> destaca a raiz.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">19. Posso mudar o tamanho do fretboard?</h2>
-                    <p>Sim. Use o controle de <strong>Trastes</strong> para definir o início e o fim da região exibida. Isso permite focar em poucos trastes para estudo local ou abrir uma área maior do braço para mapas completos.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">20. Quantos diagramas posso criar?</h2>
-                    <p>O projeto pode conter vários diagramas, com limite operacional de <strong>24 diagramas</strong>. Esse limite evita perda de desempenho em projetos muito grandes e mantém a exportação mais previsível.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">21. Qual a diferença entre salvar no navegador e salvar como arquivo?</h2>
-                    <p>O salvamento no navegador usa o <strong>localStorage</strong>, rápido e automático, mas dependente do cache/dados locais. Já <strong>Salvar JSON</strong> gera um arquivo no computador, útil para backup, transferência e preservação caso você limpe o navegador.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">22. Como reabro um arquivo salvo?</h2>
-                    <p>Use <strong>Abrir JSON</strong> no cabeçalho ou <strong>Importar Projeto (.json)</strong> no menu. O arquivo precisa ter sido exportado pelo Guitar Architect ou seguir a estrutura mínima de projeto reconhecida pelo aplicativo.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">23. O que a exportação PNG/PDF inclui?</h2>
-                    <p>PNG e PDF geram materiais visuais para impressão, compartilhamento ou aula. Essas exportações são diferentes do arquivo JSON: PNG/PDF são formatos finais de apresentação; JSON é um backup editável do projeto.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">24. Posso trabalhar com instrumentos diferentes?</h2>
-                    <p>Sim. O app suporta guitarra de 6, 7 e 8 cordas, baixo de 4 e 5 cordas, afinações predefinidas, afinações abertas e ajuste customizado quando disponível. Ao mudar instrumento ou afinação, o diagrama respeita a quantidade de cordas do instrumento.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">25. O que mudou na versao 1.8.5?</h2>
-                    <p>A versao 1.8.5 melhora a navegacao visual do braco, reduz a sobrecarga mobile, adiciona controles rapidos de transposicao, casas, marcadores e linhas, aprimora o Modo Aprender e corrige fluxos de pratica 3NPC/4NPC.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">26. Como funciona a biblioteca de acordes?</h2>
-                    <p>Abra <strong>Controles</strong> e entre em <strong>Acordes</strong>. Voce pode escolher tonica, tipo de acorde, alcance de casas, preferencia por cordas soltas e nota fundamental no baixo. O app sugere voicings aplicaveis ao instrumento e afinacao atuais.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">27. Quais tipos de acordes posso procurar?</h2>
-                    <p>A biblioteca inclui acordes maiores, menores, suspensos, setimas, nonas, decimas primeiras e decimas terceiras, com shapes abertos e regioes com pestana quando possivel. Os resultados tambem trazem nivel de dificuldade para ajudar iniciantes a escolherem shapes mais seguros.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">28. Como identifico um acorde que ja esta no braco?</h2>
-                    <p>Na aba <strong>Acordes</strong>, use o modo de identificacao. Ao marcar notas no fretboard, o Guitar Architect compara o conjunto de notas e sugere o nome mais provavel do acorde, incluindo inversoes e acordes com baixo diferente quando aplicavel.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">29. Como uso som nas notas, acordes e escalas?</h2>
-                    <p>Ative <strong>Som ON</strong> na toolbar. Depois disso, notas clicadas, shapes de acordes e alguns estudos de escala podem ser ouvidos diretamente no navegador. O audio respeita o instrumento, a afinacao e a posicao marcada no braco.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">30. Onde ficam afinador, metronomo e ferramentas de pratica?</h2>
-                    <p>Abra <strong>Pratica</strong>. Ali estao afinador, metronomo, treinador de intervalos, gerador de exercicios e pratica de troca de acordes. O metronomo permite escolher BPM, som do clique, compasso de preparacao e incremento progressivo de velocidade.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">31. Como funcionam os exercicios de escala?</h2>
-                    <p>Em <strong>Pratica</strong>, o gerador cria estudos como 3 notas por corda e 4 notas por corda. Quando a escala e tocada, as notas seguem uma sequencia musical de estudo e podem piscar no fretboard no tempo escolhido, servindo como exemplo visual e sonoro.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">32. Como uso favoritos de shapes?</h2>
-                    <p>Na biblioteca de acordes, salve voicings usados com frequencia como favoritos. Isso facilita recuperar shapes de aula, estudo ou composicao sem precisar refazer a busca a cada sessao.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">33. Existe um tutorial dentro do aplicativo?</h2>
-                    <p>Sim. Use o botao <strong>Tutorial</strong> no cabecalho. O guia visual mostra a ordem recomendada: criar diagramas, ajustar Camadas, escolher Escala, destacar Tonica, explorar Harmonia, usar Acordes, abrir Pratica e usar o painel rapido de marcadores e linhas.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">34. Como funcionam os controles rapidos acima do fretboard?</h2>
-                    <p>O painel rapido concentra acoes frequentes: <strong>Transp.</strong> muda a transposicao, <strong>Casas</strong> aumenta ou reduz a area visivel do braco, <strong>Marcador</strong> escolhe forma e cor, e <strong>Linha</strong> define a espessura. Dentro de Linha tambem ficam <strong>Desfazer</strong>, <strong>Refazer</strong> e <strong>Limpar</strong>.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">35. Como alterno entre notas, intervalos, dedos e pontos?</h2>
-                    <p>Em <strong>Camadas</strong>, clique em Notas, Intervalos ou Dedos para mostrar esses rotulos. O segundo clique volta para pontos. Se Pontos ja estiver ativo, outro clique remove os pontos e deixa o fretboard limpo, preservando escala, tonica e marcadores criados pelo Editor.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">36. O que significa 3NPC e 4NPC?</h2>
-                    <p>3NPC e 4NPC significam 3 ou 4 notas por corda. Os exercicios seguem a ordem musical da escala e evitam repeticoes imediatas de notas ja tocadas na corda anterior quando houver alternativa musicalmente correta.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">37. Contato</h2>
-                    <p>Para dúvidas, sugestões ou solicitações relacionadas ao uso do aplicativo, entre em contato por:</p>
-                    <p class="mt-4 font-bold text-blue-600">E-mail: <a href="mailto:contato@guitararchitect.com.br">contato@guitararchitect.com.br</a></p>
-                </section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">1. Como começo um diagrama?</h2><p>Clique em <strong>Novo</strong> no cabeçalho do diagrama. O assistente permite criar escala, acorde, campo harmônico ou diagrama livre. Depois de criado, o diagrama aparece na área central e pode ser editado sem sair da página.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">2. Como altero instrumento, afinação e número de cordas?</h2><p>Abra <strong>Menu</strong> para trocar rapidamente entre guitarra de 6, 7 ou 8 cordas, baixo de 4 ou 5 cordas e modo canhoto no diagrama ativo. Para afinações e ajustes mais detalhados, use <strong>Controles</strong> e a aba <strong>Base</strong>.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">3. Onde altero tom, escala e harmonia?</h2><p>Use <strong>Escala</strong> para escolher tônica e tipo de escala. Use <strong>Harmonia</strong> para tríades, tétrades, graus, inversões, voicings Close/Drop 2/Drop 3 e shapes CAGED.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">4. O que são rótulos?</h2><p>Rótulos controlam o texto dentro dos pontos do braço: notas, intervalos, dedos ou apenas pontos. Em <strong>Camadas</strong>, o segundo clique em Notas, Intervalos ou Dedos volta para pontos; outro clique em Pontos limpa essa camada visual.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">5. Como uso marcadores e linhas?</h2><p>Use o painel rápido acima do fretboard. Em <strong>Marcador</strong>, escolha forma e cor; em <strong>Linha</strong>, escolha a espessura F, M ou G. Depois clique no braço para marcar notas ou ligar posições.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">6. Onde ficam Desfazer, Refazer e Limpar?</h2><p>Essas ações aparecem no painel rápido, dentro do bloco <strong>Linha</strong>. Elas servem também para marcadores: desfazem, refazem ou limpam as marcações livres do diagrama.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">7. Como marco cordas soltas ou abafadas?</h2><p>À esquerda do nut há indicadores discretos de <strong>O/X</strong>. Clique nessa área da corda para alternar entre normal, open e mute. Esse controle é útil para acordes com cordas soltas ou abafadas.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">8. Para que serve a transposição?</h2><p>A transposição move o projeto em semitons, ajustando raízes e marcações. Use <strong>Transp.</strong> no painel rápido acima do fretboard. O botão <strong>reset</strong> volta ao ponto inicial.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">9. Como altero a quantidade de casas visíveis?</h2><p>Use o controle <strong>Casas</strong> no painel rápido. Os botões de menos e mais reduzem ou ampliam a região visível do braço sem prender o usuário a poucas opções fixas.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">10. Como organizo vários diagramas?</h2><p>Use <strong>Novo</strong> para adicionar outro diagrama, <strong>N. Guiado</strong> para abrir o assistente, <strong>Duplicar</strong> para copiar o atual e as setas para mudar a ordem. O diagrama ativo recebe destaque visual.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">11. Como salvar e carregar projetos?</h2><p>O app salva projetos localmente no navegador. <strong>Carregar Projetos</strong> abre a biblioteca local do usuário atual. <strong>Salvar JSON</strong> gera um arquivo editável para backup ou transferência.</p><div class="bg-blue-50 border border-blue-100 p-6 rounded-3xl mt-4"><p class="text-blue-800 font-bold mb-2">Importante:</p><p class="text-blue-700">Os projetos ficam no localStorage. Se você limpar os dados do navegador ou usar outro computador, esses projetos não serão recuperados automaticamente.</p></div></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">12. Qual a diferença entre Carregar Projetos e Importar JSON?</h2><p><strong>Carregar Projetos</strong> abre projetos já salvos na biblioteca local. <strong>Importar Projeto (.json)</strong> recebe um arquivo externo exportado pelo Guitar Architect.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">13. Como exporto PNG ou PDF?</h2><p>Use os botões <strong>PNG</strong> e <strong>PDF</strong> no cabeçalho. PNG/PDF são formatos finais para impressão, compartilhamento ou aula; JSON é backup editável.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">14. Posso usar logomarca própria?</h2><p>Sim. No fluxo de identidade, você pode definir usuário local e carregar uma logomarca. Ela aparece em exportações e ajuda a personalizar materiais didáticos.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">15. Como oculto as dicas?</h2><p>No bloco <strong>Dicas</strong>, use o botão <strong>Ocultar</strong>. Isso é útil para professores, materiais internos ou aulas em que fontes externas não devem aparecer.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">16. Como uso tríades, tétrades e inversões?</h2><p>Na aba <strong>Harmonia</strong>, escolha entre modo desligado, tríades ou tétrades. Depois selecione grau, qualidade e inversão. Em tríades, o aplicativo trabalha com três vozes; em tétrades, adiciona a sétima quando aplicável.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">17. O que são voicings Close, Drop 2 e Drop 3?</h2><p>Os voicings alteram a disposição das notas do acorde no braço. <strong>Close</strong> mantém as vozes próximas. <strong>Drop 2</strong> e <strong>Drop 3</strong> deslocam vozes internas para criar aberturas comuns em guitarra harmônica.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">18. Como uso CAGED?</h2><p>Na aba <strong>Harmonia</strong>, selecione um shape C, A, G, E ou D. O atalho de Harmonia também mostra a geometria CAGED para conectar regiões do braço com acordes, escalas e arpejos.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">19. Para que servem notas, intervalos, dedos e todas as notas?</h2><p>Em <strong>Camadas</strong>, você decide se os pontos mostram notas, intervalos, dedos ou apenas pontos. A camada <strong>Todas</strong> revela notas do braço como referência geral; <strong>Escala</strong> mostra notas da escala selecionada; <strong>Tônica</strong> destaca a raiz.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">20. O que mudou na versão 1.8.5?</h2><p>A versão 1.8.5 melhora a navegação visual do braço, reduz a sobrecarga mobile, adiciona controles rápidos de transposição, casas, marcadores e linhas, aprimora o Modo Aprender e corrige fluxos de prática 3NPC/4NPC.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">21. Como funciona a biblioteca de acordes?</h2><p>Abra <strong>Acordes</strong>. Você pode escolher tônica, tipo de acorde, alcance de casas, preferência por cordas soltas e nota fundamental no baixo. O app sugere voicings aplicáveis ao instrumento e à afinação atuais.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">22. Quais tipos de acordes posso procurar?</h2><p>A biblioteca inclui acordes maiores, menores, suspensos, sétimas, nonas, décimas primeiras e décimas terceiras, com shapes abertos e regiões com pestana quando possível.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">23. Como identifico um acorde que já está no braço?</h2><p>Na aba <strong>Acordes</strong>, use o modo de identificação. Ao marcar notas no fretboard, o Guitar Architect compara o conjunto de notas e sugere o nome mais provável do acorde, incluindo inversões e acordes com baixo diferente quando aplicável.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">24. Como uso som nas notas, acordes e escalas?</h2><p>Ative <strong>Som ON</strong> na toolbar. Os botões de ouvir nos acordes também ativam o som automaticamente antes de tocar, evitando a dúvida de por que o áudio não saiu.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">25. Onde ficam afinador, metrônomo e ferramentas de prática?</h2><p>Abra <strong>Prática</strong>. Ali estão afinador, metrônomo, treinador de intervalos, gerador de exercícios e prática de troca de acordes. O metrônomo permite escolher BPM, som do clique, compasso de preparação e incremento progressivo de velocidade.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">26. Como funcionam os exercícios de escala?</h2><p>Em <strong>Prática</strong>, o gerador cria estudos como 3 notas por corda e 4 notas por corda. Quando a escala é tocada, as notas seguem uma sequência musical de estudo e podem piscar no fretboard no tempo escolhido.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">27. O que significa 3NPC e 4NPC?</h2><p>3NPC e 4NPC significam 3 ou 4 notas por corda. Os exercícios seguem a ordem musical da escala e evitam repetições imediatas de notas já tocadas na corda anterior quando houver alternativa musicalmente correta.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">28. Como uso favoritos de shapes?</h2><p>Na biblioteca de acordes, salve voicings usados com frequência como favoritos. Isso facilita recuperar shapes de aula, estudo ou composição sem precisar refazer a busca a cada sessão.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">29. Existe um tutorial dentro do aplicativo?</h2><p>Sim. Use o botão <strong>Tutorial</strong> no cabeçalho. O guia visual mostra a ordem recomendada: criar diagramas, ajustar Camadas, escolher Escala, destacar Tônica, explorar Harmonia, usar Acordes, abrir Prática e usar o painel rápido de marcadores e linhas.</p></section>
+                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">30. Contato</h2><p>Para dúvidas, sugestões ou solicitações relacionadas ao uso do aplicativo, entre em contato por:</p><p class="mt-4 font-bold text-blue-600">E-mail: <a href="mailto:contato@guitararchitect.com.br">contato@guitararchitect.com.br</a></p></section>
             </div>
         </div>
 

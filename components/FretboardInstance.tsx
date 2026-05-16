@@ -434,7 +434,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           target: '[data-tour="quick-practice"]',
           title: lang === 'pt' ? 'Ouvir e praticar' : 'Listen and practice',
           body: lang === 'pt'
-            ? 'Em Pratica ficam metronomo, afinador, intervalos, exercicios e trocas de acordes.'
+            ? 'Em Prática ficam metrônomo, afinador, intervalos, exercícios e trocas de acordes.'
             : 'Practice contains metronome, tuner, intervals, exercises, and chord changes.'
         },
         {
@@ -853,7 +853,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       actionLabel: lang === 'pt' ? 'Mostrar C aberto' : 'Show open C',
       action: { type: 'chord', root: 'C', symbol: 'C', chordType: 'major' },
       steps: lang === 'pt'
-        ? ['Aplique o acorde.', 'Ouça o som inteiro.', 'Toque corda por corda.', 'Troque para G ou Am na aba Pratica.']
+        ? ['Aplique o acorde.', 'Ouça o som inteiro.', 'Toque corda por corda.', 'Troque para G ou Am na aba Prática.']
         : ['Apply the chord.', 'Hear the full sound.', 'Play string by string.', 'Move to G or Am in Practice.']
     },
     {
@@ -2202,8 +2202,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <button data-tour="quick-editor" onClick={() => openMobileTab('editor')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'editor' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label="Editor">
             Editor
           </button>
-          <button data-tour="quick-practice" onClick={() => openMobileTab('tools')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'tools' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Pratica' : 'Practice'}>
-            {lang === 'pt' ? 'Pratica' : 'Practice'}
+          <button data-tour="quick-practice" onClick={() => openMobileTab('tools')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'tools' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Prática' : 'Practice'}>
+            {lang === 'pt' ? 'Prática' : 'Practice'}
           </button>
         </div>
       </div>
