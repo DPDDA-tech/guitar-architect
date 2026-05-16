@@ -117,33 +117,33 @@ const NewDiagramWizard: React.FC<NewDiagramWizardProps> = ({ onCreate, onClose, 
   const prevStep = () => setStep(step - 1);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-auto max-h-[calc(100vh-3rem)] shadow-2xl overflow-hidden">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-black text-zinc-900">{lang === 'pt' ? 'Novo Diagrama' : 'New Diagram'}</h2>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-800">×</button>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/35 p-3 sm:items-center sm:p-4">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white p-4 shadow-xl sm:p-6 max-h-[calc(100vh-2rem)]">
+        <div className="mb-3 flex items-center justify-between sm:mb-4">
+          <h2 className="text-lg font-black text-zinc-900 sm:text-xl">{lang === 'pt' ? 'Novo Diagrama' : 'New Diagram'}</h2>
+          <button onClick={onClose} aria-label={lang === 'pt' ? 'Fechar novo diagrama' : 'Close new diagram'} className="flex h-10 w-10 items-center justify-center rounded-full text-xl font-black text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800">×</button>
         </div>
-        <div className="overflow-y-auto max-h-[calc(100vh-11rem)] pr-1">
+        <div className="overflow-y-auto max-h-[calc(100vh-9rem)] pr-1">
           {step === 1 && (
           <div>
-            <h3 className="text-lg font-black mb-4 text-zinc-900">{lang === 'pt' ? 'O que você quer criar?' : 'What do you want to create?'}</h3>
-            <div className="space-y-3">
+            <h3 className="mb-3 text-base font-black text-zinc-900 sm:mb-4 sm:text-lg">{lang === 'pt' ? 'O que você quer criar?' : 'What do you want to create?'}</h3>
+            <div className="space-y-2 sm:space-y-3">
               {options.map(option => (
                 <button
                   key={option.id}
                   onClick={() => { setDiagramType(option.id as DiagramType); nextStep(); }}
-                  className="group w-full rounded-3xl border border-zinc-300 bg-white p-4 text-left text-zinc-900 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-zinc-900"
+                  className="group w-full rounded-2xl border border-zinc-300 bg-white p-3 text-left text-zinc-900 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-zinc-900 sm:p-4"
                 >
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700">{option.label}</span>
-                    <h3 className="mt-2 text-lg font-black text-zinc-900">{option.title}</h3>
+                    <span className="text-[10px] font-black uppercase tracking-[0.24em] text-zinc-700 sm:tracking-[0.3em]">{option.label}</span>
+                    <h3 className="mt-1 text-base font-black text-zinc-900 sm:mt-2 sm:text-lg">{option.title}</h3>
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-700">{option.description}</p>
-                  <p className="mt-2 text-[11px] text-zinc-600">{option.help}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-zinc-700 sm:mt-2">{option.description}</p>
+                  <p className="mt-1 text-[11px] text-zinc-600 sm:mt-2">{option.help}</p>
                 </button>
               ))}
             </div>
-            <div className="mt-6 flex justify-end">
+            <div className="mt-4 flex justify-end sm:mt-6">
               <button onClick={() => { setDiagramType('free'); createDiagram(); }} className="px-4 py-2 rounded-lg border border-zinc-300 bg-zinc-100 text-zinc-900 text-sm font-black uppercase transition hover:bg-zinc-200 hover:text-zinc-900">
                 {lang === 'pt' ? 'Criar Rápido' : 'Quick Create'}
               </button>
