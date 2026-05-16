@@ -102,3 +102,42 @@ export interface ProjectFilePayload {
     showTips?: boolean;
   };
 }
+
+export interface InstrumentMaintenance {
+  id: string;
+  date: string;
+  title: string;
+  notes: string;
+}
+
+export interface UserInstrument {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  brand: string;
+  model: string;
+  version: string;
+  color: string;
+  serialNumber: string;
+  manufactureYear: string;
+  strings: string;
+  purchaseDate: string;
+  paidValue: string;
+  stringGauge: string;
+  nutMaterial: string;
+  lastStringChange: string;
+  bodyType: string;
+  bridgeType: string;
+  fretCount: string;
+  fretType: string;
+  bridgePickup: string;
+  middlePickup: string;
+  neckPickup: string;
+  bodyWood: string;
+  topWood: string;
+  neckWood: string;
+  fretboardWood: string;
+  notes: string;
+  photo?: string;
+  maintenance: InstrumentMaintenance[];
+}

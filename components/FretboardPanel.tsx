@@ -13,6 +13,7 @@ import {
 import { buildProjectFileName, parseProjectFile, serializeProjectFile } from '../utils/projectFile';
 import SupportModal from './SupportModal';
 import { BrandAssets, getBrandAssets } from '../utils/brandAssets';
+import MyInstruments from './MyInstruments';
 
 const LogoIcon = ({ brand, variant = 'default' }: { brand: BrandAssets; variant?: 'default' | 'large' | 'footer' }) => {
   const isLarge = variant === 'large';
@@ -108,6 +109,7 @@ const FretboardPanel: React.FC = () => {
   const [showMobileHint, setShowMobileHint] = useState(true);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [showMyInstruments, setShowMyInstruments] = useState(false);
   const [showTips, setShowTips] = useState(true);
   const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
 
@@ -769,6 +771,9 @@ const handleLogout = () => {
                   {lang === 'pt' ? 'Canhoto' : 'Lefty'}
                 </button>
               </div>
+              <button onClick={() => { setShowMyInstruments(true); setShowProjectMenu(false); }} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                {lang === 'pt' ? 'Meus Instrumentos' : 'My Instruments'}
+              </button>
               <div className={`mt-2 flex rounded-lg border p-0.5 ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
                 <button onClick={() => { setLang('pt'); setShowProjectMenu(false); }} className={`flex-1 rounded px-2 py-2 text-[9px] font-black ${lang === 'pt' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>PORT</button>
                 <button onClick={() => { setLang('en'); setShowProjectMenu(false); }} className={`flex-1 rounded px-2 py-2 text-[9px] font-black ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>ENG</button>
@@ -992,6 +997,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
         <button onClick={togglePrimaryLeftHanded} className={`w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
           {lang === 'pt' ? 'CANHOTO' : 'LEFT-HANDED'}
+        </button>
+
+        <button onClick={() => { setShowMyInstruments(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+          {lang === 'pt' ? 'MEUS INSTRUMENTOS' : 'MY INSTRUMENTS'}
         </button>
 
         <div className="grid grid-cols-2 gap-2">
@@ -1325,6 +1334,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 )}
 
 <SupportModal isOpen={showSupportModal} onClose={() => setShowSupportModal(false)} isLight={theme === 'light'} />
+<MyInstruments isOpen={showMyInstruments} onClose={() => setShowMyInstruments(false)} theme={theme} lang={lang} />
 
 </div>
 );

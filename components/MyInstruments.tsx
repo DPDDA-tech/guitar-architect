@@ -1,0 +1,565 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { InstrumentMaintenance, ThemeMode, UserInstrument } from '../types';
+import {
+  compressInstrumentPhoto,
+  createEmptyInstrument,
+  deleteInstrument,
+  listInstruments,
+  replaceInstruments,
+  saveInstrument
+} from '../utils/instrumentRegistry';
+
+interface MyInstrumentsProps {
+  isOpen: boolean;
+  onClose: () => void;
+  theme: ThemeMode;
+  lang: 'pt' | 'en';
+}
+
+const fieldGroups: Array<{ titlePt: string; titleEn: string; fields: Array<[keyof UserInstrument, string, string]> }> = [
+  {
+    titlePt: 'Informações Básicas',
+    titleEn: 'Basic Info',
+    fields: [
+      ['brand', 'Marca', 'Brand'],
+      ['model', 'Modelo', 'Model'],
+      ['version', 'Versão', 'Version'],
+      ['color', 'Cor', 'Color'],
+      ['serialNumber', 'Número de Série', 'Serial Number'],
+      ['manufactureYear', 'Ano de Fabricação', 'Year'],
+      ['strings', 'Número de Cordas', 'Strings'],
+      ['purchaseDate', 'Data da Compra', 'Purchase Date'],
+      ['paidValue', 'Valor Pago', 'Paid Value'],
+      ['stringGauge', 'Encordamento', 'String Gauge'],
+      ['nutMaterial', 'Material do Nut', 'Nut Material'],
+      ['lastStringChange', 'Última Troca de Cordas', 'Last String Change'],
+    ],
+  },
+  {
+    titlePt: 'Especificações Técnicas',
+    titleEn: 'Technical Specs',
+    fields: [
+      ['bodyType', 'Tipo do Corpo', 'Body Type'],
+      ['bridgeType', 'Tipo de Ponte', 'Bridge Type'],
+      ['fretCount', 'Número de Trastes', 'Frets'],
+      ['fretType', 'Tipo de Traste', 'Fret Type'],
+    ],
+  },
+  {
+    titlePt: 'Captadores',
+    titleEn: 'Pickups',
+    fields: [
+      ['bridgePickup', 'Captador Ponte', 'Bridge Pickup'],
+      ['middlePickup', 'Captador Meio', 'Middle Pickup'],
+      ['neckPickup', 'Captador Braço', 'Neck Pickup'],
+    ],
+  },
+  {
+    titlePt: 'Madeiras',
+    titleEn: 'Woods',
+    fields: [
+      ['bodyWood', 'Madeira do Corpo', 'Body Wood'],
+      ['topWood', 'Madeira do Tampo', 'Top Wood'],
+      ['neckWood', 'Madeira do Braço', 'Neck Wood'],
+      ['fretboardWood', 'Madeira da Escala', 'Fretboard Wood'],
+    ],
+  },
+];
+
+const display = (value: unknown) => {
+  const text = String(value || '').trim();
+  return text || '-';
+};
+
+const normalizeImportedInstrument = (input: Partial<UserInstrument>): UserInstrument => {
+  const base = createEmptyInstrument();
+  const now = new Date().toISOString();
+
+  return {
+    ...base,
+    ...input,
+    id: typeof input.id === 'string' && input.id ? input.id : crypto.randomUUID(),
+    createdAt: typeof input.createdAt === 'string' && input.createdAt ? input.createdAt : now,
+    updatedAt: now,
+    maintenance: Array.isArray(input.maintenance) ? input.maintenance.map(entry => ({
+      id: typeof entry.id === 'string' && entry.id ? entry.id : crypto.randomUUID(),
+      date: typeof entry.date === 'string' && entry.date ? entry.date : now,
+      title: typeof entry.title === 'string' ? entry.title : '',
+      notes: typeof entry.notes === 'string' ? entry.notes : '',
+    })) : [],
+  };
+};
+
+const formatDate = (iso?: string) => {
+  if (!iso) return '-';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleDateString();
+};
+
+const exportInstrumentToPdf = async (instrument: UserInstrument, lang: 'pt' | 'en') => {
+  const { jsPDF } = await import('jspdf');
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const margin = 14;
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const contentWidth = pageWidth - margin * 2;
+  let y = margin;
+
+  const ensureSpace = (height: number) => {
+    if (y + height <= pageHeight - margin) return;
+    pdf.addPage();
+    y = margin;
+  };
+
+  const addLine = (label: string, value: unknown) => {
+    ensureSpace(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 116, 139);
+    pdf.text(label, margin, y);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(15, 23, 42);
+    pdf.text(display(value), pageWidth - margin, y, { align: 'right', maxWidth: contentWidth * 0.52 });
+    y += 8;
+  };
+
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(18);
+  pdf.setTextColor(15, 23, 42);
+  pdf.text(lang === 'pt' ? 'Meus Instrumentos' : 'My Instruments', margin, y);
+  y += 9;
+
+  pdf.setFontSize(24);
+  pdf.text(display(instrument.brand), margin, y);
+  y += 9;
+  pdf.setFontSize(13);
+  pdf.setTextColor(100, 116, 139);
+  pdf.text([instrument.model, instrument.version].filter(Boolean).join(' - ') || '-', margin, y);
+  y += 10;
+
+  if (instrument.photo) {
+    ensureSpace(76);
+    const imageType = instrument.photo.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+    pdf.addImage(instrument.photo, imageType, margin, y, contentWidth, 70, undefined, 'FAST');
+    y += 78;
+  }
+
+  fieldGroups.forEach(group => {
+    ensureSpace(18);
+    pdf.setFillColor(241, 245, 249);
+    pdf.roundedRect(margin, y - 5, contentWidth, 10, 2, 2, 'F');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.setTextColor(15, 23, 42);
+    pdf.text(lang === 'pt' ? group.titlePt : group.titleEn, margin + 3, y + 2);
+    y += 12;
+
+    group.fields.forEach(([field, labelPt, labelEn]) => addLine(lang === 'pt' ? labelPt : labelEn, instrument[field]));
+    y += 4;
+  });
+
+  if (instrument.notes) {
+    ensureSpace(20);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.setTextColor(15, 23, 42);
+    pdf.text(lang === 'pt' ? 'Observações' : 'Notes', margin, y);
+    y += 7;
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    const lines = pdf.splitTextToSize(instrument.notes, contentWidth);
+    ensureSpace(lines.length * 5);
+    pdf.text(lines, margin, y);
+    y += lines.length * 5 + 5;
+  }
+
+  ensureSpace(18);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(12);
+  pdf.setTextColor(15, 23, 42);
+  pdf.text(lang === 'pt' ? 'Histórico de Manutenções' : 'Maintenance History', margin, y);
+  y += 8;
+
+  if (instrument.maintenance.length === 0) {
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 116, 139);
+    pdf.text(lang === 'pt' ? 'Nenhuma manutenção registrada.' : 'No maintenance registered.', margin, y);
+  } else {
+    instrument.maintenance.forEach(entry => {
+      ensureSpace(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(10);
+      pdf.setTextColor(15, 23, 42);
+      pdf.text(entry.title, margin, y);
+      pdf.text(formatDate(entry.date), pageWidth - margin, y, { align: 'right' });
+      y += 5;
+      if (entry.notes) {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(100, 116, 139);
+        const lines = pdf.splitTextToSize(entry.notes, contentWidth);
+        ensureSpace(lines.length * 5);
+        pdf.text(lines, margin, y);
+        y += lines.length * 5;
+      }
+      y += 4;
+    });
+  }
+
+  const name = [instrument.brand, instrument.model, instrument.version].filter(Boolean).join('-') || 'instrumento';
+  pdf.save(`GA_${name.replace(/[^a-z0-9_-]+/gi, '_')}.pdf`);
+};
+
+const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, lang }) => {
+  const isLight = theme === 'light';
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const backupInputRef = useRef<HTMLInputElement>(null);
+  const [items, setItems] = useState<UserInstrument[]>([]);
+  const [selected, setSelected] = useState<UserInstrument | null>(null);
+  const [draft, setDraft] = useState<UserInstrument | null>(null);
+  const [query, setQuery] = useState('');
+  const [maintenanceTitle, setMaintenanceTitle] = useState('');
+  const [maintenanceNotes, setMaintenanceNotes] = useState('');
+  const [isLoadingPhoto, setIsLoadingPhoto] = useState(false);
+
+  const t = {
+    title: lang === 'pt' ? 'Meus Instrumentos' : 'My Instruments',
+    subtitle: lang === 'pt' ? 'Registre fotos, especificações e manutenções.' : 'Track photos, specs and maintenance.',
+    add: lang === 'pt' ? 'Adicionar instrumento' : 'Add instrument',
+    exportJson: lang === 'pt' ? 'Exportar JSON' : 'Export JSON',
+    importJson: lang === 'pt' ? 'Importar JSON' : 'Import JSON',
+    edit: lang === 'pt' ? 'Editar' : 'Edit',
+    save: lang === 'pt' ? 'Salvar' : 'Save',
+    cancel: lang === 'pt' ? 'Cancelar' : 'Cancel',
+    delete: lang === 'pt' ? 'Excluir' : 'Delete',
+    pdf: 'PDF',
+    close: lang === 'pt' ? 'Voltar ao app' : 'Back to app',
+    search: lang === 'pt' ? 'Buscar por marca, modelo, cor, captadores...' : 'Search by brand, model, color, pickups...',
+    photo: lang === 'pt' ? 'Adicionar foto' : 'Add photo',
+    noPhoto: lang === 'pt' ? 'Sem foto' : 'No photo',
+    empty: lang === 'pt' ? 'Nenhum instrumento cadastrado ainda.' : 'No instruments registered yet.',
+    notes: lang === 'pt' ? 'Observações' : 'Notes',
+    maintenance: lang === 'pt' ? 'Histórico de Manutenções' : 'Maintenance History',
+    addMaintenance: lang === 'pt' ? 'Adicionar manutenção' : 'Add maintenance',
+    maintenanceTitle: lang === 'pt' ? 'Servico realizado' : 'Service performed',
+    maintenanceNotes: lang === 'pt' ? 'Notas' : 'Notes',
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    listInstruments().then(setItems).catch(() => setItems([]));
+  }, [isOpen]);
+
+  const filteredItems = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return items;
+    return items.filter(item => [
+      item.brand,
+      item.model,
+      item.version,
+      item.color,
+      item.bridgePickup,
+      item.middlePickup,
+      item.neckPickup,
+      item.bodyWood,
+      item.fretboardWood
+    ].some(value => value.toLowerCase().includes(term)));
+  }, [items, query]);
+
+  const refresh = async () => {
+    const next = await listInstruments();
+    setItems(next);
+    return next;
+  };
+
+  const startNew = () => {
+    setSelected(null);
+    setDraft(createEmptyInstrument());
+  };
+
+  const startEdit = (instrument: UserInstrument) => {
+    setDraft({ ...instrument, maintenance: [...instrument.maintenance] });
+  };
+
+  const updateDraft = (field: keyof UserInstrument, value: string) => {
+    setDraft(prev => prev ? { ...prev, [field]: value, updatedAt: new Date().toISOString() } : prev);
+  };
+
+  const handlePhoto = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !draft) return;
+    setIsLoadingPhoto(true);
+    try {
+      const photo = await compressInstrumentPhoto(file);
+      setDraft({ ...draft, photo, updatedAt: new Date().toISOString() });
+    } finally {
+      setIsLoadingPhoto(false);
+      event.target.value = '';
+    }
+  };
+
+  const handleSave = async () => {
+    if (!draft) return;
+    const next = {
+      ...draft,
+      brand: draft.brand.trim(),
+      model: draft.model.trim(),
+      updatedAt: new Date().toISOString()
+    };
+    await saveInstrument(next);
+    const list = await refresh();
+    setDraft(null);
+    setSelected(list.find(item => item.id === next.id) || next);
+  };
+
+  const exportBackup = () => {
+    const payload = {
+      schema: 'guitar-architect-instruments',
+      exportedAt: new Date().toISOString(),
+      instruments: items,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `GA_Meus_Instrumentos_${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importBackup = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const payload = JSON.parse(text);
+      const rawInstruments = Array.isArray(payload?.instruments) ? payload.instruments : Array.isArray(payload) ? payload : null;
+
+      if (!rawInstruments) {
+        throw new Error('Invalid backup');
+      }
+
+      const ok = window.confirm(lang === 'pt'
+        ? 'Importar este backup e substituir os instrumentos salvos neste navegador?'
+        : 'Import this backup and replace the instruments saved in this browser?');
+      if (!ok) return;
+
+      const instruments = rawInstruments.map((item: Partial<UserInstrument>) => normalizeImportedInstrument(item));
+      await replaceInstruments(instruments);
+      const next = await refresh();
+      setSelected(next[0] || null);
+      setDraft(null);
+    } catch {
+      alert(lang === 'pt' ? 'Arquivo de instrumentos invalido.' : 'Invalid instruments file.');
+    }
+  };
+
+  const handleDelete = async (instrument: UserInstrument) => {
+    const ok = window.confirm(lang === 'pt' ? 'Excluir este instrumento?' : 'Delete this instrument?');
+    if (!ok) return;
+    await deleteInstrument(instrument.id);
+    await refresh();
+    setSelected(null);
+    setDraft(null);
+  };
+
+  const addMaintenance = async () => {
+    if (!selected || !maintenanceTitle.trim()) return;
+    const entry: InstrumentMaintenance = {
+      id: crypto.randomUUID(),
+      date: new Date().toISOString(),
+      title: maintenanceTitle.trim(),
+      notes: maintenanceNotes.trim(),
+    };
+    const next = {
+      ...selected,
+      maintenance: [entry, ...selected.maintenance],
+      updatedAt: new Date().toISOString()
+    };
+    await saveInstrument(next);
+    setSelected(next);
+    await refresh();
+    setMaintenanceTitle('');
+    setMaintenanceNotes('');
+  };
+
+  if (!isOpen) return null;
+
+  const shell = 'border-zinc-200 bg-white/95 text-zinc-900 backdrop-blur';
+  const panel = 'bg-zinc-50 border-zinc-200';
+  const input = 'w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-bold text-zinc-900 outline-none focus:border-blue-500';
+
+  const form = draft && (
+    <div className="space-y-4">
+      <div className={`rounded-2xl border p-4 ${panel}`}>
+        <div className="grid gap-4 md:grid-cols-[260px_minmax(0,1fr)]">
+          <div>
+            <button onClick={() => fileInputRef.current?.click()} className={`flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl border text-sm font-black uppercase ${isLight ? 'border-zinc-200 bg-white text-zinc-500' : 'border-zinc-700 bg-zinc-950 text-zinc-400'}`}>
+              {draft.photo ? <img src={draft.photo} className="h-full w-full object-cover" /> : (isLoadingPhoto ? '...' : t.photo)}
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {fieldGroups[0].fields.map(([field, labelPt, labelEn]) => (
+              <label key={String(field)} className="space-y-1">
+                <span className="text-[10px] font-black uppercase text-zinc-400">{lang === 'pt' ? labelPt : labelEn}</span>
+                <input value={String(draft[field] || '')} onChange={event => updateDraft(field, event.target.value)} className={input} />
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {fieldGroups.slice(1).map(group => (
+        <div key={group.titleEn} className={`rounded-2xl border p-4 ${panel}`}>
+          <h3 className="mb-3 text-sm font-black uppercase">{lang === 'pt' ? group.titlePt : group.titleEn}</h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {group.fields.map(([field, labelPt, labelEn]) => (
+              <label key={String(field)} className="space-y-1">
+                <span className="text-[10px] font-black uppercase text-zinc-400">{lang === 'pt' ? labelPt : labelEn}</span>
+                <input value={String(draft[field] || '')} onChange={event => updateDraft(field, event.target.value)} className={input} />
+              </label>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <label className="space-y-1">
+        <span className="text-[10px] font-black uppercase text-zinc-400">{t.notes}</span>
+        <textarea value={draft.notes} onChange={event => updateDraft('notes', event.target.value)} className={`${input} min-h-28 resize-y`} />
+      </label>
+    </div>
+  );
+
+  const details = selected && !draft && (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between gap-2">
+        <button onClick={() => setSelected(null)} className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>←</button>
+        <div className="flex gap-2">
+          <button onClick={() => exportInstrumentToPdf(selected, lang)} className="rounded-xl border border-zinc-300 px-3 py-2 text-xs font-black uppercase">{t.pdf}</button>
+          <button onClick={() => startEdit(selected)} className="rounded-xl border border-zinc-300 px-3 py-2 text-xs font-black uppercase">{t.edit}</button>
+          <button onClick={() => handleDelete(selected)} className="rounded-xl bg-red-600 px-3 py-2 text-xs font-black uppercase text-white">{t.delete}</button>
+        </div>
+      </div>
+
+      <div className={`overflow-hidden rounded-3xl border ${panel}`}>
+        <div className="aspect-[16/7] bg-white">
+          {selected.photo ? <img src={selected.photo} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-sm font-black uppercase text-zinc-400">{t.noPhoto}</div>}
+        </div>
+        <div className="p-5 text-center">
+          <h2 className="text-2xl font-black">{display(selected.brand)}</h2>
+          <p className="mt-1 font-bold text-zinc-500">{[selected.model, selected.version].filter(Boolean).join(' - ') || '-'}</p>
+        </div>
+      </div>
+
+      {fieldGroups.map(group => (
+        <div key={group.titleEn} className={`rounded-2xl border p-4 ${panel}`}>
+          <h3 className="mb-3 text-base font-black">{lang === 'pt' ? group.titlePt : group.titleEn}</h3>
+          {group.fields.map(([field, labelPt, labelEn]) => (
+            <div key={String(field)} className={`flex justify-between gap-4 border-b py-2 text-sm last:border-b-0 ${isLight ? 'border-zinc-200' : 'border-zinc-800'}`}>
+              <span className="text-zinc-500">{lang === 'pt' ? labelPt : labelEn}</span>
+              <span className="text-right font-black">{display(selected[field])}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+
+      {selected.notes && (
+        <div className={`rounded-2xl border p-4 ${panel}`}>
+          <h3 className="mb-2 text-base font-black">{t.notes}</h3>
+          <p className="whitespace-pre-wrap text-sm font-semibold text-zinc-500">{selected.notes}</p>
+        </div>
+      )}
+
+      <div className={`rounded-2xl border p-4 ${panel}`}>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="text-base font-black">{t.maintenance}</h3>
+        </div>
+        <div className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+          <input value={maintenanceTitle} onChange={event => setMaintenanceTitle(event.target.value)} className={input} placeholder={t.maintenanceTitle} />
+          <input value={maintenanceNotes} onChange={event => setMaintenanceNotes(event.target.value)} className={input} placeholder={t.maintenanceNotes} />
+          <button onClick={addMaintenance} className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-black uppercase text-white">{t.addMaintenance}</button>
+        </div>
+        <div className="mt-4 space-y-2">
+          {selected.maintenance.length === 0 && <p className="text-center text-sm font-semibold text-zinc-500">{lang === 'pt' ? 'Nenhuma manutenção registrada ainda.' : 'No maintenance registered yet.'}</p>}
+          {selected.maintenance.map(entry => (
+            <div key={entry.id} className={`rounded-xl border p-3 ${isLight ? 'border-zinc-200 bg-white' : 'border-zinc-800 bg-zinc-950'}`}>
+              <div className="flex justify-between gap-3 text-sm">
+                <strong>{entry.title}</strong>
+                <span className="text-zinc-500">{formatDate(entry.date)}</span>
+              </div>
+              {entry.notes && <p className="mt-1 text-sm text-zinc-500">{entry.notes}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div
+      className="fixed inset-0 z-[120] overflow-y-auto p-3 md:p-8"
+      style={{
+        backgroundColor: '#eef3f8',
+        backgroundImage: 'linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px)',
+        backgroundSize: '20px 20px',
+      }}
+    >
+      <div className={`mx-auto min-h-[90vh] max-w-7xl rounded-[28px] border p-4 shadow-2xl md:p-8 ${shell}`}>
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-2xl font-black tracking-tight md:text-3xl">{t.title}</h2>
+            <p className="mt-1 text-sm font-semibold text-zinc-500">{t.subtitle}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={startNew} className="rounded-xl bg-blue-600 px-4 py-3 text-xs font-black uppercase text-white">{t.add}</button>
+            <button onClick={exportBackup} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.exportJson}</button>
+            <button onClick={() => backupInputRef.current?.click()} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.importJson}</button>
+            <button onClick={onClose} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.close}</button>
+            <input ref={backupInputRef} type="file" accept=".json,application/json" className="hidden" onChange={importBackup} />
+          </div>
+        </div>
+
+        {draft ? (
+          <>
+            {form}
+            <div className="mt-5 flex justify-end gap-2">
+              <button onClick={() => setDraft(null)} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.cancel}</button>
+              <button onClick={handleSave} className="rounded-xl bg-blue-600 px-5 py-3 text-xs font-black uppercase text-white">{t.save}</button>
+            </div>
+          </>
+        ) : details || (
+          <div className="space-y-5">
+            <input value={query} onChange={event => setQuery(event.target.value)} className={input} placeholder={t.search} />
+            {filteredItems.length === 0 ? (
+              <div className={`rounded-2xl border p-10 text-center text-sm font-black uppercase text-zinc-500 ${panel}`}>{t.empty}</div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {filteredItems.map(item => (
+                  <button key={item.id} onClick={() => setSelected(item)} className={`overflow-hidden rounded-2xl border text-left transition-all hover:-translate-y-0.5 ${isLight ? 'border-zinc-200 bg-white hover:border-blue-300' : 'border-zinc-800 bg-zinc-900 hover:border-blue-500'}`}>
+                    <div className="aspect-[16/9] bg-zinc-100">
+                      {item.photo ? <img src={item.photo} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-xs font-black uppercase text-zinc-400">{t.noPhoto}</div>}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-black">{display(item.brand)}</h3>
+                      <p className="mt-1 text-sm font-bold text-zinc-500">{[item.model, item.version].filter(Boolean).join(' - ') || '-'}</p>
+                      <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase text-zinc-500">
+                        <span className="rounded-full bg-blue-50 px-2 py-1 text-blue-600">{display(item.strings)} cordas</span>
+                        {item.lastStringChange && <span className="rounded-full bg-orange-50 px-2 py-1 text-orange-600">{lang === 'pt' ? 'Cordas' : 'Strings'}: {item.lastStringChange}</span>}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MyInstruments;
