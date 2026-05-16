@@ -96,8 +96,10 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     }
   });
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [showEmptyFretboardHint, setShowEmptyFretboardHint] = useState(false);
   const noteClickTimeoutRef = useRef<number | null>(null);
   const creationHintTimeoutRef = useRef<number | null>(null);
+  const emptyFretboardHintTimeoutRef = useRef<number | null>(null);
   
   const historyRef = useRef<FretboardState[]>([]);
   const futureRef = useRef<FretboardState[]>([]);
@@ -275,6 +277,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       if (creationHintTimeoutRef.current) {
         window.clearTimeout(creationHintTimeoutRef.current);
       }
+      if (emptyFretboardHintTimeoutRef.current) {
+        window.clearTimeout(emptyFretboardHintTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -286,6 +291,28 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     !state.layers.showScale &&
     !state.layers.showTonic &&
     state.harmonyMode === 'OFF';
+
+  useEffect(() => {
+    if (emptyFretboardHintTimeoutRef.current) {
+      window.clearTimeout(emptyFretboardHintTimeoutRef.current);
+    }
+
+    if (!isFretboardVisuallyEmpty || isExporting) {
+      setShowEmptyFretboardHint(false);
+      return;
+    }
+
+    setShowEmptyFretboardHint(true);
+    emptyFretboardHintTimeoutRef.current = window.setTimeout(() => {
+      setShowEmptyFretboardHint(false);
+    }, 4500);
+
+    return () => {
+      if (emptyFretboardHintTimeoutRef.current) {
+        window.clearTimeout(emptyFretboardHintTimeoutRef.current);
+      }
+    };
+  }, [isFretboardVisuallyEmpty, isExporting]);
   const PRESET_COLORS = ['#ef4444', '#2563eb', '#22c55e', '#eab308', '#000000', '#6366f1', '#ec4899'];
   const OBS_LIMIT = 1500;
   const [isControlPanelOpen, setIsControlPanelOpen] = useState(false);
@@ -612,6 +639,44 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const panelShell = isLight
     ? 'bg-zinc-50 border-zinc-200 text-zinc-900'
     : 'bg-zinc-950 border-zinc-800 text-zinc-100';
+  const instrumentAccent: Record<InstrumentType, { ring: string; shadow: string; glow: string; badgeLight: string; badgeDark: string }> = {
+    'guitar-6': {
+      ring: 'ring-blue-500/70',
+      shadow: 'shadow-blue-500/10',
+      glow: 'bg-blue-500/70',
+      badgeLight: 'border-blue-100 bg-blue-50 text-blue-600',
+      badgeDark: 'border-blue-900/40 bg-blue-950/30 text-blue-300',
+    },
+    'guitar-7': {
+      ring: 'ring-purple-500/70',
+      shadow: 'shadow-purple-500/10',
+      glow: 'bg-purple-500/70',
+      badgeLight: 'border-purple-100 bg-purple-50 text-purple-600',
+      badgeDark: 'border-purple-900/40 bg-purple-950/30 text-purple-300',
+    },
+    'guitar-8': {
+      ring: 'ring-purple-500/70',
+      shadow: 'shadow-purple-500/10',
+      glow: 'bg-purple-500/70',
+      badgeLight: 'border-purple-100 bg-purple-50 text-purple-600',
+      badgeDark: 'border-purple-900/40 bg-purple-950/30 text-purple-300',
+    },
+    'bass-4': {
+      ring: 'ring-green-500/70',
+      shadow: 'shadow-green-500/10',
+      glow: 'bg-green-500/70',
+      badgeLight: 'border-green-100 bg-green-50 text-green-600',
+      badgeDark: 'border-green-900/40 bg-green-950/30 text-green-300',
+    },
+    'bass-5': {
+      ring: 'ring-green-500/70',
+      shadow: 'shadow-green-500/10',
+      glow: 'bg-green-500/70',
+      badgeLight: 'border-green-100 bg-green-50 text-green-600',
+      badgeDark: 'border-green-900/40 bg-green-950/30 text-green-300',
+    },
+  };
+  const activeInstrumentAccent = instrumentAccent[state.instrumentType];
 
   const controlInputClass = 'w-full p-3 border rounded-xl text-sm font-black outline-none bg-white text-zinc-900 shadow-sm';
   const controlButtonBase = 'py-2.5 rounded-lg text-[9px] font-black uppercase border transition-all';
@@ -623,6 +688,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     if (shape === 'circle') return <span className="h-3.5 w-3.5 rounded-full border-2 border-current" />;
     if (shape === 'square') return <span className="h-3.5 w-3.5 border-2 border-current" />;
     return <span className="h-0 w-0 border-x-[7px] border-b-[13px] border-x-transparent border-b-current" />;
+  };
+  const toggleLineThickness = (width: LineThickness) => {
+    if (editorMode === 'line' && lineThickness === width) {
+      setEditorMode('marker');
+      setLineStart(null);
+      return;
+    }
+    setEditorMode('line');
+    setLineThickness(width);
   };
   const toggleQuickPanel = (tab: string) => {
     if (activeControlTab === tab && isControlPanelOpen) {
@@ -2081,13 +2155,13 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   return (
-    <div onClick={onActivate} className={`diagram-container relative p-3 lg:p-10 rounded-[24px] lg:rounded-[48px] border shadow-lg lg:shadow-2xl transition-all ${isActive ? 'ring-2 ring-blue-500/70 shadow-blue-500/10' : ''} ${isLight ? 'bg-white/95 border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
-      {isActive && !isExporting && <div className="pointer-events-none absolute inset-x-10 -bottom-2 h-1 rounded-full bg-blue-500/70 blur-[1px]" />}
+    <div onClick={onActivate} className={`diagram-container relative p-3 lg:p-10 rounded-[24px] lg:rounded-[48px] border shadow-lg lg:shadow-2xl transition-all ${isActive ? `ring-2 ${activeInstrumentAccent.ring} ${activeInstrumentAccent.shadow}` : ''} ${isLight ? 'bg-white/95 border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+      {isActive && !isExporting && <div className={`pointer-events-none absolute inset-x-10 -bottom-2 h-1 rounded-full ${activeInstrumentAccent.glow} blur-[1px]`} />}
       
       {/* HEADER DIAGRAMA */}
       <div className={`hidden lg:flex lg:flex-row lg:items-center justify-between mb-5 lg:mb-10 gap-4 ${isExporting ? 'hidden-operational-btns' : ''}`}>
         <div className="min-w-0 flex-1 lg:max-w-[360px] xl:max-w-[420px] 2xl:max-w-[520px]">
-          <div className={`mb-3 inline-flex items-center rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-blue-100 bg-blue-50 text-blue-600' : 'border-blue-900/40 bg-blue-950/30 text-blue-300'}`}>
+          <div className={`mb-3 inline-flex items-center rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] ${isLight ? activeInstrumentAccent.badgeLight : activeInstrumentAccent.badgeDark}`}>
             {lang === 'pt' ? 'Diagrama' : 'Diagram'} {diagramNumber}
           </div>
           <input value={state.title} onChange={e => recordAction({...state, title: e.target.value})} className={`bg-transparent text-lg lg:text-2xl xl:text-3xl font-black italic uppercase tracking-tighter focus:outline-none w-full truncate ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`} placeholder={t.titlePlaceholder} />
@@ -2138,9 +2212,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           </div>
           <div className={`grid gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
             <div className="flex items-center gap-1">
-              <span className="mr-auto text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Linha' : 'Line'}</span>
+              <span className="mr-auto shrink-0 pr-2 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Linha' : 'Line'}</span>
               {([[2, 'F'], [4, 'M'], [7, 'G']] as Array<[LineThickness, string]>).map(([width, label]) => (
-                <button key={width} onClick={() => { setEditorMode('line'); setLineThickness(width); }} className={`flex h-8 w-8 items-center justify-center rounded-lg text-[9px] font-black uppercase ${lineThickness === width ? 'bg-blue-600 text-white' : isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`}>{label}</button>
+                <button key={width} onClick={() => toggleLineThickness(width)} className={`flex h-8 flex-1 min-w-0 items-center justify-center rounded-lg border text-[9px] font-black uppercase transition-all ${editorMode === 'line' && lineThickness === width ? 'border-blue-600 bg-blue-600 text-white shadow-sm shadow-blue-500/20' : isLight ? 'border-zinc-300 bg-white text-zinc-600 hover:border-blue-400' : 'border-zinc-700 bg-zinc-800 text-zinc-200 hover:border-blue-500'}`}>{label}</button>
               ))}
             </div>
             <div className="grid grid-cols-3 gap-1">
@@ -2342,13 +2416,13 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                 </div>
                 <div className={`grid gap-1 rounded-xl border px-2 py-1.5 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
                   <div className="flex items-center gap-1">
-                    <span className="mr-auto text-[7px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Linha' : 'Line'}</span>
+                    <span className="mr-auto shrink-0 pr-2 text-[7px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Linha' : 'Line'}</span>
                     {([
                       [2, 'F'],
                       [4, 'M'],
                       [7, 'G']
                     ] as Array<[LineThickness, string]>).map(([width, label]) => (
-                      <button key={width} onClick={() => { setEditorMode('line'); setLineThickness(width); }} className={`flex h-7 w-7 items-center justify-center rounded-lg text-[8px] font-black uppercase ${lineThickness === width ? 'bg-blue-600 text-white' : isLight ? 'bg-white text-zinc-600' : 'bg-zinc-800 text-zinc-200'}`} aria-label={`${lang === 'pt' ? 'Linha' : 'Line'} ${label}`}>
+                      <button key={width} onClick={() => toggleLineThickness(width)} className={`flex h-7 flex-1 min-w-0 items-center justify-center rounded-lg border text-[8px] font-black uppercase transition-all ${editorMode === 'line' && lineThickness === width ? 'border-blue-600 bg-blue-600 text-white shadow-sm shadow-blue-500/20' : isLight ? 'border-zinc-300 bg-white text-zinc-600 hover:border-blue-400' : 'border-zinc-700 bg-zinc-800 text-zinc-200 hover:border-blue-500'}`} aria-label={`${lang === 'pt' ? 'Linha' : 'Line'} ${label}`}>
                         {label}
                       </button>
                     ))}
@@ -2367,7 +2441,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               </div>
               </div>
             )}
-            {isFretboardVisuallyEmpty && (
+            {isFretboardVisuallyEmpty && showEmptyFretboardHint && (
               <div className="pointer-events-none absolute inset-x-0 top-[12%] mx-auto w-full text-center">
                 <div className="inline-flex max-w-md flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-500/40 bg-zinc-950/80 px-5 py-4 text-sm font-black uppercase tracking-[0.3em] text-zinc-300 backdrop-blur-lg">
                   {t.emptyFretboard}
