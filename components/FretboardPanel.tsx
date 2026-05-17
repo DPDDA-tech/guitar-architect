@@ -649,6 +649,19 @@ const handleLogout = () => {
       isLeftHanded: !instance.isLeftHanded
     } : instance));
   };
+  const openMyInstruments = useCallback(() => {
+    setShowMyInstruments(true);
+    setShowProjectMenu(false);
+    if (typeof window !== 'undefined' && window.location.hash !== '#meus-instrumentos') {
+      window.history.pushState(null, '', '#meus-instrumentos');
+    }
+  }, []);
+  const closeMyInstruments = useCallback(() => {
+    setShowMyInstruments(false);
+    if (typeof window !== 'undefined' && window.location.hash === '#meus-instrumentos') {
+      window.history.pushState(null, '', `${window.location.pathname}${window.location.search}`);
+    }
+  }, []);
 
   useEffect(() => {
     if (!activeInstanceId && instances[0]) {
@@ -657,6 +670,22 @@ const handleLogout = () => {
       setActiveInstanceId(instances[0].id);
     }
   }, [activeInstanceId, instances]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const syncInstrumentRoute = () => {
+      setShowMyInstruments(window.location.hash === '#meus-instrumentos');
+    };
+
+    syncInstrumentRoute();
+    window.addEventListener('hashchange', syncInstrumentRoute);
+    window.addEventListener('popstate', syncInstrumentRoute);
+    return () => {
+      window.removeEventListener('hashchange', syncInstrumentRoute);
+      window.removeEventListener('popstate', syncInstrumentRoute);
+    };
+  }, []);
 
   return (
     <div className={`min-h-screen transition-all ${isExporting ? 'is-exporting-mode' : (isLight ? 'blueprint-grid-light' : 'blueprint-grid-dark')}`}>
@@ -771,7 +800,7 @@ const handleLogout = () => {
                   {lang === 'pt' ? 'Canhoto' : 'Lefty'}
                 </button>
               </div>
-              <button onClick={() => { setShowMyInstruments(true); setShowProjectMenu(false); }} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+              <button onClick={openMyInstruments} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                 {lang === 'pt' ? 'Meus Instrumentos' : 'My Instruments'}
               </button>
               <div className={`mt-2 flex rounded-lg border p-0.5 ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
@@ -999,7 +1028,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           {lang === 'pt' ? 'CANHOTO' : 'LEFT-HANDED'}
         </button>
 
-        <button onClick={() => { setShowMyInstruments(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+        <button onClick={openMyInstruments} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
           {lang === 'pt' ? 'MEUS INSTRUMENTOS' : 'MY INSTRUMENTS'}
         </button>
 
@@ -1334,7 +1363,13 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 )}
 
 <SupportModal isOpen={showSupportModal} onClose={() => setShowSupportModal(false)} isLight={theme === 'light'} />
-<MyInstruments isOpen={showMyInstruments} onClose={() => setShowMyInstruments(false)} theme={theme} lang={lang} />
+<MyInstruments
+  isOpen={showMyInstruments}
+  onClose={closeMyInstruments}
+  onToggleTheme={() => setTheme(isLight ? 'dark' : 'light')}
+  theme={theme}
+  lang={lang}
+/>
 
 </div>
 );

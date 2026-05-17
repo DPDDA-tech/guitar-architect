@@ -118,6 +118,7 @@ export interface UserInstrument {
   model: string;
   version: string;
   color: string;
+  originCountry: string;
   serialNumber: string;
   manufactureYear: string;
   strings: string;
@@ -130,6 +131,8 @@ export interface UserInstrument {
   bridgeType: string;
   fretCount: string;
   fretType: string;
+  neckShape: string;
+  fretboardRadius: string;
   bridgePickup: string;
   middlePickup: string;
   neckPickup: string;

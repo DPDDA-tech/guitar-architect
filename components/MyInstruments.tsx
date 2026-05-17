@@ -12,6 +12,7 @@ import {
 interface MyInstrumentsProps {
   isOpen: boolean;
   onClose: () => void;
+  onToggleTheme: () => void;
   theme: ThemeMode;
   lang: 'pt' | 'en';
 }
@@ -28,6 +29,7 @@ const fieldGroups: Array<{ titlePt: string; titleEn: string; fields: Array<[keyo
       ['model', 'Modelo', 'Model'],
       ['version', 'Versão', 'Version'],
       ['color', 'Cor', 'Color'],
+      ['originCountry', 'País de Origem', 'Country of Origin'],
       ['serialNumber', 'Número de Série', 'Serial Number'],
       ['manufactureYear', 'Ano de Fabricação', 'Year'],
       ['strings', 'Número de Cordas', 'Strings'],
@@ -46,6 +48,8 @@ const fieldGroups: Array<{ titlePt: string; titleEn: string; fields: Array<[keyo
       ['bridgeType', 'Tipo de Ponte', 'Bridge Type'],
       ['fretCount', 'Número de Trastes', 'Frets'],
       ['fretType', 'Tipo de Traste', 'Fret Type'],
+      ['neckShape', 'Tipo de Braço', 'Neck Shape'],
+      ['fretboardRadius', 'Raio da Escala', 'Fretboard Radius'],
     ],
   },
   {
@@ -74,6 +78,73 @@ const display = (value: unknown) => {
   return text || '-';
 };
 
+const normalizeDateInput = (value: string): string => {
+  const raw = value.trim();
+  if (!raw) return '';
+
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length !== 8 && digits.length !== 6) return raw;
+
+  const day = Number.parseInt(digits.slice(0, 2), 10);
+  const month = Number.parseInt(digits.slice(2, 4), 10);
+  const rawYear = Number.parseInt(digits.slice(4), 10);
+  const year = digits.length === 6 ? (rawYear >= 50 ? 1900 + rawYear : 2000 + rawYear) : rawYear;
+  const date = new Date(year, month - 1, day);
+
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return raw;
+  }
+
+  return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+};
+
+const parseBrazilianDate = (value: string): number => {
+  const normalized = normalizeDateInput(value);
+  const match = normalized.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return Number.NEGATIVE_INFINITY;
+
+  const [, day, month, year] = match;
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  return Number.isNaN(date.getTime()) ? Number.NEGATIVE_INFINITY : date.getTime();
+};
+
+const normalizeMoneyInput = (value: string): string => {
+  const raw = value.trim();
+  if (!raw) return '';
+
+  const clean = raw.replace(/[^\d,.]/g, '');
+  const hasComma = clean.includes(',');
+  let integerPart = '';
+  let decimalPart = '00';
+
+  if (hasComma) {
+    const parts = clean.split(',');
+    integerPart = parts.slice(0, -1).join('').replace(/\D/g, '');
+    decimalPart = (parts[parts.length - 1] || '').replace(/\D/g, '').padEnd(2, '0').slice(0, 2);
+  } else {
+    integerPart = clean.replace(/\D/g, '');
+  }
+
+  const amount = Number(`${integerPart || '0'}.${decimalPart}`);
+  if (Number.isNaN(amount)) return raw;
+
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
+
+const parseBrazilianMoney = (value: string): number => {
+  const normalized = normalizeMoneyInput(value);
+  const amount = Number(normalized.replace(/\./g, '').replace(',', '.'));
+  return Number.isNaN(amount) ? Number.NEGATIVE_INFINITY : amount;
+};
+
 const normalizeImportedInstrument = (input: Partial<UserInstrument>): UserInstrument => {
   const base = createEmptyInstrument();
   const now = new Date().toISOString();
@@ -84,6 +155,9 @@ const normalizeImportedInstrument = (input: Partial<UserInstrument>): UserInstru
     id: typeof input.id === 'string' && input.id ? input.id : crypto.randomUUID(),
     createdAt: typeof input.createdAt === 'string' && input.createdAt ? input.createdAt : now,
     updatedAt: now,
+    purchaseDate: normalizeDateInput(input.purchaseDate || ''),
+    lastStringChange: normalizeDateInput(input.lastStringChange || ''),
+    paidValue: normalizeMoneyInput(input.paidValue || ''),
     maintenance: Array.isArray(input.maintenance) ? input.maintenance.map(entry => ({
       id: typeof entry.id === 'string' && entry.id ? entry.id : crypto.randomUUID(),
       date: typeof entry.date === 'string' && entry.date ? entry.date : now,
@@ -131,13 +205,11 @@ const getInstrumentCardAccent = (strings: string) => {
 
 const getComparableValue = (instrument: UserInstrument, key: InstrumentSortKey): number | string => {
   if (key === 'purchaseDate') {
-    const timestamp = Date.parse(instrument.purchaseDate || '');
-    return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp;
+    return parseBrazilianDate(instrument.purchaseDate || '');
   }
 
   if (key === 'paidValue') {
-    const value = Number.parseFloat((instrument.paidValue || '').replace(/[^\d,.-]/g, '').replace(',', '.'));
-    return Number.isNaN(value) ? Number.NEGATIVE_INFINITY : value;
+    return parseBrazilianMoney(instrument.paidValue || '');
   }
 
   if (key === 'manufactureYear') {
@@ -264,10 +336,34 @@ const exportInstrumentToPdf = async (instrument: UserInstrument, lang: 'pt' | 'e
   }
 
   const name = [instrument.brand, instrument.model, instrument.version].filter(Boolean).join('-') || 'instrumento';
-  pdf.save(`GA_${name.replace(/[^a-z0-9_-]+/gi, '_')}.pdf`);
+  const fileName = `GA_${name.replace(/[^a-z0-9_-]+/gi, '_')}.pdf`;
+  const blob = pdf.output('blob');
+  const filePicker = (window as Window & {
+    showSaveFilePicker?: (options: {
+      suggestedName?: string;
+      types?: Array<{ description: string; accept: Record<string, string[]> }>;
+    }) => Promise<{ createWritable: () => Promise<{ write: (data: Blob) => Promise<void>; close: () => Promise<void> }> }>;
+  }).showSaveFilePicker;
+
+  if (filePicker) {
+    try {
+      const handle = await filePicker({
+        suggestedName: fileName,
+        types: [{ description: 'PDF', accept: { 'application/pdf': ['.pdf'] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return;
+    } catch (error) {
+      if ((error as DOMException).name === 'AbortError') return;
+    }
+  }
+
+  pdf.save(fileName);
 };
 
-const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, lang }) => {
+const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggleTheme, theme, lang }) => {
   const isLight = theme === 'light';
   const fileInputRef = useRef<HTMLInputElement>(null);
   const backupInputRef = useRef<HTMLInputElement>(null);
@@ -312,6 +408,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
     addMaintenance: lang === 'pt' ? 'Adicionar manutenção' : 'Add maintenance',
     maintenanceTitle: lang === 'pt' ? 'Servico realizado' : 'Service performed',
     maintenanceNotes: lang === 'pt' ? 'Notas' : 'Notes',
+    themeToggle: isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode'),
   };
 
   useEffect(() => {
@@ -399,6 +496,9 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
       ...draft,
       brand: draft.brand.trim(),
       model: draft.model.trim(),
+      purchaseDate: normalizeDateInput(draft.purchaseDate),
+      lastStringChange: normalizeDateInput(draft.lastStringChange),
+      paidValue: normalizeMoneyInput(draft.paidValue),
       updatedAt: new Date().toISOString()
     };
     await saveInstrument(next);
@@ -482,9 +582,15 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
 
   if (!isOpen) return null;
 
-  const shell = 'border-zinc-200 bg-white/95 text-zinc-900 backdrop-blur';
-  const panel = 'bg-zinc-50 border-zinc-200';
-  const input = 'w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-bold text-zinc-900 outline-none focus:border-blue-500';
+  const shell = isLight
+    ? 'border-zinc-200 bg-white/95 text-zinc-900 backdrop-blur'
+    : 'border-zinc-800 bg-zinc-950/95 text-zinc-100 backdrop-blur';
+  const panel = isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-900 border-zinc-800';
+  const input = `w-full rounded-xl border px-3 py-2 text-sm font-bold outline-none focus:border-blue-500 ${
+    isLight
+      ? 'border-zinc-200 bg-white text-zinc-900 placeholder:text-zinc-400'
+      : 'border-zinc-700 bg-zinc-950 text-zinc-100 placeholder:text-zinc-500'
+  }`;
 
   const form = draft && (
     <div className="space-y-4">
@@ -540,7 +646,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
       </div>
 
       <div className={`overflow-hidden rounded-3xl border ${panel}`}>
-        <div className="aspect-[16/7] bg-white">
+        <div className={isLight ? 'aspect-[16/7] bg-white' : 'aspect-[16/7] bg-zinc-950'}>
           {selected.photo ? <img src={selected.photo} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-sm font-black uppercase text-zinc-400">{t.noPhoto}</div>}
         </div>
         <div className="p-5 text-center">
@@ -597,8 +703,10 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
     <div
       className="fixed inset-0 z-[120] overflow-y-auto p-3 md:p-8"
       style={{
-        backgroundColor: '#eef3f8',
-        backgroundImage: 'linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px)',
+        backgroundColor: isLight ? '#eef3f8' : '#05070b',
+        backgroundImage: isLight
+          ? 'linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px)'
+          : 'linear-gradient(rgba(59, 130, 246, 0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.18) 1px, transparent 1px)',
         backgroundSize: '20px 20px',
       }}
     >
@@ -606,10 +714,11 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-2xl font-black tracking-tight md:text-3xl">{t.title}</h2>
-            <p className="mt-1 text-sm font-semibold text-zinc-500">{t.subtitle}</p>
+            <p className={`mt-1 text-sm font-semibold ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>{t.subtitle}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button onClick={startNew} className="rounded-xl bg-blue-600 px-4 py-3 text-xs font-black uppercase text-white">{t.add}</button>
+            <button onClick={onToggleTheme} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.themeToggle}</button>
             <button onClick={exportBackup} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.exportJson}</button>
             <button onClick={() => backupInputRef.current?.click()} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.importJson}</button>
             <button onClick={onClose} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.close}</button>
@@ -628,7 +737,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
         ) : details || (
           <div className="space-y-5">
             <input value={query} onChange={event => setQuery(event.target.value)} className={input} placeholder={t.search} />
-            <div className="grid gap-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 md:grid-cols-[1fr_auto] md:items-end">
+            <div className={`grid gap-2 rounded-2xl border p-3 md:grid-cols-[1fr_auto] md:items-end ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-800 bg-zinc-900'}`}>
               <label className="space-y-1">
                 <span className="text-[10px] font-black uppercase text-zinc-400">{t.sortBy}</span>
                 <select value={sortKey} onChange={event => setSortKey(event.target.value as InstrumentSortKey)} className={input}>
@@ -639,7 +748,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
               </label>
               <button
                 onClick={() => setSortDirection(prev => prev === 'desc' ? 'asc' : 'desc')}
-                className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-xs font-black uppercase text-zinc-700"
+                className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200 bg-white text-zinc-700' : 'border-zinc-700 bg-zinc-950 text-zinc-100'}`}
                 aria-label={t.direction}
                 title={t.direction}
               >
@@ -654,8 +763,8 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, theme, l
                   const accent = getInstrumentCardAccent(item.strings);
 
                   return (
-                    <button key={item.id} onClick={() => setSelected(item)} className={`overflow-hidden rounded-2xl border bg-white text-left transition-all hover:-translate-y-0.5 ${accent.border}`}>
-                      <div className="aspect-[16/9] bg-zinc-100">
+                    <button key={item.id} onClick={() => setSelected(item)} className={`overflow-hidden rounded-2xl border text-left transition-all hover:-translate-y-0.5 ${isLight ? 'bg-white' : 'bg-zinc-950'} ${accent.border}`}>
+                      <div className={isLight ? 'aspect-[16/9] bg-zinc-100' : 'aspect-[16/9] bg-zinc-900'}>
                         {item.photo ? <img src={item.photo} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-xs font-black uppercase text-zinc-400">{t.noPhoto}</div>}
                       </div>
                       <div className={`p-4 ${accent.footer}`}>
