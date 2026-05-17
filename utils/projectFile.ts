@@ -1,6 +1,6 @@
 import type { FretboardState, InstrumentType, Project, ProjectFilePayload, ThemeMode } from '../types';
 
-const APP_VERSION = '1.8.3';
+const APP_VERSION = '1.8.6';
 
 export interface ProjectFileInput {
   projectId: string;

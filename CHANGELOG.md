@@ -1,6 +1,6 @@
 CHANGELOG.md
 
-Guitar Architect — Product & Engineering Change Log
+Guitar Architect - Product & Engineering Change Log
 Maintained by: DPDDA-tech
 Standard: Keep a Changelog (adapted)
 Baseline Reference: v1.0.0-login-first-stable
@@ -8,18 +8,43 @@ Baseline Reference: v1.0.0-login-first-stable
 [Unreleased]
 Planned
 
-Multi-string instrument support (7–8 string guitars, 4–5 string bass)
+Multi-string instrument support (7-8 string guitars, 4-5 string bass)
 
-Global transposition engine (±12 semitones, tonal/absolute modes)
+Global transposition engine (+/-12 semitones, tonal/absolute modes)
 
 Automatic diatonic harmonic field generator
 
 Harmonic progression timeline (composition mode)
 
-[1.0.0] — 2026-01-25
+[1.8.6] - 2026-05-17
+
+Tag: v1.8.6
+Status: Production Release
+
+Added
+
+Local instrument registry for guitars, basses, and other string instruments
+
+Instrument photo support with compressed local storage
+
+JSON backup and restore flow for saved instruments
+
+PDF export for individual instrument records
+
+Instrument sorting controls by purchase date, price, manufacture year, name, and last update
+
+Changed
+
+Improved Brazilian date and currency formatting in the instrument catalog
+
+Refined instrument catalog cards, accent colors, search, and detail view
+
+Aligned project export metadata with the current app version
+
+[1.0.0] - 2026-01-25
 
 Tag: v1.0.0-login-first-stable
-Status: Production Baseline — Frozen Core
+Status: Production Baseline - Frozen Core
 
 Added
 
@@ -92,11 +117,11 @@ No progression timeline
 Versioning Notes
 Semantic Strategy
 
-Major (2.0+) — Architectural or product paradigm shifts
+Major (2.0+) - Architectural or product paradigm shifts
 
-Minor (1.x) — Feature expansion within the same architecture
+Minor (1.x) - Feature expansion within the same architecture
 
-Patch (1.0.x) — Stability, bug fixes, and non-breaking improvements
+Patch (1.0.x) - Stability, bug fixes, and non-breaking improvements
 
 Governance
 

@@ -713,7 +713,8 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
       <div className={`mx-auto min-h-[90vh] max-w-7xl rounded-[28px] border p-4 shadow-2xl md:p-8 ${shell}`}>
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-2xl font-black tracking-tight md:text-3xl">{t.title}</h2>
+            <p className={`text-[10px] font-black uppercase tracking-[0.35em] ${isLight ? 'text-blue-500' : 'text-blue-300'}`}>Guitar Architect</p>
+            <h2 className={`mt-1 text-2xl font-black italic uppercase tracking-tight md:text-3xl ${isLight ? 'text-blue-600' : 'bg-gradient-to-r from-blue-200 via-blue-500 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(37,99,235,0.18)]'}`}>{t.title}</h2>
             <p className={`mt-1 text-sm font-semibold ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>{t.subtitle}</p>
           </div>
           <div className="flex flex-wrap gap-2">

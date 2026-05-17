@@ -48,7 +48,7 @@ describe('persistence', () => {
 
   it('saves and loads config using the current user bootstrap key', () => {
     const config: AppState = {
-      version: '1.8.3',
+      version: '1.8.6',
       activeProjectId: 'project-1',
       theme: 'light',
       lang: 'pt',
@@ -101,7 +101,7 @@ describe('persistence', () => {
 
   it('clears bootstrap and legacy keys', () => {
     saveConfig({
-      version: '1.8.3',
+      version: '1.8.6',
       activeProjectId: 'project-1',
       theme: 'dark',
       lang: 'en',

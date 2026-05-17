@@ -2083,6 +2083,20 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               <button key={v} onClick={() => recordAction({...state, voicingMode: v as any})} title={t.tooltipVoicing} className={`${controlButtonBase} ${(state.voicingMode || 'CLOSE') === v ? 'bg-zinc-800 border-zinc-800 text-white' : inactiveButtonClass}`}>{v}</button>
             ))}
           </div>
+          <div className={`flex gap-2 rounded-xl border p-1 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
+            <button
+              onClick={() => recordAction({...state, colorMode: 'SINGLE'})}
+              className={`flex-1 rounded-lg py-2 text-[8px] font-black uppercase transition-all ${state.colorMode === 'SINGLE' ? activeButtonClass : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`}
+            >
+              {t.colorSingle}
+            </button>
+            <button
+              onClick={() => recordAction({...state, colorMode: 'MULTI'})}
+              className={`flex-1 rounded-lg py-2 text-[8px] font-black uppercase transition-all ${state.colorMode === 'MULTI' ? activeButtonClass : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`}
+            >
+              {t.colorMulti}
+            </button>
+          </div>
           <div>
             <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">{t.geometry}</span>
             <div className="grid grid-cols-6 gap-1 mt-2">
@@ -2577,7 +2591,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                  </div>
                )}
                <div className="text-center opacity-30 mt-1">
-                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">v1.8.5 Engine • {lang === 'pt' ? 'Sistema Automático' : 'Automatic System'}</span>
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">v1.8.6 Engine • {lang === 'pt' ? 'Sistema Automático' : 'Automatic System'}</span>
                </div>
             </div>
          </div>

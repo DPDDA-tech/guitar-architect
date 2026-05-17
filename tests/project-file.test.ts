@@ -57,7 +57,7 @@ describe('project file import/export', () => {
 
     expect(payload).toMatchObject({
       schema: 'guitar-architect-project',
-      appVersion: '1.8.3',
+      appVersion: '1.8.6',
       exportedAt: '2026-05-01T12:00:00.000Z',
       project: {
         id: 'project-1',

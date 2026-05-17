@@ -15,6 +15,18 @@ import SupportModal from './SupportModal';
 import { BrandAssets, getBrandAssets } from '../utils/brandAssets';
 import MyInstruments from './MyInstruments';
 
+const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
+
+interface PendingFretboardAction {
+  source: 'harmonic-cycle';
+  action: 'scale' | 'field' | 'triads' | 'progression';
+  root: string;
+  displayRoot?: string;
+  scaleType: string;
+  progression?: string;
+  chords?: string[];
+}
+
 const LogoIcon = ({ brand, variant = 'default' }: { brand: BrandAssets; variant?: 'default' | 'large' | 'footer' }) => {
   const isLarge = variant === 'large';
   const isFooter = variant === 'footer';
@@ -145,7 +157,7 @@ const switchUserSession = (newUser: string) => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.5",
+      version: "1.8.6",
       activeProjectId: projectId,
       theme,
       lang,
@@ -371,7 +383,7 @@ useEffect(() => {
       saveProjectToLibrary(currentProject);
 
       saveConfig({
-        version: "1.8.5",
+        version: "1.8.6",
         activeProjectId: projectId,
         theme,
         lang,
@@ -419,7 +431,7 @@ const handleLogout = () => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.5",
+      version: "1.8.6",
       activeProjectId: projectId,
       theme,
       lang,
@@ -632,6 +644,14 @@ const handleLogout = () => {
   const activeInstance = instances[activeInstanceIndex] || instances[0];
   const primaryInstrument = activeInstance?.instrumentType || defaultInstrument;
   const primaryLeftHanded = activeInstance?.isLeftHanded || false;
+  const isBassInstrument = primaryInstrument.startsWith('bass');
+  const titleColorClass = isBassInstrument
+    ? isLight
+      ? 'text-emerald-600'
+      : 'bg-gradient-to-r from-emerald-200 via-green-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(16,185,129,0.18)]'
+    : isLight
+      ? 'text-violet-600'
+      : 'bg-gradient-to-r from-violet-200 via-purple-500 to-fuchsia-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(168,85,247,0.20)]';
   const brandAssets = getBrandAssets(primaryInstrument);
   const updatePrimaryInstrument = (instrumentType: InstrumentType) => {
     const instrument = INSTRUMENT_PRESETS[instrumentType];
@@ -649,6 +669,21 @@ const handleLogout = () => {
       isLeftHanded: !instance.isLeftHanded
     } : instance));
   };
+  const openHarmonicCycle = useCallback(() => {
+    saveConfig({
+      version: "1.8.6",
+      activeProjectId: projectId,
+      theme,
+      lang,
+      currentUser: user,
+      userLogo,
+      defaultInstrument,
+      showTips
+    });
+    setShowProjectMenu(false);
+    window.history.pushState(null, '', '/harmonic-cycle');
+    window.dispatchEvent(new Event('ga-route-change'));
+  }, [defaultInstrument, lang, projectId, showTips, theme, user, userLogo]);
   const openMyInstruments = useCallback(() => {
     setShowMyInstruments(true);
     setShowProjectMenu(false);
@@ -670,6 +705,63 @@ const handleLogout = () => {
       setActiveInstanceId(instances[0].id);
     }
   }, [activeInstanceId, instances]);
+
+  useEffect(() => {
+    if (!initialized.current) return;
+    const rawAction = window.localStorage.getItem(PENDING_FRETBOARD_ACTION_KEY);
+    if (!rawAction) return;
+
+    let pending: PendingFretboardAction | null = null;
+    try {
+      pending = JSON.parse(rawAction) as PendingFretboardAction;
+    } catch {
+      window.localStorage.removeItem(PENDING_FRETBOARD_ACTION_KEY);
+      return;
+    }
+
+    if (!pending || pending.source !== 'harmonic-cycle') {
+      window.localStorage.removeItem(PENDING_FRETBOARD_ACTION_KEY);
+      return;
+    }
+
+    window.localStorage.removeItem(PENDING_FRETBOARD_ACTION_KEY);
+    const applyToDiagram = (instance: FretboardState): FretboardState => {
+      const isHarmonyAction = pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression';
+      return {
+        ...instance,
+        title: pending.action === 'progression' && pending.progression
+          ? `${pending.displayRoot || pending.root} - ${pending.progression}`
+          : `${pending.displayRoot || pending.root} - ${pending.scaleType}`,
+        subtitle: pending.chords?.length ? pending.chords.join(' - ') : pending.scaleType,
+        notes: pending.action === 'progression' && pending.chords?.length
+          ? `${pending.progression}: ${pending.chords.join(' - ')}`
+          : instance.notes,
+        root: pending.root,
+        scaleType: pending.scaleType,
+        harmonyMode: isHarmonyAction ? 'TRIADS' : 'OFF',
+        chordQuality: 'DIATONIC',
+        chordDegree: 0,
+        inversion: 0,
+        layers: {
+          ...instance.layers,
+          showScale: true,
+          showTonic: true,
+        },
+      };
+    };
+
+    setInstances(prev => {
+      if (prev.length === 0) {
+        const created = applyToDiagram(DEFAULT_FRETBOARD(lang, defaultInstrument));
+        setActiveInstanceId(created.id);
+        return [created];
+      }
+
+      const targetIndex = activeInstanceIndex >= 0 ? activeInstanceIndex : 0;
+      return prev.map((instance, index) => index === targetIndex ? applyToDiagram(instance) : instance);
+    });
+    setSaveStatus('saving');
+  }, [activeInstanceIndex, defaultInstrument, lang]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -757,16 +849,24 @@ const handleLogout = () => {
               >
                 {isLight ? <MoonIcon /> : <SunIcon />}
               </button>
-              <button
-                onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
-                className={`flex h-10 min-w-10 items-center justify-center rounded-xl border px-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
+	              <button
+	                onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
+	                className={`flex h-10 min-w-10 items-center justify-center rounded-xl border px-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
                 aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para português'}
                 title={lang === 'pt' ? 'English' : 'Português'}
-              >
-                {lang === 'pt' ? 'EN' : 'PORT'}
-              </button>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'metronome' } }))}
+	              >
+	                {lang === 'pt' ? 'EN' : 'PORT'}
+	              </button>
+	              <button
+	                onClick={openHarmonicCycle}
+	                className={`flex h-10 items-center justify-center rounded-xl border px-2.5 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
+	                aria-label={translations[lang].harmonicCycle.menu}
+	                title={translations[lang].harmonicCycle.menu}
+	              >
+	                {lang === 'pt' ? 'Ciclo' : 'Cycle'}
+	              </button>
+	              <button
+	                onClick={() => window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'metronome' } }))}
                 className={`rounded-xl border px-2.5 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
                 aria-label={lang === 'pt' ? 'Abrir metrônomo e ferramentas' : 'Open metronome and tools'}
                 title={lang === 'pt' ? 'Metrônomo' : 'Metronome'}
@@ -800,6 +900,9 @@ const handleLogout = () => {
                   {lang === 'pt' ? 'Canhoto' : 'Lefty'}
                 </button>
               </div>
+              <button onClick={openHarmonicCycle} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                {translations[lang].harmonicCycle.menu}
+              </button>
               <button onClick={openMyInstruments} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                 {lang === 'pt' ? 'Meus Instrumentos' : 'My Instruments'}
               </button>
@@ -849,7 +952,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             <div className="flex items-center gap-3 md:gap-5 overflow-hidden">
                <LogoIcon brand={brandAssets} />
                <div className="min-w-0">
-                  <h1 className="text-[16px] md:text-2xl font-black italic text-blue-600 leading-none tracking-tighter uppercase truncate">GUITAR ARCHITECT</h1>
+                  <h1 className={`text-[16px] md:text-2xl font-black italic leading-none tracking-tighter uppercase truncate ${titleColorClass}`}>GUITAR ARCHITECT</h1>
                   <p className="text-[8px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-tight mt-1">{t.tagline}</p>
                   <label className={`mt-2 flex max-w-[260px] items-center gap-2 rounded-lg border px-2 py-1 ${isLight ? 'bg-white/70 border-zinc-200' : 'bg-zinc-900/70 border-zinc-800'}`}>
                     <span className="text-[8px] font-black uppercase tracking-[0.18em] text-zinc-400">{lang === 'pt' ? 'Projeto' : 'Project'}</span>
@@ -879,16 +982,24 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             </div>
 
             <div className="flex items-center gap-1.5 md:gap-4 shrink-0">
-               <button
-                 onClick={() => setTheme(isLight ? 'dark' : 'light')}
+	               <button
+	                 onClick={() => setTheme(isLight ? 'dark' : 'light')}
                  className={`p-2 md:p-2.5 rounded-xl border transition-all ai-glow ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
                  title={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
                  aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
-               >
-                  {isLight ? <MoonIcon /> : <SunIcon />}
-               </button>
-               <button
-                 onClick={() => window.dispatchEvent(new CustomEvent('ga-open-active-tour'))}
+	               >
+	                  {isLight ? <MoonIcon /> : <SunIcon />}
+	               </button>
+	               <button
+	                 onClick={openHarmonicCycle}
+	                 className={`px-3 md:px-4 py-2 md:py-2.5 rounded-xl border transition-all ai-glow font-black text-[10px] md:text-[11px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+	                 title={translations[lang].harmonicCycle.menu}
+	                 aria-label={translations[lang].harmonicCycle.menu}
+	               >
+	                 {lang === 'pt' ? 'Ciclo' : 'Cycle'}
+	               </button>
+	               <button
+	                 onClick={() => window.dispatchEvent(new CustomEvent('ga-open-active-tour'))}
                  className={`p-2 md:p-2.5 rounded-xl border transition-all ai-glow font-black text-sm ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
                  title={lang === 'pt' ? 'Tutorial' : 'Tutorial'}
                  aria-label={lang === 'pt' ? 'Abrir tutorial' : 'Open tutorial'}
@@ -1026,6 +1137,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
         <button onClick={togglePrimaryLeftHanded} className={`w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
           {lang === 'pt' ? 'CANHOTO' : 'LEFT-HANDED'}
+        </button>
+
+        <button onClick={openHarmonicCycle} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+          {translations[lang].harmonicCycle.menu}
         </button>
 
         <button onClick={openMyInstruments} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
