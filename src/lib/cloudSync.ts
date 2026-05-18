@@ -47,6 +47,27 @@ interface RemoteSnapshotRow {
   updated_at?: string;
 }
 
+type CloudSyncError = {
+  message: string;
+  code?: string;
+  details?: string;
+  hint?: string;
+};
+
+const normalizeSyncError = (error: unknown): CloudSyncError => {
+  if (error && typeof error === 'object') {
+    const record = error as Record<string, unknown>;
+    return {
+      message: typeof record.message === 'string' ? record.message : 'Unknown sync error',
+      code: typeof record.code === 'string' ? record.code : undefined,
+      details: typeof record.details === 'string' ? record.details : undefined,
+      hint: typeof record.hint === 'string' ? record.hint : undefined,
+    };
+  }
+
+  return { message: String(error || 'Unknown sync error') };
+};
+
 const unique = (ids: string[]) => Array.from(new Set(ids.filter(Boolean)));
 
 const mergeNumberRecords = (
@@ -234,46 +255,60 @@ export const pushLocalSnapshotToSupabase = async (
   authUserId: SupabaseUser['id'],
   identity: string,
 ) => {
-  const snapshot = await buildLocalCloudSnapshot(identity);
-  const { error } = await supabase
-    .from(SNAPSHOT_TABLE)
-    .upsert({
-      user_id: authUserId,
-      snapshot,
-      updated_at: snapshot.syncedAt,
-    });
+  try {
+    const snapshot = await buildLocalCloudSnapshot(identity);
+    const { error } = await supabase
+      .from(SNAPSHOT_TABLE)
+      .upsert({
+        user_id: authUserId,
+        snapshot,
+        updated_at: snapshot.syncedAt,
+      });
 
-  if (error) {
-    console.warn('[GA] Supabase cloud sync skipped:', error.message);
-    return { ok: false, error };
+    if (error) {
+      const syncError = normalizeSyncError(error);
+      console.warn('[GA] Supabase cloud sync skipped:', syncError);
+      return { ok: false, error: syncError };
+    }
+
+    return { ok: true, snapshot };
+  } catch (error) {
+    const syncError = normalizeSyncError(error);
+    console.warn('[GA] Supabase cloud sync failed:', syncError);
+    return { ok: false, error: syncError };
   }
-
-  return { ok: true, snapshot };
 };
 
 export const pushSnapshotToSupabase = async (
   authUserId: SupabaseUser['id'],
   snapshot: UserCloudSnapshot,
 ) => {
-  const next = {
-    ...snapshot,
-    syncedAt: new Date().toISOString(),
-  };
+  try {
+    const next = {
+      ...snapshot,
+      syncedAt: new Date().toISOString(),
+    };
 
-  const { error } = await supabase
-    .from(SNAPSHOT_TABLE)
-    .upsert({
-      user_id: authUserId,
-      snapshot: next,
-      updated_at: next.syncedAt,
-    });
+    const { error } = await supabase
+      .from(SNAPSHOT_TABLE)
+      .upsert({
+        user_id: authUserId,
+        snapshot: next,
+        updated_at: next.syncedAt,
+      });
 
-  if (error) {
-    console.warn('[GA] Supabase cloud sync skipped:', error.message);
-    return { ok: false, error };
+    if (error) {
+      const syncError = normalizeSyncError(error);
+      console.warn('[GA] Supabase cloud sync skipped:', syncError);
+      return { ok: false, error: syncError };
+    }
+
+    return { ok: true, snapshot: next };
+  } catch (error) {
+    const syncError = normalizeSyncError(error);
+    console.warn('[GA] Supabase cloud sync failed:', syncError);
+    return { ok: false, error: syncError };
   }
-
-  return { ok: true, snapshot: next };
 };
 
 export const migrateLocalIdentityToSupabase = async (
@@ -301,8 +336,9 @@ export const syncSupabaseSnapshot = async (
     .maybeSingle<RemoteSnapshotRow>();
 
   if (error) {
-    console.warn('[GA] Supabase cloud sync unavailable:', error.message);
-    return { ok: false, snapshot: local, error };
+    const syncError = normalizeSyncError(error);
+    console.warn('[GA] Supabase cloud sync unavailable:', syncError);
+    return { ok: false, snapshot: local, error: syncError };
   }
 
   if (!data?.snapshot) {
@@ -321,8 +357,9 @@ export const syncSupabaseSnapshot = async (
     });
 
   if (upsertError) {
-    console.warn('[GA] Supabase cloud sync merge saved locally only:', upsertError.message);
-    return { ok: false, snapshot: merged, error: upsertError };
+    const syncError = normalizeSyncError(upsertError);
+    console.warn('[GA] Supabase cloud sync merge saved locally only:', syncError);
+    return { ok: false, snapshot: merged, error: syncError };
   }
 
   return { ok: true, snapshot: merged };

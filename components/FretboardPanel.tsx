@@ -359,7 +359,14 @@ const handleMigrateLocalIdentity = async (sourceIdentity: string) => {
 
   if (!result.ok) {
     setMigrationStatus('error');
-    setMigrationMessage(lang === 'pt' ? 'Nao foi possivel sincronizar agora. Tente novamente em instantes.' : 'Could not sync right now. Try again shortly.');
+    const errorMessage = result.error?.message
+      ? `${result.error.message}${result.error.code ? ` (${result.error.code})` : ''}`
+      : '';
+    setMigrationMessage(
+      lang === 'pt'
+        ? `Não foi possível sincronizar agora.${errorMessage ? ` Detalhe: ${errorMessage}` : ' Tente novamente em instantes.'}`
+        : `Could not sync right now.${errorMessage ? ` Detail: ${errorMessage}` : ' Try again shortly.'}`,
+    );
     return;
   }
 
