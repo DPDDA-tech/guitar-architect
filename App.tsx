@@ -9,6 +9,7 @@ import TriadsTetradsPage from './components/TriadsTetradsPage';
 import ChordsPage from './components/ChordsPage';
 import ThemeCollectionPage from './components/ThemeCollectionPage';
 import GreekModesPage from './components/GreekModesPage';
+import ProfilePage from './components/ProfilePage';
 import AchievementUnlockToast from './components/AchievementUnlockToast';
 
 const getCurrentPath = () => window.location.pathname;
@@ -56,6 +57,10 @@ const App: React.FC = () => {
 
   if (path === '/theme-collection') {
     return <><ThemeCollectionPage /><AchievementUnlockToast /></>;
+  }
+
+  if (path === '/profile') {
+    return <><ProfilePage /><AchievementUnlockToast /></>;
   }
 
   return <><FretboardPanel /><AchievementUnlockToast /></>;

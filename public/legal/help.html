@@ -1,134 +1,172 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajuda e Perguntas Frequentes - Guitar Architect</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background-color: #eef3f8;
-            background-image:
-                linear-gradient(#e2e8f0 1px, transparent 1px),
-                linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        .content-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ajuda e Perguntas Frequentes - Guitar Architect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #eef3f8;
+      background-image:
+        linear-gradient(#e2e8f0 1px, transparent 1px),
+        linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .content-card {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+    }
+  </style>
 </head>
 <body class="text-zinc-800 font-sans leading-relaxed">
-    <div class="max-w-3xl mx-auto px-6 py-20">
-        <a href="/" class="inline-flex items-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest mb-12 hover:underline">
-            ← Voltar ao App
-        </a>
+  <div class="max-w-4xl mx-auto px-6 py-20">
+    <a href="/" class="inline-flex items-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest mb-12 hover:underline">
+      ← Voltar ao App
+    </a>
 
-        <div class="content-card p-8 md:p-12 rounded-[40px] border border-zinc-200 shadow-2xl">
-            <h1 class="text-4xl font-black italic text-blue-600 uppercase tracking-tighter mb-2">Ajuda e FAQ</h1>
-            <p class="text-xs font-bold text-zinc-500 uppercase tracking-[0.2em] mb-8">Guia rápido do Guitar Architect 1.8.7</p>
+    <div class="content-card p-8 md:p-12 rounded-[40px] border border-zinc-200 shadow-2xl">
+      <h1 class="text-4xl font-black italic text-blue-600 uppercase tracking-tighter mb-2">Ajuda e FAQ</h1>
+      <p class="text-xs font-bold text-zinc-500 uppercase tracking-[0.2em] mb-8">Guia rápido do Guitar Architect 1.8.7</p>
 
-            <div class="space-y-8 text-sm md:text-base">
-                <section>
-                    <p class="font-medium">O Guitar Architect é uma workstation musical offline-first para visualizar, estudar, praticar e exportar ideias no braço de guitarras e baixos. A versão 1.8.7 reorganiza o app em módulos próprios: Fretboard, Aprender, Praticar, Ciclo Harmônico, Acordes, CAGED, Tríades/Tétrades, Modos Gregos, Coleção e Meus Instrumentos.</p>
-                </section>
+      <div class="space-y-8 text-sm md:text-base">
+        <section>
+          <p class="font-medium">
+            O Guitar Architect é uma workstation musical para visualizar, estudar, praticar e exportar ideias no braço de guitarras e baixos.
+            A versão 1.8.7 adiciona conta com login e senha, sincronização em nuvem, migração de dados locais, conquistas, coleção de logos e backup por JSON.
+          </p>
+        </section>
 
-                <hr class="border-zinc-100" />
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">1. Qual é a lógica geral da versão 1.8.7?</h2><p>O fretboard continua sendo o núcleo visual do app, mas os conteúdos educacionais ganharam páginas próprias. O cabeçalho dá acesso direto aos módulos principais, enquanto o Menu concentra utilitários, instrumentos, JSON, exportações, suporte e preferências.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">2. Como começo um diagrama?</h2><p>Se não houver diagramas na tela, clique em <strong>Criar Primeiro Diagrama</strong>. A cor desse botão acompanha a identidade ativa: azul para guitarra de 6 cordas, verde para baixo, roxo para guitarras 7/8 ou o accent do tema desbloqueado ativo.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">3. Onde ficam os controles rápidos do fretboard?</h2><p>A toolbar rápida do fretboard foi simplificada. Ela mantém controles operacionais como Camadas, Escala, Tônica, Harmonia, Som e edição visual. Botões antigos de Aprender, Praticar, Acordes e Base foram escondidos porque essas funções agora estão em páginas próprias ou já foram incorporadas ao fluxo principal.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">4. Onde altero instrumento, afinação e modo canhoto?</h2><p>Abra o <strong>Menu</strong>. Ali ficam os atalhos para guitarra 6/7/8, baixo 4/5, Meus Instrumentos e Canhoto. O app também atualiza a identidade visual do cabeçalho e do logo conforme a família de instrumento escolhida.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">5. Como altero tom, escala e camadas visuais?</h2><p>Use os controles do fretboard: <strong>Escala</strong> define tônica e tipo de escala; <strong>Camadas</strong> controla notas, intervalos, dedos, pontos, escala, tônica e todas as notas. A aba visual substitui a antiga ideia de “Base” como ponto inicial do painel.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">6. O que são rótulos?</h2><p>Rótulos controlam o texto dentro dos pontos do braço: notas, intervalos, dedos ou apenas pontos. Em Camadas, alternar entre esses modos muda a leitura sem apagar o conteúdo musical do diagrama.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">7. Como uso marcadores e linhas?</h2><p>Use o painel de edição visual no fretboard. Escolha forma, cor e espessura, depois clique no braço para marcar notas, regiões, conexões, licks ou observações visuais.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">8. Como marco cordas soltas ou abafadas?</h2><p>À esquerda do nut há indicadores discretos de <strong>O/X</strong>. Clique nessa área da corda para alternar entre normal, open e mute. Esse controle continua útil para acordes com cordas soltas ou abafadas.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">9. Como organizo vários diagramas?</h2><p>Use os comandos do diagrama para criar, duplicar, mover, remover e editar diagramas. O diagrama ativo recebe destaque e preserva instrumento, afinação, orientação e camadas sempre que possível.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">10. Como salvar e carregar projetos?</h2><p>O app salva projetos localmente no navegador. <strong>Abrir JSON</strong> importa um arquivo externo e <strong>Salvar JSON</strong> exporta um backup editável. O JSON da versão 1.8.7 também pode incluir estado de coleção, conquistas, progresso e logo/badge ativo quando aplicável.</p><div class="bg-blue-50 border border-blue-100 p-6 rounded-3xl mt-4"><p class="text-blue-800 font-bold mb-2">Importante:</p><p class="text-blue-700">Projetos antigos continuam importando normalmente. Campos novos de coleção/conquistas são opcionais e não devem quebrar JSONs anteriores.</p></div></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">11. O JSON sobrescreve minha coleção local?</h2><p>Na importação, o app mescla desbloqueios do JSON com os desbloqueios locais. A intenção é preservar o melhor estado disponível e evitar apagar conquistas, temas ou progresso local por acidente.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">12. Como exporto PNG ou PDF?</h2><p>Use os botões <strong>PNG</strong> e <strong>PDF</strong> no cabeçalho. PNG/PDF são formatos finais para impressão, compartilhamento ou aula; JSON é backup editável.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">13. Posso usar logomarca própria?</h2><p>Sim. O fluxo de identidade permite definir usuário local e carregar uma logomarca. Essa logo pode aparecer em exportações. A Coleção de Temas também introduz logos desbloqueáveis que podem funcionar como identidade visual do usuário.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">14. Como funcionam as logos oficiais tier0?</h2><p>As três imagens iniciais oficiais vêm da pasta <strong>/tier0</strong>: guitarra 6, guitarras 7/8 e baixos 4/5. Elas são liberadas como base inicial e servem como fallback seguro quando nenhuma outra logo desbloqueada estiver ativa.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">15. Se eu escolher outra logo desbloqueada, o app respeita?</h2><p>Sim. Se a logo/tema estiver desbloqueada e for ativada na Coleção, o fretboard passa a usá-la no header, no hero e em pontos de identidade visual. Se a seleção não for válida, o sistema volta para a identidade tier0 correspondente ao instrumento.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">16. Para que serve a Coleção de Temas?</h2><p>A <strong>Coleção</strong> é uma galeria premium de headstocks/logos desbloqueáveis. Os cards bloqueados mostram silhuetas para indicar o prêmio futuro sem liberar a imagem antes da conquista.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">17. Quais são os tiers de coleção?</h2><p>Os tiers seguem a linguagem do Guitar Architect: <strong>T0 Candidato</strong>, <strong>T1 Aprendiz</strong>, <strong>T2 Pedreiro</strong>, <strong>T3 Contramestre</strong>, <strong>T4 Mestre de Obras</strong>, <strong>T5 Engenheiro</strong> e <strong>T6 Arquiteto/Guitar Hero</strong>.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">18. Existem conquistas por lealdade e aniversário?</h2><p>Sim. A estrutura 1.8.7 já prevê conquistas por lealdade, tempo de vínculo ao app e aniversário do site. As imagens finais dessas recompensas dependem dos assets em <strong>tierothers</strong>; enquanto não houver imagens, o sistema deve manter esses desbloqueios aguardando disponibilidade.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">19. O app avisa quando desbloqueio uma conquista?</h2><p>Sim. A versão 1.8.7 inclui toast global de conquista. Ele é discreto e não deve disparar repetidamente para a mesma conquista já desbloqueada.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">20. Para que serve Aprender?</h2><p><strong>Aprender</strong> é a central pedagógica. Ela organiza uma jornada de estudo com módulos sobre primeiros passos, afinação, pulso, intervalos, escalas, BPM, acordes, campo harmônico, CAGED, modos e improvisação, sempre com ações que podem enviar conteúdo para o fretboard.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">21. Para que serve Praticar?</h2><p><strong>Praticar</strong> virou um ambiente de treino ativo, com missão do dia, exercícios por categoria, dificuldade, BPM, progresso local, técnica, ritmo, CAGED, harmonia, improviso e integração com o fretboard.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">22. Onde ficam afinador e metrônomo?</h2><p>Afinador e metrônomo podem ser acessados diretamente em páginas educacionais como Aprender e Praticar por modal reduzido, sem precisar voltar ao fretboard. No fretboard, o som também pode ser ligado pelo botão <strong>Som ON</strong>.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">23. O que aconteceu com as abas antigas de intervalos, exercícios e trocas?</h2><p>Elas foram suplantadas em grande parte pelas páginas próprias, mas a lógica interna continua reaproveitada por atalhos e ações contextuais. A intenção é evitar duplicidade visual sem quebrar recursos existentes.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">24. Para que serve Ciclo Harmônico?</h2><p>O <strong>Ciclo Harmônico</strong> é um hub visual para estudar ciclo das quintas/quartas, tonalidades, relativa menor, campo harmônico, funções tonais, progressões e integração com o fretboard.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">25. Para que serve Acordes?</h2><p><strong>Acordes</strong> é um módulo educacional para formação de acordes, tríades, tétrades, tensões, inversões, voicings, campo harmônico, progressões e ações de aplicação no braço.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">26. Para que serve CAGED?</h2><p><strong>CAGED</strong> explica o braço como cinco regiões conectadas. O módulo mostra tônicas, shapes, transposição por pestana, conexão horizontal, arpejos, escalas, tríades e aplicação prática no fretboard.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">27. Para que serve Tríades e Tétrades?</h2><p>Essa página conecta teoria e aplicação no braço: construção intervalar, tétrades diatônicas, inversões, grupos de cordas, condução por notas próximas e exercícios práticos.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">28. Para que serve Modos Gregos?</h2><p><strong>Modos Gregos</strong> ensina Jônio, Dórico, Frígio, Lídio, Mixolídio, Eólio e Lócrio como cores musicais. A página abre em Jônio como referência; o azul indica apenas o card ativo/selecionado.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">29. Como aplicar conteúdos das páginas no fretboard?</h2><p>Os botões como <strong>Aplicar no braço</strong>, <strong>Mostrar tríades</strong>, <strong>Mostrar campo harmônico</strong> e <strong>Praticar agora</strong> usam ações pendentes para abrir o fretboard com tônica, escala, modo, progressão ou exercício já preparados.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">30. Para que serve Meus Instrumentos?</h2><p><strong>Meus Instrumentos</strong> cataloga guitarras, baixos e outros instrumentos, com fotos, marca, modelo, número de série, país, compra, valor, especificações, captadores, madeiras e manutenção.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">31. Como faço backup dos meus instrumentos?</h2><p>Em Meus Instrumentos, use <strong>Exportar JSON</strong>. Esse arquivo é separado do JSON principal do fretboard e protege os registros do catálogo.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">32. Os instrumentos ficam salvos junto com o projeto?</h2><p>Não. Projetos do fretboard e catálogo de instrumentos são áreas diferentes. Para proteger instrumentos, use o backup próprio de Meus Instrumentos.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">33. Como uso a biblioteca de acordes?</h2><p>Abra <strong>Acordes</strong> ou use ações contextuais das páginas educacionais. O app pode sugerir voicings, fórmulas, inversões e aplicações no braço conforme o instrumento e a afinação.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">34. Como uso som nas notas, acordes e escalas?</h2><p>Ative <strong>Som ON</strong> no fretboard. Botões de ouvir ou praticar também podem preparar o áudio/metrônomo quando o navegador permitir reprodução sonora.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">35. Como funciona o modo claro/escuro e idioma?</h2><p>O cabeçalho possui botões para tema e idioma. As páginas principais também mantêm seus próprios botões quando necessário, preservando o padrão visual e a leitura em PT/EN.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">36. Onde fica o botão de apoio ao projeto?</h2><p>O botão <strong>Apoiar o Projeto</strong> fica dentro do Menu. O menu possui rolagem interna para funcionar em telas menores, então role dentro dele se a lista ultrapassar a altura da tela.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">37. Existe um tutorial dentro do aplicativo?</h2><p>Sim. Use o botão <strong>Tutorial</strong> no cabeçalho, próximo ao botão de ajuda. O guia visual mostra o fluxo atual do fretboard e dos controles principais.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">38. Quais dados ficam no navegador?</h2><p>Projetos, coleção, conquistas, progresso, tema ativo, idioma e preferências ficam em localStorage. Ainda não há backend para sincronização automática entre dispositivos.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">39. Limpar o navegador apaga meu progresso?</h2><p>Sim, se não houver backup JSON. Como o app é offline-first, limpar dados do navegador pode apagar projetos, conquistas locais, coleção e instrumentos cadastrados.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">40. O que mudou na versão 1.8.7?</h2><p>A versão 1.8.7 transforma o app em uma suíte musical: páginas educacionais próprias, Practice Engine, Ciclo Harmônico premium, Coleção de Temas, conquistas/rewards, tiers, logos oficiais por instrumento, JSON expandido, toast de conquista, modais de metrônomo/afinador e toolbar mais limpa.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">41. O que ainda é preparado para o futuro?</h2><p>Alguns critérios de desbloqueio, imagens de tierothers, temporadas, áudio modal avançado, telemetria remota e backend ainda são estruturas preparadas para evolução futura. A base local já permite testar progressão e coleção sem servidor.</p></section>
-
-                <section><h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">42. Contato</h2><p>Para dúvidas, sugestões ou solicitações relacionadas ao uso do aplicativo, entre em contato por:</p><p class="mt-4 font-bold text-blue-600">E-mail: <a href="mailto:contato@guitararchitect.com.br">contato@guitararchitect.com.br</a></p></section>
-            </div>
+        <div class="rounded-3xl border border-blue-100 bg-blue-50 p-6 text-blue-800">
+          <h2 class="font-black uppercase tracking-tight">Aviso de migração</h2>
+          <p class="mt-2 font-semibold">
+            Se você já usava o Guitar Architect antes do login, entre ou crie sua conta e use <strong>Migrar dados locais</strong> até
+            <strong>17/06/2026</strong>. Depois desse prazo, a migração assistida poderá ser encerrada. O JSON continuará disponível como backup manual.
+          </p>
         </div>
 
-        <a href="/" class="mt-10 inline-flex items-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest hover:underline">
-            ← Voltar ao App
-        </a>
+        <hr class="border-zinc-100" />
 
-        <footer class="mt-20 text-center opacity-40">
-            <p class="text-[10px] font-black uppercase tracking-[0.5em]">Guitar Architect © 2026</p>
-        </footer>
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">1. Como funciona a conta Guitar Architect?</h2>
+          <p>Você pode criar uma conta com e-mail e senha. A conta permite sincronizar seus dados entre dispositivos, incluindo projetos, coleção, conquistas, progresso, instrumentos cadastrados e preferências principais.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">2. Ainda posso usar sem conta?</h2>
+          <p>Sim. O app continua com funcionamento local. Porém, sem login, seus dados ficam vinculados ao navegador e podem ser perdidos se você limpar os dados locais. A conta sincronizada é o caminho recomendado.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">3. O que é migrar dados locais?</h2>
+          <p>É o procedimento para levar projetos antigos, criados com um nome livre como “EVH” ou “Visitante”, para sua nova conta sincronizada. O app detecta identidades locais neste navegador e mostra botões para mesclar esses dados na conta.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">4. Como faço a migração?</h2>
+          <p>Abra o app no mesmo navegador em que você usava seus projetos antigos, entre ou crie sua conta e clique em <strong>Migrar dados locais</strong>. Escolha o nome local encontrado e confirme a migração. O sistema mescla os dados e preserva o que for mais recente.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">5. Preciso importar JSON para recuperar meus dados antigos?</h2>
+          <p>Não necessariamente. Se os dados antigos ainda estiverem no mesmo navegador, use a migração local. O JSON continua sendo uma ponte segura quando os dados vieram de outro computador, outro navegador ou de outra pessoa.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">6. O JSON deixou de existir?</h2>
+          <p>Não. O JSON deixou de ser o principal meio de salvamento para usuários logados, mas continua importante como backup, portabilidade, arquivamento e troca manual de projetos.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">7. O que é salvo na nuvem?</h2>
+          <p>A conta sincronizada salva um snapshot com projetos do fretboard, instrumentos cadastrados, coleção de temas, conquistas, progresso, badge/logo ativo, idioma, tema visual e preferências principais.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">8. Meus instrumentos também sincronizam?</h2>
+          <p>Sim. “Meus Instrumentos” entra no snapshot da conta autenticada. Cadastros com fotos, especificações, valores e histórico de manutenção passam a acompanhar a conta, além do backup JSON próprio da área de instrumentos.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">9. Como o app evita sobrescrever dados melhores?</h2>
+          <p>Na sincronização, projetos e instrumentos são mesclados por data de atualização. O app tenta preservar o item mais recente quando encontra o mesmo identificador em fontes diferentes.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">10. Como começo um diagrama?</h2>
+          <p>Se não houver diagramas na tela, clique em <strong>Criar Primeiro Diagrama</strong>. O botão acompanha a identidade ativa: azul para guitarra de 6 cordas, verde para baixos e roxo para guitarras 7/8 ou tema desbloqueado.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">11. Onde ficam Aprender, Praticar, Acordes, CAGED e Modos?</h2>
+          <p>Esses recursos agora são páginas próprias acessíveis pelo cabeçalho e pelo Menu. Elas explicam os conceitos e enviam ações para o fretboard, em vez de ficarem escondidas em abas antigas da toolbar.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">12. O que são conquistas e recompensas?</h2>
+          <p>Conquistas registram progresso musical: prática, exploração, harmonia, ritmo, consistência, CAGED, tríades, modos, acordes e uso do app. Recompensas podem liberar logos, badges e identidades visuais da coleção.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">13. Como funcionam os tiers?</h2>
+          <p>Os tiers seguem a linguagem do Guitar Architect: <strong>T0 Candidato</strong>, <strong>T1 Aprendiz</strong>, <strong>T2 Pedreiro</strong>, <strong>T3 Contramestre</strong>, <strong>T4 Mestre de Obras</strong>, <strong>T5 Engenheiro</strong> e <strong>T6 Arquiteto/Guitar Hero</strong>.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">14. As logos bloqueadas estão protegidas?</h2>
+          <p>Visualmente, cards bloqueados mostram apenas silhueta/placeholder. Para proteção real contra acesso direto por URL, as logos futuras devem sair da pasta pública e ir para um bucket privado, liberado por link assinado após o desbloqueio.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">15. Posso usar minha própria logomarca nas exportações?</h2>
+          <p>Sim. Você pode subir uma logo própria no modal de conta/identidade. Essa imagem pode aparecer em exportações. No futuro, o fluxo ideal é armazenar essa logo no backend em vez de embutir tudo localmente.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">16. Como exporto PNG, PDF e JSON?</h2>
+          <p>PNG e PDF são formatos finais para aula, impressão e compartilhamento visual. JSON é backup editável e ponte de importação/exportação. Usuários logados têm sync automático, mas ainda podem salvar JSON quando quiserem.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">17. Posso abrir projeto de outra pessoa?</h2>
+          <p>Sim, por enquanto o caminho é importar o JSON que a outra pessoa enviou. Esse fluxo continua útil para troca manual de estudos, aulas e materiais externos.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">18. Qual será a melhor solução futura para compartilhar projetos?</h2>
+          <p>Com backend, o ideal é criar compartilhamento por link, com permissões. Um projeto poderia ser privado, compartilhado em modo leitura, duplicável para a conta do aluno ou colaborativo. Isso evita depender de arquivos JSON para toda troca.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">19. E para compartilhar instrumentos?</h2>
+          <p>Instrumentos têm dados mais pessoais, como valor pago, número de série e fotos. O melhor caminho é compartilhar instrumentos por cópia controlada ou ficha pública sanitizada, removendo campos sensíveis por padrão.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">20. O app avisa quando desbloqueio uma conquista?</h2>
+          <p>Sim. Há um toast global discreto de conquista. Ele não deve disparar repetidamente para a mesma conquista já desbloqueada.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">21. Limpar o navegador ainda apaga meus dados?</h2>
+          <p>Se você estiver usando apenas modo local, sim. Se estiver logado e sincronizado, seus dados principais podem ser recuperados pela conta. Mesmo assim, backups JSON continuam recomendados para arquivamento importante.</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">22. Contato</h2>
+          <p>Para dúvidas, sugestões ou solicitações relacionadas ao uso do aplicativo, entre em contato por:</p>
+          <p class="mt-4 font-bold text-blue-600"><a href="mailto:contato@guitararchitect.com.br">contato@guitararchitect.com.br</a></p>
+        </section>
+      </div>
     </div>
+
+    <a href="/" class="mt-10 inline-flex items-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest hover:underline">
+      ← Voltar ao App
+    </a>
+
+    <footer class="mt-20 text-center opacity-40">
+      <p class="text-[10px] font-black uppercase tracking-[0.5em]">Guitar Architect © 2026</p>
+    </footer>
+  </div>
 </body>
 </html>

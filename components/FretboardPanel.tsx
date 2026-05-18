@@ -9,7 +9,8 @@ import {
   saveConfig, 
   loadConfig, 
   getLibrary, 
-  saveProjectToLibrary 
+  saveProjectToLibrary,
+  listLocalUsers
 } from '../utils/persistence';
 import { buildProjectFileName, parseProjectFile, serializeProjectFile } from '../utils/projectFile';
 import SupportModal from './SupportModal';
@@ -18,6 +19,7 @@ import MyInstruments from './MyInstruments';
 import { recordAchievementEvent, recordAppLoyaltyVisit } from '../utils/achievementEvents';
 import { loadThemeCollectionState, saveThemeCollectionState } from '../features/themeCollection/themeUtils';
 import { THEME_REGISTRY } from '../features/themeCollection/themeRegistry';
+import type { ThemeCollectionItem } from '../features/themeCollection/themeTypes';
 import {
   getAchievementProgressState,
   getSelectedRewardBadgeId,
@@ -28,19 +30,23 @@ import {
 } from '../utils/achievementStorage';
 import { getAchievementById, getRewardById } from '../utils/achievementUtils';
 import { supabase } from '../src/lib/supabase';
-import { pushLocalSnapshotToSupabase, syncSupabaseSnapshot } from '../src/lib/cloudSync';
+import { migrateLocalIdentityToSupabase, pushLocalSnapshotToSupabase, syncSupabaseSnapshot } from '../src/lib/cloudSync';
+import { canUseDisplayName, getDisplayNameError, getSupabaseDisplayName } from '../src/lib/userIdentity';
 
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
+const LOCAL_MIGRATION_DEADLINE_PT = '17/06/2026';
+const LOCAL_MIGRATION_DEADLINE_EN = 'June 17, 2026';
 
-const getSupabaseDisplayName = (authUser: SupabaseUser) => {
-  const metadataName =
-    typeof authUser.user_metadata?.name === 'string'
-      ? authUser.user_metadata.name
-      : typeof authUser.user_metadata?.full_name === 'string'
-        ? authUser.user_metadata.full_name
-        : '';
-
-  return metadataName || authUser.email?.split('@')[0] || authUser.id;
+const themeMatchesInstrument = (theme: ThemeCollectionItem, instrumentType: InstrumentType) => {
+  if (theme.instrumentFamily === 'special') return true;
+  if (theme.instrumentFamily === 'guitar6') return instrumentType === 'guitar-6';
+  if (theme.instrumentFamily === 'guitar7' || theme.instrumentFamily === 'guitar8') {
+    return instrumentType === 'guitar-7' || instrumentType === 'guitar-8';
+  }
+  if (theme.instrumentFamily === 'bass4' || theme.instrumentFamily === 'bass5') {
+    return instrumentType === 'bass-4' || instrumentType === 'bass-5';
+  }
+  return false;
 };
 
 interface PendingFretboardAction {
@@ -173,6 +179,9 @@ const FretboardPanel: React.FC = () => {
   const [authPassword, setAuthPassword] = useState('');
   const [authStatus, setAuthStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [authMessage, setAuthMessage] = useState('');
+  const [localUserOptions, setLocalUserOptions] = useState<string[]>([]);
+  const [migrationStatus, setMigrationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [migrationMessage, setMigrationMessage] = useState('');
   const initialized = useRef(false);
   const authSessionBooted = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -285,6 +294,13 @@ const handleSupabaseAuth = async () => {
   setAuthStatus('loading');
   setAuthMessage('');
 
+  const requestedName = user.trim();
+  if (requestedName && !canUseDisplayName(requestedName, email)) {
+    setAuthStatus('error');
+    setAuthMessage(getDisplayNameError(lang));
+    return;
+  }
+
   const result = authMode === 'signup'
     ? await supabase.auth.signUp({
         email,
@@ -324,6 +340,34 @@ const handleSupabaseAuth = async () => {
   }
 };
 
+const refreshLocalUserOptions = useCallback((currentIdentity = user) => {
+  const options = listLocalUsers().filter(localUser => (
+    localUser &&
+    localUser !== currentIdentity &&
+    localUser !== authUser?.email
+  ));
+  setLocalUserOptions(options);
+}, [authUser?.email, user]);
+
+const handleMigrateLocalIdentity = async (sourceIdentity: string) => {
+  if (!authUser || !user) return;
+
+  setMigrationStatus('loading');
+  setMigrationMessage('');
+
+  const result = await migrateLocalIdentityToSupabase(authUser.id, user, sourceIdentity);
+
+  if (!result.ok) {
+    setMigrationStatus('error');
+    setMigrationMessage(lang === 'pt' ? 'Nao foi possivel sincronizar agora. Tente novamente em instantes.' : 'Could not sync right now. Try again shortly.');
+    return;
+  }
+
+  setMigrationStatus('success');
+  setMigrationMessage(lang === 'pt' ? `Dados de ${sourceIdentity} migrados para sua conta.` : `${sourceIdentity} data migrated to your account.`);
+  refreshLocalUserOptions(user);
+};
+
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(err => {
@@ -344,6 +388,11 @@ const handleSupabaseAuth = async () => {
   useEffect(() => {
     recordAppLoyaltyVisit();
   }, []);
+
+  useEffect(() => {
+    if (!showLoginModal) return;
+    refreshLocalUserOptions();
+  }, [refreshLocalUserOptions, showLoginModal]);
 
   useEffect(() => {
   const handleResize = () => {
@@ -851,7 +900,8 @@ const handleLogout = async () => {
   const themeCollectionState = loadThemeCollectionState();
   const activeCollectionTheme = THEME_REGISTRY.find(item =>
     item.id === themeCollectionState.activeThemeId &&
-    (item.unlocked || themeCollectionState.unlockedThemeIds.includes(item.id))
+    (item.unlocked || themeCollectionState.unlockedThemeIds.includes(item.id)) &&
+    themeMatchesInstrument(item, primaryInstrument)
   );
   const displayedBrandAssets: BrandAssets = activeCollectionTheme?.image
     ? {
@@ -1170,6 +1220,9 @@ const handleLogout = async () => {
               <button onClick={openMyInstruments} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                 {lang === 'pt' ? 'Meus Instrumentos' : 'My Instruments'}
               </button>
+              <button onClick={() => openModulePage('/profile')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                {lang === 'pt' ? 'Perfil' : 'Profile'}
+              </button>
               <button onClick={() => openModulePage('/learn')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                 {lang === 'pt' ? 'Aprender' : 'Learn'}
               </button>
@@ -1235,7 +1288,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                   </label>
                   <div className="flex items-center gap-1.5 mt-2">
                      <span className={`text-[10px] md:text-[11px] font-black uppercase truncate max-w-[130px] md:max-w-none ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>
-                        <span className="text-zinc-400">{lang === 'pt' ? 'Usuário:' : 'User:'}</span> {authUser?.email || user || (lang === 'pt' ? 'Visitante' : 'Guest')}
+                        <span className="text-zinc-400">{lang === 'pt' ? 'Usuário:' : 'User:'}</span> {authUser ? getSupabaseDisplayName(authUser) : user || (lang === 'pt' ? 'Visitante' : 'Guest')}
                      </span>
                      <div className="flex gap-2">
   <button
@@ -1431,6 +1484,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           {lang === 'pt' ? 'MEUS INSTRUMENTOS' : 'MY INSTRUMENTS'}
         </button>
 
+        <button onClick={() => openModulePage('/profile')} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+          {lang === 'pt' ? 'PERFIL' : 'PROFILE'}
+        </button>
+
         <div className="grid grid-cols-2 gap-2">
           {[
             { label: lang === 'pt' ? 'APRENDER' : 'LEARN', path: '/learn' },
@@ -1601,6 +1658,39 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   }`}
 >
 
+        {!isExporting && (
+          <div className={`rounded-[24px] border p-4 md:p-5 shadow-xl ${isLight ? 'border-blue-100 bg-white/92 text-zinc-800' : 'border-blue-900/50 bg-[#07111f]/92 text-zinc-100'}`}>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className={`text-[10px] font-black uppercase tracking-[0.22em] ${isLight ? 'text-blue-600' : 'text-blue-300'}`}>
+                  {lang === 'pt' ? 'Migração de dados locais' : 'Local data migration'}
+                </p>
+                <h2 className="mt-1 text-lg font-black uppercase tracking-tight">
+                  {lang === 'pt'
+                    ? 'Leve seus projetos antigos para a conta sincronizada'
+                    : 'Move your old projects into your synced account'}
+                </h2>
+                <p className={`mt-2 max-w-4xl text-sm font-semibold leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                  {lang === 'pt'
+                    ? `Se você já usava o Guitar Architect com um nome local, entre ou crie sua conta e use "Migrar dados locais" até ${LOCAL_MIGRATION_DEADLINE_PT}. Depois desse prazo, a migração assistida poderá ser encerrada; o JSON continuará como backup manual.`
+                    : `If you used Guitar Architect with a local name, sign in or create your account and use "Migrate local data" by ${LOCAL_MIGRATION_DEADLINE_EN}. After that date, assisted migration may be discontinued; JSON will remain available as a manual backup.`}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  refreshLocalUserOptions();
+                  setShowLoginModal(true);
+                }}
+                className="rounded-2xl bg-blue-600 px-5 py-3 text-[10px] font-black uppercase text-white shadow-[0_14px_34px_rgba(37,99,235,0.26)] transition hover:bg-blue-500 active:scale-95"
+              >
+                {authUser
+                  ? (lang === 'pt' ? 'Migrar dados locais' : 'Migrate local data')
+                  : (lang === 'pt' ? 'Entrar / criar conta' : 'Sign in / create account')}
+              </button>
+            </div>
+          </div>
+        )}
+
         {instances.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
              <div className="relative mb-8 md:mb-12 scale-90 md:scale-100">
@@ -1651,7 +1741,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                 </h2>
                 <p className="mt-2 text-center text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
                   {authUser
-                    ? (lang === 'pt' ? 'Sessão Supabase ativa' : 'Supabase session active')
+                    ? (lang === 'pt' ? 'Conta sincronizada' : 'Synced account')
                     : (lang === 'pt' ? 'Entre, crie conta ou continue localmente' : 'Sign in, create an account or continue locally')}
                 </p>
              </div>
@@ -1712,8 +1802,8 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                    {authStatus === 'loading'
                      ? (lang === 'pt' ? 'Conectando...' : 'Connecting...')
                      : authMode === 'signin'
-                       ? (lang === 'pt' ? 'Entrar com Supabase' : 'Sign in with Supabase')
-                       : (lang === 'pt' ? 'Criar conta Supabase' : 'Create Supabase account')}
+                       ? (lang === 'pt' ? 'Entrar na conta' : 'Sign in')
+                       : (lang === 'pt' ? 'Criar conta Guitar Architect' : 'Create Guitar Architect account')}
                  </button>
                  {authMessage && (
                    <p className={`text-center text-[10px] font-bold leading-relaxed ${authStatus === 'error' ? 'text-red-500' : 'text-emerald-500'}`}>
@@ -1723,13 +1813,44 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                </div>
              </div>
 
-             <div className="mb-5 flex items-center gap-3">
+      <div className="mb-5 flex items-center gap-3">
                <div className={`h-px flex-1 ${isLight ? 'bg-zinc-200' : 'bg-zinc-800'}`} />
                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-zinc-500">
                  {lang === 'pt' ? 'Identidade local' : 'Local identity'}
                </span>
                <div className={`h-px flex-1 ${isLight ? 'bg-zinc-200' : 'bg-zinc-800'}`} />
              </div>
+
+             {authUser && localUserOptions.length > 0 && (
+               <div className={`mb-6 rounded-3xl border p-4 ${isLight ? 'bg-emerald-50 border-emerald-100' : 'bg-emerald-950/20 border-emerald-900/40'}`}>
+                 <p className={`text-[10px] font-black uppercase tracking-[0.16em] ${isLight ? 'text-emerald-700' : 'text-emerald-300'}`}>
+                   {lang === 'pt' ? 'Migrar dados locais' : 'Migrate local data'}
+                 </p>
+                 <p className={`mt-2 text-[11px] font-bold leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                   {lang === 'pt'
+                     ? 'Encontramos identidades locais neste navegador. Voce pode mesclar esses projetos na sua conta sincronizada.'
+                     : 'Local identities were found in this browser. You can merge those projects into your synced account.'}
+                 </p>
+                 <div className="mt-3 grid gap-2">
+                   {localUserOptions.map(localUser => (
+                     <button
+                       key={localUser}
+                       type="button"
+                       onClick={() => void handleMigrateLocalIdentity(localUser)}
+                       disabled={migrationStatus === 'loading'}
+                       className={`rounded-2xl border px-3 py-3 text-[10px] font-black uppercase transition active:scale-95 disabled:cursor-wait ${isLight ? 'border-emerald-200 bg-white text-emerald-700 hover:border-emerald-400' : 'border-emerald-900/60 bg-zinc-950 text-emerald-200 hover:border-emerald-500'}`}
+                     >
+                       {lang === 'pt' ? `Migrar ${localUser}` : `Migrate ${localUser}`}
+                     </button>
+                   ))}
+                 </div>
+                 {migrationMessage && (
+                   <p className={`mt-3 text-center text-[10px] font-bold ${migrationStatus === 'error' ? 'text-red-500' : 'text-emerald-500'}`}>
+                     {migrationMessage}
+                   </p>
+                 )}
+               </div>
+             )}
              
              <div className={`p-6 rounded-3xl mb-8 border ${isLight ? 'bg-blue-50 border-blue-100' : 'bg-blue-900/10 border-blue-900/30'}`}>
                 <div className="flex flex-col items-center gap-4">
@@ -1760,6 +1881,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  onChange={e => setUser(e.target.value)} 
  onKeyDown={e => {
   if (e.key === 'Enter' && user.trim()) {
+    if (!canUseDisplayName(user.trim(), authUser?.email)) {
+      alert(getDisplayNameError(lang));
+      return;
+    }
     switchUserSession(user.trim());
     setShowLoginModal(false);
   }
@@ -1776,6 +1901,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 <button
   onClick={() => {
     if (user.trim()) {
+      if (!canUseDisplayName(user.trim(), authUser?.email)) {
+        alert(getDisplayNameError(lang));
+        return;
+      }
       switchUserSession(user.trim());
       setShowLoginModal(false);
     }

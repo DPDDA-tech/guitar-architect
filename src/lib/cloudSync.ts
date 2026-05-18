@@ -1,6 +1,7 @@
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { AppState, Project, UserInstrument } from '../../types';
 import type { AchievementProgressState } from '../../types/achievement';
+import type { UserProfile } from './userProfile';
 import { getLibrary, loadConfig, saveConfig, saveProjectToLibrary } from '../../utils/persistence';
 import {
   getAchievementProgressState,
@@ -18,12 +19,14 @@ import {
 import { THEME_REGISTRY } from '../../features/themeCollection/themeRegistry';
 import { getRewardById } from '../../utils/achievementUtils';
 import { listInstruments, saveInstrument } from '../../utils/instrumentRegistry';
+import { loadUserProfile, saveUserProfile } from './userProfile';
 import { supabase } from './supabase';
 
 const SNAPSHOT_TABLE = 'ga_user_snapshots';
 
 export interface UserCloudSnapshot {
   appState: AppState | null;
+  profile: UserProfile;
   projects: Project[];
   instruments: UserInstrument[];
   themeCollection: {
@@ -126,6 +129,12 @@ const mergeInstruments = (localInstruments: UserInstrument[], remoteInstruments:
   );
 };
 
+const mergeProfile = (local: UserProfile, remote: UserProfile): UserProfile => {
+  const localTime = new Date(local.updatedAt || 0).getTime();
+  const remoteTime = new Date(remote.updatedAt || 0).getTime();
+  return localTime >= remoteTime ? local : remote;
+};
+
 const mergeThemeCollection = (
   local: UserCloudSnapshot['themeCollection'],
   remote: UserCloudSnapshot['themeCollection'],
@@ -171,6 +180,7 @@ const mergeSnapshots = (
       ...(local.appState ?? remote.appState),
       currentUser: identity,
     } as AppState,
+    profile: mergeProfile(local.profile, remote.profile),
     projects: mergeProjects(local.projects, remote.projects),
     instruments: mergeInstruments(local.instruments ?? [], remote.instruments ?? []),
     themeCollection: mergeThemeCollection(local.themeCollection, remote.themeCollection),
@@ -183,8 +193,11 @@ const mergeSnapshots = (
   };
 };
 
+export const mergeCloudSnapshots = mergeSnapshots;
+
 export const buildLocalCloudSnapshot = async (identity: string): Promise<UserCloudSnapshot> => ({
   appState: loadConfig(),
+  profile: loadUserProfile(),
   projects: getLibrary(identity),
   instruments: await listInstruments().catch(() => []),
   themeCollection: loadThemeCollectionState(),
@@ -210,6 +223,7 @@ export const applyCloudSnapshotLocally = async (snapshot: UserCloudSnapshot, ide
     });
   }
 
+  saveUserProfile(snapshot.profile);
   saveThemeCollectionState(snapshot.themeCollection);
   snapshot.achievements.unlockedAchievementIds.forEach(unlockAchievement);
   mergeAchievementProgressState(snapshot.achievements.progress);
@@ -235,6 +249,44 @@ export const pushLocalSnapshotToSupabase = async (
   }
 
   return { ok: true, snapshot };
+};
+
+export const pushSnapshotToSupabase = async (
+  authUserId: SupabaseUser['id'],
+  snapshot: UserCloudSnapshot,
+) => {
+  const next = {
+    ...snapshot,
+    syncedAt: new Date().toISOString(),
+  };
+
+  const { error } = await supabase
+    .from(SNAPSHOT_TABLE)
+    .upsert({
+      user_id: authUserId,
+      snapshot: next,
+      updated_at: next.syncedAt,
+    });
+
+  if (error) {
+    console.warn('[GA] Supabase cloud sync skipped:', error.message);
+    return { ok: false, error };
+  }
+
+  return { ok: true, snapshot: next };
+};
+
+export const migrateLocalIdentityToSupabase = async (
+  authUserId: SupabaseUser['id'],
+  targetIdentity: string,
+  sourceIdentity: string,
+) => {
+  const target = await buildLocalCloudSnapshot(targetIdentity);
+  const source = await buildLocalCloudSnapshot(sourceIdentity);
+  const merged = mergeSnapshots(source, target, targetIdentity);
+
+  await applyCloudSnapshotLocally(merged, targetIdentity);
+  return pushSnapshotToSupabase(authUserId, merged);
 };
 
 export const syncSupabaseSnapshot = async (

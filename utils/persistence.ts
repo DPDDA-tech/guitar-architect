@@ -9,6 +9,15 @@ const getProjectsKey = (user: string) =>
 const CONFIG_KEY = 'ga_config';
 const PROJECTS_KEY = 'ga_library';
 
+const safeParse = <T,>(raw: string | null): T | null => {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+};
+
 export const saveConfig = (state: AppState) => {
 
   const key = `${CONFIG_KEY}_${state.currentUser || 'guest'}`;
@@ -71,6 +80,35 @@ export const getLibrary = (user: string): Project[] => {
   } catch {
     return [];
   }
+};
+
+export const listLocalUsers = (): string[] => {
+  if (typeof localStorage === 'undefined') return [];
+
+  const users = new Set<string>();
+  const globalConfig = safeParse<AppState>(localStorage.getItem(CONFIG_KEY));
+  if (globalConfig?.currentUser) users.add(globalConfig.currentUser);
+
+  for (let i = 0; i < localStorage.length; i += 1) {
+    const key = localStorage.key(i) || '';
+    if (key.startsWith(`${CONFIG_KEY}_`)) {
+      const user = key.slice(`${CONFIG_KEY}_`.length);
+      if (user && user !== 'guest') users.add(user);
+    }
+    if (key.startsWith('ga_library_')) {
+      const user = key.slice('ga_library_'.length);
+      if (user && user !== 'guest') users.add(user);
+    }
+  }
+
+  const legacyProjects = safeParse<Project[]>(localStorage.getItem(PROJECTS_KEY));
+  if (Array.isArray(legacyProjects)) {
+    legacyProjects.forEach(project => {
+      if (project.user) users.add(project.user);
+    });
+  }
+
+  return Array.from(users).sort((a, b) => a.localeCompare(b));
 };
 
 export const saveProjectToLibrary = (project: Project) => {

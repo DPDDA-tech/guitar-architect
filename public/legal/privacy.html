@@ -8,92 +8,132 @@
     <style>
         body {
             background-color: #f8fafc;
-            background-image: 
+            background-image:
                 linear-gradient(#e2e8f0 1px, transparent 1px),
                 linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
             background-size: 20px 20px;
         }
         .content-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(10px);
         }
+        h2 { scroll-margin-top: 24px; }
     </style>
 </head>
 <body class="text-zinc-800 font-sans leading-relaxed">
-    <div class="max-w-3xl mx-auto px-6 py-20">
-        <a href="/" class="inline-flex items-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest mb-12 hover:underline">
+    <div class="max-w-4xl mx-auto px-6 py-16">
+        <a href="/" class="inline-flex items-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest mb-10 hover:underline">
             ← Voltar ao App
         </a>
 
-        <div class="content-card p-8 md:p-12 rounded-[40px] border border-zinc-200 shadow-2xl">
-            <h1 class="text-4xl font-black italic text-blue-600 uppercase tracking-tighter mb-2">Política de Privacidade</h1>
-            <p class="text-xs font-bold text-zinc-500 uppercase tracking-[0.2em] mb-8">Última atualização: 24 de janeiro de 2026</p>
+        <main class="content-card p-8 md:p-12 rounded-[36px] border border-zinc-200 shadow-2xl">
+            <p class="text-xs font-black text-blue-600 uppercase tracking-[0.35em] mb-3">Guitar Architect</p>
+            <h1 class="text-4xl md:text-5xl font-black italic text-blue-600 uppercase tracking-tight mb-3">Política de Privacidade</h1>
+            <p class="text-xs font-bold text-zinc-500 uppercase tracking-[0.2em] mb-8">Última atualização: 18 de maio de 2026</p>
 
             <div class="space-y-8 text-sm md:text-base">
-                <section>
-                    <p class="font-medium">O Guitar Architect respeita a sua privacidade. Esta Política de Privacidade descreve como as informações são tratadas quando você utiliza o aplicativo disponível em <a href="https://guitararchitect.com.br" class="text-blue-600 underline">https://guitararchitect.com.br</a>.</p>
+                <section class="rounded-3xl border border-blue-100 bg-blue-50/70 p-6">
+                    <p class="font-semibold text-zinc-900">O Guitar Architect respeita a sua privacidade e trata dados pessoais de acordo com a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018 — LGPD).</p>
+                    <p class="mt-3">Esta política se aplica ao uso do app em <a href="https://www.guitararchitect.app.br" class="text-blue-600 underline font-bold">https://www.guitararchitect.app.br</a>.</p>
                 </section>
 
-                <hr class="border-zinc-100" />
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">1. Quem controla os dados</h2>
+                    <p>Para fins da LGPD, o Guitar Architect atua como controlador dos dados tratados para funcionamento da conta, sincronização, evolução do usuário, conquistas, instrumentos e projetos.</p>
+                    <p class="mt-3 font-bold text-blue-600">Contato LGPD: <a href="mailto:contato@guitararchitect.com.br">contato@guitararchitect.com.br</a></p>
+                </section>
 
                 <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">1. Natureza do Aplicativo</h2>
-                    <p>O Guitar Architect é uma aplicação <strong>frontend-only</strong>, executada diretamente no navegador do usuário. Não há servidores próprios, banco de dados remoto ou sistemas de autenticação centralizada.</p>
-                    <ul class="list-disc ml-5 mt-4 space-y-2">
-                        <li>O aplicativo não envia seus dados para servidores externos</li>
-                        <li>Não há contas online, senhas ou perfis armazenados remotamente</li>
-                        <li>Todo o funcionamento ocorre localmente no seu navegador</li>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">2. Dados que podemos tratar</h2>
+                    <ul class="list-disc ml-5 space-y-2">
+                        <li><strong>Conta:</strong> e-mail, identificador de usuário, senha gerenciada pelo provedor de autenticação, criação e último acesso.</li>
+                        <li><strong>Perfil:</strong> nome de exibição, telefone, endereço, logotipo próprio e preferências visuais.</li>
+                        <li><strong>Projetos:</strong> diagramas, escalas, acordes, notas, fretboard, exportações e configurações.</li>
+                        <li><strong>Instrumentos:</strong> afinações, fotos, número de série, preço, manutenção, observações e dados inseridos pelo usuário.</li>
+                        <li><strong>Evolução:</strong> exercícios concluídos, progresso, conquistas, recompensas, badges/logos, streaks e uso de módulos.</li>
+                        <li><strong>Dados técnicos:</strong> informações necessárias para login, sincronização, segurança e funcionamento do navegador.</li>
                     </ul>
+                    <p class="mt-4">Não solicitamos dados bancários nesta fase. Caso recursos pagos sejam implementados, esta política será atualizada antes da coleta desses dados.</p>
                 </section>
 
                 <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">2. Dados que Coletamos</h2>
-                    <p>O Guitar Architect <strong>não coleta dados pessoais</strong>. Mais especificamente, o aplicativo:</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4 text-xs font-bold uppercase tracking-tight text-zinc-600">
-                        <div class="bg-zinc-100 p-3 rounded-xl">❌ Não solicita nome real</div>
-                        <div class="bg-zinc-100 p-3 rounded-xl">❌ Não solicita e-mail</div>
-                        <div class="bg-zinc-100 p-3 rounded-xl">❌ Não solicita telefone</div>
-                        <div class="bg-zinc-100 p-3 rounded-xl">❌ Não utiliza cookies de rastreio</div>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">3. Armazenamento</h2>
+                    <div class="grid md:grid-cols-3 gap-3">
+                        <div class="rounded-2xl border border-zinc-200 bg-white p-4">
+                            <p class="font-black uppercase text-xs tracking-widest text-blue-600 mb-2">Navegador</p>
+                            <p>localStorage e armazenamento local para preferências, projetos, migração e uso rápido.</p>
+                        </div>
+                        <div class="rounded-2xl border border-zinc-200 bg-white p-4">
+                            <p class="font-black uppercase text-xs tracking-widest text-blue-600 mb-2">Nuvem</p>
+                            <p>Com login, snapshots podem ser sincronizados no Supabase.</p>
+                        </div>
+                        <div class="rounded-2xl border border-zinc-200 bg-white p-4">
+                            <p class="font-black uppercase text-xs tracking-widest text-blue-600 mb-2">JSON</p>
+                            <p>Exportação/importação continuam como backup, portabilidade e compartilhamento manual.</p>
+                        </div>
                     </div>
                 </section>
 
                 <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">3. Armazenamento de Dados (Local)</h2>
-                    <p>Os dados gerados pelo usuário — como projetos, diagramas, configurações e perfis locais — são armazenados exclusivamente por meio do <strong>localStorage do navegador</strong>.</p>
-                    <div class="bg-blue-50 border border-blue-100 p-6 rounded-3xl mt-4">
-                        <p class="text-blue-800 font-bold mb-2">Importante:</p>
-                        <p class="text-blue-700">Os dados serão perdidos se o usuário limpar os dados do navegador, utilizar modo anônimo ou trocar de computador. O Guitar Architect não possui meios técnicos para recuperar dados apagados localmente.</p>
-                    </div>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">4. Finalidades e bases legais</h2>
+                    <p>Tratamos dados para criar conta, autenticar, salvar e sincronizar projetos, instrumentos, perfil e preferências, registrar evolução, liberar conquistas, responder suporte, melhorar segurança e cumprir obrigações legais.</p>
+                    <p class="mt-3">As bases legais podem incluir execução de contrato, consentimento, legítimo interesse, cumprimento de obrigação legal e exercício regular de direitos.</p>
                 </section>
 
                 <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">4. Sistema de Usuários (Perfil Local)</h2>
-                    <p>O recurso de "login" disponível no aplicativo funciona como um <strong>perfil local</strong>. O nome de usuário serve apenas para organizar e filtrar projetos no próprio navegador.</p>
-                </section>
-
-                <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">5. Compartilhamento de Dados</h2>
-                    <p>O Guitar Architect <strong>não compartilha dados com terceiros</strong>, pois não coleta nem transmite informações para servidores externos.</p>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">5. Compartilhamento e fornecedores</h2>
+                    <p>Podemos usar Vercel para hospedagem/CDN, Supabase para autenticação, banco de dados e sincronização, e provedores de e-mail ou suporte quando você entra em contato. Não vendemos dados pessoais.</p>
+                    <p class="mt-3">Esses fornecedores podem operar fora do Brasil; quando houver transferência internacional, ela deverá observar as hipóteses permitidas pela LGPD.</p>
                 </section>
 
                 <section>
                     <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">6. Segurança</h2>
-                    <p>A aplicação é hospedada na plataforma Vercel, que fornece conexão segura via HTTPS (TLS) e infraestrutura de rede robusta.</p>
+                    <p>Usamos HTTPS, Supabase Auth, políticas de Row Level Security (RLS), separação entre dados públicos e privados e práticas de proteção compatíveis com o estágio atual do app. O usuário também deve proteger senha, dispositivo, navegador e e-mail.</p>
                 </section>
 
                 <section>
-                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">7. Contato</h2>
-                    <p>Para dúvidas, sugestões ou solicitações relacionadas à privacidade, entre em contato por:</p>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">7. Logos, recompensas e assets bloqueados</h2>
+                    <p>Logos, headstocks e recompensas bloqueadas podem aparecer como placeholders, silhuetas ou prévias reduzidas. Para proteção real, assets não desbloqueados devem permanecer fora de <code class="bg-zinc-100 px-1 rounded">/public</code> e ser servidos por acesso privado após desbloqueio.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">8. Migração de usuários locais</h2>
+                    <p>Usuários que usavam perfis locais antes da conta em nuvem podem migrar seus dados para uma conta autenticada. O app exibirá aviso de migração por 30 dias, até <strong>17 de junho de 2026</strong>. A importação JSON pode continuar disponível como alternativa de portabilidade.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">9. Retenção e exclusão</h2>
+                    <p>Mantemos dados enquanto forem necessários ao serviço, enquanto a conta estiver ativa ou enquanto houver obrigação legal, segurança, suporte ou exercício de direitos. Você pode solicitar exclusão pelo e-mail de contato. Dados locais podem ser apagados pelo navegador.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">10. Direitos LGPD</h2>
+                    <p>Você pode solicitar confirmação de tratamento, acesso, correção, anonimização, bloqueio, eliminação, portabilidade, informações sobre compartilhamento, revogação de consentimento e revisão de decisões automatizadas, quando aplicável. Você também pode peticionar à ANPD.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">11. Crianças, cookies e armazenamento local</h2>
+                    <p>O app não é direcionado especificamente a crianças. Menores devem usar o app com autorização de responsável. O app usa armazenamento local para sessão, preferências e dados do usuário; não usa cookies de publicidade comportamental nesta fase.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">12. Compartilhamento de projetos</h2>
+                    <p>O JSON continua sendo uma forma de backup e compartilhamento manual. Futuramente poderemos oferecer links de compartilhamento, permissões por usuário, bibliotecas públicas ou instrumentos compartilhados. Até lá, tenha cuidado ao importar arquivos recebidos de terceiros.</p>
+                </section>
+
+                <section>
+                    <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">13. Alterações e contato</h2>
+                    <p>Esta política pode ser atualizada para refletir mudanças no app, fornecedores, recursos pagos, segurança ou legislação. Para dúvidas, LGPD, exclusão de conta, correção, portabilidade ou suporte:</p>
                     <p class="mt-4 font-bold text-blue-600">E-mail: <a href="mailto:contato@guitararchitect.com.br">contato@guitararchitect.com.br</a></p>
                 </section>
             </div>
-        </div>
-        
+        </main>
+
         <a href="/" class="mt-10 inline-flex items-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest hover:underline">
             ← Voltar ao App
         </a>
 
-        <footer class="mt-20 text-center opacity-40">
+        <footer class="mt-16 text-center opacity-50">
             <p class="text-[10px] font-black uppercase tracking-[0.5em]">Guitar Architect © 2026</p>
         </footer>
     </div>
