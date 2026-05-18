@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import FretboardInstance from './FretboardInstance';
 import { FretboardState, ThemeMode, Project, InstrumentType } from '../types';
 import { translations, Lang } from '../i18n';
@@ -26,8 +27,21 @@ import {
   unlockAchievement,
 } from '../utils/achievementStorage';
 import { getAchievementById, getRewardById } from '../utils/achievementUtils';
+import { supabase } from '../src/lib/supabase';
+import { pushLocalSnapshotToSupabase, syncSupabaseSnapshot } from '../src/lib/cloudSync';
 
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
+
+const getSupabaseDisplayName = (authUser: SupabaseUser) => {
+  const metadataName =
+    typeof authUser.user_metadata?.name === 'string'
+      ? authUser.user_metadata.name
+      : typeof authUser.user_metadata?.full_name === 'string'
+        ? authUser.user_metadata.full_name
+        : '';
+
+  return metadataName || authUser.email?.split('@')[0] || authUser.id;
+};
 
 interface PendingFretboardAction {
   source: 'harmonic-cycle' | 'study-module';
@@ -153,7 +167,14 @@ const FretboardPanel: React.FC = () => {
   const [importText, setImportText] = useState('');
   const [isExporting, setIsExporting] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authStatus, setAuthStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [authMessage, setAuthMessage] = useState('');
   const initialized = useRef(false);
+  const authSessionBooted = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const projectFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -249,6 +270,58 @@ const switchUserSession = (newUser: string) => {
   }
 
   initialized.current = true;
+};
+
+const handleSupabaseAuth = async () => {
+  const email = authEmail.trim();
+  const password = authPassword.trim();
+
+  if (!email || !password) {
+    setAuthStatus('error');
+    setAuthMessage(lang === 'pt' ? 'Informe e-mail e senha.' : 'Enter e-mail and password.');
+    return;
+  }
+
+  setAuthStatus('loading');
+  setAuthMessage('');
+
+  const result = authMode === 'signup'
+    ? await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: user.trim() || email.split('@')[0],
+          },
+        },
+      })
+    : await supabase.auth.signInWithPassword({ email, password });
+
+  if (result.error) {
+    setAuthStatus('error');
+    setAuthMessage(result.error.message);
+    return;
+  }
+
+  if (result.data.user) {
+    const identity = getSupabaseDisplayName(result.data.user);
+    setAuthUser(result.data.user);
+    setUser(identity);
+    authSessionBooted.current = true;
+    switchUserSession(identity);
+    void syncSupabaseSnapshot(result.data.user.id, identity);
+  }
+
+  setAuthStatus('success');
+  setAuthMessage(
+    authMode === 'signup' && !result.data.session
+      ? (lang === 'pt' ? 'Conta criada. Verifique seu e-mail para confirmar o acesso.' : 'Account created. Check your e-mail to confirm access.')
+      : (lang === 'pt' ? 'Acesso confirmado.' : 'Access confirmed.')
+  );
+
+  if (result.data.session) {
+    setShowLoginModal(false);
+  }
 };
 
   const toggleFullScreen = () => {
@@ -391,6 +464,53 @@ useEffect(() => {
   }
 }, []);
 
+useEffect(() => {
+  let isMounted = true;
+
+  supabase.auth.getUser().then(({ data }) => {
+    if (!isMounted || !data.user) return;
+
+    const identity = getSupabaseDisplayName(data.user);
+    setAuthUser(data.user);
+    setAuthEmail(data.user.email || '');
+
+    if (!authSessionBooted.current) {
+      authSessionBooted.current = true;
+      switchUserSession(identity);
+      void syncSupabaseSnapshot(data.user.id, identity);
+      setShowLoginModal(false);
+    }
+  });
+
+  const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+    if (!isMounted) return;
+
+    if (event === 'SIGNED_IN' && session?.user) {
+      const identity = getSupabaseDisplayName(session.user);
+      setAuthUser(session.user);
+      setAuthEmail(session.user.email || '');
+
+      if (!authSessionBooted.current) {
+        authSessionBooted.current = true;
+        switchUserSession(identity);
+        void syncSupabaseSnapshot(session.user.id, identity);
+      }
+
+      setShowLoginModal(false);
+    }
+
+    if (event === 'SIGNED_OUT') {
+      setAuthUser(null);
+      authSessionBooted.current = false;
+    }
+  });
+
+  return () => {
+    isMounted = false;
+    listener.subscription.unsubscribe();
+  };
+}, []);
+
 
 useEffect(() => {
   if (initialized.current && !isExporting && user) {
@@ -419,6 +539,10 @@ useEffect(() => {
         showTips,
       });
 
+      if (authUser) {
+        void pushLocalSnapshotToSupabase(authUser.id, user);
+      }
+
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
 
@@ -436,11 +560,12 @@ useEffect(() => {
   userLogo,
   showTips,
   isExporting,
+  authUser,
   globalTranspose,
   defaultInstrument
 ]);
 
-const handleLogout = () => {
+const handleLogout = async () => {
 
   // salva sessão atual antes de sair
   if (user && initialized.current) {
@@ -469,6 +594,12 @@ const handleLogout = () => {
   }
 
   // limpa sessão
+  if (authUser) {
+    await supabase.auth.signOut();
+  }
+
+  setAuthUser(null);
+  authSessionBooted.current = false;
   setInstances([]);
   setUser('');
   setProjectName('Novo Projeto');
@@ -1104,7 +1235,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                   </label>
                   <div className="flex items-center gap-1.5 mt-2">
                      <span className={`text-[10px] md:text-[11px] font-black uppercase truncate max-w-[130px] md:max-w-none ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>
-                        <span className="text-zinc-400">{lang === 'pt' ? 'Usuário:' : 'User:'}</span> {user || (lang === 'pt' ? 'Visitante' : 'Guest')}
+                        <span className="text-zinc-400">{lang === 'pt' ? 'Usuário:' : 'User:'}</span> {authUser?.email || user || (lang === 'pt' ? 'Visitante' : 'Guest')}
                      </span>
                      <div className="flex gap-2">
   <button
@@ -1515,7 +1646,89 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           <div className={`w-full max-w-md rounded-[40px] p-8 md:p-12 border shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
              <div className="flex flex-col items-center mb-8">
                 <LogoIcon brand={displayedBrandAssets} variant="large" />
-                <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-center">Identidade Visual</h2>
+                <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-center">
+                  {lang === 'pt' ? 'Conta Guitar Architect' : 'Guitar Architect Account'}
+                </h2>
+                <p className="mt-2 text-center text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                  {authUser
+                    ? (lang === 'pt' ? 'Sessão Supabase ativa' : 'Supabase session active')
+                    : (lang === 'pt' ? 'Entre, crie conta ou continue localmente' : 'Sign in, create an account or continue locally')}
+                </p>
+             </div>
+
+             <div className={`mb-6 rounded-3xl border p-4 ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950/60 border-zinc-800'}`}>
+               <div className="grid grid-cols-2 gap-2 mb-4">
+                 <button
+                   type="button"
+                   onClick={() => {
+                     setAuthMode('signin');
+                     setAuthStatus('idle');
+                     setAuthMessage('');
+                   }}
+                   className={`rounded-2xl py-3 text-[10px] font-black uppercase transition-all ${authMode === 'signin' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : (isLight ? 'bg-white text-zinc-500 border border-zinc-200' : 'bg-zinc-900 text-zinc-400 border border-zinc-800')}`}
+                 >
+                   {lang === 'pt' ? 'Entrar' : 'Sign in'}
+                 </button>
+                 <button
+                   type="button"
+                   onClick={() => {
+                     setAuthMode('signup');
+                     setAuthStatus('idle');
+                     setAuthMessage('');
+                   }}
+                   className={`rounded-2xl py-3 text-[10px] font-black uppercase transition-all ${authMode === 'signup' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : (isLight ? 'bg-white text-zinc-500 border border-zinc-200' : 'bg-zinc-900 text-zinc-400 border border-zinc-800')}`}
+                 >
+                   {lang === 'pt' ? 'Criar conta' : 'Create account'}
+                 </button>
+               </div>
+               <div className="grid gap-3">
+                 <input
+                   type="email"
+                   autoComplete="email"
+                   placeholder={lang === 'pt' ? 'E-mail' : 'E-mail'}
+                   value={authEmail}
+                   onChange={e => setAuthEmail(e.target.value)}
+                   className={`w-full rounded-2xl border p-3 text-sm font-bold outline-none transition-all ${isLight ? 'bg-white border-zinc-200 text-zinc-900 focus:border-blue-500' : 'bg-zinc-900 border-zinc-800 text-zinc-100 focus:border-blue-500'}`}
+                 />
+                 <input
+                   type="password"
+                   autoComplete={authMode === 'signin' ? 'current-password' : 'new-password'}
+                   placeholder={lang === 'pt' ? 'Senha' : 'Password'}
+                   value={authPassword}
+                   onChange={e => setAuthPassword(e.target.value)}
+                   onKeyDown={e => {
+                     if (e.key === 'Enter' && authEmail.trim() && authPassword.trim()) {
+                       void handleSupabaseAuth();
+                     }
+                   }}
+                   className={`w-full rounded-2xl border p-3 text-sm font-bold outline-none transition-all ${isLight ? 'bg-white border-zinc-200 text-zinc-900 focus:border-blue-500' : 'bg-zinc-900 border-zinc-800 text-zinc-100 focus:border-blue-500'}`}
+                 />
+                 <button
+                   type="button"
+                   onClick={() => void handleSupabaseAuth()}
+                   disabled={authStatus === 'loading'}
+                   className={`w-full rounded-2xl py-4 text-[11px] font-black uppercase shadow-xl active:scale-95 transition-all ${authStatus === 'loading' ? 'bg-zinc-400 text-white cursor-wait' : 'bg-blue-600 text-white hover:bg-blue-500'}`}
+                 >
+                   {authStatus === 'loading'
+                     ? (lang === 'pt' ? 'Conectando...' : 'Connecting...')
+                     : authMode === 'signin'
+                       ? (lang === 'pt' ? 'Entrar com Supabase' : 'Sign in with Supabase')
+                       : (lang === 'pt' ? 'Criar conta Supabase' : 'Create Supabase account')}
+                 </button>
+                 {authMessage && (
+                   <p className={`text-center text-[10px] font-bold leading-relaxed ${authStatus === 'error' ? 'text-red-500' : 'text-emerald-500'}`}>
+                     {authMessage}
+                   </p>
+                 )}
+               </div>
+             </div>
+
+             <div className="mb-5 flex items-center gap-3">
+               <div className={`h-px flex-1 ${isLight ? 'bg-zinc-200' : 'bg-zinc-800'}`} />
+               <span className="text-[9px] font-black uppercase tracking-[0.18em] text-zinc-500">
+                 {lang === 'pt' ? 'Identidade local' : 'Local identity'}
+               </span>
+               <div className={`h-px flex-1 ${isLight ? 'bg-zinc-200' : 'bg-zinc-800'}`} />
              </div>
              
              <div className={`p-6 rounded-3xl mb-8 border ${isLight ? 'bg-blue-50 border-blue-100' : 'bg-blue-900/10 border-blue-900/30'}`}>

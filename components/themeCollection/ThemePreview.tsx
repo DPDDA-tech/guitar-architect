@@ -44,7 +44,7 @@ const familyLabel = (family: ThemeCollectionItem['instrumentFamily'], lang: 'pt'
 
 const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, locked = false, compact = false, lang = 'en' }) => {
   const [imageFailed, setImageFailed] = useState(false);
-  const canUseImage = Boolean(theme.image) && !imageFailed;
+  const canUseImage = Boolean(theme.image) && !imageFailed && !locked;
 
   return (
     <div

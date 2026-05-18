@@ -155,6 +155,9 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
           const rewards = getRewardsForAchievement(achievement.id);
           const hiddenLocked = achievement.hidden && !unlocked;
           const progress = calculateAchievementProgress(achievement, progressState, unlockedIds);
+          const achievementImage = unlocked && achievement.asset.path
+            ? achievement.asset.path
+            : '/tier0/tier0-ga6-oficial.webp';
           return (
             <article key={achievement.id} className={`rounded-xl border p-4 transition hover:-translate-y-0.5 ${unlocked ? isLight ? 'border-blue-300 bg-blue-50/80' : 'border-blue-700/70 bg-[#081426]' : isLight ? 'border-[#d2deeb] bg-white/90' : 'border-blue-900/60 bg-[#070d18]'}`}>
               <div className={`relative mb-4 flex h-28 items-center justify-center overflow-hidden rounded-xl border ${unlocked ? isLight ? 'border-blue-200 bg-blue-50' : 'border-blue-900/60 bg-blue-950/20' : isLight ? 'border-slate-200 bg-[radial-gradient(circle_at_50%_35%,#f8fbff_0%,#e8eef6_58%,#d9e3ee_100%)]' : 'border-slate-800 bg-[radial-gradient(circle_at_50%_35%,rgba(37,99,235,0.14),rgba(2,6,23,0.92)_62%,rgba(0,0,0,0.96)_100%)]'}`}>
@@ -164,7 +167,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
                     <img src="/tier0/tier0-ga6-oficial.webp" alt="" className={`absolute h-24 w-24 scale-110 object-contain blur-[6px] ${isLight ? 'opacity-20 grayscale brightness-75 contrast-150' : 'opacity-24 grayscale brightness-125 contrast-125'}`} />
                   </>
                 )}
-                <img src={achievement.asset.path || '/tier0/tier0-ga6-oficial.webp'} alt="" className={`relative h-20 w-20 object-contain transition ${unlocked ? 'opacity-100' : isLight ? 'opacity-30 grayscale brightness-50 contrast-150' : 'opacity-34 grayscale brightness-125 contrast-125'}`} />
+                <img src={achievementImage} alt="" className={`relative h-20 w-20 object-contain transition ${unlocked ? 'opacity-100' : isLight ? 'opacity-30 grayscale brightness-50 contrast-150' : 'opacity-34 grayscale brightness-125 contrast-125'}`} />
                 {!unlocked && (
                   <div className={`absolute inset-0 flex items-center justify-center ${isLight ? 'bg-white/12' : 'bg-black/14'}`}>
                     <span className={`rounded-full border px-3 py-1.5 text-[9px] font-black uppercase ${isLight ? 'border-slate-300/80 bg-white/70 text-slate-700 shadow-[0_10px_28px_rgba(71,85,105,0.18)]' : 'border-white/20 bg-black/50 text-white shadow-[0_0_22px_rgba(37,99,235,0.16)]'}`}>
