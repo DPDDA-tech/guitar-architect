@@ -26,7 +26,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, isLight, lang, o
 
   return (
     <article
-      className={`group relative rounded-2xl border p-4 transition duration-300 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-blue-400 ${rarityClass[theme.rarity]} ${theme.rarity === 'legendary' && !locked ? 'animate-[pulse_8s_ease-in-out_infinite]' : ''} ${isLight ? 'bg-white/88 shadow-[0_18px_44px_rgba(71,85,105,0.12)]' : 'bg-slate-950/70 shadow-[0_18px_44px_rgba(2,6,23,0.38)]'} ${locked ? 'opacity-78' : ''}`}
+      className={`group relative rounded-2xl border p-4 transition duration-300 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-blue-400 ${rarityClass[theme.rarity]} ${theme.rarity === 'legendary' && !locked ? 'animate-[pulse_8s_ease-in-out_infinite]' : ''} ${isLight ? 'bg-white shadow-[0_18px_44px_rgba(71,85,105,0.12)]' : 'bg-slate-950/95 shadow-[0_18px_44px_rgba(2,6,23,0.38)]'} ${locked ? 'opacity-78' : ''}`}
       style={{ boxShadow: locked ? undefined : theme.rarity === 'common' ? `0 12px 30px ${theme.glowColor || 'rgba(37,99,235,0.12)'}` : `0 18px 44px ${theme.glowColor || 'rgba(37,99,235,0.16)'}, 0 0 34px ${theme.glowColor || 'rgba(37,99,235,0.14)'}` }}
     >
       {theme.rarity === 'legendary' && (
@@ -45,7 +45,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, isLight, lang, o
         </div>
       )}
       <div className="relative">
-        <ThemePreview theme={theme} locked={locked} compact lang={lang} />
+        <ThemePreview theme={theme} locked={locked} compact lang={lang} isLight={isLight} />
         {locked && <ThemeLockedOverlay label={lang === 'pt' ? 'Bloqueado' : 'Locked'} />}
       </div>
       <div className="mt-4">
@@ -54,7 +54,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, isLight, lang, o
             <h3 className="text-base font-black tracking-tight">{copy.name}</h3>
             <p className={`mt-1 text-xs font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{copy.subtitle}</p>
           </div>
-          <span className={`rounded-full border px-2 py-1 text-[8px] font-black uppercase ${isLight ? 'border-slate-200 text-slate-600' : 'border-slate-700 text-slate-300'}`}>
+          <span className={`rounded-full border px-3 py-1 text-[9px] font-semibold uppercase ${isLight ? 'border-slate-400/70 bg-white/96 text-slate-800' : 'border-slate-700 text-slate-300'}`}>
             {rarityLabel}
           </span>
         </div>

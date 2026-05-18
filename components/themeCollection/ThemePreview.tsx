@@ -7,6 +7,7 @@ interface ThemePreviewProps {
   locked?: boolean;
   compact?: boolean;
   lang?: 'pt' | 'en';
+  isLight?: boolean;
 }
 
 const silhouettePath = (family: ThemeCollectionItem['instrumentFamily']) => {
@@ -42,7 +43,7 @@ const familyLabel = (family: ThemeCollectionItem['instrumentFamily'], lang: 'pt'
   return labels[family][lang];
 };
 
-const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, locked = false, compact = false, lang = 'en' }) => {
+const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, locked = false, compact = false, lang = 'en', isLight = false }) => {
   const [imageFailed, setImageFailed] = useState(false);
   const canUseImage = Boolean(theme.image) && !imageFailed && !locked;
 
@@ -89,11 +90,11 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, locked = false, comp
           ))}
         </svg>
       )}
-      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-        <span className="rounded-full border border-white/20 bg-black/18 px-2.5 py-1 text-[9px] font-black uppercase text-white/82 backdrop-blur-sm">
+      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase ${isLight ? 'border-slate-200/55 bg-white/92 text-slate-200' : 'border-white/20 bg-black/18 text-white/82'}`}>
           {familyLabel(theme.instrumentFamily, lang)}
         </span>
-        <span className="rounded-full border border-white/20 bg-black/18 px-2.5 py-1 text-[9px] font-black uppercase text-white/82 backdrop-blur-sm">
+        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase ${isLight ? 'border-slate-200/55 bg-white/92 text-slate-200' : 'border-white/20 bg-black/18 text-white/82'}`}>
           {getThemeLevelLabel(theme, lang)}
         </span>
       </div>

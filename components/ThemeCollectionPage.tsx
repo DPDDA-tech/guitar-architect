@@ -38,7 +38,7 @@ const ThemeCollectionPage: React.FC = () => {
   const pageBackgroundStyle = isLight
     ? {
       backgroundColor: '#edf3f8',
-      backgroundImage: 'linear-gradient(rgba(156,163,175,0.085) 1px, transparent 1px), linear-gradient(90deg, rgba(156,163,175,0.085) 1px, transparent 1px)',
+      backgroundImage: 'linear-gradient(rgba(156,163,175,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(156,163,175,0.03) 1px, transparent 1px)',
       backgroundSize: '20px 20px',
     }
     : undefined;
@@ -88,7 +88,7 @@ const ThemeCollectionPage: React.FC = () => {
               [lang === 'pt' ? 'Progresso' : 'Progress', `${unlockedCount}/${items.length}`],
               [lang === 'pt' ? 'Motor de temas' : 'Theme Engine', lang === 'pt' ? 'Sistema de recursos online' : 'Asset System Online'],
             ].map(([label, value]) => (
-              <div key={label} className={`rounded-xl border p-4 ${isLight ? 'border-slate-200 bg-white/86' : 'border-slate-800 bg-slate-950/70'}`}>
+              <div key={label} className={`rounded-xl border p-4 ${isLight ? 'border-slate-200 bg-white' : 'border-slate-800 bg-slate-950/70'}`}>
                 <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</p>
                 <p className="mt-2 text-lg font-black">{value}</p>
               </div>

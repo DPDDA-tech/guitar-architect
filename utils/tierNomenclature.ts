@@ -33,7 +33,7 @@ export const getTierDisplay = (tier: AchievementTier, lang: TierLang = 'pt') => 
 
 export const getTierCollectionName = (tier: AchievementTier, lang: TierLang = 'pt') => (
   lang === 'pt'
-    ? `COLECAO DO ${getTierName(tier, lang)}`
+    ? `COLEÇÃO DO ${getTierName(tier, lang)}`
     : `${getTierName(tier, lang)} COLLECTION`
 );
 
