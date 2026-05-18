@@ -371,7 +371,12 @@ const handleMigrateLocalIdentity = async (sourceIdentity: string) => {
   }
 
   setMigrationStatus('success');
-  setMigrationMessage(lang === 'pt' ? `Dados de ${sourceIdentity} migrados para sua conta.` : `${sourceIdentity} data migrated to your account.`);
+  const summary = result.summary;
+  setMigrationMessage(
+    lang === 'pt'
+      ? `Dados de ${sourceIdentity} migrados: ${summary?.projects ?? 0} projetos, ${summary?.instruments ?? 0} instrumentos, ${summary?.achievements ?? 0} conquistas e ${summary?.unlockedThemes ?? 0} temas.`
+      : `${sourceIdentity} data migrated: ${summary?.projects ?? 0} projects, ${summary?.instruments ?? 0} instruments, ${summary?.achievements ?? 0} achievements and ${summary?.unlockedThemes ?? 0} themes.`,
+  );
   refreshLocalUserOptions(user);
 };
 
@@ -1206,7 +1211,7 @@ const handleLogout = async () => {
           </div>
 
           {showProjectMenu && (
-            <div className={`absolute left-3 right-3 top-full mt-2 max-h-[calc(100vh-92px)] overflow-y-auto rounded-2xl border p-3 shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+            <div className={`absolute left-3 right-3 top-full mt-2 max-h-[calc(100vh-92px)] overflow-y-auto rounded-2xl border p-3 shadow-2xl ${isLight ? 'bg-[#f3f7fc] border-[#b9c8da] shadow-[0_24px_80px_rgba(71,85,105,0.22)]' : 'bg-[#10141d] border-blue-950/70 shadow-[0_28px_90px_rgba(0,0,0,0.58)]'}`}>
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                   {lang === 'pt' ? 'Abrir JSON' : 'Open JSON'}
@@ -1464,7 +1469,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   </button>
 
   {showProjectMenu && (
-    <div className={`absolute right-0 top-full z-[80] mt-3 max-h-[calc(100vh-112px)] w-[290px] overflow-y-auto rounded-2xl border p-4 shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+    <div className={`absolute right-0 top-full z-[80] mt-3 max-h-[calc(100vh-112px)] w-[290px] overflow-y-auto rounded-2xl border p-4 shadow-2xl ${isLight ? 'bg-[#f3f7fc] border-[#b9c8da] shadow-[0_24px_80px_rgba(71,85,105,0.22)]' : 'bg-[#10141d] border-blue-950/70 shadow-[0_28px_90px_rgba(0,0,0,0.58)]'}`}>
       <div className="space-y-4">
         <button onClick={() => { setShowLoadModal(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
           {lang === 'pt' ? 'CARREGAR PROJETOS LOCAIS' : 'LOAD LOCAL PROJECTS'}
@@ -1740,7 +1745,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
       {showLoginModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xl">
-          <div className={`w-full max-w-md rounded-[40px] p-8 md:p-12 border shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+          <div className={`max-h-[calc(100vh-32px)] w-full max-w-md overflow-y-auto rounded-[40px] border p-8 shadow-2xl md:p-12 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
              <div className="flex flex-col items-center mb-8">
                 <LogoIcon brand={displayedBrandAssets} variant="large" />
                 <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-center">
@@ -1838,7 +1843,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                      ? 'Encontramos identidades locais neste navegador. Voce pode mesclar esses projetos na sua conta sincronizada.'
                      : 'Local identities were found in this browser. You can merge those projects into your synced account.'}
                  </p>
-                 <div className="mt-3 grid gap-2">
+                 <div className="mt-3 grid max-h-56 gap-2 overflow-y-auto pr-1">
                    {localUserOptions.map(localUser => (
                      <button
                        key={localUser}

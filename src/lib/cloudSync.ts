@@ -41,6 +41,13 @@ export interface UserCloudSnapshot {
   syncedAt: string;
 }
 
+export interface CloudSnapshotSummary {
+  projects: number;
+  instruments: number;
+  achievements: number;
+  unlockedThemes: number;
+}
+
 interface RemoteSnapshotRow {
   user_id: string;
   snapshot: UserCloudSnapshot;
@@ -53,6 +60,13 @@ type CloudSyncError = {
   details?: string;
   hint?: string;
 };
+
+export const summarizeCloudSnapshot = (snapshot: UserCloudSnapshot): CloudSnapshotSummary => ({
+  projects: snapshot.projects?.length ?? 0,
+  instruments: snapshot.instruments?.length ?? 0,
+  achievements: snapshot.achievements?.unlockedAchievementIds?.length ?? 0,
+  unlockedThemes: snapshot.themeCollection?.unlockedThemeIds?.length ?? 0,
+});
 
 const normalizeSyncError = (error: unknown): CloudSyncError => {
   if (error && typeof error === 'object') {
@@ -271,7 +285,7 @@ export const pushLocalSnapshotToSupabase = async (
       return { ok: false, error: syncError };
     }
 
-    return { ok: true, snapshot };
+    return { ok: true, snapshot, summary: summarizeCloudSnapshot(snapshot) };
   } catch (error) {
     const syncError = normalizeSyncError(error);
     console.warn('[GA] Supabase cloud sync failed:', syncError);
@@ -303,7 +317,7 @@ export const pushSnapshotToSupabase = async (
       return { ok: false, error: syncError };
     }
 
-    return { ok: true, snapshot: next };
+    return { ok: true, snapshot: next, summary: summarizeCloudSnapshot(next) };
   } catch (error) {
     const syncError = normalizeSyncError(error);
     console.warn('[GA] Supabase cloud sync failed:', syncError);
@@ -338,7 +352,7 @@ export const syncSupabaseSnapshot = async (
   if (error) {
     const syncError = normalizeSyncError(error);
     console.warn('[GA] Supabase cloud sync unavailable:', syncError);
-    return { ok: false, snapshot: local, error: syncError };
+    return { ok: false, snapshot: local, summary: summarizeCloudSnapshot(local), error: syncError };
   }
 
   if (!data?.snapshot) {
@@ -362,5 +376,5 @@ export const syncSupabaseSnapshot = async (
     return { ok: false, snapshot: merged, error: syncError };
   }
 
-  return { ok: true, snapshot: merged };
+  return { ok: true, snapshot: merged, summary: summarizeCloudSnapshot(merged) };
 };
