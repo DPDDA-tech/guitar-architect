@@ -2,7 +2,17 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const normalizeSupabaseUrl = (value?: string) => {
+  if (!value) return ''
+  try {
+    const parsed = new URL(value.trim())
+    return parsed.origin
+  } catch {
+    return value.trim()
+  }
+}
+
+const supabaseUrl = normalizeSupabaseUrl(import.meta.env.VITE_SUPABASE_URL)
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
