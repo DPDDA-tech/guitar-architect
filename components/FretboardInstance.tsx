@@ -333,7 +333,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const PRESET_COLORS = ['#ef4444', '#2563eb', '#22c55e', '#eab308', '#000000', '#6366f1', '#ec4899'];
   const OBS_LIMIT = 1500;
   const [isControlPanelOpen, setIsControlPanelOpen] = useState(false);
-  const [activeControlTab, setActiveControlTab] = useState<string>('learn');
+  const [activeControlTab, setActiveControlTab] = useState<string>('visual');
   const [preferredPracticeTool, setPreferredPracticeTool] = useState<'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes' | undefined>(undefined);
   const [isBeginnerMode, setIsBeginnerMode] = useState(() => {
     if (typeof window === 'undefined') return true;
@@ -518,11 +518,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     },
     {
       id: 'base',
-      target: '[data-tour="quick-base"]',
-      title: lang === 'pt' ? 'Base do diagrama' : 'Diagram base',
+      target: '[data-tour="quick-layers"]',
+      title: lang === 'pt' ? 'Camadas do diagrama' : 'Diagram layers',
       body: lang === 'pt'
-        ? 'Em Base ficam instrumento, afinacao, canhoto, transposicao, trastes e desfazer/refazer.'
-        : 'Base contains instrument, tuning, left-handed mode, transposition, fret range, undo, and redo.'
+        ? 'Camadas concentra os controles visuais principais do fretboard, incluindo notas, escala, tonica e rotulos.'
+        : 'Layers concentrates the main fretboard visual controls, including notes, scale, tonic, and labels.'
     },
     {
       id: 'layers',
@@ -649,9 +649,10 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     { id: 'chords', label: lang === 'pt' ? 'Acordes' : 'Chords' },
     { id: 'tools', label: lang === 'pt' ? 'Praticar' : 'Practice' },
   ] as const;
+  const hiddenLegacyEducationTabs = ['learn', 'base', 'chords', 'tools'];
   const visibleControlTabs = isBeginnerMode
-    ? controlTabs.filter(tab => ['learn', 'scale', 'chords', 'tools', 'base'].includes(tab.id))
-    : controlTabs.filter(tab => tab.id !== 'editor');
+    ? controlTabs.filter(tab => ['scale', 'visual'].includes(tab.id))
+    : controlTabs.filter(tab => tab.id !== 'editor' && !hiddenLegacyEducationTabs.includes(tab.id));
 
   const panelShell = isLight
     ? 'bg-zinc-50 border-zinc-200 text-zinc-900'
@@ -2277,12 +2278,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       <div className={`operational-btns mb-5 hidden lg:block ${isExporting ? 'hidden' : ''}`}>
         <div className={`flex flex-col gap-3 rounded-2xl border px-3 py-3 shadow-sm ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
-            <button data-tour="quick-learn" onClick={() => toggleQuickPanel('learn')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'learn' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
-              {lang === 'pt' ? 'Aprender' : 'Learn'}
-            </button>
-            <button data-tour="quick-base" onClick={() => toggleQuickPanel('base')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'base' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
-              Base
-            </button>
             <button data-tour="quick-layers" onClick={() => toggleQuickPanel('visual')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'visual' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
               {lang === 'pt' ? 'Camadas' : 'Layers'}
             </button>
@@ -2295,12 +2290,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <button data-tour="quick-harmony" onClick={() => toggleQuickPanel('harmony')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'harmony' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
               {lang === 'pt' ? 'Harmonia' : 'Harmony'}
             </button>
-            <button data-tour="quick-chords" onClick={() => { setChordLibraryMode('find'); toggleQuickPanel('chords'); }} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'chords' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
-              {lang === 'pt' ? 'Acorde' : 'Chord'}
-            </button>
-            <button data-tour="quick-practice" onClick={() => toggleQuickPanel('tools')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'tools' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
-              {lang === 'pt' ? 'Praticar' : 'Practice'}
-            </button>
             <button onClick={() => setSoundEnabled(prev => !prev)} className={`${quickButtonClass} shrink-0 ${soundEnabled ? quickActiveButtonClass : ''}`}>
               {soundEnabled ? (lang === 'pt' ? 'Som ON' : 'Sound ON') : (lang === 'pt' ? 'Som OFF' : 'Sound OFF')}
             </button>
@@ -2310,20 +2299,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       </div>
 
       <div className={`operational-btns fixed inset-x-0 bottom-0 z-[75] border-t px-2 pb-1 pt-1 shadow-lg lg:hidden ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-white/90 border-zinc-200' : 'bg-zinc-950/90 border-zinc-800'}`}>
-        <div className="grid grid-cols-5 gap-1">
-          <button data-tour="quick-learn" onClick={() => openMobileTab('learn')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'learn' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Aprender' : 'Learn'}>
-            {lang === 'pt' ? 'Aprender' : 'Learn'}
-          </button>
+        <div className="grid grid-cols-2 gap-1">
           <button data-tour="mobile-scales" onClick={() => openMobileTab('scale')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'scale' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Escalas' : 'Scales'}>
             {lang === 'pt' ? 'Escalas' : 'Scales'}
           </button>
-          <button data-tour="quick-chords" onClick={() => openMobileTab('chords')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'chords' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Acordes' : 'Chords'}>
-            {lang === 'pt' ? 'Acordes' : 'Chords'}
-          </button>
           <button data-tour="quick-editor" onClick={() => openMobileTab('editor')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'editor' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Editar' : 'Edit'}>{lang === 'pt' ? 'Editar' : 'Edit'}</button>
-          <button data-tour="quick-practice" onClick={() => openMobileTab('tools')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'tools' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Praticar' : 'Practice'}>
-            {lang === 'pt' ? 'Praticar' : 'Practice'}
-          </button>
         </div>
       </div>
 
@@ -2352,7 +2332,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             {visibleControlTabs.map(tab => (
               <button
                 key={tab.id}
-                data-tour={tab.id === 'learn' ? 'quick-learn' : tab.id === 'base' ? 'quick-base' : tab.id === 'visual' ? 'quick-layers' : tab.id === 'tools' ? 'quick-practice' : `quick-${tab.id}`}
+                data-tour={tab.id === 'learn' ? 'quick-learn' : tab.id === 'visual' ? 'quick-layers' : tab.id === 'tools' ? 'quick-practice' : `quick-${tab.id}`}
                 onClick={() => {
                   setActiveControlTab(tab.id);
                   setIsControlPanelOpen(true);
@@ -2591,7 +2571,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                  </div>
                )}
                <div className="text-center opacity-30 mt-1">
-                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">v1.8.6 Engine • {lang === 'pt' ? 'Sistema Automático' : 'Automatic System'}</span>
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">v1.8.7 Engine • {lang === 'pt' ? 'Sistema Automático' : 'Automatic System'}</span>
                </div>
             </div>
          </div>

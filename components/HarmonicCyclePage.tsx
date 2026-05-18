@@ -12,6 +12,7 @@ import {
   resolveProgression,
 } from '../music/harmonicCycle';
 import { normalizeNote } from '../music/musicTheory';
+import { recordAchievementEvent } from '../utils/achievementEvents';
 
 type FretboardAction = 'scale' | 'field' | 'triads' | 'progression';
 
@@ -252,6 +253,12 @@ const HarmonicCyclePage: React.FC = () => {
     : `${info.keySignature.count} ${info.keySignature.type === 'sharps' ? t.sharps : t.flats}`;
 
   const applyToFretboard = (action: FretboardAction) => {
+    if (action === 'scale') {
+      recordAchievementEvent({ type: 'exploration', key: 'apply_scale' });
+    }
+    if (action === 'progression') {
+      recordAchievementEvent({ type: 'exploration', key: 'harmonic_cycle_progression' });
+    }
     window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify({
       source: 'harmonic-cycle',
       action,

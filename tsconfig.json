@@ -23,7 +23,10 @@
     "types.ts",
     "i18n.ts",
     "components/**/*",
+    "data/**/*",
+    "features/**/*",
     "music/**/*",
+    "types/**/*",
     "utils/**/*",
     "layerRegistry.ts"
   ],

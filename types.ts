@@ -1,4 +1,5 @@
 import { ChordQuality } from './music/harmony';
+import type { AchievementProgressState } from './types/achievement';
 
 export type Note =
   | 'C' | 'C#' | 'D' | 'D#'
@@ -100,6 +101,15 @@ export interface ProjectFilePayload {
     defaultInstrument?: InstrumentType;
     userLogo?: string;
     showTips?: boolean;
+    themeCollection?: {
+      activeThemeId: string;
+      unlockedThemeIds: string[];
+    };
+    achievements?: {
+      unlockedAchievementIds: string[];
+      progress: AchievementProgressState;
+      selectedRewardBadgeId?: string | null;
+    };
   };
 }
 

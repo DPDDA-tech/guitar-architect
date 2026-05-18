@@ -14,17 +14,39 @@ import { buildProjectFileName, parseProjectFile, serializeProjectFile } from '..
 import SupportModal from './SupportModal';
 import { BrandAssets, getBrandAssets } from '../utils/brandAssets';
 import MyInstruments from './MyInstruments';
+import { recordAchievementEvent, recordAppLoyaltyVisit } from '../utils/achievementEvents';
+import { loadThemeCollectionState, saveThemeCollectionState } from '../features/themeCollection/themeUtils';
+import { THEME_REGISTRY } from '../features/themeCollection/themeRegistry';
+import {
+  getAchievementProgressState,
+  getSelectedRewardBadgeId,
+  getUnlockedAchievementIds,
+  mergeAchievementProgressState,
+  setSelectedRewardBadgeId,
+  unlockAchievement,
+} from '../utils/achievementStorage';
+import { getAchievementById, getRewardById } from '../utils/achievementUtils';
 
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
 
 interface PendingFretboardAction {
-  source: 'harmonic-cycle';
-  action: 'scale' | 'field' | 'triads' | 'progression';
-  root: string;
+  source: 'harmonic-cycle' | 'study-module';
+  action: 'scale' | 'field' | 'triads' | 'progression' | 'openTool' | 'startPractice';
+  root?: string;
   displayRoot?: string;
-  scaleType: string;
+  scaleType?: string;
   progression?: string;
   chords?: string[];
+  moduleTitle?: string;
+  moduleLabel?: string;
+  tool?: 'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes';
+  bpm?: number;
+  harmonyMode?: 'TRIADS' | 'TETRADS';
+  chordQuality?: FretboardState['chordQuality'];
+  chordDegree?: number;
+  inversion?: number;
+  voicingMode?: FretboardState['voicingMode'];
+  practiceExerciseId?: string;
 }
 
 const LogoIcon = ({ brand, variant = 'default' }: { brand: BrandAssets; variant?: 'default' | 'large' | 'footer' }) => {
@@ -157,7 +179,7 @@ const switchUserSession = (newUser: string) => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.6",
+      version: "1.8.7",
       activeProjectId: projectId,
       theme,
       lang,
@@ -245,6 +267,10 @@ const switchUserSession = (newUser: string) => {
     // Manter o idioma acessível globalmente para o SVG
     (window as any).ga_lang = lang;
   }, [lang]);
+
+  useEffect(() => {
+    recordAppLoyaltyVisit();
+  }, []);
 
   useEffect(() => {
   const handleResize = () => {
@@ -383,7 +409,7 @@ useEffect(() => {
       saveProjectToLibrary(currentProject);
 
       saveConfig({
-        version: "1.8.6",
+        version: "1.8.7",
         activeProjectId: projectId,
         theme,
         lang,
@@ -431,7 +457,7 @@ const handleLogout = () => {
     saveProjectToLibrary(currentProject);
 
     saveConfig({
-      version: "1.8.6",
+      version: "1.8.7",
       activeProjectId: projectId,
       theme,
       lang,
@@ -543,6 +569,12 @@ const handleLogout = () => {
       defaultInstrument,
       userLogo,
       showTips,
+      themeCollection: loadThemeCollectionState(),
+      achievements: {
+        unlockedAchievementIds: getUnlockedAchievementIds(),
+        progress: getAchievementProgressState(),
+        selectedRewardBadgeId: getSelectedRewardBadgeId(),
+      },
     });
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -553,6 +585,7 @@ const handleLogout = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    recordAchievementEvent({ type: 'export_diagram', format: 'json' });
     setShowProjectMenu(false);
   };
 
@@ -584,8 +617,32 @@ const handleLogout = () => {
         setTheme(payload.settings.theme || theme);
         setLang(payload.settings.lang || lang);
         setDefaultInstrument(payload.settings.defaultInstrument || payload.project.instances[0]?.instrumentType || defaultInstrument);
-        setUserLogo(payload.settings.userLogo);
+        if (payload.settings.userLogo !== undefined) {
+          setUserLogo(payload.settings.userLogo);
+        }
         setShowTips(payload.settings.showTips ?? true);
+        if (payload.settings.themeCollection) {
+          const currentCollection = loadThemeCollectionState();
+          const unlockedThemeIds = Array.from(new Set([
+            ...currentCollection.unlockedThemeIds,
+            ...payload.settings.themeCollection.unlockedThemeIds,
+          ]));
+          saveThemeCollectionState({
+            activeThemeId: unlockedThemeIds.includes(payload.settings.themeCollection.activeThemeId)
+              ? payload.settings.themeCollection.activeThemeId
+              : currentCollection.activeThemeId,
+            unlockedThemeIds,
+          });
+        }
+        payload.settings.achievements?.unlockedAchievementIds?.forEach(id => {
+          if (getAchievementById(id)?.asset.status === 'ready') unlockAchievement(id);
+        });
+        if (payload.settings.achievements?.progress) {
+          mergeAchievementProgressState(payload.settings.achievements.progress);
+        }
+        if (payload.settings.achievements?.selectedRewardBadgeId && getRewardById(payload.settings.achievements.selectedRewardBadgeId)?.asset.status === 'ready') {
+          setSelectedRewardBadgeId(payload.settings.achievements.selectedRewardBadgeId);
+        }
         setSaveStatus('saving');
         setShowProjectMenu(false);
       } catch {
@@ -627,6 +684,7 @@ const handleLogout = () => {
     await new Promise(resolve => setTimeout(resolve, 50));
     const { exportToPNG } = await import('../utils/export');
     await exportToPNG(lang, user, userLogo, primaryInstrument);
+    recordAchievementEvent({ type: 'export_diagram', format: 'png' });
     setIsExporting(false);
   };
 
@@ -635,6 +693,7 @@ const handleLogout = () => {
     await new Promise(resolve => setTimeout(resolve, 50));
     const { exportToPDF } = await import('../utils/export');
     await exportToPDF(lang, user, userLogo, primaryInstrument);
+    recordAchievementEvent({ type: 'export_diagram', format: 'pdf' });
     setIsExporting(false);
   };
 
@@ -645,16 +704,41 @@ const handleLogout = () => {
   const primaryInstrument = activeInstance?.instrumentType || defaultInstrument;
   const primaryLeftHanded = activeInstance?.isLeftHanded || false;
   const isBassInstrument = primaryInstrument.startsWith('bass');
+  const isExtendedGuitar = primaryInstrument.startsWith('guitar') && primaryInstrument !== 'guitar-6';
   const titleColorClass = isBassInstrument
     ? isLight
       ? 'text-emerald-600'
       : 'bg-gradient-to-r from-emerald-200 via-green-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(16,185,129,0.18)]'
-    : isLight
-      ? 'text-violet-600'
-      : 'bg-gradient-to-r from-violet-200 via-purple-500 to-fuchsia-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(168,85,247,0.20)]';
+    : isExtendedGuitar
+      ? isLight
+        ? 'text-violet-600'
+        : 'bg-gradient-to-r from-violet-200 via-purple-500 to-fuchsia-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(168,85,247,0.20)]'
+      : isLight
+        ? 'text-blue-600'
+        : 'bg-gradient-to-r from-blue-200 via-blue-500 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(37,99,235,0.18)]';
   const brandAssets = getBrandAssets(primaryInstrument);
+  const themeCollectionState = loadThemeCollectionState();
+  const activeCollectionTheme = THEME_REGISTRY.find(item =>
+    item.id === themeCollectionState.activeThemeId &&
+    (item.unlocked || themeCollectionState.unlockedThemeIds.includes(item.id))
+  );
+  const displayedBrandAssets: BrandAssets = activeCollectionTheme?.image
+    ? {
+      ...brandAssets,
+      logo: activeCollectionTheme.image,
+      hero: activeCollectionTheme.image,
+      label: activeCollectionTheme.name,
+      accentShadow: activeCollectionTheme.glowColor || brandAssets.accentShadow,
+    }
+    : brandAssets;
   const updatePrimaryInstrument = (instrumentType: InstrumentType) => {
     const instrument = INSTRUMENT_PRESETS[instrumentType];
+    const instrumentFamily = instrumentType.startsWith('bass')
+      ? 'bass'
+      : instrumentType === 'guitar-6'
+        ? 'guitar'
+        : 'extended_guitar';
+    recordAchievementEvent({ type: 'instrument_switch', instrumentFamily });
     setDefaultInstrument(instrumentType);
     setInstances(prev => prev.map((instance, index) => index === activeInstanceIndex ? {
       ...instance,
@@ -671,7 +755,7 @@ const handleLogout = () => {
   };
   const openHarmonicCycle = useCallback(() => {
     saveConfig({
-      version: "1.8.6",
+      version: "1.8.7",
       activeProjectId: projectId,
       theme,
       lang,
@@ -682,6 +766,21 @@ const handleLogout = () => {
     });
     setShowProjectMenu(false);
     window.history.pushState(null, '', '/harmonic-cycle');
+    window.dispatchEvent(new Event('ga-route-change'));
+  }, [defaultInstrument, lang, projectId, showTips, theme, user, userLogo]);
+  const openModulePage = useCallback((path: string) => {
+    saveConfig({
+      version: "1.8.7",
+      activeProjectId: projectId,
+      theme,
+      lang,
+      currentUser: user,
+      userLogo,
+      defaultInstrument,
+      showTips
+    });
+    setShowProjectMenu(false);
+    window.history.pushState(null, '', path);
     window.dispatchEvent(new Event('ga-route-change'));
   }, [defaultInstrument, lang, projectId, showTips, theme, user, userLogo]);
   const openMyInstruments = useCallback(() => {
@@ -719,29 +818,53 @@ const handleLogout = () => {
       return;
     }
 
-    if (!pending || pending.source !== 'harmonic-cycle') {
+    if (!pending || (pending.source !== 'harmonic-cycle' && pending.source !== 'study-module')) {
       window.localStorage.removeItem(PENDING_FRETBOARD_ACTION_KEY);
       return;
     }
 
     window.localStorage.removeItem(PENDING_FRETBOARD_ACTION_KEY);
+
+    if (pending.action === 'scale') {
+      recordAchievementEvent({ type: 'exploration', key: 'apply_scale' });
+    }
+    if (pending.source === 'harmonic-cycle' && pending.action === 'progression') {
+      recordAchievementEvent({ type: 'exploration', key: 'harmonic_cycle_progression' });
+    }
+    if (pending.tool === 'metronome') {
+      recordAchievementEvent({ type: 'exploration', key: 'open_metronome' });
+    }
+    if (pending.action === 'openTool') {
+      if (pending.tool) {
+        window.setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: pending?.tool } }));
+        }, 120);
+      }
+      return;
+    }
+
     const applyToDiagram = (instance: FretboardState): FretboardState => {
       const isHarmonyAction = pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression';
+      const nextRoot = pending.root || instance.root;
+      const nextScaleType = pending.scaleType || instance.scaleType;
       return {
         ...instance,
         title: pending.action === 'progression' && pending.progression
-          ? `${pending.displayRoot || pending.root} - ${pending.progression}`
-          : `${pending.displayRoot || pending.root} - ${pending.scaleType}`,
-        subtitle: pending.chords?.length ? pending.chords.join(' - ') : pending.scaleType,
+          ? `${pending.displayRoot || nextRoot} - ${pending.progression}`
+          : `${pending.displayRoot || nextRoot} - ${nextScaleType}`,
+        subtitle: pending.chords?.length ? pending.chords.join(' - ') : nextScaleType,
         notes: pending.action === 'progression' && pending.chords?.length
           ? `${pending.progression}: ${pending.chords.join(' - ')}`
+          : pending.moduleTitle
+            ? `${pending.moduleTitle}: ${pending.moduleLabel || nextScaleType}`
           : instance.notes,
-        root: pending.root,
-        scaleType: pending.scaleType,
-        harmonyMode: isHarmonyAction ? 'TRIADS' : 'OFF',
-        chordQuality: 'DIATONIC',
-        chordDegree: 0,
-        inversion: 0,
+        root: nextRoot,
+        scaleType: nextScaleType,
+        harmonyMode: pending.harmonyMode || (isHarmonyAction ? 'TRIADS' : 'OFF'),
+        chordQuality: pending.chordQuality || 'DIATONIC',
+        chordDegree: pending.chordDegree ?? 0,
+        inversion: pending.inversion ?? 0,
+        voicingMode: pending.voicingMode || instance.voicingMode,
         layers: {
           ...instance.layers,
           showScale: true,
@@ -760,6 +883,13 @@ const handleLogout = () => {
       const targetIndex = activeInstanceIndex >= 0 ? activeInstanceIndex : 0;
       return prev.map((instance, index) => index === targetIndex ? applyToDiagram(instance) : instance);
     });
+
+    if (pending.action === 'startPractice' || pending.tool) {
+      window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: pending?.tool || 'exercises' } }));
+      }, 160);
+    }
+
     setSaveStatus('saving');
   }, [activeInstanceIndex, defaultInstrument, lang]);
 
@@ -866,7 +996,10 @@ const handleLogout = () => {
 	                {lang === 'pt' ? 'Ciclo' : 'Cycle'}
 	              </button>
 	              <button
-	                onClick={() => window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'metronome' } }))}
+	                onClick={() => {
+                    recordAchievementEvent({ type: 'exploration', key: 'open_metronome' });
+                    window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'metronome' } }));
+                  }}
                 className={`rounded-xl border px-2.5 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
                 aria-label={lang === 'pt' ? 'Abrir metrônomo e ferramentas' : 'Open metronome and tools'}
                 title={lang === 'pt' ? 'Metrônomo' : 'Metronome'}
@@ -885,7 +1018,7 @@ const handleLogout = () => {
           </div>
 
           {showProjectMenu && (
-            <div className={`absolute left-3 right-3 top-full mt-2 rounded-2xl border p-3 shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+            <div className={`absolute left-3 right-3 top-full mt-2 max-h-[calc(100vh-92px)] overflow-y-auto rounded-2xl border p-3 shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                   {lang === 'pt' ? 'Abrir JSON' : 'Open JSON'}
@@ -906,10 +1039,15 @@ const handleLogout = () => {
               <button onClick={openMyInstruments} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                 {lang === 'pt' ? 'Meus Instrumentos' : 'My Instruments'}
               </button>
-              <div className={`mt-2 flex rounded-lg border p-0.5 ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
-                <button onClick={() => { setLang('pt'); setShowProjectMenu(false); }} className={`flex-1 rounded px-2 py-2 text-[9px] font-black ${lang === 'pt' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>PORT</button>
-                <button onClick={() => { setLang('en'); setShowProjectMenu(false); }} className={`flex-1 rounded px-2 py-2 text-[9px] font-black ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>ENG</button>
-              </div>
+              <button onClick={() => openModulePage('/learn')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                {lang === 'pt' ? 'Aprender' : 'Learn'}
+              </button>
+              <button onClick={() => openModulePage('/practice')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                {lang === 'pt' ? 'Praticar' : 'Practice'}
+              </button>
+              <button onClick={() => openModulePage('/theme-collection')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                {lang === 'pt' ? 'Coleção' : 'Collection'}
+              </button>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
                   <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Guitarra' : 'Guitar'}</p>
@@ -950,7 +1088,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
          <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
             <div className="flex items-center gap-3 md:gap-5 overflow-hidden">
-               <LogoIcon brand={brandAssets} />
+               <LogoIcon brand={displayedBrandAssets} />
                <div className="min-w-0">
                   <h1 className={`text-[16px] md:text-2xl font-black italic leading-none tracking-tighter uppercase truncate ${titleColorClass}`}>GUITAR ARCHITECT</h1>
                   <p className="text-[8px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-tight mt-1">{t.tagline}</p>
@@ -981,48 +1119,68 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                </div>
             </div>
 
-            <div className="flex items-center gap-1.5 md:gap-4 shrink-0">
+            <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
+               <div className="hidden xl:grid grid-cols-4 gap-1.5">
+                 {[
+                   { label: lang === 'pt' ? 'Aprender' : 'Learn', path: '/learn' },
+                   { label: lang === 'pt' ? 'Praticar' : 'Practice', path: '/practice' },
+                   { label: lang === 'pt' ? 'Ciclo' : 'Cycle', path: '/harmonic-cycle' },
+                   { label: lang === 'pt' ? 'Acordes' : 'Chords', path: '/chords' },
+                   { label: 'CAGED', path: '/caged' },
+                   { label: lang === 'pt' ? 'Triades' : 'Triads', path: '/triads-tetrads' },
+                   { label: lang === 'pt' ? 'Modos' : 'Modes', path: '/greek-modes' },
+                   { label: lang === 'pt' ? 'Coleção' : 'Collection', path: '/theme-collection' },
+                 ].map(item => (
+                   <button
+                     key={item.path}
+                     onClick={() => openModulePage(item.path)}
+                     className={`min-w-[74px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+                   >
+                     {item.label}
+                   </button>
+                 ))}
+               </div>
+               <div className="flex flex-col gap-1.5">
 	               <button
 	                 onClick={() => setTheme(isLight ? 'dark' : 'light')}
-                 className={`p-2 md:p-2.5 rounded-xl border transition-all ai-glow ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+                 className={`p-2 rounded-xl border transition-all ai-glow ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
                  title={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
                  aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
 	               >
 	                  {isLight ? <MoonIcon /> : <SunIcon />}
 	               </button>
 	               <button
-	                 onClick={openHarmonicCycle}
-	                 className={`px-3 md:px-4 py-2 md:py-2.5 rounded-xl border transition-all ai-glow font-black text-[10px] md:text-[11px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
-	                 title={translations[lang].harmonicCycle.menu}
-	                 aria-label={translations[lang].harmonicCycle.menu}
+	                 onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
+	                 className={`px-3 py-2 rounded-xl border transition-all ai-glow font-black text-[10px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+	                 title={lang === 'pt' ? 'English' : 'Português'}
+	                 aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para português'}
 	               >
-	                 {lang === 'pt' ? 'Ciclo' : 'Cycle'}
+	                 {lang === 'pt' ? 'EN' : 'PORT'}
 	               </button>
+               </div>
+               <div className="flex flex-col gap-1.5">
 	               <button
 	                 onClick={() => window.dispatchEvent(new CustomEvent('ga-open-active-tour'))}
-                 className={`p-2 md:p-2.5 rounded-xl border transition-all ai-glow font-black text-sm ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+                 className={`p-2 rounded-xl border transition-all ai-glow font-black text-xs ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
                  title={lang === 'pt' ? 'Tutorial' : 'Tutorial'}
                  aria-label={lang === 'pt' ? 'Abrir tutorial' : 'Open tutorial'}
                >
                  T
                </button>
-               <button onClick={toggleFullScreen} className={`p-2 md:p-2.5 rounded-xl border transition-all ai-glow ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`} title="Toggle Full Screen">
-                  <FullScreenIcon isFullScreen={isFullScreen} />
-               </button>
-
                {/* LOAD / SAVE — SEPARADOS */}
-               <a href="/legal/help.html" target="_blank" rel="noreferrer" className={`p-2 md:p-2.5 rounded-xl border transition-all ai-glow font-black text-sm ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`} title={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'} aria-label={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'}>
+               <a href="/legal/help.html" target="_blank" rel="noreferrer" className={`p-2 rounded-xl border transition-all ai-glow text-center font-black text-xs ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`} title={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'} aria-label={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'}>
                  ?
                </a>
-<div className="flex items-center gap-2 md:gap-3">
+               </div>
+<div className="flex flex-col gap-1.5">
 
   {/* LOAD */}
   <button
     onClick={() => projectFileInputRef.current?.click()}
     className={`
-      px-4 md:px-6 py-2 md:py-3
+      px-3 md:px-4 py-1.5 md:py-2
       rounded-xl border font-black uppercase
-      text-[10px] md:text-[11px]
+      text-[9px] md:text-[10px]
       transition-all shadow-sm ai-glow
       ${isLight
         ? 'bg-white border-zinc-300 text-zinc-800 hover:border-blue-500 hover:text-blue-600'
@@ -1036,9 +1194,9 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   <button
     onClick={exportProjectFile}
     className={`
-      px-4 md:px-6 py-2 md:py-3
+      px-3 md:px-4 py-1.5 md:py-2
       rounded-xl border font-black uppercase
-      text-[10px] md:text-[11px]
+      text-[9px] md:text-[10px]
       transition-all shadow-sm ai-glow
       ${isLight
         ? 'bg-white border-zinc-300 text-zinc-800 hover:border-emerald-500 hover:text-emerald-600'
@@ -1065,15 +1223,15 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   </span>
 
   {/* BOTÕES */}
-  <div className="flex gap-1 md:gap-2">
+  <div className="flex flex-col gap-1">
     <button
       onClick={handleExportPNG}
       className="
         bg-emerald-600
-        px-3 md:px-6 py-2 md:py-3
+        px-3 md:px-5 py-1.5 md:py-2
         rounded-xl
         font-black
-        text-[10px] md:text-[11px]
+        text-[9px] md:text-[10px]
         text-white
         shadow-md
         active:scale-90
@@ -1087,10 +1245,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       onClick={handleExportPDF}
       className="
         bg-red-600
-        px-3 md:px-6 py-2 md:py-3
+        px-3 md:px-5 py-1.5 md:py-2
         rounded-xl
         font-black
-        text-[10px] md:text-[11px]
+        text-[9px] md:text-[10px]
         text-white
         shadow-md
         active:scale-90
@@ -1115,13 +1273,8 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   </button>
 
   {showProjectMenu && (
-    <div className={`absolute right-0 top-full mt-3 w-[290px] rounded-2xl border p-4 shadow-2xl z-[80] ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+    <div className={`absolute right-0 top-full z-[80] mt-3 max-h-[calc(100vh-112px)] w-[290px] overflow-y-auto rounded-2xl border p-4 shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
       <div className="space-y-4">
-        <div className={`flex border rounded-lg p-0.5 ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-800 border-zinc-700'}`}>
-          <button onClick={() => { setLang('pt'); setShowProjectMenu(false); }} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'pt' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>PORT</button>
-          <button onClick={() => { setLang('en'); setShowProjectMenu(false); }} className={`flex-1 px-2 py-2 text-[9px] font-black rounded ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>ENG</button>
-        </div>
-
         <button onClick={() => { setShowLoadModal(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
           {lang === 'pt' ? 'CARREGAR PROJETOS LOCAIS' : 'LOAD LOCAL PROJECTS'}
         </button>
@@ -1146,6 +1299,22 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         <button onClick={openMyInstruments} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
           {lang === 'pt' ? 'MEUS INSTRUMENTOS' : 'MY INSTRUMENTS'}
         </button>
+
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { label: lang === 'pt' ? 'APRENDER' : 'LEARN', path: '/learn' },
+            { label: lang === 'pt' ? 'PRATICAR' : 'PRACTICE', path: '/practice' },
+            { label: lang === 'pt' ? 'ACORDES' : 'CHORDS', path: '/chords' },
+            { label: 'CAGED', path: '/caged' },
+            { label: lang === 'pt' ? 'TRÍADES' : 'TRIADS', path: '/triads-tetrads' },
+            { label: lang === 'pt' ? 'MODOS' : 'MODES', path: '/greek-modes' },
+            { label: lang === 'pt' ? 'COLEÇÃO' : 'COLLECTION', path: '/theme-collection' },
+          ].map(item => (
+            <button key={item.path} onClick={() => openModulePage(item.path)} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+              {item.label}
+            </button>
+          ))}
+        </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
@@ -1304,9 +1473,18 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         {instances.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
              <div className="relative mb-8 md:mb-12 scale-90 md:scale-100">
-                <img src={brandAssets.hero} alt={`Guitar Architect Hero - ${brandAssets.label}`} className="w-full max-w-[280px] md:max-w-lg rounded-[24px] md:rounded-[40px] shadow-2xl" />
+                <img src={displayedBrandAssets.hero} alt={`Guitar Architect Hero - ${displayedBrandAssets.label}`} className="w-full max-w-[280px] md:max-w-lg rounded-[24px] md:rounded-[40px] shadow-2xl" />
              </div>
-             <button onClick={() => addInstance()} className="bg-blue-600 text-white px-8 md:px-12 py-4 md:py-5 rounded-xl font-black uppercase text-[10px] md:text-xs shadow-xl active:scale-95 transition-transform">Criar Primeiro Diagrama</button>
+             <button
+               onClick={() => addInstance()}
+               className="px-8 md:px-12 py-4 md:py-5 rounded-xl font-black uppercase text-[10px] md:text-xs text-white shadow-xl active:scale-95 transition-transform"
+               style={{
+                 background: `linear-gradient(135deg, ${displayedBrandAssets.accent}, ${displayedBrandAssets.accentShadow})`,
+                 boxShadow: `0 18px 46px ${displayedBrandAssets.accentShadow}`,
+               }}
+             >
+               Criar Primeiro Diagrama
+             </button>
           </div>
         ) : (
           instances.map((inst, idx) => (
@@ -1318,7 +1496,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       <footer className={`py-10 border-t ${isExporting ? 'hidden' : 'hidden md:block'} ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-900'}`}>
          <div className="max-w-[1700px] mx-auto px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-               <LogoIcon brand={brandAssets} variant="footer" />
+               <LogoIcon brand={displayedBrandAssets} variant="footer" />
                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Guitar Architect • DPDDA-tech</p>
             </div>
             <div className="flex gap-4 md:gap-8 text-[10px] font-black uppercase text-zinc-500">
@@ -1336,7 +1514,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xl">
           <div className={`w-full max-w-md rounded-[40px] p-8 md:p-12 border shadow-2xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
              <div className="flex flex-col items-center mb-8">
-                <LogoIcon brand={brandAssets} variant="large" />
+                <LogoIcon brand={displayedBrandAssets} variant="large" />
                 <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-center">Identidade Visual</h2>
              </div>
              

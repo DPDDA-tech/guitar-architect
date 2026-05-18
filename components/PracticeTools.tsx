@@ -4,6 +4,9 @@ import { getScaleNotes } from '../music/scales';
 import { generateChordVoicings, type ChordType, type ChordVoicingCandidate } from '../music/chordLibrary';
 import { getFrequencyForNoteName, getFrequencyForPosition, getOpenStringMidi, playFrequencies } from '../utils/audio';
 import type { FretboardState, InstrumentType, StringStatus } from '../types';
+import { recordAchievementEvent } from '../utils/achievementEvents';
+
+type PracticeToolId = 'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes';
 
 interface PracticeToolsProps {
   instrumentType: InstrumentType;
@@ -13,7 +16,8 @@ interface PracticeToolsProps {
   state: FretboardState;
   onApplyExample: (state: FretboardState) => void;
   onHighlightPosition: (position: { string: number; fret: number }) => void;
-  initialTool?: 'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes';
+  initialTool?: PracticeToolId;
+  toolScope?: 'all' | 'quick';
 }
 
 type TunerTarget = {
@@ -188,8 +192,11 @@ const detectPitch = (buffer: Float32Array, sampleRate: number) => {
 
 const getCents = (frequency: number, target: number) => Math.round(1200 * Math.log2(frequency / target));
 
-const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, isLight, lang, state, onApplyExample, onHighlightPosition, initialTool }) => {
-  const [activeTool, setActiveTool] = useState<'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes'>('tuner');
+const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, isLight, lang, state, onApplyExample, onHighlightPosition, initialTool, toolScope = 'all' }) => {
+  const availableTools = useMemo<PracticeToolId[]>(() => (
+    toolScope === 'quick' ? ['tuner', 'metronome'] : ['tuner', 'metronome', 'intervals', 'exercises', 'changes']
+  ), [toolScope]);
+  const [activeTool, setActiveTool] = useState<PracticeToolId>('tuner');
   const [isTunerRunning, setIsTunerRunning] = useState(false);
   const [detectedFrequency, setDetectedFrequency] = useState<number | null>(null);
   const [tunerError, setTunerError] = useState<string | null>(null);
@@ -229,8 +236,12 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
   const changeBeatRef = useRef(0);
 
   useEffect(() => {
-    if (initialTool) setActiveTool(initialTool);
-  }, [initialTool]);
+    if (initialTool && availableTools.includes(initialTool)) {
+      setActiveTool(initialTool);
+      return;
+    }
+    if (!availableTools.includes(activeTool)) setActiveTool(availableTools[0]);
+  }, [activeTool, availableTools, initialTool]);
 
   const targets = useMemo<TunerTarget[]>(() => tuning.map((note, stringIndex) => ({
     string: stringIndex,
@@ -354,6 +365,7 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
   };
 
   const startMetronome = () => {
+    recordAchievementEvent({ type: 'exploration', key: 'open_metronome' });
     beatRef.current = 0;
     countInRemainingRef.current = isCountInEnabled ? beatsPerBar : 0;
     bpmRef.current = bpm;
@@ -588,8 +600,15 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
   return (
     <div className={`rounded-2xl border p-3 ${panelClass}`}>
       <div className="mb-3 flex gap-2 rounded-xl border border-zinc-200 bg-white p-1">
-        {(['tuner', 'metronome', 'intervals', 'exercises', 'changes'] as const).map(tool => (
-          <button key={tool} onClick={() => setActiveTool(tool)} className={`flex-1 rounded-lg py-2 text-[9px] font-black uppercase ${activeTool === tool ? 'bg-blue-600 text-white' : 'text-zinc-500 hover:text-blue-600'}`}>
+        {availableTools.map(tool => (
+          <button
+            key={tool}
+            onClick={() => {
+              if (tool === 'metronome') recordAchievementEvent({ type: 'exploration', key: 'open_metronome' });
+              setActiveTool(tool);
+            }}
+            className={`flex-1 rounded-lg py-2 text-[9px] font-black uppercase ${activeTool === tool ? 'bg-blue-600 text-white' : 'text-zinc-500 hover:text-blue-600'}`}
+          >
             {tool === 'tuner' ? (lang === 'pt' ? 'Afinador' : 'Tuner') : tool === 'metronome' ? (lang === 'pt' ? 'Metrônomo' : 'Metronome') : tool === 'intervals' ? (lang === 'pt' ? 'Intervalos' : 'Intervals') : tool === 'exercises' ? (lang === 'pt' ? 'Exercícios' : 'Exercises') : (lang === 'pt' ? 'Trocas' : 'Changes')}
           </button>
         ))}

@@ -52,12 +52,24 @@ describe('project file import/export', () => {
       lang: 'pt',
       defaultInstrument: 'guitar-6',
       showTips: false,
+      themeCollection: {
+        activeThemeId: 'institutional-blue',
+        unlockedThemeIds: ['institutional-blue', 'bass-green'],
+      },
+      achievements: {
+        unlockedAchievementIds: ['first-exercise-complete'],
+        progress: {
+          completedExerciseIds: ['alternate-picking-basic'],
+          exerciseBpmTargets: { 'major-scale-bpm': 80 },
+        },
+        selectedRewardBadgeId: 'sticker-major-scale',
+      },
       exportedAt: '2026-05-01T12:00:00.000Z',
     });
 
     expect(payload).toMatchObject({
       schema: 'guitar-architect-project',
-      appVersion: '1.8.6',
+      appVersion: '1.8.7',
       exportedAt: '2026-05-01T12:00:00.000Z',
       project: {
         id: 'project-1',
@@ -70,8 +82,17 @@ describe('project file import/export', () => {
         lang: 'pt',
         defaultInstrument: 'guitar-6',
         showTips: false,
+        themeCollection: {
+          activeThemeId: 'institutional-blue',
+          unlockedThemeIds: ['institutional-blue', 'bass-green'],
+        },
+        achievements: {
+          unlockedAchievementIds: ['first-exercise-complete'],
+          selectedRewardBadgeId: 'sticker-major-scale',
+        },
       },
     });
+    expect(payload.settings.achievements?.progress.exerciseBpmTargets?.['major-scale-bpm']).toBe(80);
     expect(payload.project.instances[0]).toMatchObject({ root: 'C', scaleType: 'Major (Ionian)' });
   });
 
@@ -89,6 +110,8 @@ describe('project file import/export', () => {
 
     expect(parseProjectFile(JSON.stringify(payload)).project.name).toBe('Import Me');
     expect(parseProjectFile(JSON.stringify(payload.project)).project.instances).toHaveLength(1);
+    expect(parseProjectFile(JSON.stringify(payload.project)).settings.achievements).toBeUndefined();
+    expect(parseProjectFile(JSON.stringify(payload.project)).settings.themeCollection).toBeUndefined();
   });
 
   it('rejects invalid project files', () => {

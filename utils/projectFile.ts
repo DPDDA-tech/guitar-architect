@@ -1,6 +1,7 @@
 import type { FretboardState, InstrumentType, Project, ProjectFilePayload, ThemeMode } from '../types';
+import type { AchievementProgressState } from '../types/achievement';
 
-const APP_VERSION = '1.8.6';
+const APP_VERSION = '1.8.7';
 
 export interface ProjectFileInput {
   projectId: string;
@@ -13,6 +14,12 @@ export interface ProjectFileInput {
   defaultInstrument?: InstrumentType;
   userLogo?: string;
   showTips?: boolean;
+  themeCollection?: ProjectFilePayload['settings']['themeCollection'];
+  achievements?: {
+    unlockedAchievementIds: string[];
+    progress: AchievementProgressState;
+    selectedRewardBadgeId?: string | null;
+  };
   exportedAt?: string;
 }
 
@@ -55,9 +62,15 @@ export const serializeProjectFile = (input: ProjectFileInput): ProjectFilePayloa
       defaultInstrument: input.defaultInstrument,
       userLogo: input.userLogo,
       showTips: input.showTips,
+      themeCollection: input.themeCollection,
+      achievements: input.achievements,
     },
   };
 };
+
+const readStringArray = (value: unknown) => (
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
+);
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -94,6 +107,19 @@ export const parseProjectFile = (raw: string): ProjectFilePayload => {
 
   if (isObject(parsed) && parsed.schema === 'guitar-architect-project' && hasMinimalProjectShape(parsed.project)) {
     const settings = isObject(parsed.settings) ? parsed.settings : {};
+    const themeCollection = isObject(settings.themeCollection)
+      ? {
+        activeThemeId: typeof settings.themeCollection.activeThemeId === 'string' ? settings.themeCollection.activeThemeId : '',
+        unlockedThemeIds: readStringArray(settings.themeCollection.unlockedThemeIds),
+      }
+      : undefined;
+    const achievements = isObject(settings.achievements)
+      ? {
+        unlockedAchievementIds: readStringArray(settings.achievements.unlockedAchievementIds),
+        progress: isObject(settings.achievements.progress) ? settings.achievements.progress as AchievementProgressState : {},
+        selectedRewardBadgeId: typeof settings.achievements.selectedRewardBadgeId === 'string' ? settings.achievements.selectedRewardBadgeId : null,
+      }
+      : undefined;
     return {
       schema: 'guitar-architect-project',
       appVersion: typeof parsed.appVersion === 'string' ? parsed.appVersion : APP_VERSION,
@@ -108,6 +134,8 @@ export const parseProjectFile = (raw: string): ProjectFilePayload => {
         defaultInstrument: settings.defaultInstrument as InstrumentType | undefined,
         userLogo: typeof settings.userLogo === 'string' ? settings.userLogo : undefined,
         showTips: typeof settings.showTips === 'boolean' ? settings.showTips : undefined,
+        themeCollection,
+        achievements,
       },
     };
   }
