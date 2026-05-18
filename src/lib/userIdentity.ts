@@ -36,7 +36,7 @@ export const isReservedDisplayName = (name: string) => {
 };
 
 export const canUseDisplayName = (name: string, email?: string | null) => (
-  !isReservedDisplayName(name) || isAdminEmail(email)
+  Boolean(name.trim() || email)
 );
 
 export const getDisplayNameError = (lang: 'pt' | 'en') => (

@@ -1667,8 +1667,8 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                 </p>
                 <h2 className="mt-1 text-lg font-black uppercase tracking-tight">
                   {lang === 'pt'
-                    ? 'Leve seus projetos antigos para a conta sincronizada'
-                    : 'Move your old projects into your synced account'}
+                    ? 'Leve seus projetos antigos, desbloqueios, conquistas e instrumentos para a conta sincronizada'
+                    : 'Move your old projects, unlocks, achievements and instruments into your synced account'}
                 </h2>
                 <p className={`mt-2 max-w-4xl text-sm font-semibold leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
                   {lang === 'pt'
