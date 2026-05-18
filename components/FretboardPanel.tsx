@@ -1475,32 +1475,29 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           {lang === 'pt' ? 'CARREGAR PROJETOS LOCAIS' : 'LOAD LOCAL PROJECTS'}
         </button>
 
-        <div className="grid grid-cols-1 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <button onClick={() => { exportProjectFile(); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-emerald-500 hover:text-emerald-600' : 'border-zinc-700 text-zinc-200 hover:border-emerald-500 hover:text-emerald-400'}`}>
-            {lang === 'pt' ? 'EXPORTAR PROJETO (.JSON)' : 'EXPORT PROJECT (.JSON)'}
+            {lang === 'pt' ? 'EXPORTAR JSON' : 'EXPORT JSON'}
           </button>
           <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-            {lang === 'pt' ? 'IMPORTAR PROJETO (.JSON)' : 'IMPORT PROJECT (.JSON)'}
+            {lang === 'pt' ? 'IMPORTAR JSON' : 'IMPORT JSON'}
           </button>
         </div>
-
-        <button onClick={togglePrimaryLeftHanded} className={`w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-          {lang === 'pt' ? 'CANHOTO' : 'LEFT-HANDED'}
-        </button>
-
-        <button onClick={openHarmonicCycle} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-          {translations[lang].harmonicCycle.menu}
-        </button>
-
-        <button onClick={openMyInstruments} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-          {lang === 'pt' ? 'MEUS INSTRUMENTOS' : 'MY INSTRUMENTS'}
-        </button>
 
         <button onClick={() => openModulePage('/profile')} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
           {lang === 'pt' ? 'PERFIL' : 'PROFILE'}
         </button>
 
         <div className="grid grid-cols-2 gap-2">
+          <button onClick={openMyInstruments} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+            {lang === 'pt' ? 'INSTRUMENTOS' : 'INSTRUMENTS'}
+          </button>
+          <button onClick={() => openModulePage('/theme-collection')} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+            {lang === 'pt' ? 'COLEÇÕES' : 'COLLECTIONS'}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 [&>button]:min-w-0">
           {[
             { label: lang === 'pt' ? 'APRENDER' : 'LEARN', path: '/learn' },
             { label: lang === 'pt' ? 'PRATICAR' : 'PRACTICE', path: '/practice' },
@@ -1508,13 +1505,17 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             { label: 'CAGED', path: '/caged' },
             { label: lang === 'pt' ? 'TRÍADES' : 'TRIADS', path: '/triads-tetrads' },
             { label: lang === 'pt' ? 'MODOS' : 'MODES', path: '/greek-modes' },
-            { label: lang === 'pt' ? 'COLEÇÃO' : 'COLLECTION', path: '/theme-collection' },
+            { label: translations[lang].harmonicCycle.menu, path: 'harmonic-cycle' },
           ].map(item => (
-            <button key={item.path} onClick={() => openModulePage(item.path)} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+            <button key={item.path} onClick={() => item.path === 'harmonic-cycle' ? openHarmonicCycle() : openModulePage(item.path)} className={`flex min-h-[42px] w-full items-center justify-center rounded-xl border px-2 py-2.5 text-center text-[10px] font-black uppercase transition-all ${item.path === 'harmonic-cycle' ? 'col-span-2' : ''} ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
               {item.label}
             </button>
           ))}
         </div>
+
+        <button onClick={togglePrimaryLeftHanded} className={`w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+          {lang === 'pt' ? 'CANHOTO' : 'LEFT-HANDED'}
+        </button>
 
         <div className="grid grid-cols-2 gap-2">
           <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
