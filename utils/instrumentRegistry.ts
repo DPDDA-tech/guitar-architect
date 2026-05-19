@@ -1,8 +1,18 @@
 import { UserInstrument } from '../types';
+import { loadConfig } from './persistence';
 
 const DB_NAME = 'guitar-architect-instruments';
 const DB_VERSION = 1;
 const STORE_NAME = 'instruments';
+
+const getCurrentUserId = (): string => {
+  try {
+    const config = loadConfig();
+    return config?.currentUser || 'guest';
+  } catch {
+    return 'guest';
+  }
+};
 
 const openDb = (): Promise<IDBDatabase> => new Promise((resolve, reject) => {
   const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -10,7 +20,9 @@ const openDb = (): Promise<IDBDatabase> => new Promise((resolve, reject) => {
   request.onupgradeneeded = () => {
     const db = request.result;
     if (!db.objectStoreNames.contains(STORE_NAME)) {
-      db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      // Add index for user isolation
+      store.createIndex('userId', 'userId', { unique: false });
     }
   };
 
@@ -41,28 +53,71 @@ const runStore = async <T>(
   }).finally(() => db.close());
 };
 
-export const listInstruments = async (): Promise<UserInstrument[]> => {
-  const result = await runStore<UserInstrument[]>('readonly', store => store.getAll());
-  return ((result || []) as UserInstrument[]).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+export const listInstruments = async (userId?: string): Promise<UserInstrument[]> => {
+  const currentUserId = userId || getCurrentUserId();
+  const result = await runStore<UserInstrument[]>('readonly', store => {
+    // Filter by userId index for security isolation
+    const index = store.index('userId');
+    return index.getAll(IDBKeyRange.only(currentUserId));
+  });
+  return ((result || []) as UserInstrument[])
+    .filter(i => i.userId === currentUserId) // Double-check user isolation
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 };
 
-export const saveInstrument = async (instrument: UserInstrument): Promise<void> => {
+export const saveInstrument = async (instrument: UserInstrument, userId?: string): Promise<void> => {
+  const currentUserId = userId || getCurrentUserId();
+  const instrumentWithUser = { ...instrument, userId: currentUserId };
   await runStore('readwrite', store => {
-    store.put(instrument);
+    store.put(instrumentWithUser);
   });
 };
 
-export const replaceInstruments = async (instruments: UserInstrument[]): Promise<void> => {
+export const replaceInstruments = async (instruments: UserInstrument[], userId?: string): Promise<void> => {
+  const currentUserId = userId || getCurrentUserId();
   await runStore('readwrite', store => {
-    store.clear();
-    instruments.forEach(instrument => store.put(instrument));
+    // Clear only current user's instruments, not all instruments
+    const index = store.index('userId');
+    const range = IDBKeyRange.only(currentUserId);
+    const cursorRequest = index.openCursor(range);
+    
+    cursorRequest.onsuccess = (e: Event) => {
+      const cursor = (e.target as IDBRequest).result as IDBCursorWithValue;
+      if (cursor) {
+        store.delete(cursor.primaryKey);
+        cursor.continue();
+      }
+    };
+  }).catch(err => {
+    console.error('Error clearing user instruments:', err);
+  });
+  
+  // Add new instruments
+  await runStore('readwrite', store => {
+    instruments.forEach(instrument => {
+      const instrumentWithUser = { ...instrument, userId: currentUserId };
+      store.put(instrumentWithUser);
+    });
   });
 };
 
-export const deleteInstrument = async (id: string): Promise<void> => {
-  await runStore('readwrite', store => {
-    store.delete(id);
-  });
+export const deleteInstrument = async (id: string, userId?: string): Promise<void> => {
+  const currentUserId = userId || getCurrentUserId();
+  const allResults = await runStore<UserInstrument[]>('readonly', store => store.get(id));
+  const instrument = allResults as unknown as UserInstrument | undefined;
+  
+  // Only delete if it belongs to current user
+  if (instrument && instrument.userId === currentUserId) {
+    await runStore('readwrite', store => {
+      store.delete(id);
+    });
+  } else if (!instrument) {
+    // Instrument doesn't exist - that's ok
+    return;
+  } else {
+    // Attempt to delete instrument from different user - security violation
+    console.warn('[GA] Security: Attempted to delete instrument from different user account');
+  }
 };
 
 export const createEmptyInstrument = (): UserInstrument => {

@@ -6,11 +6,26 @@ import {
   mergeAchievementProgressState,
   unlockAchievement,
 } from './achievementStorage';
+import { loadConfig } from './persistence';
 import type { AchievementProgressState } from '../types/achievement';
 
 const EVENT_LOG_KEY = 'ga_achievement_event_log';
 const MAX_EVENT_LOG_LENGTH = 120;
 const LOYALTY_DAYS_KEY = 'ga_loyalty_days_seen';
+
+const getCurrentUserId = (): string => {
+  try {
+    const config = loadConfig();
+    return config?.currentUser || 'guest';
+  } catch {
+    return 'guest';
+  }
+};
+
+const getUserPrefixedKey = (baseKey: string, userId?: string): string => {
+  const user = userId || getCurrentUserId();
+  return `${baseKey}_${user}`;
+};
 
 export type AchievementEvent =
   | { type: 'exercise_completion'; exerciseId: string; bpm?: number; repetitions?: number }
@@ -35,14 +50,15 @@ const canUseLocalStorage = () => (
   typeof window.localStorage !== 'undefined'
 );
 
-const appendEventLog = (event: AchievementEvent) => {
+const appendEventLog = (event: AchievementEvent, userId?: string) => {
   if (!canUseLocalStorage()) return;
   try {
-    const raw = window.localStorage.getItem(EVENT_LOG_KEY);
+    const prefixedKey = getUserPrefixedKey(EVENT_LOG_KEY, userId);
+    const raw = window.localStorage.getItem(prefixedKey);
     const current = raw ? JSON.parse(raw) : [];
     const next = Array.isArray(current) ? current : [];
     next.push({ ...event, at: new Date().toISOString() });
-    window.localStorage.setItem(EVENT_LOG_KEY, JSON.stringify(next.slice(-MAX_EVENT_LOG_LENGTH)));
+    window.localStorage.setItem(prefixedKey, JSON.stringify(next.slice(-MAX_EVENT_LOG_LENGTH)));
   } catch {
     // event telemetry is diagnostic only
   }
@@ -62,8 +78,8 @@ const incrementRecord = (record: Record<string, number> | undefined, key: string
   [key]: (record?.[key] ?? 0) + amount,
 });
 
-const toProgressPatch = (event: AchievementEvent): AchievementProgressState => {
-  const current = getAchievementProgressState();
+const toProgressPatch = (event: AchievementEvent, userId?: string): AchievementProgressState => {
+  const current = getAchievementProgressState(userId);
 
   if (event.type === 'exercise_completion') {
     return {
@@ -133,16 +149,16 @@ const toProgressPatch = (event: AchievementEvent): AchievementProgressState => {
   return {};
 };
 
-export const evaluateAchievementUnlocks = (): AchievementEventResult => {
-  const progress = getAchievementProgressState();
-  let unlockedIds = getUnlockedAchievementIds();
+export const evaluateAchievementUnlocks = (userId?: string): AchievementEventResult => {
+  const progress = getAchievementProgressState(userId);
+  let unlockedIds = getUnlockedAchievementIds(userId);
   const newlyUnlockedAchievementIds: string[] = [];
 
   ACHIEVEMENTS.forEach(achievement => {
     if (unlockedIds.includes(achievement.id)) return;
     const result = calculateAchievementProgress(achievement, progress, unlockedIds);
     if (!result.unlocked) return;
-    unlockedIds = unlockAchievement(achievement.id);
+    unlockedIds = unlockAchievement(achievement.id, userId);
     newlyUnlockedAchievementIds.push(achievement.id);
   });
 
@@ -153,23 +169,24 @@ export const evaluateAchievementUnlocks = (): AchievementEventResult => {
   };
 };
 
-export const recordAchievementEvent = (event: AchievementEvent): AchievementEventResult => {
-  appendEventLog(event);
-  const progress = mergeAchievementProgressState(toProgressPatch(event));
-  const result = evaluateAchievementUnlocks();
+export const recordAchievementEvent = (event: AchievementEvent, userId?: string): AchievementEventResult => {
+  appendEventLog(event, userId);
+  const progress = mergeAchievementProgressState(toProgressPatch(event, userId), userId);
+  const result = evaluateAchievementUnlocks(userId);
   emitAchievementUnlocks(result.newlyUnlockedAchievementIds);
   return { ...result, progress };
 };
 
-export const recordAppLoyaltyVisit = (date = new Date()): AchievementEventResult => {
+export const recordAppLoyaltyVisit = (date = new Date(), userId?: string): AchievementEventResult => {
   if (!canUseLocalStorage()) {
-    return recordAchievementEvent({ type: 'tenure', lastSeenAt: date.toISOString() });
+    return recordAchievementEvent({ type: 'tenure', lastSeenAt: date.toISOString() }, userId);
   }
 
   const today = getDateKey(date);
+  const prefixedKey = getUserPrefixedKey(LOYALTY_DAYS_KEY, userId);
   let days: string[] = [];
   try {
-    const raw = window.localStorage.getItem(LOYALTY_DAYS_KEY);
+    const raw = window.localStorage.getItem(prefixedKey);
     const parsed = raw ? JSON.parse(raw) : [];
     days = Array.isArray(parsed) ? parsed.filter((day): day is string => typeof day === 'string') : [];
   } catch {
@@ -177,25 +194,25 @@ export const recordAppLoyaltyVisit = (date = new Date()): AchievementEventResult
   }
 
   const uniqueDays = Array.from(new Set([...days, today])).sort();
-  window.localStorage.setItem(LOYALTY_DAYS_KEY, JSON.stringify(uniqueDays));
-  recordAchievementEvent({ type: 'tenure', firstSeenAt: uniqueDays[0], lastSeenAt: date.toISOString() });
-  return recordAchievementEvent({ type: 'loyalty', days: uniqueDays.length });
+  window.localStorage.setItem(prefixedKey, JSON.stringify(uniqueDays));
+  recordAchievementEvent({ type: 'tenure', firstSeenAt: uniqueDays[0], lastSeenAt: date.toISOString() }, userId);
+  return recordAchievementEvent({ type: 'loyalty', days: uniqueDays.length }, userId);
 };
 
-export const unlockAchievementById = (achievementId: string): AchievementEventResult => {
+export const unlockAchievementById = (achievementId: string, userId?: string): AchievementEventResult => {
   const achievement = getAchievementById(achievementId);
   if (!achievement || achievement.asset.status !== 'ready') {
     return {
-      progress: getAchievementProgressState(),
-      unlockedAchievementIds: getUnlockedAchievementIds(),
+      progress: getAchievementProgressState(userId),
+      unlockedAchievementIds: getUnlockedAchievementIds(userId),
       newlyUnlockedAchievementIds: [],
     };
   }
-  const before = getUnlockedAchievementIds();
-  const after = unlockAchievement(achievementId);
+  const before = getUnlockedAchievementIds(userId);
+  const after = unlockAchievement(achievementId, userId);
   if (!before.includes(achievementId)) emitAchievementUnlocks([achievementId]);
   return {
-    progress: getAchievementProgressState(),
+    progress: getAchievementProgressState(userId),
     unlockedAchievementIds: after,
     newlyUnlockedAchievementIds: before.includes(achievementId) ? [] : [achievementId],
   };

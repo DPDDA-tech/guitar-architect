@@ -1,4 +1,5 @@
 import type { AchievementProgressState } from '../types/achievement';
+import { loadConfig } from './persistence';
 
 export const UNLOCKED_ACHIEVEMENTS_KEY = 'ga_unlocked_achievements';
 export const ACHIEVEMENT_PROGRESS_KEY = 'ga_achievement_progress';
@@ -9,10 +10,25 @@ const canUseLocalStorage = () => (
   typeof window.localStorage !== 'undefined'
 );
 
-const readJson = <T,>(key: string, fallback: T): T => {
-  if (!canUseLocalStorage()) return fallback;
+const getCurrentUserId = (): string => {
   try {
-    const raw = window.localStorage.getItem(key);
+    const config = loadConfig();
+    return config?.currentUser || 'guest';
+  } catch {
+    return 'guest';
+  }
+};
+
+const getUserPrefixedKey = (baseKey: string, userId?: string): string => {
+  const user = userId || getCurrentUserId();
+  return `${baseKey}_${user}`;
+};
+
+const readJson = <T,>(key: string, fallback: T, userId?: string): T => {
+  if (!canUseLocalStorage()) return fallback;
+  const prefixedKey = getUserPrefixedKey(key, userId);
+  try {
+    const raw = window.localStorage.getItem(prefixedKey);
     if (!raw) return fallback;
     return JSON.parse(raw) as T;
   } catch {
@@ -20,9 +36,16 @@ const readJson = <T,>(key: string, fallback: T): T => {
   }
 };
 
-const writeJson = <T,>(key: string, value: T) => {
+const writeJson = <T,>(key: string, value: T, userId?: string) => {
   if (!canUseLocalStorage()) return;
-  window.localStorage.setItem(key, JSON.stringify(value));
+  const prefixedKey = getUserPrefixedKey(key, userId);
+  window.localStorage.setItem(prefixedKey, JSON.stringify(value));
+};
+
+const deleteKey = (key: string, userId?: string) => {
+  if (!canUseLocalStorage()) return;
+  const prefixedKey = getUserPrefixedKey(key, userId);
+  window.localStorage.removeItem(prefixedKey);
 };
 
 const unique = (ids: string[]) => Array.from(new Set(ids.filter(Boolean)));
@@ -39,40 +62,40 @@ const mergeNumberRecords = (
   return next;
 };
 
-export const getUnlockedAchievementIds = () => {
-  const ids = readJson<string[]>(UNLOCKED_ACHIEVEMENTS_KEY, []);
+export const getUnlockedAchievementIds = (userId?: string) => {
+  const ids = readJson<string[]>(UNLOCKED_ACHIEVEMENTS_KEY, [], userId);
   return Array.isArray(ids) ? unique(ids.filter(id => typeof id === 'string')) : [];
 };
 
-export const unlockAchievement = (id: string) => {
-  const next = unique([...getUnlockedAchievementIds(), id]);
-  writeJson(UNLOCKED_ACHIEVEMENTS_KEY, next);
+export const unlockAchievement = (id: string, userId?: string) => {
+  const next = unique([...getUnlockedAchievementIds(userId), id]);
+  writeJson(UNLOCKED_ACHIEVEMENTS_KEY, next, userId);
   return next;
 };
 
-export const lockAchievement = (id: string) => {
-  const next = getUnlockedAchievementIds().filter(achievementId => achievementId !== id);
-  writeJson(UNLOCKED_ACHIEVEMENTS_KEY, next);
+export const lockAchievement = (id: string, userId?: string) => {
+  const next = getUnlockedAchievementIds(userId).filter(achievementId => achievementId !== id);
+  writeJson(UNLOCKED_ACHIEVEMENTS_KEY, next, userId);
   return next;
 };
 
-export const resetAchievements = () => {
-  writeJson(UNLOCKED_ACHIEVEMENTS_KEY, []);
+export const resetAchievements = (userId?: string) => {
+  writeJson(UNLOCKED_ACHIEVEMENTS_KEY, [], userId);
 };
 
-export const hasAchievement = (id: string) => getUnlockedAchievementIds().includes(id);
+export const hasAchievement = (id: string, userId?: string) => getUnlockedAchievementIds(userId).includes(id);
 
-export const getAchievementProgressState = (): AchievementProgressState => (
-  readJson<AchievementProgressState>(ACHIEVEMENT_PROGRESS_KEY, {})
+export const getAchievementProgressState = (userId?: string): AchievementProgressState => (
+  readJson<AchievementProgressState>(ACHIEVEMENT_PROGRESS_KEY, {}, userId)
 );
 
-export const setAchievementProgressState = (progress: AchievementProgressState) => {
-  writeJson(ACHIEVEMENT_PROGRESS_KEY, progress);
+export const setAchievementProgressState = (progress: AchievementProgressState, userId?: string) => {
+  writeJson(ACHIEVEMENT_PROGRESS_KEY, progress, userId);
   return progress;
 };
 
-export const mergeAchievementProgressState = (partial: AchievementProgressState) => {
-  const current = getAchievementProgressState();
+export const mergeAchievementProgressState = (partial: AchievementProgressState, userId?: string) => {
+  const current = getAchievementProgressState(userId);
   const next: AchievementProgressState = {
     ...current,
     ...partial,
@@ -97,25 +120,27 @@ export const mergeAchievementProgressState = (partial: AchievementProgressState)
     firstSeenAt: current.firstSeenAt ?? partial.firstSeenAt,
     lastSeenAt: partial.lastSeenAt ?? current.lastSeenAt,
   };
-  writeJson(ACHIEVEMENT_PROGRESS_KEY, next);
+  writeJson(ACHIEVEMENT_PROGRESS_KEY, next, userId);
   return next;
 };
 
-export const resetAchievementProgress = () => {
-  writeJson(ACHIEVEMENT_PROGRESS_KEY, {});
+export const resetAchievementProgress = (userId?: string) => {
+  writeJson(ACHIEVEMENT_PROGRESS_KEY, {}, userId);
 };
 
-export const getSelectedRewardBadgeId = () => {
+export const getSelectedRewardBadgeId = (userId?: string) => {
   if (!canUseLocalStorage()) return null;
-  return window.localStorage.getItem(SELECTED_REWARD_BADGE_KEY);
+  const prefixedKey = getUserPrefixedKey(SELECTED_REWARD_BADGE_KEY, userId);
+  return window.localStorage.getItem(prefixedKey);
 };
 
-export const setSelectedRewardBadgeId = (rewardId: string | null) => {
+export const setSelectedRewardBadgeId = (rewardId: string | null, userId?: string) => {
   if (!canUseLocalStorage()) return rewardId;
   if (!rewardId) {
-    window.localStorage.removeItem(SELECTED_REWARD_BADGE_KEY);
+    deleteKey(SELECTED_REWARD_BADGE_KEY, userId);
     return null;
   }
-  window.localStorage.setItem(SELECTED_REWARD_BADGE_KEY, rewardId);
+  const prefixedKey = getUserPrefixedKey(SELECTED_REWARD_BADGE_KEY, userId);
+  window.localStorage.setItem(prefixedKey, rewardId);
   return rewardId;
 };

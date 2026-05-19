@@ -306,6 +306,7 @@ const handleSupabaseAuth = async () => {
         email,
         password,
         options: {
+          emailRedirectTo: window.location.origin,
           data: {
             name: user.trim() || email.split('@')[0],
           },
@@ -1211,7 +1212,7 @@ const handleLogout = async () => {
           </div>
 
           {showProjectMenu && (
-            <div className={`absolute left-3 right-3 top-full mt-2 max-h-[calc(100vh-92px)] overflow-y-auto rounded-2xl border p-3 shadow-2xl ${isLight ? 'bg-[#f3f7fc] border-[#b9c8da] shadow-[0_24px_80px_rgba(71,85,105,0.22)]' : 'bg-[#10141d] border-blue-950/70 shadow-[0_28px_90px_rgba(0,0,0,0.58)]'}`}>
+            <div className={`absolute left-3 right-3 top-full mt-2 max-h-[calc(100vh-92px)] overflow-y-auto rounded-2xl border p-3 shadow-2xl ring-1 ${isLight ? 'bg-[linear-gradient(160deg,#fbfdff_0%,#eef5fb_58%,#e8f0f8_100%)] border-[#aebed1] shadow-[0_24px_80px_rgba(71,85,105,0.24)] ring-white/80' : 'bg-[linear-gradient(160deg,#172033_0%,#111827_52%,#0c1322_100%)] border-blue-800/60 shadow-[0_30px_95px_rgba(0,0,0,0.72)] ring-white/5'}`}>
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                   {lang === 'pt' ? 'Abrir JSON' : 'Open JSON'}
@@ -1469,7 +1470,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   </button>
 
   {showProjectMenu && (
-    <div className={`absolute right-0 top-full z-[80] mt-3 max-h-[calc(100vh-112px)] w-[290px] overflow-y-auto rounded-2xl border p-4 shadow-2xl ${isLight ? 'bg-[#f3f7fc] border-[#b9c8da] shadow-[0_24px_80px_rgba(71,85,105,0.22)]' : 'bg-[#10141d] border-blue-950/70 shadow-[0_28px_90px_rgba(0,0,0,0.58)]'}`}>
+    <div className={`absolute right-0 top-full z-[80] mt-3 max-h-[calc(100vh-112px)] w-[290px] overflow-y-auto rounded-2xl border p-4 shadow-2xl ring-1 ${isLight ? 'bg-[linear-gradient(160deg,#fbfdff_0%,#eef5fb_58%,#e8f0f8_100%)] border-[#aebed1] shadow-[0_24px_80px_rgba(71,85,105,0.24)] ring-white/80' : 'bg-[linear-gradient(160deg,#172033_0%,#111827_52%,#0c1322_100%)] border-blue-800/60 shadow-[0_30px_95px_rgba(0,0,0,0.72)] ring-white/5'}`}>
       <div className="space-y-4">
         <button onClick={() => { setShowLoadModal(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
           {lang === 'pt' ? 'CARREGAR PROJETOS LOCAIS' : 'LOAD LOCAL PROJECTS'}

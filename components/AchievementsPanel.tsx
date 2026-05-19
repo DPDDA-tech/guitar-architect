@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ACHIEVEMENT_TIERS } from '../data/achievementTiers';
 import {
   calculateAchievementProgress,
@@ -22,6 +22,9 @@ import {
 } from '../utils/achievementStorage';
 import { getTierDisplay, getTierName } from '../utils/tierNomenclature';
 import type { Achievement } from '../types/achievement';
+import { supabase } from '../src/lib/supabase';
+import { isAdminEmail } from '../src/lib/userIdentity';
+import { loadConfig } from '../utils/persistence';
 
 interface AchievementsPanelProps {
   isLight: boolean;
@@ -49,29 +52,62 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
   const [unlockedIds, setUnlockedIds] = useState<string[]>(() => getUnlockedAchievementIds());
   const [progressState, setProgressState] = useState(() => getAchievementProgressState());
   const [selectedBadgeId, setSelectedBadgeId] = useState<string | null>(() => getSelectedRewardBadgeId());
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        setIsAdmin(isAdminEmail(data.user?.email));
+        // Get current user ID from local config for passing to functions
+        const config = loadConfig();
+        setCurrentUserId(config?.currentUser);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      } finally {
+        setIsCheckingAdmin(false);
+      }
+    };
+    
+    checkAdminStatus();
+  }, []);
+  
   const visibleAchievements = useMemo(() => getVisibleAchievements(unlockedIds), [unlockedIds]);
   const unlockedRewards = useMemo(() => getUnlockedRewards(unlockedIds), [unlockedIds]);
   const totalXp = useMemo(() => getTotalAchievementXp(unlockedIds), [unlockedIds]);
   const overallProgress = useMemo(() => getOverallAchievementProgress(unlockedIds), [unlockedIds]);
 
   const toggleAchievement = (id: string) => {
+    if (!isAdmin) {
+      console.warn('[GA] Admin permission required to unlock achievements');
+      return;
+    }
+    
     const achievement = getAchievementById(id);
     if (achievement?.asset.status !== 'ready') return;
-    const next = isAchievementUnlocked(id, unlockedIds) ? lockAchievement(id) : unlockAchievement(id);
+    const next = isAchievementUnlocked(id, unlockedIds) ? lockAchievement(id, currentUserId) : unlockAchievement(id, currentUserId);
     setUnlockedIds(next);
   };
 
   const reset = () => {
-    resetAchievements();
-    resetAchievementProgress();
-    setSelectedRewardBadgeId(null);
+    if (!isAdmin) {
+      console.warn('[GA] Admin permission required to reset achievements');
+      return;
+    }
+    
+    resetAchievements(currentUserId);
+    resetAchievementProgress(currentUserId);
+    setSelectedRewardBadgeId(null, currentUserId);
     setUnlockedIds([]);
     setProgressState({});
     setSelectedBadgeId(null);
   };
 
   const selectBadge = (rewardId: string) => {
-    const next = setSelectedRewardBadgeId(rewardId);
+    const next = setSelectedRewardBadgeId(rewardId, currentUserId);
     setSelectedBadgeId(next);
   };
 
@@ -95,9 +131,14 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
           <span className={`rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-amber-800/60 bg-amber-950/24 text-amber-200'}`}>
             {unlockedRewards.length} rewards
           </span>
-          <button onClick={reset} className={`rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-slate-200 bg-white text-slate-500' : 'border-blue-900/55 bg-[#050914] text-slate-400'}`}>
-            Reset dev
-          </button>
+          {isAdmin && (
+            <button 
+              onClick={reset} 
+              className={`rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50' : 'border-blue-900/55 bg-[#050914] text-slate-400 hover:bg-blue-950/40'}`}
+            >
+              Reset dev
+            </button>
+          )}
         </div>
       </div>
 
@@ -218,7 +259,16 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
                   ))}
                 </div>
               )}
-              <button onClick={() => toggleAchievement(achievement.id)} className="mt-4 w-full rounded-xl border border-blue-400/30 bg-blue-600 px-3 py-2 text-[9px] font-black uppercase text-white">
+              <button 
+                onClick={() => toggleAchievement(achievement.id)} 
+                disabled={!isAdmin || isCheckingAdmin}
+                className={`mt-4 w-full rounded-xl border border-blue-400/30 px-3 py-2 text-[9px] font-black uppercase ${
+                  isAdmin && !isCheckingAdmin
+                    ? 'bg-blue-600 text-white cursor-pointer'
+                    : 'bg-slate-600/40 text-slate-400 cursor-not-allowed opacity-60'
+                }`}
+                title={!isAdmin ? 'Apenas administradores podem desbloquear conquistas' : ''}
+              >
                 {unlocked ? 'Bloquear dev' : 'Desbloquear dev'}
               </button>
             </article>

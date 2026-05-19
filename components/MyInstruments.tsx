@@ -8,6 +8,7 @@ import {
   replaceInstruments,
   saveInstrument
 } from '../utils/instrumentRegistry';
+import { loadConfig } from '../utils/persistence';
 
 interface MyInstrumentsProps {
   isOpen: boolean;
@@ -374,6 +375,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
   const [maintenanceTitle, setMaintenanceTitle] = useState('');
   const [maintenanceNotes, setMaintenanceNotes] = useState('');
   const [isLoadingPhoto, setIsLoadingPhoto] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const [sortKey, setSortKey] = useState<InstrumentSortKey>(() => {
     if (typeof window === 'undefined') return 'purchaseDate';
     return (window.localStorage.getItem('ga_instrument_sort_key') as InstrumentSortKey | null) || 'purchaseDate';
@@ -413,7 +415,10 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
 
   useEffect(() => {
     if (!isOpen) return;
-    listInstruments().then(setItems).catch(() => setItems([]));
+    const config = loadConfig();
+    const userId = config?.currentUser;
+    setCurrentUserId(userId);
+    listInstruments(userId).then(setItems).catch(() => setItems([]));
   }, [isOpen]);
 
   useEffect(() => {
@@ -459,7 +464,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
   ];
 
   const refresh = async () => {
-    const next = await listInstruments();
+    const next = await listInstruments(currentUserId);
     setItems(next);
     return next;
   };
@@ -501,7 +506,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
       paidValue: normalizeMoneyInput(draft.paidValue),
       updatedAt: new Date().toISOString()
     };
-    await saveInstrument(next);
+    await saveInstrument(next, currentUserId);
     const list = await refresh();
     setDraft(null);
     setSelected(list.find(item => item.id === next.id) || next);
@@ -542,7 +547,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
       if (!ok) return;
 
       const instruments = rawInstruments.map((item: Partial<UserInstrument>) => normalizeImportedInstrument(item));
-      await replaceInstruments(instruments);
+      await replaceInstruments(instruments, currentUserId);
       const next = await refresh();
       setSelected(next[0] || null);
       setDraft(null);
@@ -573,7 +578,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
       maintenance: [entry, ...selected.maintenance],
       updatedAt: new Date().toISOString()
     };
-    await saveInstrument(next);
+    await saveInstrument(next, currentUserId);
     setSelected(next);
     await refresh();
     setMaintenanceTitle('');

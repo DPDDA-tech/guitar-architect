@@ -122,6 +122,7 @@ export interface InstrumentMaintenance {
 
 export interface UserInstrument {
   id: string;
+  userId?: string; // User ID for security isolation
   createdAt: string;
   updatedAt: string;
   brand: string;

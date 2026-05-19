@@ -234,12 +234,12 @@ export const buildLocalCloudSnapshot = async (identity: string): Promise<UserClo
   appState: loadConfig(),
   profile: loadUserProfile(),
   projects: getLibrary(identity),
-  instruments: await listInstruments().catch(() => []),
+  instruments: await listInstruments(identity).catch(() => []),
   themeCollection: loadThemeCollectionState(),
   achievements: {
-    unlockedAchievementIds: getUnlockedAchievementIds(),
-    progress: getAchievementProgressState(),
-    selectedRewardBadgeId: getSelectedRewardBadgeId(),
+    unlockedAchievementIds: getUnlockedAchievementIds(identity),
+    progress: getAchievementProgressState(identity),
+    selectedRewardBadgeId: getSelectedRewardBadgeId(identity),
   },
   syncedAt: new Date().toISOString(),
 });
@@ -249,7 +249,7 @@ export const applyCloudSnapshotLocally = async (snapshot: UserCloudSnapshot, ide
     saveProjectToLibrary({ ...project, user: identity });
   });
 
-  await Promise.all((snapshot.instruments ?? []).map(instrument => saveInstrument(instrument)));
+  await Promise.all((snapshot.instruments ?? []).map(instrument => saveInstrument(instrument, identity)));
 
   if (snapshot.appState) {
     saveConfig({
@@ -260,9 +260,9 @@ export const applyCloudSnapshotLocally = async (snapshot: UserCloudSnapshot, ide
 
   saveUserProfile(snapshot.profile);
   saveThemeCollectionState(snapshot.themeCollection);
-  snapshot.achievements.unlockedAchievementIds.forEach(unlockAchievement);
-  mergeAchievementProgressState(snapshot.achievements.progress);
-  setSelectedRewardBadgeId(snapshot.achievements.selectedRewardBadgeId);
+  snapshot.achievements.unlockedAchievementIds.forEach(id => unlockAchievement(id, identity));
+  mergeAchievementProgressState(snapshot.achievements.progress, identity);
+  setSelectedRewardBadgeId(snapshot.achievements.selectedRewardBadgeId, identity);
 };
 
 export const pushLocalSnapshotToSupabase = async (
