@@ -75,7 +75,7 @@ const PanelSurface = ({
   </section>
 );
 
-const executeLearnAction = (action: LearnAction, module?: LearnModule) => {
+const executeLearnAction = (action: LearnAction, module?: LearnModule, openQuickTool?: (tool: 'tuner' | 'metronome') => void) => {
   const payload = {
     ...(typeof action.payload === 'object' && action.payload ? action.payload : {}),
     moduleTitle: module?.title,
@@ -85,8 +85,18 @@ const executeLearnAction = (action: LearnAction, module?: LearnModule) => {
   const payloadRecord = payload as Record<string, unknown>;
 
   switch (action.type) {
-    case 'pendingFretboardAction':
     case 'openTool':
+      if (payloadRecord.tool === 'metronome' || payloadRecord.tool === 'tuner') {
+        if (payloadRecord.tool === 'metronome') {
+          recordAchievementEvent({ type: 'exploration', key: 'open_metronome' });
+        }
+        openQuickTool?.(payloadRecord.tool);
+        break;
+      }
+      window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify(payload));
+      navigateTo('/');
+      break;
+    case 'pendingFretboardAction':
     case 'startPractice':
       if (payloadRecord.tool === 'metronome') {
         recordAchievementEvent({ type: 'exploration', key: 'open_metronome' });
@@ -276,7 +286,7 @@ const LearnPage: React.FC = () => {
                 {activeModule.actions.map(action => (
                   <button
                     key={action.id}
-                    onClick={() => executeLearnAction(action, activeModule)}
+                    onClick={() => executeLearnAction(action, activeModule, openHeaderTool)}
                     className={`${isLight ? 'border border-blue-400/30 bg-[linear-gradient(180deg,#4f8df3,#2563eb)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_12px_24px_rgba(37,99,235,0.22)]' : 'border border-blue-400/22 bg-[linear-gradient(180deg,#2e6af0,#1d4ed8)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_14px_28px_rgba(15,23,42,0.32)]'} rounded-xl px-4 py-3 text-[10px] font-black uppercase text-white transition hover:-translate-y-0.5`}
                   >
                     {action.label}
@@ -292,7 +302,7 @@ const LearnPage: React.FC = () => {
                   {activeModule.relatedTools.map(tool => (
                     <button
                       key={tool.id}
-                      onClick={() => executeLearnAction(tool, activeModule)}
+                      onClick={() => executeLearnAction(tool, activeModule, openHeaderTool)}
                       className={`rounded-xl border p-4 text-left transition hover:-translate-y-0.5 ${isLight ? 'border-[#d2deeb] bg-white/86 text-slate-900 shadow-[0_10px_26px_rgba(71,85,105,0.08)]' : 'border-blue-950/50 bg-[#080d16]/80 text-slate-100'}`}
                     >
                       <span className="text-sm font-black">{tool.label}</span>
@@ -319,7 +329,7 @@ const LearnPage: React.FC = () => {
             {LEARN_PRACTICE_TOOLS.map(tool => (
               <button
                 key={tool.id}
-                onClick={() => executeLearnAction(tool)}
+                onClick={() => executeLearnAction(tool, undefined, openHeaderTool)}
                 className={`rounded-xl border p-4 text-left transition duration-300 hover:-translate-y-0.5 ${isLight ? 'border-[#d2deeb] bg-white/88 text-slate-900 shadow-[0_12px_30px_rgba(71,85,105,0.09)]' : 'border-blue-950/50 bg-[#080d16]/82 text-slate-100 hover:border-blue-800/80'}`}
               >
                 <span className="text-sm font-black">{tool.label}</span>

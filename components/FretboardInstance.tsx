@@ -642,7 +642,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const controlTabs = [
     { id: 'learn', label: lang === 'pt' ? 'Aprender' : 'Learn' },
     { id: 'base', label: 'Base' },
-    { id: 'visual', label: lang === 'pt' ? 'Camadas' : 'Layers' },
+    { id: 'visual', label: lang === 'pt' ? 'Notas' : 'Notes' },
     { id: 'scale', label: lang === 'pt' ? 'Escala' : 'Scale' },
     { id: 'harmony', label: lang === 'pt' ? 'Harmonia' : 'Harmony' },
     { id: 'editor', label: lang === 'pt' ? 'Editar' : 'Edit' },
@@ -1471,6 +1471,21 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <select value={state.scaleType} onChange={e => recordAction({...state, scaleType: e.target.value})} className="min-w-[170px] rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
             {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
           </select>
+          <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${controlButtonBase} px-3 ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>
+            {lang === 'pt' ? 'Nota tônica' : 'Tonic'}
+          </button>
+          <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${controlButtonBase} px-3 ${state.layers.showScale ? activeButtonClass : inactiveButtonClass}`}>
+            {lang === 'pt' ? 'Notas' : 'Notes'}
+          </button>
+          <button onClick={() => setLabelModeSmart('interval')} className={`${controlButtonBase} px-3 ${state.labelMode === 'interval' ? activeButtonClass : inactiveButtonClass}`}>
+            {lang === 'pt' ? 'Intervalos' : 'Intervals'}
+          </button>
+          <button onClick={() => setLabelModeSmart('fingering')} className={`${controlButtonBase} px-3 ${state.labelMode === 'fingering' ? activeButtonClass : inactiveButtonClass}`}>
+            {lang === 'pt' ? 'Dedos' : 'Fingers'}
+          </button>
+          <button onClick={() => setLabelModeSmart('none')} className={`${controlButtonBase} px-3 ${state.labelMode === 'none' && state.layers.showAllNotes ? activeButtonClass : inactiveButtonClass}`}>
+            {lang === 'pt' ? 'Pontos' : 'Dots'}
+          </button>
         </div>
       );
     }
@@ -2279,7 +2294,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         <div className={`flex flex-col gap-3 rounded-2xl border px-3 py-3 shadow-sm ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
             <button data-tour="quick-layers" onClick={() => toggleQuickPanel('visual')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'visual' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
-              {lang === 'pt' ? 'Camadas' : 'Layers'}
+              {lang === 'pt' ? 'Notas' : 'Notes'}
             </button>
             <button data-tour="quick-scale" onClick={() => handleScaleLayerShortcut('showScale')} className={`${quickButtonClass} shrink-0 ${state.layers.showScale ? quickActiveButtonClass : ''}`}>
               {t.scaleNotes}
@@ -2299,9 +2314,18 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       </div>
 
       <div className={`operational-btns fixed inset-x-0 bottom-0 z-[75] border-t px-2 pb-1 pt-1 shadow-lg lg:hidden ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-white/90 border-zinc-200' : 'bg-zinc-950/90 border-zinc-800'}`}>
-        <div className="grid grid-cols-2 gap-1">
+        <div className="grid grid-cols-5 gap-1">
+          <button data-tour="quick-layers" onClick={() => openMobileTab('visual')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'visual' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Notas' : 'Notes'}>
+            {lang === 'pt' ? 'Notas' : 'Notes'}
+          </button>
           <button data-tour="mobile-scales" onClick={() => openMobileTab('scale')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'scale' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Escalas' : 'Scales'}>
-            {lang === 'pt' ? 'Escalas' : 'Scales'}
+            {lang === 'pt' ? 'Escala' : 'Scale'}
+          </button>
+          <button data-tour="quick-tonic" onClick={() => handleScaleLayerShortcut('showTonic')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${state.layers.showTonic ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Tônica' : 'Tonic'}>
+            {lang === 'pt' ? 'Tônica' : 'Tonic'}
+          </button>
+          <button data-tour="quick-harmony" onClick={() => openMobileTab('harmony')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'harmony' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Harmonia' : 'Harmony'}>
+            {lang === 'pt' ? 'Harm.' : 'Harm.'}
           </button>
           <button data-tour="quick-editor" onClick={() => openMobileTab('editor')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'editor' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Editar' : 'Edit'}>{lang === 'pt' ? 'Editar' : 'Edit'}</button>
         </div>

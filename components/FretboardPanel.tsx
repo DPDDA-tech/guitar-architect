@@ -1039,43 +1039,65 @@ const handleLogout = async () => {
 
     const applyToDiagram = (instance: FretboardState): FretboardState => {
       const isHarmonyAction = pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression';
+      const isScaleAction = pending.action === 'scale' || pending.action === 'startPractice';
       const nextRoot = pending.root || instance.root;
       const nextScaleType = pending.scaleType || instance.scaleType;
       return {
         ...instance,
+        id: instance.id || crypto.randomUUID(),
         title: pending.action === 'progression' && pending.progression
           ? `${pending.displayRoot || nextRoot} - ${pending.progression}`
           : `${pending.displayRoot || nextRoot} - ${nextScaleType}`,
         subtitle: pending.chords?.length ? pending.chords.join(' - ') : nextScaleType,
         notes: pending.action === 'progression' && pending.chords?.length
           ? `${pending.progression}: ${pending.chords.join(' - ')}`
+          : pending.action === 'field' && pending.chords?.length
+            ? `${pending.displayRoot || nextRoot}: ${pending.chords.join(' - ')}`
           : pending.moduleTitle
             ? `${pending.moduleTitle}: ${pending.moduleLabel || nextScaleType}`
           : instance.notes,
         root: nextRoot,
         scaleType: nextScaleType,
-        harmonyMode: pending.harmonyMode || (isHarmonyAction ? 'TRIADS' : 'OFF'),
+        harmonyMode: pending.harmonyMode || (pending.action === 'field' || pending.action === 'progression' ? 'TETRADS' : isHarmonyAction ? 'TRIADS' : 'OFF'),
         chordQuality: pending.chordQuality || 'DIATONIC',
         chordDegree: pending.chordDegree ?? 0,
         inversion: pending.inversion ?? 0,
         voicingMode: pending.voicingMode || instance.voicingMode,
         layers: {
           ...instance.layers,
-          showScale: true,
+          showScale: isScaleAction,
           showTonic: true,
         },
       };
     };
 
     setInstances(prev => {
+      const base = activeInstanceIndex >= 0 ? prev[activeInstanceIndex] : prev[0];
+      const created = applyToDiagram({
+        ...(base || DEFAULT_FRETBOARD(lang, defaultInstrument)),
+        id: crypto.randomUUID(),
+      });
+      if (prev.length >= 24) {
+        const canOverwrite = window.confirm(
+          lang === 'pt'
+            ? 'Você atingiu o limite de 24 diagramas. Posso substituir o último diagrama para abrir esta tarefa?'
+            : 'You reached the 24 diagram limit. Can I replace the last diagram to open this task?',
+        );
+        if (!canOverwrite) {
+          window.alert(lang === 'pt' ? 'Não foi possível abrir a tarefa sem substituir um diagrama.' : 'The task could not be opened without replacing a diagram.');
+          return prev;
+        }
+        setActiveInstanceId(created.id);
+        return prev.map((instance, index) => index === prev.length - 1 ? created : instance);
+      }
+
       if (prev.length === 0) {
-        const created = applyToDiagram(DEFAULT_FRETBOARD(lang, defaultInstrument));
         setActiveInstanceId(created.id);
         return [created];
       }
 
-      const targetIndex = activeInstanceIndex >= 0 ? activeInstanceIndex : 0;
-      return prev.map((instance, index) => index === targetIndex ? applyToDiagram(instance) : instance);
+      setActiveInstanceId(created.id);
+      return [...prev, created];
     });
 
     if (pending.action === 'startPractice' || pending.tool) {
@@ -1151,6 +1173,14 @@ const handleLogout = async () => {
             >
               MENU
             </button>
+            <button
+              onClick={handleLogout}
+              className={`rounded-xl border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
+              aria-label={lang === 'pt' ? 'Sair da conta' : 'Log out'}
+              title={lang === 'pt' ? 'Sair da conta' : 'Log out'}
+            >
+              {lang === 'pt' ? 'Sair' : 'Exit'}
+            </button>
 
             <div className="min-w-0 flex-1 text-center">
               <div className="truncate text-[12px] font-black italic uppercase tracking-tight text-blue-600">Guitar Architect</div>
@@ -1214,28 +1244,24 @@ const handleLogout = async () => {
           {showProjectMenu && (
             <div className={`absolute left-3 right-3 top-full mt-2 max-h-[calc(100vh-92px)] overflow-y-auto rounded-2xl border p-3 shadow-2xl ring-1 ${isLight ? 'bg-[linear-gradient(160deg,#fbfdff_0%,#eef5fb_58%,#e8f0f8_100%)] border-[#aebed1] shadow-[0_24px_80px_rgba(71,85,105,0.24)] ring-white/80' : 'bg-[linear-gradient(160deg,#172033_0%,#111827_52%,#0c1322_100%)] border-blue-800/60 shadow-[0_30px_95px_rgba(0,0,0,0.72)] ring-white/5'}`}>
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                  {lang === 'pt' ? 'Abrir JSON' : 'Open JSON'}
-                </button>
                 <button onClick={() => { exportProjectFile(); setShowProjectMenu(false); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                  {lang === 'pt' ? 'Salvar JSON' : 'Save JSON'}
+                  {lang === 'pt' ? 'Exportar JSON' : 'Export JSON'}
                 </button>
-                <button onClick={() => { setShowProjectMenu(false); window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'base' } })); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                  {lang === 'pt' ? 'Config.' : 'Settings'}
-                </button>
-                <button onClick={togglePrimaryLeftHanded} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                  {lang === 'pt' ? 'Canhoto' : 'Lefty'}
+                <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                  {lang === 'pt' ? 'Importar JSON' : 'Import JSON'}
                 </button>
               </div>
-              <button onClick={openHarmonicCycle} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                {translations[lang].harmonicCycle.menu}
-              </button>
-              <button onClick={openMyInstruments} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                {lang === 'pt' ? 'Meus Instrumentos' : 'My Instruments'}
-              </button>
               <button onClick={() => openModulePage('/profile')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                 {lang === 'pt' ? 'Perfil' : 'Profile'}
               </button>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button onClick={openMyInstruments} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                  {lang === 'pt' ? 'Instrumentos' : 'Instruments'}
+                </button>
+                <button onClick={() => openModulePage('/theme-collection')} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                  {lang === 'pt' ? 'Coleções' : 'Collections'}
+                </button>
+              </div>
               <button onClick={() => openModulePage('/learn')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                 {lang === 'pt' ? 'Aprender' : 'Learn'}
               </button>
@@ -1317,7 +1343,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             </div>
 
             <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
-               <div className="hidden xl:grid grid-cols-4 gap-1.5">
+               <div className="hidden xl:grid grid-cols-6 gap-1.5">
                  {[
                    { label: lang === 'pt' ? 'Aprender' : 'Learn', path: '/learn' },
                    { label: lang === 'pt' ? 'Praticar' : 'Practice', path: '/practice' },
@@ -1539,6 +1565,15 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={handleLogout} className={`w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${isLight ? 'border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50' : 'border-red-950/70 text-red-300 hover:border-red-700 hover:bg-red-950/20'}`}>
+            {lang === 'pt' ? 'SAIR DA CONTA' : 'LOG OUT'}
+          </button>
+          <button onClick={() => { setShowProjectMenu(false); void handleLogout(); }} className={`w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
+            {lang === 'pt' ? 'TROCAR CONTA' : 'SWITCH ACCOUNT'}
+          </button>
         </div>
 
         <button onClick={() => { setShowSupportModal(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>

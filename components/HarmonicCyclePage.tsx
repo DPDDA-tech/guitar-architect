@@ -266,7 +266,10 @@ const HarmonicCyclePage: React.FC = () => {
       displayRoot: info.displayRoot,
       scaleType: mode === 'major' ? 'Major (Ionian)' : 'Natural Minor (Aeolian)',
       progression: selectedProgression,
-      chords: progressionChords.map(item => item.chord),
+      chords: action === 'field'
+        ? info.harmonicField.map(item => item.chord)
+        : progressionChords.map(item => item.chord),
+      harmonyMode: action === 'field' || action === 'progression' ? 'TETRADS' : action === 'triads' ? 'TRIADS' : 'OFF',
       createdAt: new Date().toISOString(),
     }));
     navigateTo('/');

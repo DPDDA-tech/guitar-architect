@@ -259,18 +259,14 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
                   ))}
                 </div>
               )}
-              <button 
-                onClick={() => toggleAchievement(achievement.id)} 
-                disabled={!isAdmin || isCheckingAdmin}
-                className={`mt-4 w-full rounded-xl border border-blue-400/30 px-3 py-2 text-[9px] font-black uppercase ${
-                  isAdmin && !isCheckingAdmin
-                    ? 'bg-blue-600 text-white cursor-pointer'
-                    : 'bg-slate-600/40 text-slate-400 cursor-not-allowed opacity-60'
-                }`}
-                title={!isAdmin ? 'Apenas administradores podem desbloquear conquistas' : ''}
-              >
-                {unlocked ? 'Bloquear dev' : 'Desbloquear dev'}
-              </button>
+              {isAdmin && !isCheckingAdmin && (
+                <button
+                  onClick={() => toggleAchievement(achievement.id)}
+                  className="mt-4 w-full cursor-pointer rounded-xl border border-blue-400/30 bg-blue-600 px-3 py-2 text-[9px] font-black uppercase text-white"
+                >
+                  {unlocked ? 'Bloquear dev' : 'Desbloquear dev'}
+                </button>
+              )}
             </article>
           );
         })}
