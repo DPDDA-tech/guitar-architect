@@ -168,6 +168,24 @@ const normalizeImportedInstrument = (input: Partial<UserInstrument>): UserInstru
   };
 };
 
+const extractImportedInstruments = (payload: unknown): Partial<UserInstrument>[] | null => {
+  if (Array.isArray(payload)) return payload as Partial<UserInstrument>[];
+
+  if (!payload || typeof payload !== 'object') return null;
+
+  const record = payload as Record<string, unknown>;
+  const candidates = [
+    record.instruments,
+    (record.snapshot as Record<string, unknown> | undefined)?.instruments,
+    (record.data as Record<string, unknown> | undefined)?.instruments,
+    (record.cloudSnapshot as Record<string, unknown> | undefined)?.instruments,
+    (record.settings as Record<string, unknown> | undefined)?.instruments,
+  ];
+
+  const found = candidates.find(Array.isArray);
+  return found ? found as Partial<UserInstrument>[] : null;
+};
+
 const formatDate = (iso?: string) => {
   if (!iso) return '-';
   const date = new Date(iso);
@@ -535,10 +553,14 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
     try {
       const text = await file.text();
       const payload = JSON.parse(text);
-      const rawInstruments = Array.isArray(payload?.instruments) ? payload.instruments : Array.isArray(payload) ? payload : null;
+      const rawInstruments = extractImportedInstruments(payload);
 
       if (!rawInstruments) {
-        throw new Error('Invalid backup');
+        throw new Error('Missing instruments');
+      }
+
+      if (rawInstruments.length === 0) {
+        throw new Error('Empty instruments');
       }
 
       const ok = window.confirm(lang === 'pt'
@@ -551,8 +573,16 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
       const next = await refresh();
       setSelected(next[0] || null);
       setDraft(null);
-    } catch {
-      alert(lang === 'pt' ? 'Arquivo de instrumentos invalido.' : 'Invalid instruments file.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      const isMissingInstruments = message === 'Missing instruments' || message === 'Empty instruments';
+      alert(isMissingInstruments
+        ? lang === 'pt'
+          ? 'Este JSON nao contem instrumentos cadastrados. Use um backup de instrumentos ou um snapshot que inclua a lista de instrumentos.'
+          : 'This JSON does not contain saved instruments. Use an instruments backup or a snapshot that includes the instruments list.'
+        : lang === 'pt'
+          ? 'Arquivo de instrumentos invalido.'
+          : 'Invalid instruments file.');
     }
   };
 

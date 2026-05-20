@@ -184,7 +184,6 @@ const FretboardPanel: React.FC = () => {
   const [migrationMessage, setMigrationMessage] = useState('');
   const initialized = useRef(false);
   const authSessionBooted = useRef(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const projectFileInputRef = useRef<HTMLInputElement>(null);
 
   const t = translations[lang] || translations['pt'];
@@ -338,6 +337,27 @@ const handleSupabaseAuth = async () => {
 
   if (result.data.session) {
     setShowLoginModal(false);
+  }
+};
+
+const handleGoogleAuth = async () => {
+  setAuthStatus('loading');
+  setAuthMessage('');
+
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
+  });
+
+  if (error) {
+    setAuthStatus('error');
+    setAuthMessage(error.message);
   }
 };
 
@@ -674,21 +694,6 @@ const handleLogout = async () => {
   // abre modal de login novamente
   setShowLoginModal(true);
 };
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 512000) {
-        alert(lang === 'pt' ? "Arquivo muito grande. Limite: 500KB" : "File too large. Limit: 500KB");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUserLogo(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleGlobalTranspose = (semitones: number) => {
     if (semitones === 0) {
@@ -1854,6 +1859,14 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                        ? (lang === 'pt' ? 'Entrar na conta' : 'Sign in')
                        : (lang === 'pt' ? 'Criar conta Guitar Architect' : 'Create Guitar Architect account')}
                  </button>
+                 <button
+                   type="button"
+                   onClick={() => void handleGoogleAuth()}
+                   disabled={authStatus === 'loading'}
+                   className={`w-full rounded-2xl border py-4 text-[11px] font-black uppercase shadow-sm active:scale-95 transition-all ${authStatus === 'loading' ? 'cursor-wait opacity-70' : ''} ${isLight ? 'border-zinc-200 bg-white text-zinc-800 hover:border-blue-300' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-blue-500'}`}
+                 >
+                   {lang === 'pt' ? 'Continuar com Google' : 'Continue with Google'}
+                 </button>
                  {authMessage && (
                    <p className={`text-center text-[10px] font-bold leading-relaxed ${authStatus === 'error' ? 'text-red-500' : 'text-emerald-500'}`}>
                      {authMessage}
@@ -1900,29 +1913,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  )}
                </div>
              )}
-             
-             <div className={`p-6 rounded-3xl mb-8 border ${isLight ? 'bg-blue-50 border-blue-100' : 'bg-blue-900/10 border-blue-900/30'}`}>
-                <div className="flex flex-col items-center gap-4">
-                   {userLogo ? (
-                     <div className="relative shrink-0">
-                        <img src={userLogo} className="max-w-[200px] max-h-[80px] rounded-xl object-contain bg-white border border-zinc-200 p-2" />
-                        <button onClick={() => setUserLogo(undefined)} className="absolute -top-3 -right-3 bg-red-600 text-white w-6 h-6 rounded-full text-[12px] font-bold flex items-center justify-center shadow-lg hover:scale-110 transition-transform">×</button>
-                     </div>
-                   ) : (
-                     <button onClick={() => fileInputRef.current?.click()} className={`w-full h-24 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 text-xs font-black transition-all ${isLight ? 'border-zinc-200 text-zinc-400 bg-zinc-50 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-500 bg-zinc-800 hover:bg-zinc-700'}`}>
-                       <span className="text-2xl">+</span>
-                       <span>SUBIR LOGO</span>
-                     </button>
-                   )}
-                   <div className="text-center">
-                      <p className="text-[11px] md:text-[12px] font-black text-blue-600 uppercase">Insira SEU LOGOTIPO para as exportações</p>
-                      <p className="text-[9px] md:text-[10px] text-zinc-500 uppercase mt-2 font-bold leading-relaxed opacity-60">Sugestão: PNG transparente, 400x120px.<br/>Limite: 500KB para performance.</p>
-                      <input type="file" ref={fileInputRef} className="hidden" accept="image/png, image/jpeg" onChange={handleLogoUpload} />
-                   </div>
-                </div>
-             </div>
-
-             <div className="relative mb-8">
+              <div className="relative mb-8">
                <input 
                  autoFocus 
                  placeholder="Nome do Autor (ex: Prof. Jimmy H)..." 
