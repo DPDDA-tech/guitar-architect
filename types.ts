@@ -66,6 +66,12 @@ export interface FretboardState {
     showScale: boolean;
     showTonic: boolean;
   };
+  followAlongRegion?: {
+    startFret: number;
+    endFret: number;
+    stringIndex?: number;
+    label?: string;
+  };
   markers: Marker[];
   lines: Line[];
 }

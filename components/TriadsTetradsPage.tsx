@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { translations, Lang } from '../i18n';
 import { loadConfig, saveConfig } from '../utils/persistence';
 import { AppState, ThemeMode } from '../types';
@@ -15,8 +15,22 @@ import {
   VOICE_LEADING_EXAMPLE,
 } from '../data/triadsTetradsData';
 import { recordAchievementEvent } from '../utils/achievementEvents';
+import TriadTrainer from './TriadTrainer';
 
 const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
+
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
+  </svg>
+);
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -71,9 +85,15 @@ const FormulaGrid = ({
   </PanelSurface>
 );
 
-const TriadsTetradsPage: React.FC = () => {
+const TriadsTetradsPage: React.FC<{ openTrainer?: boolean }> = ({ openTrainer = false }) => {
   const [lang, setLang] = useState<Lang>(() => getInitialConfig()?.lang || 'pt');
   const [theme, setTheme] = useState<ThemeMode>(() => getInitialConfig()?.theme || 'dark');
+  const [showTrainer, setShowTrainer] = useState<boolean>(() =>
+    openTrainer || window.location.pathname === '/triads-trainer' || new URLSearchParams(window.location.search).get('trainer') === '1'
+  );
+  useEffect(() => {
+    setShowTrainer(openTrainer || window.location.pathname === '/triads-trainer' || new URLSearchParams(window.location.search).get('trainer') === '1');
+  }, [openTrainer]);
   const isLight = theme === 'light';
   const t = translations[lang].harmonicCycle;
   const pageBackgroundStyle = isLight
@@ -82,7 +102,11 @@ const TriadsTetradsPage: React.FC = () => {
       backgroundImage: 'linear-gradient(rgba(148,163,184,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.07) 1px, transparent 1px)',
       backgroundSize: '20px 20px',
     }
-    : undefined;
+    : {
+      backgroundColor: '#05070b', // Cor de fundo escura explícita
+      backgroundImage: 'linear-gradient(rgba(59, 130, 246, 0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.18) 1px, transparent 1px)',
+      backgroundSize: '20px 20px',
+    };
 
   const persistConfigPatch = (patch: Partial<AppState>) => {
     const current = loadConfig();
@@ -126,11 +150,21 @@ const TriadsTetradsPage: React.FC = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button onClick={toggleTheme} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>
-              {isLight ? 'Escuro' : 'Claro'}
+            <button
+              onClick={toggleTheme}
+              className={`flex h-11 w-11 items-center justify-center rounded-xl border transition-all ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700 hover:bg-zinc-50' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100 hover:bg-[#161d2a]'}`}
+              title={isLight ? (lang === 'pt' ? 'Modo Escuro' : 'Dark Mode') : (lang === 'pt' ? 'Modo Claro' : 'Light Mode')}
+            >
+              {isLight ? <MoonIcon /> : <SunIcon />}
             </button>
             <button onClick={toggleLang} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>
               {lang === 'pt' ? 'EN' : 'PORT'}
+            </button>
+            <button
+              onClick={() => navigateTo(showTrainer ? '/triads-tetrads' : '/triads-trainer')}
+              className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase transition-all ${showTrainer ? 'bg-blue-600 text-white border-blue-600' : 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-600'}`}
+            >
+              {showTrainer ? (lang === 'pt' ? 'Fechar Trainer' : 'Close Trainer') : (lang === 'pt' ? 'Triad Trainer 🎯' : 'Triad Trainer 🎯')}
             </button>
             <button onClick={() => navigateTo('/')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
               {t.backToFretboard}
@@ -140,6 +174,15 @@ const TriadsTetradsPage: React.FC = () => {
       </header>
 
       <main className="mx-auto max-w-[1700px] space-y-6 px-4 py-7">
+        {showTrainer && (
+          <TriadTrainer 
+            isLight={isLight} 
+            lang={lang} 
+            tuning={['E', 'B', 'G', 'D', 'A', 'E']}
+            onAction={(action: any) => window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify(action))} 
+          />
+        )}
+        
         <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
           <PanelSurface isLight={isLight} className="p-6">
             <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{lang === 'pt' ? 'Ponte teoria / braço' : 'Theory / fretboard bridge'}</p>

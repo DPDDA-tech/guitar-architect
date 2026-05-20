@@ -19,6 +19,19 @@ import { recordAchievementEvent } from '../utils/achievementEvents';
 
 const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
 
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
+  </svg>
+);
+
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
   window.dispatchEvent(new Event('ga-route-change'));
@@ -98,7 +111,13 @@ const ChordsPage: React.FC = () => {
             <p className={`mt-2 max-w-3xl text-sm font-bold ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{CHORDS_COPY.subtitle[lang]}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button onClick={toggleTheme} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>{isLight ? 'Escuro' : 'Claro'}</button>
+            <button
+              onClick={toggleTheme}
+              className={`flex h-11 w-11 items-center justify-center rounded-xl border transition-all ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700 hover:bg-zinc-50' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100 hover:bg-[#161d2a]'}`}
+              title={isLight ? (lang === 'pt' ? 'Modo Escuro' : 'Dark Mode') : (lang === 'pt' ? 'Modo Claro' : 'Light Mode')}
+            >
+              {isLight ? <MoonIcon /> : <SunIcon />}
+            </button>
             <button onClick={toggleLang} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>{lang === 'pt' ? 'EN' : 'PORT'}</button>
             <button onClick={() => navigateTo('/')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">{t.backToFretboard}</button>
           </div>

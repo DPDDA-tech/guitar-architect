@@ -14,6 +14,19 @@ import {
 import { normalizeNote } from '../music/musicTheory';
 import { recordAchievementEvent } from '../utils/achievementEvents';
 
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
+  </svg>
+);
+
 type FretboardAction = 'scale' | 'field' | 'triads' | 'progression';
 
 const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
@@ -328,8 +341,12 @@ const HarmonicCyclePage: React.FC = () => {
             <p className={`mt-2 max-w-2xl text-sm font-bold ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{t.subtitle}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button onClick={toggleTheme} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${neutralButtonClass}`}>
-              {isLight ? (lang === 'pt' ? 'Escuro' : 'Dark') : (lang === 'pt' ? 'Claro' : 'Light')}
+            <button
+              onClick={toggleTheme}
+              className={`flex h-11 w-11 items-center justify-center rounded-xl border transition-all ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700 hover:bg-zinc-50 shadow-sm' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100 hover:border-blue-500'}`}
+              title={isLight ? (lang === 'pt' ? 'Modo Escuro' : 'Dark Mode') : (lang === 'pt' ? 'Modo Claro' : 'Light Mode')}
+            >
+              {isLight ? <MoonIcon /> : <SunIcon />}
             </button>
             <button onClick={toggleLang} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${neutralButtonClass}`}>
               {lang === 'pt' ? 'EN' : 'PORT'}

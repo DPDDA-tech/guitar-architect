@@ -75,6 +75,13 @@ export const getUnlockedAchievements = (userUnlockedAchievementIds: string[]) =>
   ACHIEVEMENTS.filter(achievement => isAchievementUnlocked(achievement.id, userUnlockedAchievementIds))
 );
 
+export const getHighestUnlockedAchievementTier = (userUnlockedAchievementIds: string[]): AchievementTier => (
+  getUnlockedAchievements(userUnlockedAchievementIds).reduce<number>(
+    (highest, achievement) => Math.max(highest, achievement.tier),
+    0,
+  ) as AchievementTier
+);
+
 export const getLockedAchievements = (userUnlockedAchievementIds: string[]) => (
   ACHIEVEMENTS.filter(achievement => !isAchievementUnlocked(achievement.id, userUnlockedAchievementIds))
 );
@@ -241,9 +248,9 @@ const calculateRequirementProgress = (
   }
 
   if (type === 'exploration') {
-    const key = requirements.explorationKey ?? '';
+    const key = requirements.explorationKey ?? (requirements.instrumentCount !== undefined ? 'registered_instruments' : '');
     const current = progress.explorationCounts?.[key] ?? 0;
-    const target = requirements.requiredCount ?? 1;
+    const target = requirements.instrumentCount ?? requirements.requiredCount ?? 1;
     return {
       percent: clampProgress(current, target),
       current,
@@ -313,8 +320,12 @@ export const calculateAchievementProgress = (
 };
 
 export const getOverallAchievementProgress = (userUnlockedAchievementIds: string[]) => {
-  if (ACHIEVEMENTS.length === 0) return 0;
-  return Math.round((userUnlockedAchievementIds.length / ACHIEVEMENTS.length) * 100);
+  const visibleOrUnlocked = ACHIEVEMENTS.filter(achievement => (
+    !achievement.hidden || userUnlockedAchievementIds.includes(achievement.id)
+  ));
+  if (visibleOrUnlocked.length === 0) return 0;
+  const unlockedVisible = visibleOrUnlocked.filter(achievement => userUnlockedAchievementIds.includes(achievement.id));
+  return Math.round((unlockedVisible.length / visibleOrUnlocked.length) * 100);
 };
 
 export const getTotalAchievementXp = (userUnlockedAchievementIds: string[]) => (

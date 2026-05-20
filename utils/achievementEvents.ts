@@ -40,6 +40,7 @@ export type AchievementEvent =
   | { type: 'tenure'; firstSeenAt?: string; lastSeenAt?: string }
   | { type: 'app_anniversary'; key: string; year?: number }
   | { type: 'instrument_switch'; instrumentFamily: 'guitar' | 'extended_guitar' | 'bass' | 'general' }
+  | { type: 'instrument_collection'; count: number }
   | { type: 'export_diagram'; format: 'json' | 'png' | 'pdf' | 'project' };
 
 export interface AchievementEventResult {
@@ -143,6 +144,15 @@ const toProgressPatch = (event: AchievementEvent, userId?: string): AchievementP
     };
   }
 
+  if (event.type === 'instrument_collection') {
+    return {
+      explorationCounts: {
+        ...(current.explorationCounts ?? {}),
+        registered_instruments: Math.max(current.explorationCounts?.registered_instruments ?? 0, event.count),
+      },
+    };
+  }
+
   if (event.type === 'export_diagram') {
     return {
       explorationCounts: incrementRecord(current.explorationCounts, 'export_diagram'),
@@ -215,7 +225,7 @@ export const recordAppAnniversaryVisit = (
   if (date.getMonth() !== ANNIVERSARY_MONTH || date.getDate() !== ANNIVERSARY_DAY) return null;
 
   const anniversaryNumber = getAppAnniversaryNumber(date);
-  if (anniversaryNumber < 1 || anniversaryNumber > 5) return null;
+  if (anniversaryNumber < 1 || anniversaryNumber > 10) return null;
 
   const accountCreatedYear = accountCreatedAt ? new Date(accountCreatedAt).getFullYear() : undefined;
   if (accountCreatedYear !== date.getFullYear()) return null;

@@ -66,6 +66,7 @@ const basePayload = (
   displayRoot: root,
   scaleType,
   tool: action === 'startPractice' ? 'exercises' : undefined,
+  forceNewDiagram: true,
   ...extra,
 });
 

@@ -9,11 +9,26 @@ import {
   saveInstrument
 } from '../utils/instrumentRegistry';
 import { loadConfig } from '../utils/persistence';
+import { recordAchievementEvent } from '../utils/achievementEvents';
+
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
+  </svg>
+);
 
 interface MyInstrumentsProps {
   isOpen: boolean;
   onClose: () => void;
   onToggleTheme: () => void;
+  onToggleLang: () => void;
   theme: ThemeMode;
   lang: 'pt' | 'en';
 }
@@ -382,7 +397,7 @@ const exportInstrumentToPdf = async (instrument: UserInstrument, lang: 'pt' | 'e
   pdf.save(fileName);
 };
 
-const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggleTheme, theme, lang }) => {
+const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggleTheme, onToggleLang, theme, lang }) => {
   const isLight = theme === 'light';
   const fileInputRef = useRef<HTMLInputElement>(null);
   const backupInputRef = useRef<HTMLInputElement>(null);
@@ -436,7 +451,12 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
     const config = loadConfig();
     const userId = config?.currentUser;
     setCurrentUserId(userId);
-    listInstruments(userId).then(setItems).catch(() => setItems([]));
+    listInstruments(userId)
+      .then(next => {
+        setItems(next);
+        recordAchievementEvent({ type: 'instrument_collection', count: next.length }, userId);
+      })
+      .catch(() => setItems([]));
   }, [isOpen]);
 
   useEffect(() => {
@@ -526,6 +546,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
     };
     await saveInstrument(next, currentUserId);
     const list = await refresh();
+    recordAchievementEvent({ type: 'instrument_collection', count: list.length }, currentUserId);
     setDraft(null);
     setSelected(list.find(item => item.id === next.id) || next);
   };
@@ -571,6 +592,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
       const instruments = rawInstruments.map((item: Partial<UserInstrument>) => normalizeImportedInstrument(item));
       await replaceInstruments(instruments, currentUserId);
       const next = await refresh();
+      recordAchievementEvent({ type: 'instrument_collection', count: next.length }, currentUserId);
       setSelected(next[0] || null);
       setDraft(null);
     } catch (error) {
@@ -750,11 +772,18 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
           <div>
             <p className={`text-[10px] font-black uppercase tracking-[0.35em] ${isLight ? 'text-blue-500' : 'text-blue-300'}`}>Guitar Architect</p>
             <h2 className={`mt-1 text-2xl font-black italic uppercase tracking-tight md:text-3xl ${isLight ? 'text-blue-600' : 'bg-gradient-to-r from-blue-200 via-blue-500 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(37,99,235,0.18)]'}`}>{t.title}</h2>
-            <p className={`mt-1 text-sm font-semibold ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>{t.subtitle}</p>
+            <div className="flex items-center gap-3">
+              <p className={`mt-1 text-sm font-semibold ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>{t.subtitle}</p>
+              <button onClick={onToggleTheme} className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-all ${isLight ? 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 shadow-sm' : 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-blue-500'}`} title={t.themeToggle}>
+                {isLight ? <MoonIcon /> : <SunIcon />}
+              </button>
+              <button onClick={onToggleLang} className={`flex h-10 min-w-12 items-center justify-center rounded-xl border px-3 text-[10px] font-black uppercase transition-all ${isLight ? 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 shadow-sm' : 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-blue-500'}`} title={lang === 'pt' ? 'English' : 'Português'}>
+                {lang === 'pt' ? 'EN' : 'PT'}
+              </button>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <button onClick={startNew} className="rounded-xl bg-blue-600 px-4 py-3 text-xs font-black uppercase text-white">{t.add}</button>
-            <button onClick={onToggleTheme} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.themeToggle}</button>
             <button onClick={exportBackup} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.exportJson}</button>
             <button onClick={() => backupInputRef.current?.click()} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.importJson}</button>
             <button onClick={onClose} className={`rounded-xl border px-4 py-3 text-xs font-black uppercase ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>{t.close}</button>

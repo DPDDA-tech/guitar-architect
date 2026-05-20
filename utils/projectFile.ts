@@ -80,43 +80,64 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 const hasMinimalFretboardShape = (value: unknown): value is FretboardState => {
   if (!isObject(value)) return false;
   return (
-    typeof value.id === 'string' &&
-    typeof value.title === 'string' &&
     typeof value.root === 'string' &&
-    typeof value.scaleType === 'string' &&
-    typeof value.instrumentType === 'string' &&
-    typeof value.tuning === 'string' &&
-    Array.isArray(value.stringStatuses) &&
-    Array.isArray(value.markers) &&
-    Array.isArray(value.lines) &&
-    isObject(value.layers)
+    typeof value.scaleType === 'string'
   );
 };
 
 const hasMinimalProjectShape = (value: unknown): value is Project => {
   if (!isObject(value)) return false;
   return (
-    typeof value.id === 'string' &&
-    typeof value.name === 'string' &&
-    typeof value.user === 'string' &&
-    Array.isArray(value.instances) &&
-    value.instances.every(hasMinimalFretboardShape)
+    (typeof value.name === 'string' || typeof value.id === 'string') &&
+    Array.isArray(value.instances)
   );
 };
 
-export const parseProjectFile = (raw: string): ProjectFilePayload => {
-  const parsed = JSON.parse(raw) as unknown;
+const normalizeFretboard = (data: any): FretboardState => ({
+  id: data.id || crypto.randomUUID(),
+  title: data.title || '',
+  subtitle: data.subtitle || '',
+  notes: data.notes || '',
+  startFret: data.startFret ?? 0,
+  endFret: data.endFret ?? 24,
+  isLeftHanded: !!data.isLeftHanded,
+  root: data.root || 'C',
+  scaleType: data.scaleType || 'Major (Ionian)',
+  instrumentType: data.instrumentType || 'guitar-6',
+  tuning: data.tuning || 'Standard',
+  stringStatuses: Array.isArray(data.stringStatuses) ? data.stringStatuses : [],
+  labelMode: data.labelMode || 'note',
+  harmonyMode: data.harmonyMode || 'OFF',
+  chordQuality: data.chordQuality || 'MAJOR',
+  chordDegree: data.chordDegree ?? 0,
+  inversion: data.inversion ?? 0,
+  colorMode: data.colorMode || 'MULTI',
+  layers: isObject(data.layers) ? data.layers : {
+    showInlays: true,
+    showAllNotes: false,
+    showScale: true,
+    showTonic: true,
+  },
+  markers: Array.isArray(data.markers) ? data.markers : [],
+  lines: Array.isArray(data.lines) ? data.lines : [],
+  ...data
+});
 
-  if (isObject(parsed) && parsed.schema === 'guitar-architect-project' && hasMinimalProjectShape(parsed.project)) {
-    const settings = isObject(parsed.settings) ? parsed.settings : {};
+export const parseProjectFile = (raw: string): ProjectFilePayload => {
+  const parsed = JSON.parse(raw) as any;
+
+  if (isObject(parsed) && parsed.schema === 'guitar-architect-project' && isObject(parsed.project)) {
+    const settings = isObject(parsed.settings) ? (parsed.settings as any) : null;
+    const project = parsed.project;
+    
     const themeCollection = isObject(settings.themeCollection)
       ? {
         activeThemeId: typeof settings.themeCollection.activeThemeId === 'string' ? settings.themeCollection.activeThemeId : '',
         unlockedThemeIds: readStringArray(settings.themeCollection.unlockedThemeIds),
       }
       : undefined;
-    const achievements = isObject(settings.achievements)
-      ? {
+
+    const achievements = (settings && isObject(settings.achievements)) ? {
         unlockedAchievementIds: readStringArray(settings.achievements.unlockedAchievementIds),
         progress: isObject(settings.achievements.progress) ? settings.achievements.progress as AchievementProgressState : {},
         selectedRewardBadgeId: typeof settings.achievements.selectedRewardBadgeId === 'string' ? settings.achievements.selectedRewardBadgeId : null,
@@ -127,9 +148,13 @@ export const parseProjectFile = (raw: string): ProjectFilePayload => {
       appVersion: typeof parsed.appVersion === 'string' ? parsed.appVersion : APP_VERSION,
       exportedAt: typeof parsed.exportedAt === 'string' ? parsed.exportedAt : new Date().toISOString(),
       project: {
-        ...parsed.project,
-        globalTransposition: Number(parsed.project.globalTransposition || 0),
-      },
+        id: project.id || crypto.randomUUID(),
+        name: project.name || 'Projeto Importado',
+        user: project.user || 'guest',
+        lastUpdated: project.lastUpdated || new Date().toISOString(),
+        instances: Array.isArray(project.instances) ? project.instances.map(normalizeFretboard) : [],
+        globalTransposition: Number(project.globalTransposition || 0),
+      } as Project,
       settings: {
         theme: settings.theme === 'dark' ? 'dark' : 'light',
         lang: settings.lang === 'en' ? 'en' : 'pt',

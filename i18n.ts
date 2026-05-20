@@ -2,7 +2,7 @@
 export const translations = {
   pt: {
     tagline: "Visualize a harmonia. Estruture seu fretboard.",
-    layers: "Camadas",
+    layers: "Notas",
     general: "Geral E Trastes",
     harmony: "Harmonia",
     geometry: "Geometria (CAGED)",
@@ -109,7 +109,7 @@ export const translations = {
       actions: "Integração com o fretboard",
       showScale: "Mostrar escala no braço",
       showField: "Mostrar campo harmônico",
-      showTriads: "Mostrar tríades",
+      showTriads: "Mostrar TRI/TETRAD",
       practiceProgression: "Praticar progressão",
       backToFretboard: "Voltar ao fretboard",
       progressions: "Progressões sugeridas",
@@ -118,7 +118,9 @@ export const translations = {
       none: "sem acidentes",
       sharps: "sustenidos",
       flats: "bemóis",
-      harmonicDominantHint: "Use V maior como dominante harmônica opcional."
+      harmonicDominantHint: "Use V maior como dominante harmônica opcional.",
+      backToExercise: "Voltar para o Exercício",
+      backToPractice: "Voltar para a Prática"
     },
     scales: {
       "Major (Ionian)": "Maior (Jônio)",
@@ -137,7 +139,7 @@ export const translations = {
   },
   en: {
     tagline: "Visualize harmony. Structure your fretboard.",
-    layers: "Layers",
+    layers: "Notes",
     general: "General & Frets",
     harmony: "Harmony",
     geometry: "Geometry (CAGED)",
@@ -244,7 +246,7 @@ export const translations = {
       actions: "Fretboard integration",
       showScale: "Show scale on fretboard",
       showField: "Show harmonic field",
-      showTriads: "Show triads",
+      showTriads: "Show TRI/TETRAD",
       practiceProgression: "Practice progression",
       backToFretboard: "Back to fretboard",
       progressions: "Suggested progressions",
@@ -253,7 +255,9 @@ export const translations = {
       none: "no accidentals",
       sharps: "sharps",
       flats: "flats",
-      harmonicDominantHint: "Use major V as an optional harmonic dominant."
+      harmonicDominantHint: "Use major V as an optional harmonic dominant.",
+      backToExercise: "Back to Exercise",
+      backToPractice: "Back to Practice"
     },
     scales: {
       "Major (Ionian)": "Major (Ionian)",

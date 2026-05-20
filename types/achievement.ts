@@ -49,6 +49,7 @@ export interface AchievementRequirement {
   anniversaryAccountYear?: number;
   anniversaryKey?: string;
   explorationKey?: string;
+  instrumentCount?: number;
   achievementTier?: AchievementTier;
   unlockedAchievementCount?: number;
   instrumentFamily?: AchievementInstrumentFamily;

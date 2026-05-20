@@ -175,16 +175,17 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
 
       <div className={`mt-5 rounded-xl border p-4 ${isLight ? 'border-[#d4dfeb] bg-[#f8fbff]' : 'border-blue-900/50 bg-[#050914]'}`}>
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-300">Novas trilhas de desbloqueio</p>
-        <div className="mt-3 grid gap-3 md:grid-cols-3">
+        <div className="mt-3 grid gap-3 md:grid-cols-4">
           {[
-            ['Lealdade', 'dias distintos usando o app', 'tierothers-loyalty-founder-01'],
-            ['Vínculo', 'tempo desde o primeiro registro local', 'tierothers-tenure-epic-01'],
-            ['Aniversário', '24 de janeiro, apenas para contas criadas no ano do selo', 'ga1ano/ga2anos/...'],
-          ].map(([title, description, slug]) => (
+            ['Lealdade', 'dias distintos usando o app', 'Selo revelado no desbloqueio'],
+            ['Vínculo', 'tempo desde o primeiro registro local', 'Selo revelado no desbloqueio'],
+            ['Aniversário', '24 de janeiro, apenas para contas criadas no ano do selo', 'Selo anual revelado no desbloqueio'],
+            ['Colecionador', 'cadastro do 1º, 3º, 5º, 8º e 10º instrumento', 'Selo de coleção revelado no desbloqueio'],
+          ].map(([title, description, revealLabel]) => (
             <div key={title} className={`rounded-xl border p-3 ${isLight ? 'border-blue-100 bg-white' : 'border-blue-950/60 bg-[#070d18]'}`}>
               <h3 className="text-sm font-black">{title}</h3>
               <p className={`mt-1 text-xs font-semibold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{description}</p>
-              <p className="mt-2 text-[9px] font-black uppercase tracking-[0.14em] text-blue-300">{slug}</p>
+              <p className="mt-2 text-[9px] font-black uppercase tracking-[0.14em] text-blue-300">{revealLabel}</p>
             </div>
           ))}
         </div>

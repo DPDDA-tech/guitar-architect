@@ -33,6 +33,7 @@ const FretboardSVG: React.FC<FretboardSVGProps> = ({
     inversion, chordQuality, instrumentType, cagedShape = 'OFF', voicingMode = 'CLOSE',
     colorMode = 'SINGLE'
   } = state;
+  const followAlongRegion = state.followAlongRegion;
   
   const lang = (window as any).ga_lang || 'pt';
   const t = translations[lang as 'pt' | 'en'];
@@ -347,6 +348,64 @@ const renderBrushPaths = () => {
         }}
       >
         <rect x="0" y="0" width={width} height={height} fill={colors.fretboard} />
+        {followAlongRegion && (
+          <g pointerEvents="none">
+            {(() => {
+              const rawStartX = getNoteX(followAlongRegion.startFret) - fretWidth / 2;
+              const rawEndX = getNoteX(Math.min(endFret, followAlongRegion.endFret)) + fretWidth / 2;
+              const x = Math.min(rawStartX, rawEndX);
+              const regionWidth = Math.abs(rawEndX - rawStartX);
+              const isStringRegion = typeof followAlongRegion.stringIndex === 'number';
+              const regionY = isStringRegion
+                ? getY(Math.min(Math.max(0, followAlongRegion.stringIndex || 0), numStrings - 1)) - stringSpacing * 0.42
+                : marginY - 28;
+              const regionHeight = isStringRegion
+                ? stringSpacing * 0.84
+                : (height - 60) - (marginY - 28);
+              const labelY = isStringRegion
+                ? regionY - 8
+                : marginY - 34;
+              return (
+                <>
+                  <rect
+                    x={x}
+                    y={regionY}
+                    width={regionWidth}
+                    height={regionHeight}
+                    rx={isStringRegion ? '12' : '18'}
+                    fill={isLight ? '#60a5fa' : '#1d4ed8'}
+                    opacity={isStringRegion ? (isLight ? '0.16' : '0.24') : (isLight ? '0.12' : '0.18')}
+                  />
+                  <rect
+                    x={x + 4}
+                    y={regionY + 4}
+                    width={Math.max(0, regionWidth - 8)}
+                    height={Math.max(0, regionHeight - 8)}
+                    rx={isStringRegion ? '9' : '14'}
+                    fill="none"
+                    stroke={isLight ? '#2563eb' : '#60a5fa'}
+                    strokeWidth="2"
+                    strokeDasharray="8 8"
+                    opacity={isLight ? '0.28' : '0.36'}
+                  />
+                  {followAlongRegion.label && (
+                    <text
+                      x={x + Math.max(18, regionWidth / 2)}
+                      y={labelY}
+                      textAnchor="middle"
+                      fontSize="10"
+                      fontWeight="900"
+                      fill={isLight ? '#2563eb' : '#93c5fd'}
+                      letterSpacing="2"
+                    >
+                      {followAlongRegion.label.toUpperCase()}
+                    </text>
+                  )}
+                </>
+              );
+            })()}
+          </g>
+        )}
         
         {/* MUTE / OPEN LABELS & SYMBOLS */}
         {startFret === 0 && Array.from({ length: numStrings }).map((_, s) => {

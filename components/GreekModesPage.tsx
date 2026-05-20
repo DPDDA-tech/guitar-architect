@@ -130,7 +130,7 @@ const GreekModesPage: React.FC = () => {
 
         <section className="grid gap-4 lg:grid-cols-7">
           {GREEK_MODES.map(mode => (
-            <article key={mode.id} className={`rounded-2xl border p-4 ${isLight ? 'border-[#c6d3e2] bg-white/95' : 'border-blue-900/55 bg-[#070d18]'}`}>
+            <article key={mode.id} className={`rounded-2xl border p-4 ${isLight ? 'border-[#c6d3e2] bg-white/98 shadow-[0_14px_34px_rgba(71,85,105,0.10)]' : 'border-blue-900/55 bg-[#070d18]/95 shadow-[0_12px_28px_rgba(2,6,23,0.28)]'}`}>
               <div className={`mb-4 h-1.5 rounded-full bg-gradient-to-r ${mode.colorClass}`} />
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-300">{String(mode.order).padStart(2, '0')} / {mode.parentDegree}</p>
               <h2 className="mt-2 text-xl font-black">{mode.name}</h2>
@@ -143,7 +143,7 @@ const GreekModesPage: React.FC = () => {
               </div>
               <div className="mt-4 grid gap-2">
                 <button onClick={() => sendToFretboard(mode, 'scale')} className="rounded-xl bg-blue-600 px-3 py-2 text-[9px] font-black uppercase text-white">Aplicar no braço</button>
-                <button onClick={() => sendToFretboard(mode, 'field')} className={`rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>Ver campo harmônico</button>
+                <button onClick={() => sendToFretboard(mode, 'triads', { harmonyMode: 'TETRADS' })} className={`rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{lang === 'pt' ? 'Ver tétrades' : 'Show seventh chords'}</button>
                 <button onClick={() => sendToFretboard(mode, 'startPractice', { tool: 'exercises', practiceMode: 'modalCharacter', characteristicInterval: mode.characteristicInterval, bpm: 76 })} className={`rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>Ouvir caráter modal</button>
               </div>
             </article>

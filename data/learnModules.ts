@@ -52,6 +52,7 @@ const fretboardAction = (
   root,
   displayRoot: root,
   scaleType,
+  forceNewDiagram: true,
   ...extra,
 });
 

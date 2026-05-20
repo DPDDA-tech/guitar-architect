@@ -2123,6 +2123,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   isOpen={showMyInstruments}
   onClose={closeMyInstruments}
   onToggleTheme={() => setTheme(isLight ? 'dark' : 'light')}
+  onToggleLang={() => setLang(lang === 'pt' ? 'en' : 'pt')}
   theme={theme}
   lang={lang}
 />

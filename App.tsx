@@ -47,6 +47,10 @@ const App: React.FC = () => {
     return <><CagedPage /><AchievementUnlockToast /></>;
   }
 
+  if (path === '/triads-trainer') {
+    return <><TriadsTetradsPage openTrainer /><AchievementUnlockToast /></>;
+  }
+
   if (path === '/triads-tetrads') {
     return <><TriadsTetradsPage /><AchievementUnlockToast /></>;
   }
