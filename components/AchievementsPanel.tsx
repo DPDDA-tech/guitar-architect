@@ -179,7 +179,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
           {[
             ['Lealdade', 'dias distintos usando o app', 'tierothers-loyalty-founder-01'],
             ['Vínculo', 'tempo desde o primeiro registro local', 'tierothers-tenure-epic-01'],
-            ['Aniversário', 'eventos comemorativos do Guitar Architect', 'tierothers-anniversary-2026-01'],
+            ['Aniversário', '24 de janeiro, apenas para contas criadas no ano do selo', 'ga1ano/ga2anos/...'],
           ].map(([title, description, slug]) => (
             <div key={title} className={`rounded-xl border p-3 ${isLight ? 'border-blue-100 bg-white' : 'border-blue-950/60 bg-[#070d18]'}`}>
               <h3 className="text-sm font-black">{title}</h3>

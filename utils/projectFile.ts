@@ -1,4 +1,4 @@
-import type { FretboardState, InstrumentType, Project, ProjectFilePayload, ThemeMode } from '../types';
+import type { FretboardState, InstrumentType, Project, ProjectFilePayload, ThemeMode, UserInstrument } from '../types';
 import type { AchievementProgressState } from '../types/achievement';
 
 const APP_VERSION = '1.8.7';
@@ -20,6 +20,7 @@ export interface ProjectFileInput {
     progress: AchievementProgressState;
     selectedRewardBadgeId?: string | null;
   };
+  instruments?: UserInstrument[];
   exportedAt?: string;
 }
 
@@ -65,6 +66,7 @@ export const serializeProjectFile = (input: ProjectFileInput): ProjectFilePayloa
       themeCollection: input.themeCollection,
       achievements: input.achievements,
     },
+    instruments: input.instruments,
   };
 };
 
@@ -137,6 +139,7 @@ export const parseProjectFile = (raw: string): ProjectFilePayload => {
         themeCollection,
         achievements,
       },
+      instruments: Array.isArray(parsed.instruments) ? parsed.instruments as UserInstrument[] : undefined,
     };
   }
 

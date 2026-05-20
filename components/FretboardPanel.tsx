@@ -16,7 +16,7 @@ import { buildProjectFileName, parseProjectFile, serializeProjectFile } from '..
 import SupportModal from './SupportModal';
 import { BrandAssets, getBrandAssets } from '../utils/brandAssets';
 import MyInstruments from './MyInstruments';
-import { recordAchievementEvent, recordAppLoyaltyVisit } from '../utils/achievementEvents';
+import { recordAchievementEvent, recordAppAnniversaryVisit, recordAppLoyaltyVisit } from '../utils/achievementEvents';
 import { loadThemeCollectionState, saveThemeCollectionState } from '../features/themeCollection/themeUtils';
 import { THEME_REGISTRY } from '../features/themeCollection/themeRegistry';
 import type { ThemeCollectionItem } from '../features/themeCollection/themeTypes';
@@ -32,6 +32,7 @@ import { getAchievementById, getRewardById } from '../utils/achievementUtils';
 import { supabase } from '../src/lib/supabase';
 import { migrateLocalIdentityToSupabase, pushLocalSnapshotToSupabase, syncSupabaseSnapshot } from '../src/lib/cloudSync';
 import { canUseDisplayName, getDisplayNameError, getSupabaseDisplayName } from '../src/lib/userIdentity';
+import { listInstruments, replaceInstruments } from '../utils/instrumentRegistry';
 
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
 const LOCAL_MIGRATION_DEADLINE_PT = '17/06/2026';
@@ -182,6 +183,10 @@ const FretboardPanel: React.FC = () => {
   const [localUserOptions, setLocalUserOptions] = useState<string[]>([]);
   const [migrationStatus, setMigrationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [migrationMessage, setMigrationMessage] = useState('');
+  const [allowLocalIdentity, setAllowLocalIdentity] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.sessionStorage.getItem('ga_require_account_login') !== '1';
+  });
   const initialized = useRef(false);
   const authSessionBooted = useRef(false);
   const projectFileInputRef = useRef<HTMLInputElement>(null);
@@ -555,10 +560,14 @@ useEffect(() => {
     const identity = getSupabaseDisplayName(data.user);
     setAuthUser(data.user);
     setAuthEmail(data.user.email || '');
+    setAllowLocalIdentity(true);
+    window.sessionStorage.removeItem('ga_require_account_login');
 
     if (!authSessionBooted.current) {
       authSessionBooted.current = true;
       switchUserSession(identity);
+      recordAppLoyaltyVisit(new Date(), identity);
+      recordAppAnniversaryVisit(new Date(), data.user.created_at, identity);
       void syncSupabaseSnapshot(data.user.id, identity);
       setShowLoginModal(false);
     }
@@ -571,10 +580,14 @@ useEffect(() => {
       const identity = getSupabaseDisplayName(session.user);
       setAuthUser(session.user);
       setAuthEmail(session.user.email || '');
+      setAllowLocalIdentity(true);
+      window.sessionStorage.removeItem('ga_require_account_login');
 
       if (!authSessionBooted.current) {
         authSessionBooted.current = true;
         switchUserSession(identity);
+        recordAppLoyaltyVisit(new Date(), identity);
+        recordAppAnniversaryVisit(new Date(), session.user.created_at, identity);
         void syncSupabaseSnapshot(session.user.id, identity);
       }
 
@@ -681,6 +694,10 @@ const handleLogout = async () => {
   }
 
   setAuthUser(null);
+  setAllowLocalIdentity(false);
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.setItem('ga_require_account_login', '1');
+  }
   authSessionBooted.current = false;
   setInstances([]);
   setUser('');
@@ -755,7 +772,8 @@ const handleLogout = async () => {
     }
   };
 
-  const exportProjectFile = () => {
+  const exportProjectFile = async () => {
+    const instruments = await listInstruments(user).catch(() => []);
     const payload = serializeProjectFile({
       projectId,
       projectName,
@@ -773,6 +791,7 @@ const handleLogout = async () => {
         progress: getAchievementProgressState(),
         selectedRewardBadgeId: getSelectedRewardBadgeId(),
       },
+      instruments,
     });
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -807,9 +826,10 @@ const handleLogout = async () => {
 
         if (!window.confirm(confirmMsg)) return;
 
+        const importIdentity = authUser ? user : (payload.project.user || user);
         setProjectId(payload.project.id || crypto.randomUUID());
         setProjectName(payload.project.name || (lang === 'pt' ? 'Projeto Importado' : 'Imported Project'));
-        setUser(payload.project.user || user);
+        setUser(importIdentity);
         setInstances(payload.project.instances);
         setGlobalTranspose(payload.project.globalTransposition || 0);
         setTheme(payload.settings.theme || theme);
@@ -840,6 +860,9 @@ const handleLogout = async () => {
         }
         if (payload.settings.achievements?.selectedRewardBadgeId && getRewardById(payload.settings.achievements.selectedRewardBadgeId)?.asset.status === 'ready') {
           setSelectedRewardBadgeId(payload.settings.achievements.selectedRewardBadgeId);
+        }
+        if (payload.instruments && payload.instruments.length > 0) {
+          void replaceInstruments(payload.instruments, importIdentity);
         }
         setSaveStatus('saving');
         setShowProjectMenu(false);
@@ -994,6 +1017,13 @@ const handleLogout = async () => {
     if (typeof window !== 'undefined' && window.location.hash === '#meus-instrumentos') {
       window.history.pushState(null, '', `${window.location.pathname}${window.location.search}`);
     }
+  }, []);
+  const openMetronomeTool = useCallback(() => {
+    recordAchievementEvent({ type: 'exploration', key: 'open_metronome' });
+    window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'metronome' } }));
+  }, []);
+  const openTunerTool = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'tuner' } }));
   }, []);
 
   useEffect(() => {
@@ -1225,10 +1255,7 @@ const handleLogout = async () => {
 	                {lang === 'pt' ? 'Ciclo' : 'Cycle'}
 	              </button>
 	              <button
-	                onClick={() => {
-                    recordAchievementEvent({ type: 'exploration', key: 'open_metronome' });
-                    window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'metronome' } }));
-                  }}
+                  onClick={openMetronomeTool}
                 className={`rounded-xl border px-2.5 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
                 aria-label={lang === 'pt' ? 'Abrir metrônomo e ferramentas' : 'Open metronome and tools'}
                 title={lang === 'pt' ? 'Metrônomo' : 'Metronome'}
@@ -1236,7 +1263,7 @@ const handleLogout = async () => {
                 BPM
               </button>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: 'tuner' } }))}
+                onClick={openTunerTool}
                 className={`rounded-xl border px-2.5 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
                 aria-label={lang === 'pt' ? 'Abrir afinador' : 'Open tuner'}
                 title={lang === 'pt' ? 'Afinador' : 'Tuner'}
@@ -1249,7 +1276,7 @@ const handleLogout = async () => {
           {showProjectMenu && (
             <div className={`absolute left-3 right-3 top-full mt-2 max-h-[calc(100vh-92px)] overflow-y-auto rounded-2xl border p-3 shadow-2xl ring-1 ${isLight ? 'bg-[linear-gradient(160deg,#fbfdff_0%,#eef5fb_58%,#e8f0f8_100%)] border-[#aebed1] shadow-[0_24px_80px_rgba(71,85,105,0.24)] ring-white/80' : 'bg-[linear-gradient(160deg,#172033_0%,#111827_52%,#0c1322_100%)] border-blue-800/60 shadow-[0_30px_95px_rgba(0,0,0,0.72)] ring-white/5'}`}>
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => { exportProjectFile(); setShowProjectMenu(false); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                  <button onClick={() => { void exportProjectFile(); setShowProjectMenu(false); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                   {lang === 'pt' ? 'Exportar JSON' : 'Export JSON'}
                 </button>
                 <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
@@ -1348,7 +1375,44 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             </div>
 
             <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
-               <div className="hidden xl:grid grid-cols-6 gap-1.5">
+               <div className="hidden xl:flex flex-col gap-1.5">
+                 <div className="grid grid-cols-5 gap-1.5">
+                   {[
+                     { label: lang === 'pt' ? 'Aprender' : 'Learn', onClick: () => openModulePage('/learn') },
+                     { label: lang === 'pt' ? 'Praticar' : 'Practice', onClick: () => openModulePage('/practice') },
+                     { label: 'Metron.', onClick: openMetronomeTool },
+                     { label: lang === 'pt' ? 'Afinador' : 'Tuner', onClick: openTunerTool },
+                     { label: lang === 'pt' ? 'Instrumentos' : 'Instruments', onClick: openMyInstruments },
+                   ].map(item => (
+                     <button
+                       key={item.label}
+                       onClick={item.onClick}
+                       className={`min-w-[86px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+                     >
+                       {item.label}
+                     </button>
+                   ))}
+                 </div>
+                 <div className="grid grid-cols-6 gap-1.5">
+                   {[
+                     { label: lang === 'pt' ? 'Ciclo' : 'Cycle', path: '/harmonic-cycle' },
+                     { label: lang === 'pt' ? 'Modos' : 'Modes', path: '/greek-modes' },
+                     { label: 'CAGED', path: '/caged' },
+                     { label: lang === 'pt' ? 'Acordes' : 'Chords', path: '/chords' },
+                     { label: 'Tri/Tetrad', path: '/triads-tetrads' },
+                     { label: lang === 'pt' ? 'Colecao' : 'Collection', path: '/theme-collection' },
+                   ].map(item => (
+                     <button
+                       key={item.path}
+                       onClick={() => openModulePage(item.path)}
+                       className={`min-w-[74px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+                     >
+                       {item.label}
+                     </button>
+                   ))}
+                 </div>
+               </div>
+               <div className="hidden">
                  {[
                    { label: lang === 'pt' ? 'Aprender' : 'Learn', path: '/learn' },
                    { label: lang === 'pt' ? 'Praticar' : 'Practice', path: '/practice' },
@@ -1420,7 +1484,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
   {/* SAVE */}
   <button
-    onClick={exportProjectFile}
+    onClick={() => void exportProjectFile()}
     className={`
       px-3 md:px-4 py-1.5 md:py-2
       rounded-xl border font-black uppercase
@@ -1508,7 +1572,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         </button>
 
         <div className="grid grid-cols-2 gap-2">
-          <button onClick={() => { exportProjectFile(); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-emerald-500 hover:text-emerald-600' : 'border-zinc-700 text-zinc-200 hover:border-emerald-500 hover:text-emerald-400'}`}>
+          <button onClick={() => { void exportProjectFile(); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-emerald-500 hover:text-emerald-600' : 'border-zinc-700 text-zinc-200 hover:border-emerald-500 hover:text-emerald-400'}`}>
             {lang === 'pt' ? 'EXPORTAR JSON' : 'EXPORT JSON'}
           </button>
           <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
@@ -1875,13 +1939,26 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                </div>
              </div>
 
+              {(allowLocalIdentity || authUser) ? (
       <div className="mb-5 flex items-center gap-3">
-               <div className={`h-px flex-1 ${isLight ? 'bg-zinc-200' : 'bg-zinc-800'}`} />
-               <span className="text-[9px] font-black uppercase tracking-[0.18em] text-zinc-500">
-                 {lang === 'pt' ? 'Identidade local' : 'Local identity'}
-               </span>
-               <div className={`h-px flex-1 ${isLight ? 'bg-zinc-200' : 'bg-zinc-800'}`} />
-             </div>
+                <div className={`h-px flex-1 ${isLight ? 'bg-zinc-200' : 'bg-zinc-800'}`} />
+                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-zinc-500">
+                  {lang === 'pt' ? 'Identidade local' : 'Local identity'}
+                </span>
+                <div className={`h-px flex-1 ${isLight ? 'bg-zinc-200' : 'bg-zinc-800'}`} />
+              </div>
+              ) : (
+                <div className={`mb-6 rounded-3xl border p-4 text-center ${isLight ? 'border-blue-100 bg-blue-50 text-blue-800' : 'border-blue-900/50 bg-blue-950/20 text-blue-200'}`}>
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em]">
+                    {lang === 'pt' ? 'Sessao encerrada' : 'Session ended'}
+                  </p>
+                  <p className="mt-2 text-[11px] font-bold leading-relaxed">
+                    {lang === 'pt'
+                      ? 'Para voltar aos dados sincronizados, entre novamente na sua conta.'
+                      : 'To return to synced data, sign in to your account again.'}
+                  </p>
+                </div>
+              )}
 
              {authUser && localUserOptions.length > 0 && (
                <div className={`mb-6 rounded-3xl border p-4 ${isLight ? 'bg-emerald-50 border-emerald-100' : 'bg-emerald-950/20 border-emerald-900/40'}`}>
@@ -1913,7 +1990,8 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  )}
                </div>
              )}
-              <div className="relative mb-8">
+              {(allowLocalIdentity || authUser) && (
+               <div className="relative mb-8">
                <input 
                  autoFocus 
                  placeholder="Nome do Autor (ex: Prof. Jimmy H)..." 
@@ -1936,8 +2014,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                {!user && (
                  <p className="absolute -bottom-5 left-0 w-full text-center text-[9px] font-black uppercase text-zinc-400 tracking-tighter opacity-40">Apenas sugestão. Digite o que desejar.</p>
                )}
-             </div>
-             
+              </div>
+              )}
+              
+              {(allowLocalIdentity || authUser) && (
 <button
   onClick={() => {
     if (user.trim()) {
@@ -1957,6 +2037,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 >
   Confirmar Identidade
 </button>
+              )}
 </div>
 </div>
 )}

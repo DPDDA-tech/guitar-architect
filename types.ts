@@ -111,6 +111,7 @@ export interface ProjectFilePayload {
       selectedRewardBadgeId?: string | null;
     };
   };
+  instruments?: UserInstrument[];
 }
 
 export interface InstrumentMaintenance {

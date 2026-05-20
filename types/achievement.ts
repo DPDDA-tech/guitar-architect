@@ -46,6 +46,7 @@ export interface AchievementRequirement {
   loyaltyDays?: number;
   tenureDays?: number;
   anniversaryYear?: number;
+  anniversaryAccountYear?: number;
   anniversaryKey?: string;
   explorationKey?: string;
   achievementTier?: AchievementTier;

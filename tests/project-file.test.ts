@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { FretboardState } from '../types';
+import type { FretboardState, UserInstrument } from '../types';
 import { buildProjectFileName, parseProjectFile, serializeProjectFile, slugifyProjectName } from '../utils/projectFile';
 
 const makeFretboard = (): FretboardState => ({
@@ -33,6 +33,41 @@ const makeFretboard = (): FretboardState => ({
   lines: [],
 });
 
+const makeInstrument = (): UserInstrument => ({
+  id: 'instrument-1',
+  userId: 'teacher',
+  createdAt: '2026-05-01T12:00:00.000Z',
+  updatedAt: '2026-05-01T12:00:00.000Z',
+  brand: 'GA',
+  model: 'Studio',
+  version: '',
+  color: 'Blue',
+  originCountry: '',
+  serialNumber: '',
+  manufactureYear: '',
+  strings: '6',
+  purchaseDate: '',
+  paidValue: '',
+  stringGauge: '',
+  nutMaterial: '',
+  lastStringChange: '',
+  bodyType: '',
+  bridgeType: '',
+  fretCount: '',
+  fretType: '',
+  neckShape: '',
+  fretboardRadius: '',
+  bridgePickup: '',
+  middlePickup: '',
+  neckPickup: '',
+  bodyWood: '',
+  topWood: '',
+  neckWood: '',
+  fretboardWood: '',
+  notes: '',
+  maintenance: [],
+});
+
 describe('project file import/export', () => {
   it('builds a safe suggested file name', () => {
     expect(slugifyProjectName('Meu Projeto Nº 1')).toBe('meu-projeto-n-1');
@@ -64,6 +99,7 @@ describe('project file import/export', () => {
         },
         selectedRewardBadgeId: 'sticker-major-scale',
       },
+      instruments: [makeInstrument()],
       exportedAt: '2026-05-01T12:00:00.000Z',
     });
 
@@ -94,6 +130,7 @@ describe('project file import/export', () => {
     });
     expect(payload.settings.achievements?.progress.exerciseBpmTargets?.['major-scale-bpm']).toBe(80);
     expect(payload.project.instances[0]).toMatchObject({ root: 'C', scaleType: 'Major (Ionian)' });
+    expect(payload.instruments?.[0]).toMatchObject({ id: 'instrument-1', model: 'Studio' });
   });
 
   it('parses new project files and legacy project-shaped JSON', () => {
@@ -108,7 +145,9 @@ describe('project file import/export', () => {
       exportedAt: '2026-05-01T12:00:00.000Z',
     });
 
-    expect(parseProjectFile(JSON.stringify(payload)).project.name).toBe('Import Me');
+    const parsed = parseProjectFile(JSON.stringify(payload));
+    expect(parsed.project.name).toBe('Import Me');
+    expect(parsed.instruments).toBeUndefined();
     expect(parseProjectFile(JSON.stringify(payload.project)).project.instances).toHaveLength(1);
     expect(parseProjectFile(JSON.stringify(payload.project)).settings.achievements).toBeUndefined();
     expect(parseProjectFile(JSON.stringify(payload.project)).settings.themeCollection).toBeUndefined();

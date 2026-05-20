@@ -12,6 +12,9 @@ import type { AchievementProgressState } from '../types/achievement';
 const EVENT_LOG_KEY = 'ga_achievement_event_log';
 const MAX_EVENT_LOG_LENGTH = 120;
 const LOYALTY_DAYS_KEY = 'ga_loyalty_days_seen';
+const ANNIVERSARY_MONTH = 0;
+const ANNIVERSARY_DAY = 24;
+const FIRST_ANNIVERSARY_YEAR = 2026;
 
 const getCurrentUserId = (): string => {
   try {
@@ -197,6 +200,28 @@ export const recordAppLoyaltyVisit = (date = new Date(), userId?: string): Achie
   window.localStorage.setItem(prefixedKey, JSON.stringify(uniqueDays));
   recordAchievementEvent({ type: 'tenure', firstSeenAt: uniqueDays[0], lastSeenAt: date.toISOString() }, userId);
   return recordAchievementEvent({ type: 'loyalty', days: uniqueDays.length }, userId);
+};
+
+export const getAppAnniversaryNumber = (date = new Date()) => {
+  const anniversaryNumber = date.getFullYear() - FIRST_ANNIVERSARY_YEAR + 1;
+  return anniversaryNumber > 0 ? anniversaryNumber : 0;
+};
+
+export const recordAppAnniversaryVisit = (
+  date = new Date(),
+  accountCreatedAt?: string,
+  userId?: string,
+): AchievementEventResult | null => {
+  if (date.getMonth() !== ANNIVERSARY_MONTH || date.getDate() !== ANNIVERSARY_DAY) return null;
+
+  const anniversaryNumber = getAppAnniversaryNumber(date);
+  if (anniversaryNumber < 1 || anniversaryNumber > 5) return null;
+
+  const accountCreatedYear = accountCreatedAt ? new Date(accountCreatedAt).getFullYear() : undefined;
+  if (accountCreatedYear !== date.getFullYear()) return null;
+
+  const key = `app-anniversary-${anniversaryNumber}-year-${date.getFullYear()}`;
+  return recordAchievementEvent({ type: 'app_anniversary', key, year: date.getFullYear() }, userId);
 };
 
 export const unlockAchievementById = (achievementId: string, userId?: string): AchievementEventResult => {
