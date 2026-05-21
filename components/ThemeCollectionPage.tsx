@@ -26,6 +26,7 @@ const ThemeCollectionPage: React.FC = () => {
   const [lang, setLang] = useState<Lang>(() => getInitialConfig()?.lang || 'pt');
   const [theme, setTheme] = useState<ThemeMode>(() => getInitialConfig()?.theme || 'dark');
   const [collectionState, setCollectionState] = useState(loadThemeCollectionState);
+  const [previewTheme, setPreviewTheme] = useState<typeof THEME_REGISTRY[number] | null>(null);
   const isLight = theme === 'light';
   const items = useMemo(() => THEME_REGISTRY.map(item => getThemeWithState(item, collectionState)), [collectionState]);
   const activeTheme = items.find(item => item.id === collectionState.activeThemeId) || items.find(item => item.id === DEFAULT_THEME_ID) || items[0];
@@ -96,13 +97,13 @@ const ThemeCollectionPage: React.FC = () => {
           </div>
         </section>
 
-        <ThemeGrid category="tier0" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} />
-        <ThemeGrid category="tier1" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} />
-        <ThemeGrid category="tier2" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} />
-        <ThemeGrid category="tier3" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} />
-        <ThemeGrid category="tier4" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} />
-        <ThemeGrid category="tier5" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} />
-        <ThemeGrid category="tier6" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} />
+        <ThemeGrid category="tier0" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier1" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier2" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier3" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier4" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier5" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier6" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
 
         <AchievementsPanel isLight={isLight} />
 
@@ -112,6 +113,24 @@ const ThemeCollectionPage: React.FC = () => {
           </button>
         </div>
       </main>
+      {previewTheme && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/82 p-4 backdrop-blur-xl" onClick={() => setPreviewTheme(null)}>
+          <div className={`max-h-[92vh] w-full max-w-5xl overflow-auto rounded-3xl border p-4 shadow-2xl ${isLight ? 'border-slate-200 bg-white' : 'border-blue-900/60 bg-slate-950'}`} onClick={event => event.stopPropagation()}>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-400">{lang === 'pt' ? 'Imagem desbloqueada' : 'Unlocked image'}</p>
+                <h2 className="text-lg font-black">{getThemeCopy(previewTheme, lang).name}</h2>
+              </div>
+              <button onClick={() => setPreviewTheme(null)} className={`rounded-xl border px-4 py-2 text-[10px] font-black uppercase ${isLight ? 'border-slate-200 text-slate-700' : 'border-slate-700 text-slate-200'}`}>
+                {lang === 'pt' ? 'Fechar' : 'Close'}
+              </button>
+            </div>
+            <a href={previewTheme.image} target="_blank" rel="noreferrer" download className="block" title={lang === 'pt' ? 'Abrir ou salvar imagem' : 'Open or save image'}>
+              <img src={previewTheme.image} alt={getThemeCopy(previewTheme, lang).name} className="mx-auto max-h-[76vh] w-auto max-w-full rounded-2xl object-contain" />
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -10,6 +10,7 @@ interface ThemeCardProps {
   isLight: boolean;
   lang: 'pt' | 'en';
   onSelect: (themeId: string) => void;
+  onPreview: (theme: ThemeCollectionItem) => void;
 }
 
 const rarityClass = {
@@ -19,7 +20,7 @@ const rarityClass = {
   legendary: 'border-amber-300/70 ring-1 ring-amber-200/32 before:pointer-events-none before:absolute before:inset-[-2px] before:rounded-2xl before:bg-[radial-gradient(circle_at_30%_0%,rgba(251,191,36,0.24),transparent_34%)] before:blur-xl before:content-[""] after:pointer-events-none after:absolute after:inset-[3px] after:rounded-[14px] after:border after:border-amber-100/22 after:content-[""]',
 };
 
-const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, isLight, lang, onSelect }) => {
+const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, isLight, lang, onSelect, onPreview }) => {
   const locked = !theme.unlocked;
   const copy = getThemeCopy(theme, lang);
   const rarityLabel = getThemeLevelLabel(theme, lang);
@@ -45,7 +46,18 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, isLight, lang, o
         </div>
       )}
       <div className="relative">
-        <ThemePreview theme={theme} locked={locked} compact lang={lang} isLight={isLight} />
+        {locked ? (
+          <ThemePreview theme={theme} locked={locked} compact lang={lang} isLight={isLight} />
+        ) : (
+          <button
+            type="button"
+            onClick={() => onPreview(theme)}
+            className="block w-full rounded-xl text-left focus:outline-none focus:ring-2 focus:ring-blue-400"
+            aria-label={`${lang === 'pt' ? 'Ver imagem original' : 'View original image'} ${copy.name}`}
+          >
+            <ThemePreview theme={theme} locked={false} compact lang={lang} isLight={isLight} />
+          </button>
+        )}
         {locked && <ThemeLockedOverlay label={lang === 'pt' ? 'Bloqueado' : 'Locked'} />}
       </div>
       <div className="mt-4">

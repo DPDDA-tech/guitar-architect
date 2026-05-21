@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import FretboardInstance from './FretboardInstance';
 import { FretboardState, ThemeMode, Project, InstrumentType } from '../types';
@@ -29,6 +29,7 @@ import {
   unlockAchievement,
 } from '../utils/achievementStorage';
 import { getAchievementById, getRewardById } from '../utils/achievementUtils';
+import { getTierName } from '../utils/tierNomenclature';
 import { supabase } from '../src/lib/supabase';
 import { migrateLocalIdentityToSupabase, pushLocalSnapshotToSupabase, syncSupabaseSnapshot } from '../src/lib/cloudSync';
 import { canUseDisplayName, getDisplayNameError, getSupabaseDisplayName } from '../src/lib/userIdentity';
@@ -982,6 +983,14 @@ const handleLogout = async () => {
       accentShadow: activeCollectionTheme.glowColor || brandAssets.accentShadow,
     }
     : brandAssets;
+  const currentUserTier = useMemo(() => {
+    const unlocked = getUnlockedAchievementIds(user);
+    const tiers = unlocked
+      .map(id => getAchievementById(id)?.tier)
+      .filter((tier): tier is 0 | 1 | 2 | 3 | 4 | 5 | 6 => typeof tier === 'number');
+    return tiers.length ? Math.max(...tiers) as 0 | 1 | 2 | 3 | 4 | 5 | 6 : 0;
+  }, [user]);
+  const currentUserTierName = getTierName(currentUserTier, lang);
   const updatePrimaryInstrument = (instrumentType: InstrumentType) => {
     const instrument = INSTRUMENT_PRESETS[instrumentType];
     const instrumentFamily = instrumentType.startsWith('bass')
@@ -1304,6 +1313,9 @@ const handleLogout = async () => {
 
           {showProjectMenu && (
             <div className={`absolute left-3 right-3 top-full mt-2 max-h-[calc(100vh-92px)] overflow-y-auto rounded-2xl border p-3 shadow-2xl ring-1 ${isLight ? 'bg-[linear-gradient(160deg,#fbfdff_0%,#eef5fb_58%,#e8f0f8_100%)] border-[#aebed1] shadow-[0_24px_80px_rgba(71,85,105,0.24)] ring-white/80' : 'bg-[linear-gradient(160deg,#172033_0%,#111827_52%,#0c1322_100%)] border-blue-800/60 shadow-[0_30px_95px_rgba(0,0,0,0.72)] ring-white/5'}`}>
+              <button onClick={() => { setShowLoadModal(true); setShowProjectMenu(false); }} className={`mb-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                {lang === 'pt' ? 'Carregar projetos locais' : 'Load local projects'}
+              </button>
               <div className="grid grid-cols-2 gap-2">
                   <button onClick={() => { void exportProjectFile(); setShowProjectMenu(false); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                   {lang === 'pt' ? 'Exportar JSON' : 'Export JSON'}
@@ -1333,15 +1345,26 @@ const handleLogout = async () => {
               >
                 {lang === 'pt' ? 'Migrar dados locais' : 'Migrate local data'}
               </button>
-              <button onClick={() => openModulePage('/learn')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                {lang === 'pt' ? 'Aprender' : 'Learn'}
-              </button>
-              <button onClick={() => openModulePage('/practice')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                {lang === 'pt' ? 'Praticar' : 'Practice'}
-              </button>
-              <button onClick={() => openModulePage('/theme-collection')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                {lang === 'pt' ? 'Cole��es' : 'Collections'}
-              </button>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {[
+                  { label: lang === 'pt' ? 'Aprender' : 'Learn', path: '/learn' },
+                  { label: lang === 'pt' ? 'Praticar' : 'Practice', path: '/practice' },
+                  { label: lang === 'pt' ? 'Acordes' : 'Chords', path: '/chords' },
+                  { label: 'CAGED', path: '/caged' },
+                  { label: 'Tri/Tetrad', path: '/triads-tetrads' },
+                  { label: lang === 'pt' ? 'Modos' : 'Modes', path: '/greek-modes' },
+                  { label: translations[lang].harmonicCycle.menu, path: 'harmonic-cycle', wide: true },
+                  { label: lang === 'pt' ? 'Treinar tría.' : 'Triad train.', path: '/triads-tetrads?trainer=1', wide: true },
+                ].map(item => (
+                  <button
+                    key={item.path}
+                    onClick={() => item.path === 'harmonic-cycle' ? openHarmonicCycle() : openModulePage(item.path)}
+                    className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${item.wide ? 'col-span-2' : ''} ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
                   <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Guitarra' : 'Guitar'}</p>
@@ -1364,6 +1387,17 @@ const handleLogout = async () => {
                   </div>
                 </div>
               </div>
+              <button onClick={togglePrimaryLeftHanded} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                {lang === 'pt' ? 'Canhoto' : 'Left-handed'}
+              </button>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button onClick={handleLogout} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-red-200 text-red-600' : 'border-red-950/70 text-red-300'}`}>
+                  {lang === 'pt' ? 'Sair da conta' : 'Log out'}
+                </button>
+                <button onClick={() => { setShowProjectMenu(false); void handleLogout(); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
+                  {lang === 'pt' ? 'Trocar conta' : 'Switch account'}
+                </button>
+              </div>
               <button onClick={() => { setShowSupportModal(true); setShowProjectMenu(false); }} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                 APOIAR O PROJETO
               </button>
@@ -1382,7 +1416,15 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
          <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
             <div className="flex items-center gap-3 md:gap-5 overflow-hidden">
-               <LogoIcon brand={displayedBrandAssets} />
+               <button
+                 type="button"
+                 onClick={() => openModulePage('/theme-collection')}
+                 className="shrink-0 rounded-2xl transition-transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-blue-400"
+                 title={lang === 'pt' ? 'Trocar logo desbloqueada' : 'Change unlocked logo'}
+                 aria-label={lang === 'pt' ? 'Abrir coleções para trocar a logo' : 'Open collections to change logo'}
+               >
+                 <LogoIcon brand={displayedBrandAssets} />
+               </button>
                <div className="min-w-0">
                   <h1 className={`text-[16px] md:text-2xl font-black italic leading-none tracking-tighter uppercase truncate ${titleColorClass}`}>GUITAR ARCHITECT</h1>
                   <p className="text-[8px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-tight mt-1">{t.tagline}</p>
@@ -1399,6 +1441,9 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                   <div className="flex items-center gap-1.5 mt-2">
                      <span className={`text-[10px] md:text-[11px] font-black uppercase truncate max-w-[130px] md:max-w-none ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>
                         <span className="text-zinc-400">{lang === 'pt' ? 'Usuário:' : 'User:'}</span> {authUser ? getSupabaseDisplayName(authUser) : user || (lang === 'pt' ? 'Visitante' : 'Guest')}
+                     </span>
+                     <span className={`rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.08em] ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-900/70 bg-blue-950/40 text-blue-200'}`}>
+                       {currentUserTierName}
                      </span>
                      <div className="flex gap-2">
   <button

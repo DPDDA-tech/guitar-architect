@@ -11,9 +11,10 @@ interface ThemeGridProps {
   isLight: boolean;
   lang: 'pt' | 'en';
   onSelect: (themeId: string) => void;
+  onPreview: (theme: ThemeCollectionItem) => void;
 }
 
-const ThemeGrid: React.FC<ThemeGridProps> = ({ title, category, items, activeThemeId, isLight, lang, onSelect }) => {
+const ThemeGrid: React.FC<ThemeGridProps> = ({ title, category, items, activeThemeId, isLight, lang, onSelect, onPreview }) => {
   const categoryItems = items.filter(item => item.category === category);
   if (categoryItems.length === 0) return null;
 
@@ -32,7 +33,7 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ title, category, items, activeThe
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {categoryItems.map(item => (
-          <ThemeCard key={item.id} theme={item} isActive={activeThemeId === item.id} isLight={isLight} lang={lang} onSelect={onSelect} />
+          <ThemeCard key={item.id} theme={item} isActive={activeThemeId === item.id} isLight={isLight} lang={lang} onSelect={onSelect} onPreview={onPreview} />
         ))}
       </div>
     </section>
