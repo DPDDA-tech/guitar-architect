@@ -11,6 +11,8 @@ import { getThemeWithState, loadThemeCollectionState, saveThemeCollectionState, 
 import { getUnlockedAchievements, getUnlockedRewards } from '../utils/achievementUtils';
 import { getUnlockedAchievementIds, unlockAchievement } from '../utils/achievementStorage';
 import { getCollectionLoreByPath, type CollectionLoreItem } from '../data/collectionLore';
+import { supporterRewards, getUnlockedSupporterRewards } from '../data/supporterRewards';
+import { getSupporterContributionTotal, setSupporterContributionTotal, syncUnlockedSupporterRewards } from '../utils/supporterStorage';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
 
@@ -123,6 +125,8 @@ const ThemeCollectionPage: React.FC = () => {
   const [previewAsset, setPreviewAsset] = useState<CollectionPreview | null>(null);
   const currentUserId = useMemo(() => getInitialConfig()?.currentUser, []);
   const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<string[]>(() => getUnlockedAchievementIds(currentUserId));
+  const [supporterTotal, setSupporterTotal] = useState(() => getSupporterContributionTotal());
+  const [supporterInput, setSupporterInput] = useState(() => String(getSupporterContributionTotal()));
   const isLight = theme === 'light';
   const achievementUnlockedThemeIds = useMemo(() => {
     const unlockedAssets = new Set<string>();
@@ -150,7 +154,7 @@ const ThemeCollectionPage: React.FC = () => {
     getUnlockedAchievements(unlockedAchievementIds).forEach(achievement => {
       if (achievement.asset.status !== 'ready' || !achievement.asset.path) return;
       if (!achievement.asset.path.includes('/tierothers/')) return;
-      itemMap.set(`achievement:${achievement.id}`, {
+      itemMap.set(achievement.asset.path, {
         id: `achievement:${achievement.id}`,
         title: achievement.title,
         description: achievement.description,
@@ -162,7 +166,8 @@ const ThemeCollectionPage: React.FC = () => {
     getUnlockedRewards(unlockedAchievementIds).forEach(reward => {
       if (!reward.asset.path) return;
       if (!reward.asset.path.includes('/tierothers/')) return;
-      itemMap.set(`reward:${reward.id}`, {
+      if (itemMap.has(reward.asset.path)) return;
+      itemMap.set(reward.asset.path, {
         id: `reward:${reward.id}`,
         title: reward.title,
         description: reward.description,
@@ -176,6 +181,9 @@ const ThemeCollectionPage: React.FC = () => {
   const activeTheme = items.find(item => item.id === effectiveCollectionState.activeThemeId) || items.find(item => item.id === DEFAULT_THEME_ID) || items[0];
   const activeThemeCopy = getThemeCopy(activeTheme, lang);
   const unlockedCount = items.filter(item => item.unlocked).length;
+  const unlockedSupporterIds = useMemo(() => {
+    return getUnlockedSupporterRewards(supporterTotal).map(reward => reward.id);
+  }, [supporterTotal]);
   const t = translations[lang].harmonicCycle;
   const panelClass = isLight
     ? 'border-[#c2d0e1] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(244,248,252,0.92))] shadow-[0_24px_70px_rgba(71,85,105,0.18),inset_0_1px_0_rgba(255,255,255,0.85)]'
@@ -203,6 +211,10 @@ const ThemeCollectionPage: React.FC = () => {
     };
   }, [currentUserId]);
 
+  useEffect(() => {
+    syncUnlockedSupporterRewards(supporterTotal);
+  }, [supporterTotal]);
+
   const persistConfigPatch = (patch: Partial<AppState>) => {
     const current = loadConfig();
     if (!current) return;
@@ -225,6 +237,12 @@ const ThemeCollectionPage: React.FC = () => {
     const next = selectTheme(themeId, effectiveCollectionState);
     setCollectionState(next);
     saveThemeCollectionState(next);
+  };
+
+  const updateSupporterTotal = () => {
+    const value = Number(supporterInput);
+    setSupporterContributionTotal(value);
+    setSupporterTotal(getSupporterContributionTotal());
   };
 
   return (
@@ -263,6 +281,184 @@ const ThemeCollectionPage: React.FC = () => {
         <ThemeGrid category="tier4" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
         <ThemeGrid category="tier5" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
         <ThemeGrid category="tier6" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+
+        <section className="mt-10">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300">
+                Supporter | {lang === 'pt' ? 'Apoiadores' : 'Supporters'}
+              </p>
+              <h2 className="mt-2 text-2xl font-black uppercase tracking-tight">
+                {lang === 'pt' ? 'Apoiadores da Obra' : 'Project Supporters'}
+              </h2>
+              <p className={`mt-2 max-w-3xl text-sm font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                {lang === 'pt'
+                  ? 'Badges colecionáveis liberados por faixas de apoio acumulado ao ecossistema Guitar Architect.'
+                  : 'Collectible badges unlocked by accumulated support ranges for the Guitar Architect ecosystem.'}
+              </p>
+            </div>
+            <span className={`w-fit rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-amber-800/60 bg-amber-950/30 text-amber-200'}`}>
+              {unlockedSupporterIds.length}/{supporterRewards.length} {lang === 'pt' ? 'liberados' : 'unlocked'}
+            </span>
+          </div>
+          {import.meta.env.DEV && (
+            <div className={`mb-4 rounded-2xl border p-4 ${isLight ? 'border-amber-200 bg-amber-50/80' : 'border-amber-900/55 bg-amber-950/18'}`}>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-400">Dev / Supporter Preview</p>
+              <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                <input
+                  type="number"
+                  min="0"
+                  value={supporterInput}
+                  onChange={event => setSupporterInput(event.target.value)}
+                  className={`min-h-11 flex-1 rounded-xl border px-4 text-sm font-black outline-none ${isLight ? 'border-amber-200 bg-white text-slate-900' : 'border-amber-900/60 bg-slate-950 text-white'}`}
+                  aria-label={lang === 'pt' ? 'Valor de apoio acumulado' : 'Accumulated support value'}
+                />
+                <button
+                  type="button"
+                  onClick={updateSupporterTotal}
+                  className="rounded-xl border border-amber-300/50 bg-amber-500 px-5 py-3 text-[10px] font-black uppercase text-slate-950 shadow-lg shadow-amber-950/20"
+                >
+                  {lang === 'pt' ? 'Atualizar contribuição' : 'Update contribution'}
+                </button>
+              </div>
+            </div>
+          )}
+          <div className={`mb-5 rounded-2xl border p-5 ${isLight ? 'border-amber-200 bg-[linear-gradient(180deg,rgba(255,251,235,0.9),rgba(255,255,255,0.94))] shadow-[0_18px_42px_rgba(146,64,14,0.10)]' : 'border-amber-900/45 bg-[linear-gradient(145deg,rgba(24,18,8,0.82),rgba(3,7,18,0.94))] shadow-[0_22px_70px_rgba(0,0,0,0.28)]'}`}>
+            <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300">
+                  {lang === 'pt' ? 'Apoiadores Oficiais' : 'Official Supporters'}
+                </p>
+                <h3 className="mt-2 text-2xl font-black uppercase tracking-tight">
+                  {lang === 'pt' ? 'Apoie o Guitar Architect' : 'Support Guitar Architect'}
+                </h3>
+                <p className={`mt-3 text-sm font-bold leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                  {lang === 'pt'
+                    ? 'Os Apoiadores Oficiais ajudam a construir e expandir o ecossistema Guitar Architect. Cada contribuição registrada no perfil soma progresso e pode desbloquear selos colecionáveis exclusivos, vinculados à jornada de evolução do projeto.'
+                    : 'Official Supporters help build and expand the Guitar Architect ecosystem. Each contribution registered in the profile adds progress and may unlock exclusive collectible badges tied to the project evolution journey.'}
+                </p>
+                <div className={`mt-5 rounded-2xl border p-4 ${isLight ? 'border-amber-200 bg-white/78' : 'border-amber-900/45 bg-slate-950/48'}`}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-amber-300/60 bg-amber-400/12 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">
+                      Supporter Season 1
+                    </span>
+                    <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] ${isLight ? 'border-slate-200 bg-white text-slate-600' : 'border-slate-800 bg-slate-950/70 text-slate-300'}`}>
+                      {lang === 'pt' ? 'Fundação' : 'Foundation'}
+                    </span>
+                  </div>
+                  <p className={`mt-3 text-sm font-bold leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                    {lang === 'pt'
+                      ? 'A Season 1 marca a fase inicial de construção do Guitar Architect. Os selos desbloqueados nesta temporada representam participação na fundação do ecossistema e poderão ter valor histórico dentro da coleção oficial.'
+                      : 'Season 1 marks the initial building phase of Guitar Architect. Badges unlocked during this season represent participation in the foundation of the ecosystem and may carry historical value within the official collection.'}
+                  </p>
+                  <p className={`mt-3 text-[11px] font-bold uppercase tracking-[0.12em] ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>
+                    {lang === 'pt'
+                      ? 'Selos de temporada podem ser limitados ao período da campanha e permanecer vinculados ao perfil do apoiador.'
+                      : 'Season badges may be limited to the campaign period and remain tied to the supporter profile.'}
+                  </p>
+                </div>
+              </div>
+              <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white/80' : 'border-blue-950/60 bg-slate-950/50'}`}>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">
+                  {lang === 'pt' ? 'Como funciona' : 'How it works'}
+                </p>
+                <ol className={`mt-3 space-y-2 text-sm font-bold leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                  {(lang === 'pt'
+                    ? [
+                      'As contribuições são cumulativas.',
+                      'O valor total registrado no perfil define o nível de apoiador.',
+                      'Ao atingir uma nova faixa, o usuário mantém os selos anteriores e desbloqueia o novo selo.',
+                      'Os selos são pessoais e vinculados ao perfil do usuário.',
+                      'A posse do arquivo de imagem não representa desbloqueio oficial.',
+                      'O reconhecimento oficial depende do registro no sistema do Guitar Architect.',
+                      'As faixas, temporadas e recompensas poderão evoluir em versões futuras do projeto.',
+                    ]
+                    : [
+                      'Contributions are cumulative.',
+                      'The total amount registered in the profile defines the supporter level.',
+                      'When a new range is reached, previous badges remain unlocked and the new badge is added.',
+                      'Badges are personal and tied to the user profile.',
+                      'Owning the image file does not represent an official unlock.',
+                      'Official recognition depends on registration inside the Guitar Architect system.',
+                      'Ranges, seasons and rewards may evolve in future versions of the project.',
+                    ]).map((rule, index) => (
+                    <li key={rule} className="flex gap-3">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-amber-300/60 text-[10px] font-black text-amber-300">{index + 1}</span>
+                      <span>{rule}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+            <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr_auto]">
+              <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white/78' : 'border-blue-950/60 bg-slate-950/45'}`}>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">
+                  {lang === 'pt' ? 'Como apoiar nesta fase' : 'How to support in this phase'}
+                </p>
+                <p className={`mt-2 text-sm font-bold leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                  {lang === 'pt'
+                    ? 'Nesta fase inicial, o apoio é registrado manualmente. Após realizar a contribuição, o apoiador poderá enviar o comprovante para validação e liberação do selo correspondente no perfil.'
+                    : 'In this initial phase, support is registered manually. After contributing, the supporter may send proof for validation and badge release in the profile.'}
+                </p>
+              </div>
+              <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white/78' : 'border-blue-950/60 bg-slate-950/45'}`}>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">
+                  {lang === 'pt' ? 'Dados de apoio' : 'Support details'}
+                </p>
+                <div className={`mt-2 space-y-2 text-sm font-black ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                  <p>{lang === 'pt' ? 'Chave PIX:' : 'PIX key:'} <span className="text-amber-300">[{lang === 'pt' ? 'configurar' : 'configure'}]</span></p>
+                  <p>{lang === 'pt' ? 'Contato:' : 'Contact:'} <span className="text-amber-300">[{lang === 'pt' ? 'configurar' : 'configure'}]</span></p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                <button type="button" className="rounded-xl border border-amber-300/55 bg-amber-500 px-5 py-3 text-[10px] font-black uppercase text-slate-950 shadow-lg shadow-amber-950/20">
+                  {lang === 'pt' ? 'Tornar-se apoiador' : 'Become a supporter'}
+                </button>
+                <button type="button" onClick={() => document.getElementById('supporter-badges')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className={`rounded-xl border px-5 py-3 text-[10px] font-black uppercase ${isLight ? 'border-slate-200 bg-white text-slate-700' : 'border-slate-700 bg-slate-950/70 text-slate-200'}`}>
+                  {lang === 'pt' ? 'Ver selos na coleção' : 'View badges in collection'}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="supporter-badges" className="scroll-mt-6" />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {supporterRewards.map(reward => {
+              const unlocked = unlockedSupporterIds.includes(reward.id);
+              const valueLabel = reward.maxValue
+                ? `R$ ${reward.minValue}-${reward.maxValue}`
+                : `R$ ${reward.minValue}+`;
+              return (
+                <button
+                  key={reward.id}
+                  type="button"
+                  disabled={!unlocked}
+                  onClick={() => unlocked && setPreviewAsset({ image: reward.image, name: reward.title, subtitle: reward.description })}
+                  className={`group overflow-hidden rounded-2xl border p-4 text-left transition duration-300 ${unlocked ? 'hover:-translate-y-1' : 'cursor-not-allowed grayscale'} ${isLight ? 'border-[#c7d4e4] bg-white/94 shadow-[0_18px_42px_rgba(71,85,105,0.12)]' : 'border-amber-900/35 bg-[linear-gradient(145deg,rgba(9,13,23,0.96),rgba(3,7,18,0.98))] shadow-[0_22px_70px_rgba(2,6,23,0.42)]'} ${unlocked ? '' : 'opacity-55'}`}
+                >
+                  <div className={`relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl border ${isLight ? 'border-amber-100 bg-slate-50' : 'border-amber-950/50 bg-slate-950'}`}>
+                    <div className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(245,158,11,0.24),transparent_58%)] transition ${unlocked ? 'opacity-100 group-hover:opacity-100' : 'opacity-30'}`} />
+                    <img src={reward.image} alt={reward.title} className={`relative h-full w-full object-contain p-3 transition duration-300 ${unlocked ? 'group-hover:scale-[1.03]' : 'blur-[1px]'}`} />
+                    {!unlocked && (
+                      <span className="absolute rounded-full border border-white/40 bg-black/35 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white">
+                        {lang === 'pt' ? 'Bloqueado' : 'Locked'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-4 flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">{valueLabel}</p>
+                      <h3 className="mt-1 text-base font-black">{reward.title}</h3>
+                    </div>
+                    <span className={`rounded-full border px-2.5 py-1.5 text-[8px] font-black uppercase ${isLight ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-amber-900/70 bg-amber-950/35 text-amber-200'}`}>
+                      {reward.tier.replaceAll('_', ' ')}
+                    </span>
+                  </div>
+                  <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{reward.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
         <section className="mt-10">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

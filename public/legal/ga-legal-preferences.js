@@ -15,6 +15,41 @@
   document.documentElement.classList.toggle('dark', isDark);
   document.documentElement.lang = lang === 'en' ? 'en-US' : 'pt-BR';
 
+  const style = document.createElement('style');
+  style.textContent = `
+    html.dark .content-card .bg-white,
+    html.dark .content-card .bg-zinc-50,
+    html.dark .content-card .bg-zinc-100,
+    html.dark .content-card .bg-blue-50,
+    html.dark .content-card .bg-red-50 {
+      background: rgba(8, 14, 26, 0.78) !important;
+      border-color: rgba(37, 99, 235, 0.42) !important;
+      color: #dbeafe !important;
+      box-shadow: inset 0 1px 0 rgba(147, 197, 253, 0.08), 0 16px 42px rgba(0, 0, 0, 0.18);
+    }
+
+    html.dark .content-card .text-zinc-900,
+    html.dark .content-card .text-zinc-800,
+    html.dark .content-card .text-zinc-700,
+    html.dark .content-card .text-zinc-600,
+    html.dark .content-card .text-red-800,
+    html.dark .content-card .text-blue-800 {
+      color: #dbeafe !important;
+    }
+
+    html.dark .content-card .text-blue-600,
+    html.dark .content-card .text-blue-500 {
+      color: #93c5fd !important;
+    }
+
+    html.dark .content-card code,
+    html.dark .content-card .bg-zinc-100 code {
+      background: rgba(15, 23, 42, 0.84) !important;
+      color: #bfdbfe !important;
+    }
+  `;
+  document.head.appendChild(style);
+
   const copy = {
     'help.html': {
       title: ['Ajuda e Perguntas Frequentes - Guitar Architect', 'Help and FAQ - Guitar Architect'],
