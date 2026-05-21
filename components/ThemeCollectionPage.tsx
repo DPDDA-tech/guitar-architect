@@ -10,7 +10,7 @@ import { getThemeCopy } from '../features/themeCollection/themeCopy';
 import { getThemeWithState, loadThemeCollectionState, saveThemeCollectionState, selectTheme } from '../features/themeCollection/themeUtils';
 import { getUnlockedAchievements, getUnlockedRewards } from '../utils/achievementUtils';
 import { getUnlockedAchievementIds, unlockAchievement } from '../utils/achievementStorage';
-import type { Reward } from '../types/reward';
+import { getCollectionLoreByPath, type CollectionLoreItem } from '../data/collectionLore';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
 
@@ -18,6 +18,88 @@ type CollectionPreview = {
   image: string;
   name: string;
   subtitle: string;
+};
+
+type WorkCollectionItem = {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  rarity: string;
+  image: string;
+};
+
+const collectionCategoryLabel: Record<CollectionLoreItem['category'], Record<Lang, string>> = {
+  classic_headstock: { pt: 'Headstocks clássicos', en: 'Classic Headstocks' },
+  artist_series: { pt: 'Série de artistas', en: 'Artist Series' },
+  extended_range: { pt: 'Extended Range', en: 'Extended Range' },
+  bass_collection: { pt: 'Coleção de baixos', en: 'Bass Collection' },
+  collector_badge: { pt: 'Colecionadores', en: 'Collectors' },
+  anniversary: { pt: 'Aniversário', en: 'Anniversary' },
+  legendary: { pt: 'Lendário', en: 'Legendary' },
+};
+
+const renderLorePanel = (path: string, isLight: boolean, lang: Lang) => {
+  const lore = getCollectionLoreByPath(path);
+  if (!lore) return null;
+  const infoBlocks = [
+    lore.history ? { label: lang === 'pt' ? 'História' : 'History', body: lore.history[lang] } : null,
+    lore.artistInfluence ? { label: lang === 'pt' ? 'Influência musical' : 'Musical Influence', body: lore.artistInfluence[lang] } : null,
+    lore.technicalIdentity ? { label: lang === 'pt' ? 'Identidade técnica' : 'Technical Identity', body: lore.technicalIdentity[lang] } : null,
+  ].filter((item): item is { label: string; body: string } => Boolean(item));
+  const metaItems = [
+    lore.yearFounded ? [lang === 'pt' ? 'Marco' : 'Milestone', lore.yearFounded] : null,
+    lore.country ? [lang === 'pt' ? 'País' : 'Country', lore.country[lang]] : null,
+    lore.founder ? [lang === 'pt' ? 'Referência histórica' : 'Historical Reference', lore.founder] : null,
+  ].filter((item): item is string[] => Boolean(item));
+
+  return (
+    <div className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50 text-slate-900' : 'border-blue-900/60 bg-[#050914] text-slate-100'}`}>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-900/80 bg-blue-950/40 text-blue-200'}`}>
+          {lore.tier}
+        </span>
+        <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] ${isLight ? 'border-slate-200 bg-white text-slate-600' : 'border-slate-800 bg-slate-950/70 text-slate-300'}`}>
+          {collectionCategoryLabel[lore.category][lang]}
+        </span>
+        {lore.tone === 'mythic' && (
+          <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] ${isLight ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-amber-800/70 bg-amber-950/30 text-amber-200'}`}>
+            {lang === 'pt' ? 'Referência mítica' : 'Mythic Reference'}
+          </span>
+        )}
+      </div>
+      <h3 className="mt-4 text-xl font-black uppercase tracking-tight">{lore.title[lang]}</h3>
+      <p className={`mt-2 max-w-3xl text-sm font-bold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+        {lore.shortText[lang]}
+      </p>
+      {metaItems.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {metaItems.map(([label, value]) => (
+            <span key={`${label}-${value}`} className={`rounded-xl border px-3 py-2 text-[10px] font-black uppercase tracking-[0.13em] ${isLight ? 'border-slate-200 bg-white text-slate-500' : 'border-slate-800 bg-slate-950/70 text-slate-400'}`}>
+              {label}: <span className={isLight ? 'text-slate-800' : 'text-slate-200'}>{value}</span>
+            </span>
+          ))}
+        </div>
+      )}
+      {infoBlocks.length > 0 && (
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {infoBlocks.map(block => (
+            <div key={block.label} className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white' : 'border-blue-950/70 bg-slate-950/60'}`}>
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-300">{block.label}</p>
+              <p className={`mt-2 text-xs font-bold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                {block.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+      {lore.legalNote && (
+        <p className={`mt-4 text-[10px] font-bold uppercase tracking-[0.12em] ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
+          {lore.legalNote[lang]}
+        </p>
+      )}
+    </div>
+  );
 };
 
 const navigateTo = (path: string) => {
@@ -64,13 +146,32 @@ const ThemeCollectionPage: React.FC = () => {
   }), [achievementUnlockedThemeIds, collectionState]);
   const items = useMemo(() => THEME_REGISTRY.map(item => getThemeWithState(item, effectiveCollectionState)), [effectiveCollectionState]);
   const workRewards = useMemo(() => {
-    const rewardMap = new Map<string, Reward>();
+    const itemMap = new Map<string, WorkCollectionItem>();
+    getUnlockedAchievements(unlockedAchievementIds).forEach(achievement => {
+      if (achievement.asset.status !== 'ready' || !achievement.asset.path) return;
+      if (!achievement.asset.path.includes('/tierothers/')) return;
+      itemMap.set(`achievement:${achievement.id}`, {
+        id: `achievement:${achievement.id}`,
+        title: achievement.title,
+        description: achievement.description,
+        type: achievement.category,
+        rarity: achievement.rarity,
+        image: achievement.asset.path,
+      });
+    });
     getUnlockedRewards(unlockedAchievementIds).forEach(reward => {
       if (!reward.asset.path) return;
       if (!reward.asset.path.includes('/tierothers/')) return;
-      rewardMap.set(reward.id, reward);
+      itemMap.set(`reward:${reward.id}`, {
+        id: `reward:${reward.id}`,
+        title: reward.title,
+        description: reward.description,
+        type: reward.type,
+        rarity: reward.rarity,
+        image: reward.asset.path,
+      });
     });
-    return Array.from(rewardMap.values());
+    return Array.from(itemMap.values());
   }, [unlockedAchievementIds]);
   const activeTheme = items.find(item => item.id === effectiveCollectionState.activeThemeId) || items.find(item => item.id === DEFAULT_THEME_ID) || items[0];
   const activeThemeCopy = getThemeCopy(activeTheme, lang);
@@ -188,14 +289,12 @@ const ThemeCollectionPage: React.FC = () => {
                 <button
                   key={reward.id}
                   type="button"
-                  onClick={() => reward.asset.path && setPreviewAsset({ image: reward.asset.path, name: reward.title, subtitle: reward.description })}
+                  onClick={() => setPreviewAsset({ image: reward.image, name: reward.title, subtitle: reward.description })}
                   className={`group overflow-hidden rounded-2xl border p-4 text-left transition duration-300 hover:-translate-y-1 ${isLight ? 'border-[#c7d4e4] bg-white/94 shadow-[0_18px_42px_rgba(71,85,105,0.12)]' : 'border-blue-900/55 bg-[linear-gradient(145deg,rgba(7,13,24,0.96),rgba(3,7,18,0.98))] shadow-[0_22px_70px_rgba(2,6,23,0.42)]'}`}
                 >
                   <div className={`relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl border ${isLight ? 'border-slate-200 bg-slate-50' : 'border-blue-950/60 bg-slate-950'}`}>
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(59,130,246,0.18),transparent_58%)] opacity-0 transition group-hover:opacity-100" />
-                    {reward.asset.path && (
-                      <img src={reward.asset.path} alt={reward.title} className="relative h-full w-full object-contain p-3 transition duration-300 group-hover:scale-[1.03]" />
-                    )}
+                    <img src={reward.image} alt={reward.title} className="relative h-full w-full object-contain p-3 transition duration-300 group-hover:scale-[1.03]" />
                   </div>
                   <div className="mt-4 flex items-start justify-between gap-3">
                     <div>
@@ -242,6 +341,7 @@ const ThemeCollectionPage: React.FC = () => {
             <a href={previewTheme.image} target="_blank" rel="noreferrer" download className="block" title={lang === 'pt' ? 'Abrir ou salvar imagem' : 'Open or save image'}>
               <img src={previewTheme.image} alt={getThemeCopy(previewTheme, lang).name} className="mx-auto max-h-[76vh] w-auto max-w-full rounded-2xl object-contain" />
             </a>
+            {renderLorePanel(previewTheme.image, isLight, lang)}
           </div>
         </div>
       )}
@@ -261,6 +361,7 @@ const ThemeCollectionPage: React.FC = () => {
             <a href={previewAsset.image} target="_blank" rel="noreferrer" download className="block" title={lang === 'pt' ? 'Abrir ou salvar imagem' : 'Open or save image'}>
               <img src={previewAsset.image} alt={previewAsset.name} className="mx-auto max-h-[76vh] w-auto max-w-full rounded-2xl object-contain" />
             </a>
+            {renderLorePanel(previewAsset.image, isLight, lang)}
           </div>
         </div>
       )}
