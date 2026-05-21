@@ -43,6 +43,8 @@ interface FretboardInstanceProps {
 }
 
 type LearningLevel = 'beginner' | 'intermediate' | 'advanced';
+type ScaleFollowMode = 'off' | 'horizontal' | 'region' | 'connections';
+type ScaleFollowStatus = 'idle' | 'playing' | 'paused';
 type GuidedStudyAction =
   | { type: 'scale'; root: string; scaleType: string }
   | { type: 'chord'; root: string; symbol: string; chordType: ChordType }
@@ -65,6 +67,14 @@ interface GuidedStudy {
   action: GuidedStudyAction;
   steps: string[];
 }
+
+const CAGED_SCALE_REGIONS = [
+  { number: 1, shape: 'E', startFret: 0, endFret: 4 },
+  { number: 2, shape: 'D', startFret: 2, endFret: 7 },
+  { number: 3, shape: 'C', startFret: 5, endFret: 9 },
+  { number: 4, shape: 'A', startFret: 7, endFret: 12 },
+  { number: 5, shape: 'G', startFret: 9, endFret: 14 },
+] as const;
 
 
 const FretboardInstance: React.FC<FretboardInstanceProps> = ({ 
@@ -349,6 +359,13 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const [showTour, setShowTour] = useState(false);
   const tourReturnStateRef = useRef<{ isControlPanelOpen: boolean; activeControlTab: string; chordLibraryMode: 'find' | 'identify'; state: FretboardState; editorMode: EditorMode } | null>(null);
   const [scaleShortcutCloseTarget, setScaleShortcutCloseTarget] = useState<'showScale' | 'showTonic' | null>(null);
+  const [openQuickTab, setOpenQuickTab] = useState<string | null>(null);
+  const [scaleFollowMode, setScaleFollowMode] = useState<ScaleFollowMode>('off');
+  const [scaleFollowStatus, setScaleFollowStatus] = useState<ScaleFollowStatus>('idle');
+  const [scaleFollowIndex, setScaleFollowIndex] = useState(0);
+  const [scaleFollowStringIndex, setScaleFollowStringIndex] = useState(0);
+  const [scaleRegionIndex, setScaleRegionIndex] = useState(0);
+  const scaleFollowTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const closePanels = () => setIsControlPanelOpen(false);
@@ -422,6 +439,107 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         return rank(a) - rank(b) || a.minFret - b.minFret || b.score - a.score;
       });
   }, [chordDifficultyFilter, chordVoicings]);
+
+  const scaleNoteSet = useMemo(() => new Set(getScaleNotes(state.root, state.scaleType)), [state.root, state.scaleType]);
+  const activeScaleRegion = CAGED_SCALE_REGIONS[scaleRegionIndex] || CAGED_SCALE_REGIONS[0];
+  const followAlongRegion = useMemo(() => {
+    if (scaleFollowMode === 'horizontal') {
+      return {
+        startFret: state.startFret,
+        endFret: state.endFret,
+        stringIndex: Math.min(scaleFollowStringIndex, currentTuning.length - 1),
+        label: lang === 'pt' ? `Horizontal - corda ${Math.min(scaleFollowStringIndex, currentTuning.length - 1) + 1}` : `Horizontal - string ${Math.min(scaleFollowStringIndex, currentTuning.length - 1) + 1}`,
+      };
+    }
+
+    if (scaleFollowMode === 'region') {
+      return {
+        startFret: activeScaleRegion.startFret,
+        endFret: Math.min(state.endFret, activeScaleRegion.endFret),
+        label: lang === 'pt'
+          ? `Região ${activeScaleRegion.number} - Forma ${activeScaleRegion.shape}`
+          : `Region ${activeScaleRegion.number} - ${activeScaleRegion.shape} shape`,
+      };
+    }
+
+    if (scaleFollowMode === 'connections') {
+      return {
+        startFret: state.startFret,
+        endFret: state.endFret,
+        label: lang === 'pt' ? 'Conexões' : 'Connections',
+      };
+    }
+
+    return undefined;
+  }, [activeScaleRegion, currentTuning.length, lang, scaleFollowMode, scaleFollowStringIndex, state.endFret, state.startFret]);
+
+  const scaleFollowSequence = useMemo(() => {
+    const positions: Array<{ string: number; fret: number; note: string }> = [];
+    const start = followAlongRegion?.startFret ?? state.startFret;
+    const end = followAlongRegion?.endFret ?? state.endFret;
+    const clampedEnd = Math.min(state.endFret, end);
+
+    currentTuning.forEach((_, string) => {
+      if (typeof followAlongRegion?.stringIndex === 'number' && string !== followAlongRegion.stringIndex) return;
+      for (let fret = Math.max(0, start); fret <= clampedEnd; fret += 1) {
+        const note = getNoteAt(string, fret, currentTuning);
+        if (scaleNoteSet.has(note)) positions.push({ string, fret, note });
+      }
+    });
+
+    if (scaleFollowMode === 'horizontal') {
+      return positions.sort((a, b) => a.fret - b.fret);
+    }
+
+    return positions.sort((a, b) => b.string - a.string || a.fret - b.fret);
+  }, [currentTuning, followAlongRegion, scaleFollowMode, scaleNoteSet, state.endFret, state.startFret]);
+
+  const activeFollowNote = scaleFollowStatus !== 'idle'
+    ? scaleFollowSequence[Math.min(scaleFollowIndex, Math.max(0, scaleFollowSequence.length - 1))]
+    : null;
+
+  useEffect(() => {
+    setScaleFollowStringIndex(prev => Math.min(prev, Math.max(0, currentTuning.length - 1)));
+  }, [currentTuning.length]);
+
+  useEffect(() => {
+    if (state.followAlongRegion === followAlongRegion) return;
+    const sameRegion = JSON.stringify(state.followAlongRegion || null) === JSON.stringify(followAlongRegion || null);
+    if (!sameRegion) {
+      updateState({ ...state, followAlongRegion });
+    }
+  }, [followAlongRegion, state, updateState]);
+
+  useEffect(() => {
+    if (scaleFollowStatus !== 'playing') return;
+    if (scaleFollowSequence.length === 0) {
+      setScaleFollowStatus('idle');
+      setScaleFollowIndex(0);
+      return;
+    }
+
+    scaleFollowTimerRef.current = window.setTimeout(() => {
+      setScaleFollowIndex(prev => {
+        if (prev >= scaleFollowSequence.length - 1) {
+          setScaleFollowStatus('idle');
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 620);
+
+    return () => {
+      if (scaleFollowTimerRef.current) {
+        window.clearTimeout(scaleFollowTimerRef.current);
+        scaleFollowTimerRef.current = null;
+      }
+    };
+  }, [scaleFollowIndex, scaleFollowSequence.length, scaleFollowStatus]);
+
+  useEffect(() => {
+    setScaleFollowStatus('idle');
+    setScaleFollowIndex(0);
+  }, [state.root, state.scaleType, state.startFret, state.endFret]);
 
   useEffect(() => {
     setSelectedChordVoicingIndex(0);
@@ -717,12 +835,87 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setLineThickness(width);
   };
   const toggleQuickPanel = (tab: string) => {
-    if (activeControlTab === tab && isControlPanelOpen) {
-      setIsControlPanelOpen(false);
+    if (openQuickTab === tab) {
+      setOpenQuickTab(null);
       return;
     }
     setActiveControlTab(tab);
-    setIsControlPanelOpen(true);
+    setOpenQuickTab(tab);
+  };
+  const openQuickShortcut = (tab: string) => {
+    setActiveControlTab(tab);
+    setOpenQuickTab(tab);
+  };
+  const activateScaleFollowMode = (mode: Exclude<ScaleFollowMode, 'off'>) => {
+    const nextMode = scaleFollowMode === mode ? 'off' : mode;
+    setScaleFollowMode(nextMode);
+    setScaleFollowStatus('idle');
+    setScaleFollowIndex(0);
+    if (nextMode !== 'off') {
+      recordAction({
+        ...state,
+        layers: { ...state.layers, showScale: true, showTonic: true },
+      });
+    }
+  };
+  const startScaleFollow = () => {
+    if (scaleFollowMode === 'off') setScaleFollowMode('region');
+    if (scaleFollowSequence.length === 0) return;
+    setScaleFollowIndex(prev => Math.min(prev, Math.max(0, scaleFollowSequence.length - 1)));
+    setScaleFollowStatus('playing');
+  };
+  const pauseScaleFollow = () => {
+    setScaleFollowStatus(prev => prev === 'playing' ? 'paused' : prev);
+  };
+  const stopScaleFollow = () => {
+    if (scaleFollowTimerRef.current) {
+      window.clearTimeout(scaleFollowTimerRef.current);
+      scaleFollowTimerRef.current = null;
+    }
+    setScaleFollowStatus('idle');
+    setScaleFollowIndex(0);
+  };
+  const shiftScaleRegion = (direction: -1 | 1) => {
+    setScaleFollowMode('region');
+    setScaleFollowStatus('idle');
+    setScaleFollowIndex(0);
+    setScaleRegionIndex(prev => Math.min(CAGED_SCALE_REGIONS.length - 1, Math.max(0, prev + direction)));
+  };
+  const changeScaleFollowString = (stringIndex: number) => {
+    setScaleFollowStringIndex(Math.min(Math.max(0, stringIndex), Math.max(0, currentTuning.length - 1)));
+    if (scaleFollowMode === 'horizontal') {
+      setScaleFollowStatus('idle');
+      setScaleFollowIndex(0);
+    }
+  };
+  const cycleScaleLabelMode = (mode: 'note' | 'interval') => {
+    const isSameMode = state.labelMode === mode;
+    const isScaleOnly = isSameMode && state.layers.showScale && !state.layers.showAllNotes;
+    const isAllNotes = isSameMode && state.layers.showAllNotes;
+
+    if (!isSameMode || (!isScaleOnly && !isAllNotes)) {
+      recordAction({
+        ...state,
+        labelMode: mode,
+        layers: { ...state.layers, showScale: true, showAllNotes: false },
+      });
+      return;
+    }
+
+    if (isScaleOnly) {
+      recordAction({
+        ...state,
+        labelMode: mode,
+        layers: { ...state.layers, showScale: true, showAllNotes: true },
+      });
+      return;
+    }
+
+    recordAction({
+      ...state,
+      labelMode: 'none',
+      layers: { ...state.layers, showScale: true, showAllNotes: false },
+    });
   };
   const setLabelModeSmart = (mode: FretboardState['labelMode']) => {
     if (mode === 'none') {
@@ -760,31 +953,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     });
   };
   const handleScaleLayerShortcut = (layer: 'showScale' | 'showTonic') => {
-    const isScalePanelOpen = activeControlTab === 'scale' && isControlPanelOpen;
     const isLayerActive = state.layers[layer];
 
-    if (!isLayerActive) {
-      recordAction({...state, layers: {...state.layers, [layer]: true}});
-      setActiveControlTab('scale');
-      setIsControlPanelOpen(true);
-      setScaleShortcutCloseTarget(layer);
-      return;
-    }
-
-    if (isScalePanelOpen && scaleShortcutCloseTarget === layer) {
-      setIsControlPanelOpen(false);
-      setScaleShortcutCloseTarget(layer);
-      return;
-    }
-
-    if (!isScalePanelOpen && scaleShortcutCloseTarget === layer) {
-      recordAction({...state, layers: {...state.layers, [layer]: false}});
-      setScaleShortcutCloseTarget(null);
-      return;
-    }
-
+    recordAction({...state, layers: {...state.layers, [layer]: !isLayerActive}});
     setActiveControlTab('scale');
-    setIsControlPanelOpen(true);
+    setOpenQuickTab('scale');
     setScaleShortcutCloseTarget(layer);
   };
 
@@ -886,8 +1059,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   const openMobileTab = (tab: string) => {
-    if (activeControlTab === tab && isControlPanelOpen) {
-      setIsControlPanelOpen(false);
+    if (openQuickTab === tab) {
+      setOpenQuickTab(null);
       return;
     }
     if (tab === 'chords') setChordLibraryMode('find');
@@ -902,7 +1075,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       });
     }
     setActiveControlTab(tab);
-    setIsControlPanelOpen(true);
+    setOpenQuickTab(tab);
   };
 
   const guidedStudies = useMemo<GuidedStudy[]>(() => ([
@@ -1447,8 +1620,67 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     return [styleLabels[voicing.voicingStyle], difficultyLabels[voicing.difficulty]];
   };
 
+  const renderScaleQuickControls = () => {
+    const transportButtonClass = `flex h-10 w-10 items-center justify-center rounded-xl border text-lg font-black transition-all active:scale-95 ${isLight ? 'border-zinc-900 bg-white text-zinc-950 hover:bg-zinc-100' : 'border-zinc-100 bg-zinc-950 text-white hover:bg-zinc-900'}`;
+    const scaleActionButton = (active = false) => `${controlButtonBase} px-3 ${active ? activeButtonClass : inactiveButtonClass}`;
+
+    return (
+      <div className={`mt-3 inline-flex max-w-full flex-wrap items-center gap-2 rounded-2xl border px-3 py-2 shadow-lg ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
+        <select value={state.root} onChange={e => recordAction({...state, root: e.target.value})} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
+          {CHROMATIC_SCALE.map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
+        <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={scaleActionButton(state.layers.showTonic)}>
+          {lang === 'pt' ? 'Tônica' : 'Tonic'}
+        </button>
+        <select value={state.scaleType} onChange={e => recordAction({...state, scaleType: e.target.value})} className="min-w-[170px] rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
+          {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
+        </select>
+        <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={scaleActionButton(state.layers.showScale)}>
+          {lang === 'pt' ? 'Escala' : 'Scale'}
+        </button>
+        <button onClick={() => cycleScaleLabelMode('note')} className={scaleActionButton(state.labelMode === 'note' && (state.layers.showScale || state.layers.showAllNotes))}>
+          {lang === 'pt' ? 'Notas' : 'Notes'}
+        </button>
+        <button onClick={() => cycleScaleLabelMode('interval')} className={scaleActionButton(state.labelMode === 'interval' && (state.layers.showScale || state.layers.showAllNotes))}>
+          {lang === 'pt' ? 'Intervalos' : 'Intervals'}
+        </button>
+        <span className="px-1 text-[9px] font-black uppercase tracking-[0.15em] text-zinc-400">{lang === 'pt' ? 'Praticar' : 'Practice'}</span>
+        <button onClick={() => activateScaleFollowMode('horizontal')} className={scaleActionButton(scaleFollowMode === 'horizontal')}>
+          {lang === 'pt' ? 'Horizontal' : 'Horizontal'}
+        </button>
+        <select
+          value={scaleFollowStringIndex}
+          onChange={event => changeScaleFollowString(Number(event.target.value))}
+          className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900"
+          aria-label={lang === 'pt' ? 'Corda do follow along horizontal' : 'Horizontal follow along string'}
+        >
+          {currentTuning.map((note, index) => (
+            <option key={`${note}-${index}`} value={index}>
+              {lang === 'pt' ? `Corda ${index + 1}` : `String ${index + 1}`} - {note}
+            </option>
+          ))}
+        </select>
+        <button onClick={() => activateScaleFollowMode('region')} className={scaleActionButton(scaleFollowMode === 'region')}>
+          {lang === 'pt' ? 'Região' : 'Region'}
+        </button>
+        <button onClick={() => shiftScaleRegion(-1)} className={scaleActionButton(false)} aria-label={lang === 'pt' ? 'Região anterior' : 'Previous region'}>-</button>
+        <button onClick={() => shiftScaleRegion(1)} className={scaleActionButton(false)} aria-label={lang === 'pt' ? 'Próxima região' : 'Next region'}>+</button>
+        <button onClick={() => activateScaleFollowMode('connections')} className={scaleActionButton(scaleFollowMode === 'connections')}>
+          {lang === 'pt' ? 'Conexões' : 'Connections'}
+        </button>
+        <button onClick={startScaleFollow} className={transportButtonClass} aria-label="Play">▶</button>
+        <button onClick={pauseScaleFollow} className={transportButtonClass} aria-label="Pause">Ⅱ</button>
+        <button onClick={stopScaleFollow} className={transportButtonClass} aria-label="Stop">■</button>
+      </div>
+    );
+  };
+
   const renderQuickControls = () => {
-    if (!isControlPanelOpen) return null;
+    if (!openQuickTab) return null;
+
+    if (activeControlTab === 'scale') {
+      return renderScaleQuickControls();
+    }
 
     if (activeControlTab === 'visual') {
       return (
@@ -2293,7 +2525,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       <div className={`operational-btns mb-5 hidden lg:block ${isExporting ? 'hidden' : ''}`}>
         <div className={`flex flex-col gap-3 rounded-2xl border px-3 py-3 shadow-sm ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}>
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
-            <button data-tour="quick-layers" onClick={() => toggleQuickPanel('visual')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'visual' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
+            <button data-tour="quick-layers" onClick={() => toggleQuickPanel('visual')} className={`${quickButtonClass} shrink-0 ${openQuickTab === 'visual' ? quickActiveButtonClass : ''}`}>
               {lang === 'pt' ? 'Notas' : 'Notes'}
             </button>
             <button data-tour="quick-scale" onClick={() => handleScaleLayerShortcut('showScale')} className={`${quickButtonClass} shrink-0 ${state.layers.showScale ? quickActiveButtonClass : ''}`}>
@@ -2302,7 +2534,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <button data-tour="quick-tonic" onClick={() => handleScaleLayerShortcut('showTonic')} className={`${quickButtonClass} shrink-0 ${state.layers.showTonic ? quickActiveButtonClass : ''}`}>
               {t.tonicHighlight}
             </button>
-            <button data-tour="quick-harmony" onClick={() => toggleQuickPanel('harmony')} className={`${quickButtonClass} shrink-0 ${activeControlTab === 'harmony' && isControlPanelOpen ? quickActiveButtonClass : ''}`}>
+            <button data-tour="quick-harmony" onClick={() => toggleQuickPanel('harmony')} className={`${quickButtonClass} shrink-0 ${openQuickTab === 'harmony' ? quickActiveButtonClass : ''}`}>
               {lang === 'pt' ? 'Harmonia' : 'Harmony'}
             </button>
             <button onClick={() => setSoundEnabled(prev => !prev)} className={`${quickButtonClass} shrink-0 ${soundEnabled ? quickActiveButtonClass : ''}`}>
@@ -2315,19 +2547,19 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
       <div className={`operational-btns fixed inset-x-0 bottom-0 z-[75] border-t px-2 pb-1 pt-1 shadow-lg lg:hidden ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-white/90 border-zinc-200' : 'bg-zinc-950/90 border-zinc-800'}`}>
         <div className="grid grid-cols-5 gap-1">
-          <button data-tour="quick-layers" onClick={() => openMobileTab('visual')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'visual' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Notas' : 'Notes'}>
+          <button data-tour="quick-layers" onClick={() => openMobileTab('visual')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'visual' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Notas' : 'Notes'}>
             {lang === 'pt' ? 'Notas' : 'Notes'}
           </button>
-          <button data-tour="mobile-scales" onClick={() => openMobileTab('scale')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'scale' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Escalas' : 'Scales'}>
+          <button data-tour="mobile-scales" onClick={() => openMobileTab('scale')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'scale' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Escalas' : 'Scales'}>
             {lang === 'pt' ? 'Escala' : 'Scale'}
           </button>
           <button data-tour="quick-tonic" onClick={() => handleScaleLayerShortcut('showTonic')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${state.layers.showTonic ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Tônica' : 'Tonic'}>
             {lang === 'pt' ? 'Tônica' : 'Tonic'}
           </button>
-          <button data-tour="quick-harmony" onClick={() => openMobileTab('harmony')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'harmony' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Harmonia' : 'Harmony'}>
+          <button data-tour="quick-harmony" onClick={() => openMobileTab('harmony')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'harmony' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Harmonia' : 'Harmony'}>
             {lang === 'pt' ? 'Harm.' : 'Harm.'}
           </button>
-          <button data-tour="quick-editor" onClick={() => openMobileTab('editor')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${activeControlTab === 'editor' && isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Editar' : 'Edit'}>{lang === 'pt' ? 'Editar' : 'Edit'}</button>
+          <button data-tour="quick-editor" onClick={() => openMobileTab('editor')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'editor' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Editar' : 'Edit'}>{lang === 'pt' ? 'Editar' : 'Edit'}</button>
         </div>
       </div>
 
@@ -2510,7 +2742,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                 </div>
               </div>
             )}
-            <FretboardSVG state={state} onEvent={handleEvent} theme={theme} isActive={false} selectedColor={markerColor} selectedShape={markerShape} editorMode={editorMode} isExport={isExporting} feedbackNote={noteClickFeedback} />
+            <FretboardSVG state={state} onEvent={handleEvent} theme={theme} isActive={false} selectedColor={markerColor} selectedShape={markerShape} editorMode={editorMode} isExport={isExporting} feedbackNote={activeFollowNote || noteClickFeedback} />
          </div>
 
          {!isExporting && (

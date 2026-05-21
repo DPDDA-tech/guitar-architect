@@ -58,7 +58,7 @@ const ThemeCollectionHeader: React.FC<ThemeCollectionHeaderProps> = ({
             {unlockedCount}/{totalCount} {lang === 'pt' ? 'desbloqueados' : 'unlocked'}
           </span>
           <span className={`rounded-full border px-3 py-2 text-[10px] font-black uppercase shadow-sm ${isLight ? 'border-slate-300 bg-white text-slate-700' : 'border-slate-700 bg-slate-900 text-slate-200'}`}>
-            {progress}% {lang === 'pt' ? 'concluÃ­do' : 'complete'}
+            {progress}% {lang === 'pt' ? 'concluído' : 'complete'}
           </span>
         </div>
       </div>
