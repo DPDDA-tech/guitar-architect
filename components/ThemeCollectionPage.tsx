@@ -406,8 +406,8 @@ const ThemeCollectionPage: React.FC = () => {
                   {lang === 'pt' ? 'Dados de apoio' : 'Support details'}
                 </p>
                 <div className={`mt-2 space-y-2 text-sm font-black ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                  <p>{lang === 'pt' ? 'Chave PIX:' : 'PIX key:'} <span className="text-amber-300">[{lang === 'pt' ? 'configurar' : 'configure'}]</span></p>
-                  <p>{lang === 'pt' ? 'Contato:' : 'Contact:'} <span className="text-amber-300">[{lang === 'pt' ? 'configurar' : 'configure'}]</span></p>
+                  <p>{lang === 'pt' ? 'Chave PIX:' : 'PIX key:'} <span className="text-amber-300">contato@guitararchitect.com.br</span></p>
+                  <p>{lang === 'pt' ? 'Contato:' : 'Contact:'} <span className="text-amber-300">contato@guitararchitect.com.br</span></p>
                 </div>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
