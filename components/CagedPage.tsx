@@ -40,13 +40,23 @@ const getInitialConfig = (): AppState | null => {
   }
 };
 
-const categoryLabels: Record<CagedModuleCategory, string> = {
-  theory: 'Teoria',
-  fretboard: 'Fretboard',
-  visualization: 'Visualização',
-  harmony: 'Harmonia',
-  practice: 'Prática',
-  improvisation: 'Improviso',
+const categoryLabels: Record<Lang, Record<CagedModuleCategory, string>> = {
+  pt: {
+    theory: 'Teoria',
+    fretboard: 'Fretboard',
+    visualization: 'Visualização',
+    harmony: 'Harmonia',
+    practice: 'Prática',
+    improvisation: 'Improviso',
+  },
+  en: {
+    theory: 'Theory',
+    fretboard: 'Fretboard',
+    visualization: 'Visualization',
+    harmony: 'Harmony',
+    practice: 'Practice',
+    improvisation: 'Improvisation',
+  },
 };
 
 const categoryClasses: Record<CagedModuleCategory, string> = {
@@ -67,11 +77,111 @@ const lightCategoryClasses: Record<CagedModuleCategory, string> = {
   improvisation: 'border-amber-200 text-amber-700 bg-amber-50',
 };
 
-const difficultyLabel: Record<NonNullable<CagedModule['difficulty']>, string> = {
-  beginner: 'Iniciante',
-  intermediate: 'Intermediário',
-  advanced: 'Avançado',
+const difficultyLabel: Record<Lang, Record<NonNullable<CagedModule['difficulty']>, string>> = {
+  pt: {
+    beginner: 'Iniciante',
+    intermediate: 'Intermediário',
+    advanced: 'Avançado',
+  },
+  en: {
+    beginner: 'Beginner',
+    intermediate: 'Intermediate',
+    advanced: 'Advanced',
+  },
 };
+
+const cagedCopy = {
+  pt: {
+    subtitle: 'Laboratório de visualização para conectar acordes, arpejos, escalas e regiões móveis do braço.',
+    mapTitle: 'Mapa CAGED',
+    mapSubtitle: 'Do conceito às regiões completas do braço.',
+    modules: 'módulos',
+    study: 'Estudo',
+    panelTitle: 'Painel didático dinâmico',
+    overlayTitle: 'Overlay system',
+    overlayBody: 'Camadas preparadas para shape, tônica, tríade, arpejo, escala, graus e conexão horizontal.',
+    actionsTitle: 'Ações práticas',
+  },
+  en: {
+    subtitle: 'A visualization lab for connecting chords, arpeggios, scales and movable fretboard regions.',
+    mapTitle: 'CAGED map',
+    mapSubtitle: 'From the concept to full-neck regions.',
+    modules: 'modules',
+    study: 'Study',
+    panelTitle: 'Dynamic lesson panel',
+    overlayTitle: 'Overlay system',
+    overlayBody: 'Layers prepared for shape, root, triad, arpeggio, scale, degrees and horizontal connection.',
+    actionsTitle: 'Practical actions',
+  },
+} as const;
+
+const cagedModuleTranslations: Record<string, { title: string; subtitle: string }> = {
+  'what-is-caged': { title: 'What the CAGED system is', subtitle: 'Five open forms organizing the whole fretboard.' },
+  'five-connected-forms': { title: 'The five connected forms', subtitle: 'C, A, G, E and D are not isolated boxes.' },
+  'tonic-in-each-shape': { title: 'Finding the root in each shape', subtitle: 'The root is the gravitational center of the region.' },
+  'chord-arpeggio-scale': { title: 'Chord, arpeggio and scale in the same region', subtitle: 'A shape contains harmonic layers, not only a form.' },
+  'horizontal-connection': { title: 'Horizontal connection between shapes', subtitle: 'The fretboard should be seen laterally, not as isolated boxes.' },
+  'barre-transposition': { title: 'Barre transposition', subtitle: 'Open shapes become movable through the barre.' },
+  'major-scale-caged': { title: 'CAGED applied to the major scale', subtitle: 'The major scale can be visualized inside the five regions.' },
+  'pentatonics-caged': { title: 'Pentatonics inside CAGED', subtitle: 'Pentatonic boxes gain meaning when tied to the chord.' },
+  'triads-caged': { title: 'Triads inside CAGED', subtitle: 'Small triads reveal the harmonic core of each region.' },
+  'connected-arpeggios': { title: 'Connected arpeggios', subtitle: 'Arpeggios cross shapes and reveal harmonic voice leading.' },
+  'caged-improvisation': { title: 'CAGED and improvisation', subtitle: 'Use regions as maps of intention, not visual prisons.' },
+  'full-neck-visualization': { title: 'Full-neck visualization', subtitle: 'The final goal is to see the entire fretboard as one continuous system.' },
+};
+
+const cagedActionTranslations: Record<string, string> = {
+  'show-caged-shapes': 'Show CAGED shapes',
+  'show-regions': 'Show regions',
+  'highlight-tonics': 'Highlight roots',
+  'next-shape': 'Show next shape',
+  overlap: 'Show overlap',
+  horizontal: 'Navigate horizontally',
+  'only-tonics': 'Show roots only',
+  'alternate-shapes': 'Alternate shapes',
+  'show-octaves': 'Show octaves',
+  'show-chord': 'Show chord',
+  'show-arpeggio': 'Show arpeggio',
+  'show-scale': 'Show scale',
+  'connect-regions': 'Connect regions',
+  'show-movement': 'Show movement',
+  'navigate-neck': 'Navigate the neck',
+  'move-shape': 'Move shape',
+  'change-key': 'Change key',
+  'show-barre': 'Show barre',
+  'apply-major': 'Apply major scale',
+  'show-degrees': 'Show degrees',
+  'connect-scale-regions': 'Connect regions',
+  'show-pentatonic': 'Show pentatonic',
+  'chord-relation': 'Show chord relationship',
+  'blue-note': 'Show blue note',
+  'show-triads': 'Show triads',
+  inversions: 'Show inversions',
+  'voice-leading': 'Show voice leading',
+  'show-arpeggio-line': 'Show arpeggio',
+  'next-shape-arpeggio': 'Show next shape',
+  'play-arpeggio': 'Play arpeggio',
+  'backing-region': 'Apply backing region',
+  'target-notes': 'Show target notes',
+  'related-pentatonic': 'Apply related pentatonic',
+  'full-neck': 'Full neck mode',
+  'only-degrees': 'Show only degrees',
+  pathways: 'Highlight paths',
+};
+
+const overlayTranslations: Record<CagedOverlay, { label: string; description: string }> = {
+  shape: { label: 'Shape', description: 'Active CAGED system region.' },
+  tonic: { label: 'Root', description: 'Main orientation point.' },
+  triad: { label: 'Triad', description: 'Harmonic core of the shape.' },
+  arpeggio: { label: 'Arpeggio', description: 'Chord played as a line.' },
+  scale: { label: 'Scale', description: 'Melodic map around the shape.' },
+  degrees: { label: 'Degrees', description: 'Internal functions of the scale.' },
+  horizontalConnection: { label: 'Connection', description: 'Horizontal link between regions.' },
+};
+
+const getCagedModuleCopy = (module: CagedModule, lang: Lang) => (
+  lang === 'pt' ? module : { ...module, ...cagedModuleTranslations[module.id] }
+);
 
 const isOverlayPayload = (payload: unknown): payload is { overlay: CagedOverlay } => {
   return typeof payload === 'object' && payload !== null && 'overlay' in payload;
@@ -104,10 +214,12 @@ const CagedPage: React.FC = () => {
   const [activeOverlays, setActiveOverlays] = useState<CagedOverlay[]>(['shape', 'tonic']);
   const isLight = theme === 'light';
   const t = translations[lang].harmonicCycle;
+  const copy = cagedCopy[lang];
   const activeModule = useMemo(
     () => CAGED_MODULES.find(module => module.id === activeModuleId) || CAGED_MODULES[0],
     [activeModuleId],
   );
+  const activeModuleCopy = getCagedModuleCopy(activeModule, lang);
   const pageBackgroundStyle = isLight
     ? {
       backgroundColor: '#edf3f8',
@@ -175,7 +287,7 @@ const CagedPage: React.FC = () => {
               CAGED
             </h1>
             <p className={`mt-2 max-w-3xl text-sm font-bold ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
-              Laboratório de visualização para conectar acordes, arpejos, escalas e regiões móveis do braço.
+              {copy.subtitle}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -201,17 +313,18 @@ const CagedPage: React.FC = () => {
           <PanelSurface isLight={isLight} className="p-5 sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">Mapa CAGED</p>
-                <p className={`mt-2 text-sm font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Do conceito às regiões completas do braço.</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{copy.mapTitle}</p>
+                <p className={`mt-2 text-sm font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{copy.mapSubtitle}</p>
               </div>
               <span className={`rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-800/60 bg-blue-950/30 text-blue-200'}`}>
-                {CAGED_MODULES.length} módulos
+                {CAGED_MODULES.length} {copy.modules}
               </span>
             </div>
 
             <div className="mt-5 space-y-3">
               {CAGED_MODULES.map(module => {
                 const active = module.id === activeModule.id;
+                const moduleCopy = getCagedModuleCopy(module, lang);
                 return (
                   <button
                     key={module.id}
@@ -227,13 +340,13 @@ const CagedPage: React.FC = () => {
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <span className={`text-[9px] font-black uppercase tracking-[0.16em] ${active ? 'text-blue-100' : 'text-zinc-500'}`}>
-                          {String(module.order).padStart(2, '0')} - {module.difficulty ? difficultyLabel[module.difficulty] : 'Estudo'}
+                          {String(module.order).padStart(2, '0')} - {module.difficulty ? difficultyLabel[lang][module.difficulty] : copy.study}
                         </span>
-                        <h2 className="mt-2 text-base font-black tracking-tight sm:text-lg">{module.title}</h2>
-                        <p className={`mt-1.5 text-sm font-semibold leading-relaxed ${active ? 'text-blue-100' : isLight ? 'text-slate-500' : 'text-slate-400'}`}>{module.subtitle}</p>
+                        <h2 className="mt-2 text-base font-black tracking-tight sm:text-lg">{moduleCopy.title}</h2>
+                        <p className={`mt-1.5 text-sm font-semibold leading-relaxed ${active ? 'text-blue-100' : isLight ? 'text-slate-500' : 'text-slate-400'}`}>{moduleCopy.subtitle}</p>
                       </div>
                       <span className={`w-fit rounded-full border px-2.5 py-1.5 text-[9px] font-black uppercase ${active ? 'border-white/30 bg-white/14 text-white' : isLight ? lightCategoryClasses[module.category] : categoryClasses[module.category]}`}>
-                        {categoryLabels[module.category]}
+                        {categoryLabels[lang][module.category]}
                       </span>
                     </div>
                   </button>
@@ -245,12 +358,12 @@ const CagedPage: React.FC = () => {
           <PanelSurface isLight={isLight} className="p-5 sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">Painel didático dinâmico</p>
-                <h2 className="mt-4 text-3xl font-black tracking-tight">{activeModule.title}</h2>
-                <p className={`mt-2 text-base font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{activeModule.subtitle}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{copy.panelTitle}</p>
+                <h2 className="mt-4 text-3xl font-black tracking-tight">{activeModuleCopy.title}</h2>
+                <p className={`mt-2 text-base font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{activeModuleCopy.subtitle}</p>
               </div>
               <span className={`w-fit rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? lightCategoryClasses[activeModule.category] : categoryClasses[activeModule.category]}`}>
-                {categoryLabels[activeModule.category]}
+                {categoryLabels[lang][activeModule.category]}
               </span>
             </div>
 
@@ -276,14 +389,15 @@ const CagedPage: React.FC = () => {
             <div className={`mt-6 rounded-xl border p-5 ${isLight ? 'border-[#d3deeb] bg-[#eef4fb]' : 'border-blue-950/60 bg-blue-950/10'}`}>
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">Overlay system</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{copy.overlayTitle}</p>
                   <p className={`mt-2 max-w-2xl text-sm font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                    Camadas preparadas para shape, tônica, tríade, arpejo, escala, graus e conexão horizontal.
+                    {copy.overlayBody}
                   </p>
                 </div>
                 <div className="flex max-w-3xl flex-wrap gap-2">
                   {CAGED_OVERLAYS.map(overlay => {
                     const active = activeOverlays.includes(overlay.id);
+                    const overlayCopy = lang === 'pt' ? overlay : { ...overlay, ...overlayTranslations[overlay.id] };
                     return (
                       <button
                         key={overlay.id}
@@ -295,9 +409,9 @@ const CagedPage: React.FC = () => {
                               ? 'border-slate-200 bg-white text-slate-500'
                               : 'border-blue-950/60 bg-[#070b12] text-slate-400'
                         }`}
-                        title={overlay.description}
+                        title={overlayCopy.description}
                       >
-                        {overlay.label}
+                        {overlayCopy.label}
                       </button>
                     );
                   })}
@@ -306,7 +420,7 @@ const CagedPage: React.FC = () => {
             </div>
 
             <div className={`mt-6 rounded-xl border p-5 ${isLight ? 'border-[#d3deeb] bg-[#eef4fb]' : 'border-blue-950/60 bg-blue-950/10'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">Ações práticas</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{copy.actionsTitle}</p>
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 {activeModule.actions.map(action => (
                   <button
@@ -314,7 +428,7 @@ const CagedPage: React.FC = () => {
                     onClick={() => executeCagedAction(action, activeModule)}
                     className={`${isLight ? 'border border-blue-400/30 bg-[linear-gradient(180deg,#4f8df3,#2563eb)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_12px_24px_rgba(37,99,235,0.22)]' : 'border border-blue-400/22 bg-[linear-gradient(180deg,#2e6af0,#1d4ed8)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_14px_28px_rgba(15,23,42,0.32)]'} rounded-xl px-4 py-3 text-[10px] font-black uppercase text-white transition hover:-translate-y-0.5`}
                   >
-                    {action.label}
+                    {lang === 'pt' ? action.label : cagedActionTranslations[action.id] || action.label}
                   </button>
                 ))}
               </div>
