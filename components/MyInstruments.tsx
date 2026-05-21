@@ -183,6 +183,53 @@ const normalizeImportedInstrument = (input: Partial<UserInstrument>): UserInstru
   };
 };
 
+const isInstrumentLike = (value: unknown): value is Partial<UserInstrument> => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  const knownFields = [
+    'brand',
+    'model',
+    'version',
+    'serialNumber',
+    'strings',
+    'purchaseDate',
+    'paidValue',
+    'bodyWood',
+    'neckWood',
+    'bridgePickup',
+    'maintenance',
+  ];
+
+  return knownFields.some(field => field in record);
+};
+
+const findInstrumentArrayDeep = (value: unknown, depth = 0): Partial<UserInstrument>[] | null => {
+  if (depth > 5 || !value) return null;
+
+  if (Array.isArray(value)) {
+    if (value.length > 0 && value.every(isInstrumentLike)) {
+      return value as Partial<UserInstrument>[];
+    }
+    return null;
+  }
+
+  if (typeof value !== 'object') return null;
+
+  const record = value as Record<string, unknown>;
+  const priorityKeys = ['instruments', 'userInstruments', 'myInstruments', 'items'];
+  for (const key of priorityKeys) {
+    const found = findInstrumentArrayDeep(record[key], depth + 1);
+    if (found) return found;
+  }
+
+  for (const nested of Object.values(record)) {
+    const found = findInstrumentArrayDeep(nested, depth + 1);
+    if (found) return found;
+  }
+
+  return null;
+};
+
 const extractImportedInstruments = (payload: unknown): Partial<UserInstrument>[] | null => {
   if (Array.isArray(payload)) return payload as Partial<UserInstrument>[];
 
@@ -198,7 +245,9 @@ const extractImportedInstruments = (payload: unknown): Partial<UserInstrument>[]
   ];
 
   const found = candidates.find(Array.isArray);
-  return found ? found as Partial<UserInstrument>[] : null;
+  if (found) return found as Partial<UserInstrument>[];
+
+  return findInstrumentArrayDeep(payload);
 };
 
 const formatDate = (iso?: string) => {
@@ -573,7 +622,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
 
     try {
       const text = await file.text();
-      const payload = JSON.parse(text);
+      const payload = JSON.parse(text.replace(/^\uFEFF/, '').trim());
       const rawInstruments = extractImportedInstruments(payload);
 
       if (!rawInstruments) {

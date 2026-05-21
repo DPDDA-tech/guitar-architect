@@ -2,7 +2,7 @@ import { UserInstrument } from '../types';
 import { loadConfig } from './persistence';
 
 const DB_NAME = 'guitar-architect-instruments';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'instruments';
 
 const getCurrentUserId = (): string => {
@@ -19,9 +19,11 @@ const openDb = (): Promise<IDBDatabase> => new Promise((resolve, reject) => {
 
   request.onupgradeneeded = () => {
     const db = request.result;
-    if (!db.objectStoreNames.contains(STORE_NAME)) {
-      const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-      // Add index for user isolation
+    const store = db.objectStoreNames.contains(STORE_NAME)
+      ? request.transaction?.objectStore(STORE_NAME)
+      : db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+
+    if (store && !store.indexNames.contains('userId')) {
       store.createIndex('userId', 'userId', { unique: false });
     }
   };
@@ -56,12 +58,15 @@ const runStore = async <T>(
 export const listInstruments = async (userId?: string): Promise<UserInstrument[]> => {
   const currentUserId = userId || getCurrentUserId();
   const result = await runStore<UserInstrument[]>('readonly', store => {
-    // Filter by userId index for security isolation
-    const index = store.index('userId');
-    return index.getAll(IDBKeyRange.only(currentUserId));
+    if (store.indexNames.contains('userId')) {
+      const index = store.index('userId');
+      return index.getAll(IDBKeyRange.only(currentUserId));
+    }
+
+    return store.getAll();
   });
   return ((result || []) as UserInstrument[])
-    .filter(i => i.userId === currentUserId) // Double-check user isolation
+    .filter(i => i.userId === currentUserId)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 };
 
@@ -75,29 +80,47 @@ export const saveInstrument = async (instrument: UserInstrument, userId?: string
 
 export const replaceInstruments = async (instruments: UserInstrument[], userId?: string): Promise<void> => {
   const currentUserId = userId || getCurrentUserId();
-  await runStore('readwrite', store => {
-    // Clear only current user's instruments, not all instruments
-    const index = store.index('userId');
-    const range = IDBKeyRange.only(currentUserId);
-    const cursorRequest = index.openCursor(range);
-    
-    cursorRequest.onsuccess = (e: Event) => {
-      const cursor = (e.target as IDBRequest).result as IDBCursorWithValue;
-      if (cursor) {
-        store.delete(cursor.primaryKey);
-        cursor.continue();
-      }
+
+  const db = await openDb();
+  await new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+
+    const putAll = () => {
+      instruments.forEach(instrument => {
+        store.put({ ...instrument, userId: currentUserId });
+      });
     };
-  }).catch(err => {
-    console.error('Error clearing user instruments:', err);
-  });
-  
-  // Add new instruments
-  await runStore('readwrite', store => {
-    instruments.forEach(instrument => {
-      const instrumentWithUser = { ...instrument, userId: currentUserId };
-      store.put(instrumentWithUser);
-    });
+
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+    transaction.onabort = () => reject(transaction.error);
+
+    if (store.indexNames.contains('userId')) {
+      const cursorRequest = store.index('userId').openCursor(IDBKeyRange.only(currentUserId));
+      cursorRequest.onsuccess = () => {
+        const cursor = cursorRequest.result;
+        if (cursor) {
+          store.delete(cursor.primaryKey);
+          cursor.continue();
+          return;
+        }
+        putAll();
+      };
+      cursorRequest.onerror = () => reject(cursorRequest.error);
+      return;
+    }
+
+    const getAllRequest = store.getAll();
+    getAllRequest.onsuccess = () => {
+      (getAllRequest.result as UserInstrument[])
+        .filter(instrument => instrument.userId === currentUserId)
+        .forEach(instrument => store.delete(instrument.id));
+      putAll();
+    };
+    getAllRequest.onerror = () => reject(getAllRequest.error);
+  }).finally(() => {
+    db.close();
   });
 };
 

@@ -5,7 +5,7 @@ import PracticeTools from './PracticeTools';
 import OnboardingTour, { TourStep } from './OnboardingTour';
 import { CHROMATIC_SCALE, INSTRUMENT_PRESETS, getNoteAt, TUNINGS_PRESETS, getFretForNote } from '../music/musicTheory';
 import { getScaleNotes, SCALES } from '../music/scales';
-import { DEGREE_NAMES, CHORD_QUALITIES } from '../music/harmony';
+import { DEGREE_NAMES, CHORD_QUALITIES, getCagedPositions } from '../music/harmony';
 import { translations, Lang } from '../i18n';
 import { FretboardState, EditorMode, MarkerShape, ThemeMode, StringStatus, InstrumentType, LineThickness, TuningKey, CagedShape, Note, Marker, Line } from '../types';
 import NewDiagramWizard from './NewDiagramWizard';
@@ -45,6 +45,7 @@ interface FretboardInstanceProps {
 type LearningLevel = 'beginner' | 'intermediate' | 'advanced';
 type ScaleFollowMode = 'off' | 'horizontal' | 'region' | 'connections';
 type ScaleFollowStatus = 'idle' | 'playing' | 'paused';
+type CagedFollowStatus = 'idle' | 'playing' | 'paused';
 type GuidedStudyAction =
   | { type: 'scale'; root: string; scaleType: string }
   | { type: 'chord'; root: string; symbol: string; chordType: ChordType }
@@ -75,6 +76,8 @@ const CAGED_SCALE_REGIONS = [
   { number: 4, shape: 'A', startFret: 7, endFret: 12 },
   { number: 5, shape: 'G', startFret: 9, endFret: 14 },
 ] as const;
+
+const CAGED_SHAPE_SEQUENCE: CagedShape[] = ['C', 'A', 'G', 'E', 'D'];
 
 
 const FretboardInstance: React.FC<FretboardInstanceProps> = ({ 
@@ -366,6 +369,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const [scaleFollowStringIndex, setScaleFollowStringIndex] = useState(0);
   const [scaleRegionIndex, setScaleRegionIndex] = useState(0);
   const scaleFollowTimerRef = useRef<number | null>(null);
+  const [cagedFollowStatus, setCagedFollowStatus] = useState<CagedFollowStatus>('idle');
+  const [cagedFollowIndex, setCagedFollowIndex] = useState(0);
+  const cagedFollowTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const closePanels = () => setIsControlPanelOpen(false);
@@ -442,7 +448,33 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
   const scaleNoteSet = useMemo(() => new Set(getScaleNotes(state.root, state.scaleType)), [state.root, state.scaleType]);
   const activeScaleRegion = CAGED_SCALE_REGIONS[scaleRegionIndex] || CAGED_SCALE_REGIONS[0];
+  const cagedFollowShape = state.cagedShape && state.cagedShape !== 'OFF' ? state.cagedShape : 'E';
+  const cagedFollowPositions = useMemo(() => {
+    const basePositions = getCagedPositions(state.root, cagedFollowShape, currentTuning);
+    return basePositions
+      .flatMap(position => [0, 12, 24].map(offset => ({
+        string: position.string,
+        fret: position.fret + offset,
+      })))
+      .filter(position => position.string >= 0 && position.string < currentTuning.length && position.fret >= state.startFret && position.fret <= state.endFret)
+      .map(position => ({
+        ...position,
+        note: getNoteAt(position.string, position.fret, currentTuning),
+      }))
+      .sort((a, b) => b.string - a.string || a.fret - b.fret);
+  }, [cagedFollowShape, currentTuning, state.endFret, state.root, state.startFret]);
+  const cagedRegionBounds = useMemo(() => {
+    if (cagedFollowPositions.length === 0 || cagedFollowStatus === 'idle') return null;
+    const frets = cagedFollowPositions.map(position => position.fret);
+    return {
+      startFret: Math.max(state.startFret, Math.min(...frets)),
+      endFret: Math.min(state.endFret, Math.max(...frets)),
+      label: lang === 'pt' ? `CAGED - Forma ${cagedFollowShape}` : `CAGED - ${cagedFollowShape} shape`,
+    };
+  }, [cagedFollowPositions, cagedFollowShape, cagedFollowStatus, lang, state.endFret, state.startFret]);
   const followAlongRegion = useMemo(() => {
+    if (cagedRegionBounds) return cagedRegionBounds;
+
     if (scaleFollowMode === 'horizontal') {
       return {
         startFret: state.startFret,
@@ -471,7 +503,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     }
 
     return undefined;
-  }, [activeScaleRegion, currentTuning.length, lang, scaleFollowMode, scaleFollowStringIndex, state.endFret, state.startFret]);
+  }, [activeScaleRegion, cagedRegionBounds, currentTuning.length, lang, scaleFollowMode, scaleFollowStringIndex, state.endFret, state.startFret]);
 
   const scaleFollowSequence = useMemo(() => {
     const positions: Array<{ string: number; fret: number; note: string }> = [];
@@ -479,8 +511,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     const end = followAlongRegion?.endFret ?? state.endFret;
     const clampedEnd = Math.min(state.endFret, end);
 
+    const focusedString = followAlongRegion && 'stringIndex' in followAlongRegion ? followAlongRegion.stringIndex : undefined;
     currentTuning.forEach((_, string) => {
-      if (typeof followAlongRegion?.stringIndex === 'number' && string !== followAlongRegion.stringIndex) return;
+      if (typeof focusedString === 'number' && string !== focusedString) return;
       for (let fret = Math.max(0, start); fret <= clampedEnd; fret += 1) {
         const note = getNoteAt(string, fret, currentTuning);
         if (scaleNoteSet.has(note)) positions.push({ string, fret, note });
@@ -496,6 +529,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
   const activeFollowNote = scaleFollowStatus !== 'idle'
     ? scaleFollowSequence[Math.min(scaleFollowIndex, Math.max(0, scaleFollowSequence.length - 1))]
+    : cagedFollowStatus !== 'idle'
+    ? cagedFollowPositions[Math.min(cagedFollowIndex, Math.max(0, cagedFollowPositions.length - 1))]
     : null;
 
   useEffect(() => {
@@ -540,6 +575,37 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setScaleFollowStatus('idle');
     setScaleFollowIndex(0);
   }, [state.root, state.scaleType, state.startFret, state.endFret]);
+
+  useEffect(() => {
+    if (cagedFollowStatus !== 'playing') return;
+    if (cagedFollowPositions.length === 0) {
+      setCagedFollowStatus('idle');
+      setCagedFollowIndex(0);
+      return;
+    }
+
+    cagedFollowTimerRef.current = window.setTimeout(() => {
+      setCagedFollowIndex(prev => {
+        if (prev >= cagedFollowPositions.length - 1) {
+          setCagedFollowStatus('idle');
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 720);
+
+    return () => {
+      if (cagedFollowTimerRef.current) {
+        window.clearTimeout(cagedFollowTimerRef.current);
+        cagedFollowTimerRef.current = null;
+      }
+    };
+  }, [cagedFollowIndex, cagedFollowPositions.length, cagedFollowStatus]);
+
+  useEffect(() => {
+    setCagedFollowStatus('idle');
+    setCagedFollowIndex(0);
+  }, [state.root, state.cagedShape, state.startFret, state.endFret]);
 
   useEffect(() => {
     setSelectedChordVoicingIndex(0);
@@ -861,6 +927,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const startScaleFollow = () => {
     if (scaleFollowMode === 'off') setScaleFollowMode('region');
     if (scaleFollowSequence.length === 0) return;
+    setCagedFollowStatus('idle');
+    setCagedFollowIndex(0);
     setScaleFollowIndex(prev => Math.min(prev, Math.max(0, scaleFollowSequence.length - 1)));
     setScaleFollowStatus('playing');
   };
@@ -887,6 +955,37 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       setScaleFollowStatus('idle');
       setScaleFollowIndex(0);
     }
+  };
+  const ensureCagedShape = () => {
+    if (state.cagedShape && state.cagedShape !== 'OFF') return state.cagedShape;
+    recordAction({ ...state, cagedShape: 'E', layers: { ...state.layers, showTonic: true } });
+    return 'E';
+  };
+  const startCagedFollow = () => {
+    ensureCagedShape();
+    if (cagedFollowPositions.length === 0) return;
+    setScaleFollowStatus('idle');
+    setScaleFollowIndex(0);
+    setCagedFollowIndex(prev => Math.min(prev, Math.max(0, cagedFollowPositions.length - 1)));
+    setCagedFollowStatus('playing');
+  };
+  const pauseCagedFollow = () => {
+    setCagedFollowStatus(prev => prev === 'playing' ? 'paused' : prev);
+  };
+  const stopCagedFollow = () => {
+    if (cagedFollowTimerRef.current) {
+      window.clearTimeout(cagedFollowTimerRef.current);
+      cagedFollowTimerRef.current = null;
+    }
+    setCagedFollowStatus('idle');
+    setCagedFollowIndex(0);
+  };
+  const shiftCagedShape = (direction: -1 | 1) => {
+    const currentShape = state.cagedShape && state.cagedShape !== 'OFF' ? state.cagedShape : 'E';
+    const currentIndex = Math.max(0, CAGED_SHAPE_SEQUENCE.indexOf(currentShape));
+    const nextShape = CAGED_SHAPE_SEQUENCE[(currentIndex + direction + CAGED_SHAPE_SEQUENCE.length) % CAGED_SHAPE_SEQUENCE.length];
+    stopCagedFollow();
+    recordAction({ ...state, cagedShape: nextShape, layers: { ...state.layers, showTonic: true } });
   };
   const cycleScaleLabelMode = (mode: 'note' | 'interval') => {
     const isSameMode = state.labelMode === mode;
@@ -1723,6 +1822,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     }
 
     if (activeControlTab === 'harmony') {
+      const transportButtonClass = `flex h-10 w-10 items-center justify-center rounded-xl border text-lg font-black transition-all active:scale-95 ${isLight ? 'border-zinc-900 bg-white text-zinc-950 hover:bg-zinc-100' : 'border-zinc-100 bg-zinc-950 text-white hover:bg-zinc-900'}`;
       return (
         <div className={`mt-3 inline-flex max-w-full flex-wrap items-center gap-2 rounded-2xl border px-3 py-2 shadow-lg ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
           {['OFF', 'TRIADS', 'TETRADS'].map(m => (
@@ -1740,6 +1840,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               {shape}
             </button>
           ))}
+          <button onClick={() => shiftCagedShape(-1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`} aria-label={lang === 'pt' ? 'Shape CAGED anterior' : 'Previous CAGED shape'}>-</button>
+          <button onClick={() => shiftCagedShape(1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`} aria-label={lang === 'pt' ? 'Próximo shape CAGED' : 'Next CAGED shape'}>+</button>
+          <button onClick={startCagedFollow} className={transportButtonClass} aria-label="Play CAGED">▶</button>
+          <button onClick={pauseCagedFollow} className={transportButtonClass} aria-label="Pause CAGED">Ⅱ</button>
+          <button onClick={stopCagedFollow} className={transportButtonClass} aria-label="Stop CAGED">■</button>
         </div>
       );
     }
@@ -2097,7 +2202,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
             <div className="mt-3 grid grid-cols-2 gap-2">
               <button onClick={() => applyGuidedStudy(guidedStudies.find(study => study.id === 'connect-pentatonic') || selectedStudy)} className={`${controlButtonBase} ${inactiveButtonClass}`} title={lang === 'pt' ? 'Mostrar conexoes entre shapes' : 'Show shape connections'} aria-label={lang === 'pt' ? 'Mostrar conexoes entre shapes' : 'Show shape connections'}>
-                {lang === 'pt' ? 'Conexoes' : 'Connections'}
+                {lang === 'pt' ? 'Conexões' : 'Connections'}
               </button>
               <button onClick={() => applyGuidedStudy(guidedStudies.find(study => study.id === 'thirds-fifths') || selectedStudy)} className={`${controlButtonBase} ${inactiveButtonClass}`} title={lang === 'pt' ? 'Mostrar intervalos alvo' : 'Show target intervals'} aria-label={lang === 'pt' ? 'Mostrar intervalos alvo' : 'Show target intervals'}>
                 {lang === 'pt' ? 'Intervalos' : 'Intervals'}

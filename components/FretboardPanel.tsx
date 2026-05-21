@@ -463,6 +463,31 @@ useEffect(() => {
   if (!initialized.current) {
 
     const config = loadConfig();
+    const requiresAccountLogin =
+      typeof window !== 'undefined' &&
+      window.sessionStorage.getItem('ga_require_account_login') === '1';
+
+    if (requiresAccountLogin) {
+      if (config) {
+        setTheme(config.theme || 'light');
+        setLang((config.lang as Lang) || 'pt');
+        setShowTips(config.showTips ?? true);
+        setDefaultInstrument(config.defaultInstrument || 'guitar-6');
+      }
+
+      setAuthUser(null);
+      setAllowLocalIdentity(false);
+      setUser('');
+      setUserLogo(undefined);
+      setInstances([DEFAULT_FRETBOARD((config?.lang as Lang) || 'pt', config?.defaultInstrument || 'guitar-6')]);
+      setProjectName('Novo Projeto');
+      setProjectId(crypto.randomUUID());
+      setGlobalTranspose(0);
+      setShowLoginModal(true);
+      initialized.current = true;
+      return;
+    }
+
     const library = getLibrary(config?.currentUser || '');
 
     if (config) {
@@ -596,6 +621,10 @@ useEffect(() => {
 
     if (event === 'SIGNED_OUT') {
       setAuthUser(null);
+      setAllowLocalIdentity(false);
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem('ga_require_account_login', '1');
+      }
       authSessionBooted.current = false;
     }
   });
