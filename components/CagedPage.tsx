@@ -4,6 +4,7 @@ import {
   CAGED_MODULES,
   CAGED_OVERLAYS,
   CagedAction,
+  CagedBlock,
   CagedModule,
   CagedModuleCategory,
   CagedOverlay,
@@ -123,8 +124,8 @@ const cagedModuleTranslations: Record<string, { title: string; subtitle: string 
   'horizontal-connection': { title: 'Horizontal connection between shapes', subtitle: 'The fretboard should be seen laterally, not as isolated boxes.' },
   'barre-transposition': { title: 'Barre transposition', subtitle: 'Open shapes become movable through the barre.' },
   'major-scale-caged': { title: 'CAGED applied to the major scale', subtitle: 'The major scale can be visualized inside the five regions.' },
-  'pentatonics-caged': { title: 'Pentatonics inside CAGED', subtitle: 'Pentatonic boxes gain meaning when tied to the chord.' },
-  'triads-caged': { title: 'Triads inside CAGED', subtitle: 'Small triads reveal the harmonic core of each region.' },
+  'pentatonics-inside-caged': { title: 'Pentatonics inside CAGED', subtitle: 'Pentatonic boxes gain meaning when tied to the chord.' },
+  'triads-inside-caged': { title: 'Triads inside CAGED', subtitle: 'Small triads reveal the harmonic core of each region.' },
   'connected-arpeggios': { title: 'Connected arpeggios', subtitle: 'Arpeggios cross shapes and reveal harmonic voice leading.' },
   'caged-improvisation': { title: 'CAGED and improvisation', subtitle: 'Use regions as maps of intention, not visual prisons.' },
   'full-neck-visualization': { title: 'Full-neck visualization', subtitle: 'The final goal is to see the entire fretboard as one continuous system.' },
@@ -181,6 +182,186 @@ const overlayTranslations: Record<CagedOverlay, { label: string; description: st
 
 const getCagedModuleCopy = (module: CagedModule, lang: Lang) => (
   lang === 'pt' ? module : { ...module, ...cagedModuleTranslations[module.id] }
+);
+
+const cagedBlockTranslations: Record<string, Record<string, { eyebrow: string; title?: string; body: string; examples?: string[] }>> = {
+  'what-is-caged': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'The CAGED system organizes the fretboard into five regions derived from the open C, A, G, E and D forms.',
+      examples: ['C', 'A', 'G', 'E', 'D'],
+    },
+    fretboard: {
+      eyebrow: 'On the fretboard',
+      body: 'The forms connect horizontally and let you visualize chords, scales and arpeggios in movable regions.',
+    },
+    music: {
+      eyebrow: 'Musical connection',
+      body: 'Improvisation, accompaniment and harmonic visualization become more intuitive when the root organizes each region.',
+    },
+  },
+  'five-connected-forms': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'The five forms are not isolated. They overlap and connect the whole fretboard in one movable sequence.',
+      examples: ['C -> A -> G -> E -> D'],
+    },
+    fretboard: {
+      eyebrow: 'On the fretboard',
+      body: 'Watch the move from one region to the next, using roots and common tones as transition points.',
+    },
+    movement: {
+      eyebrow: 'Movement',
+      body: 'The transition should feel lateral and continuous, not like a jump to an unrelated diagram.',
+    },
+  },
+  'tonic-in-each-shape': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'The root is the main orientation point of the shape. Without it, CAGED becomes memorized geometry.',
+    },
+    examples: {
+      eyebrow: 'Examples',
+      body: 'The same logic works in every key: find the root and the shape gains direction.',
+      examples: ['C in E shape', 'D in A shape', 'G in G shape'],
+    },
+    focus: {
+      eyebrow: 'Visual focus',
+      body: 'Reducing the other notes and highlighting roots helps you see octaves, resting points and resolution.',
+    },
+  },
+  'chord-arpeggio-scale': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'The same shape contains chord, arpeggio and scale. The layers change the visual function of the same region.',
+    },
+    example: {
+      eyebrow: 'Example',
+      body: 'In the E shape of C major, the C chord, Cmaj7 arpeggio and C major scale coexist in the same territory.',
+      examples: ['C chord', 'Cmaj7 arpeggio', 'C major scale'],
+    },
+    overlay: {
+      eyebrow: 'Overlays',
+      body: 'Turn chord, arpeggio and scale on or off to understand the role of each layer.',
+    },
+  },
+  'horizontal-connection': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'The fretboard should be seen horizontally. Regions are stages of the same map, not separate drawers.',
+    },
+    fretboard: {
+      eyebrow: 'On the fretboard',
+      body: 'Soft connection lines and a highlighted next position help you understand lateral movement.',
+    },
+    music: {
+      eyebrow: 'Musical connection',
+      body: 'Improvising between shapes becomes natural when you connect target notes instead of jumping blindly between boxes.',
+    },
+  },
+  'barre-transposition': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'Open shapes become movable through the barre. The form remains, but the root changes.',
+    },
+    examples: {
+      eyebrow: 'Examples',
+      body: 'The E form can move up to F, G and A while keeping the same relative architecture.',
+      examples: ['E shape -> F', 'E shape -> G', 'E shape -> A'],
+    },
+    application: {
+      eyebrow: 'Application',
+      body: 'Transposition makes it clear that CAGED is a movable system, not a fixed collection of open chords.',
+    },
+  },
+  'major-scale-caged': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'The major scale can be visualized inside the five CAGED regions, always organized by the root and by degrees.',
+    },
+    targets: {
+      eyebrow: 'Target notes',
+      body: 'Root, third, fifth and seventh help turn scale movement into intentional phrasing.',
+    },
+    connection: {
+      eyebrow: 'Connection',
+      body: 'Connect regions through the scale, but keep the chord as the internal harmonic reference.',
+    },
+  },
+  'pentatonics-inside-caged': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'Pentatonics can be organized through CAGED regions and related directly to the chord underneath.',
+    },
+    relation: {
+      eyebrow: 'Relationship',
+      body: 'A pentatonic stops being a loose box when you can see the chord tones inside it.',
+    },
+    color: {
+      eyebrow: 'Blue note',
+      body: 'The blue note can be added as expressive color without hiding the main structure.',
+    },
+  },
+  'triads-inside-caged': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'Small triads reveal the harmonic core of each region and make shapes more musical.',
+    },
+    sets: {
+      eyebrow: 'String sets',
+      body: 'Study triads through string sets and inversions to find close voice leading.',
+    },
+    'voice-leading': {
+      eyebrow: 'Voice leading',
+      body: 'Connecting triads by nearby notes creates clear harmonic motion without big jumps.',
+    },
+  },
+  'connected-arpeggios': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'Arpeggios cross shapes and reveal harmonic voice leading between regions.',
+    },
+    movement: {
+      eyebrow: 'Movement',
+      body: 'Lines connecting notes help you see the chord as melody in motion.',
+    },
+    application: {
+      eyebrow: 'Application',
+      body: 'Play arpeggios to resolve phrases, outline chords and cross the fretboard with control.',
+    },
+  },
+  'caged-improvisation': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'CAGED is not only for memorizing chords. It is a way to improvise with visual awareness.',
+    },
+    targets: {
+      eyebrow: 'Target notes',
+      body: 'Roots, thirds, fifths and sevenths work as safe points for creating phrases.',
+    },
+    modal: {
+      eyebrow: 'Modal connection',
+      body: 'A CAGED region can receive pentatonic, major scale, modes and arpeggios according to the musical context.',
+    },
+  },
+  'full-neck-visualization': {
+    concept: {
+      eyebrow: 'Concept',
+      body: 'The final goal is to see the whole fretboard as one continuous system, without depending on one fixed box.',
+    },
+    'full-neck': {
+      eyebrow: 'Full neck',
+      body: 'All connected shapes show how chords, arpeggios and scales travel across the instrument.',
+    },
+    filters: {
+      eyebrow: 'Filters',
+      body: 'Hide shapes, show roots only, show degrees only or highlight paths according to the study goal.',
+    },
+  },
+};
+
+const getCagedBlockCopy = (moduleId: string, block: CagedBlock, lang: Lang): CagedBlock => (
+  lang === 'pt' ? block : { ...block, ...cagedBlockTranslations[moduleId]?.[block.id] }
 );
 
 const isOverlayPayload = (payload: unknown): payload is { overlay: CagedOverlay } => {
@@ -368,14 +549,16 @@ const CagedPage: React.FC = () => {
             </div>
 
             <div className="mt-6 grid gap-4 lg:grid-cols-3">
-              {activeModule.blocks.map(block => (
+              {activeModule.blocks.map(block => {
+                const blockCopy = getCagedBlockCopy(activeModule.id, block, lang);
+                return (
                 <section key={block.id} className={`rounded-xl border p-5 ${isLight ? 'border-[#d2deeb] bg-white/86' : 'border-blue-950/50 bg-[#080d16]/80'}`}>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-300">{block.eyebrow}</p>
-                  {block.title && <h3 className="mt-2 text-lg font-black">{block.title}</h3>}
-                  <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>{block.body}</p>
-                  {block.examples && (
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-300">{blockCopy.eyebrow}</p>
+                  {blockCopy.title && <h3 className="mt-2 text-lg font-black">{blockCopy.title}</h3>}
+                  <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>{blockCopy.body}</p>
+                  {blockCopy.examples && (
                     <div className="mt-4 flex flex-wrap gap-2">
-                      {block.examples.map(example => (
+                      {blockCopy.examples.map(example => (
                         <span key={example} className={`rounded-lg border px-3 py-2 text-xs font-black ${isLight ? 'border-blue-200 bg-white text-blue-700' : 'border-blue-900/50 bg-[#080b11] text-blue-100'}`}>
                           {example}
                         </span>
@@ -383,7 +566,7 @@ const CagedPage: React.FC = () => {
                     </div>
                   )}
                 </section>
-              ))}
+              )})}
             </div>
 
             <div className={`mt-6 rounded-xl border p-5 ${isLight ? 'border-[#d3deeb] bg-[#eef4fb]' : 'border-blue-950/60 bg-blue-950/10'}`}>
