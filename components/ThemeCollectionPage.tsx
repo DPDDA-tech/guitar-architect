@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { translations, Lang } from '../i18n';
 import { loadConfig, saveConfig } from '../utils/persistence';
 import { AppState, ThemeMode } from '../types';
@@ -8,6 +8,17 @@ import AchievementsPanel from './AchievementsPanel';
 import { THEME_REGISTRY, DEFAULT_THEME_ID } from '../features/themeCollection/themeRegistry';
 import { getThemeCopy } from '../features/themeCollection/themeCopy';
 import { getThemeWithState, loadThemeCollectionState, saveThemeCollectionState, selectTheme } from '../features/themeCollection/themeUtils';
+import { getUnlockedRewards } from '../utils/achievementUtils';
+import { getUnlockedAchievementIds, unlockAchievement } from '../utils/achievementStorage';
+import type { Reward } from '../types/reward';
+
+const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
+
+type CollectionPreview = {
+  image: string;
+  name: string;
+  subtitle: string;
+};
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -27,8 +38,19 @@ const ThemeCollectionPage: React.FC = () => {
   const [theme, setTheme] = useState<ThemeMode>(() => getInitialConfig()?.theme || 'dark');
   const [collectionState, setCollectionState] = useState(loadThemeCollectionState);
   const [previewTheme, setPreviewTheme] = useState<typeof THEME_REGISTRY[number] | null>(null);
+  const [previewAsset, setPreviewAsset] = useState<CollectionPreview | null>(null);
+  const currentUserId = useMemo(() => getInitialConfig()?.currentUser, []);
+  const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<string[]>(() => getUnlockedAchievementIds(currentUserId));
   const isLight = theme === 'light';
   const items = useMemo(() => THEME_REGISTRY.map(item => getThemeWithState(item, collectionState)), [collectionState]);
+  const workRewards = useMemo(() => {
+    const rewardMap = new Map<string, Reward>();
+    getUnlockedRewards(unlockedAchievementIds).forEach(reward => {
+      if (!reward.asset.path) return;
+      rewardMap.set(reward.id, reward);
+    });
+    return Array.from(rewardMap.values());
+  }, [unlockedAchievementIds]);
   const activeTheme = items.find(item => item.id === collectionState.activeThemeId) || items.find(item => item.id === DEFAULT_THEME_ID) || items[0];
   const activeThemeCopy = getThemeCopy(activeTheme, lang);
   const unlockedCount = items.filter(item => item.unlocked).length;
@@ -43,6 +65,21 @@ const ThemeCollectionPage: React.FC = () => {
       backgroundSize: '20px 20px',
     }
     : undefined;
+
+  useEffect(() => {
+    if (unlockedAchievementIds.includes(CORE_ACHIEVEMENT_ID)) return;
+    setUnlockedAchievementIds(unlockAchievement(CORE_ACHIEVEMENT_ID, currentUserId));
+  }, [currentUserId, unlockedAchievementIds]);
+
+  useEffect(() => {
+    const refreshUnlockedRewards = () => setUnlockedAchievementIds(getUnlockedAchievementIds(currentUserId));
+    window.addEventListener('ga-achievements-unlocked', refreshUnlockedRewards);
+    window.addEventListener('storage', refreshUnlockedRewards);
+    return () => {
+      window.removeEventListener('ga-achievements-unlocked', refreshUnlockedRewards);
+      window.removeEventListener('storage', refreshUnlockedRewards);
+    };
+  }, [currentUserId]);
 
   const persistConfigPatch = (patch: Partial<AppState>) => {
     const current = loadConfig();
@@ -105,6 +142,62 @@ const ThemeCollectionPage: React.FC = () => {
         <ThemeGrid category="tier5" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
         <ThemeGrid category="tier6" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
 
+        <section className="mt-10">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-300">
+                {lang === 'pt' ? 'Coleção' : 'Collection'}
+              </p>
+              <h2 className="mt-2 text-2xl font-black uppercase tracking-tight">
+                {lang === 'pt' ? 'Coleção da Obra' : 'Work Collection'}
+              </h2>
+              <p className={`mt-2 max-w-3xl text-sm font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                {lang === 'pt'
+                  ? 'Selos, badges e logos oficiais liberados pelas conquistas, pela jornada de estudo e pelos marcos especiais do Guitar Architect.'
+                  : 'Official seals, badges and logos unlocked through achievements, study milestones and special Guitar Architect moments.'}
+              </p>
+            </div>
+            <span className={`w-fit rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-800/60 bg-blue-950/30 text-blue-200'}`}>
+              {workRewards.length} {lang === 'pt' ? 'itens' : 'items'}
+            </span>
+          </div>
+          {workRewards.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {workRewards.map(reward => (
+                <button
+                  key={reward.id}
+                  type="button"
+                  onClick={() => reward.asset.path && setPreviewAsset({ image: reward.asset.path, name: reward.title, subtitle: reward.description })}
+                  className={`group overflow-hidden rounded-2xl border p-4 text-left transition duration-300 hover:-translate-y-1 ${isLight ? 'border-[#c7d4e4] bg-white/94 shadow-[0_18px_42px_rgba(71,85,105,0.12)]' : 'border-blue-900/55 bg-[linear-gradient(145deg,rgba(7,13,24,0.96),rgba(3,7,18,0.98))] shadow-[0_22px_70px_rgba(2,6,23,0.42)]'}`}
+                >
+                  <div className={`relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl border ${isLight ? 'border-slate-200 bg-slate-50' : 'border-blue-950/60 bg-slate-950'}`}>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(59,130,246,0.18),transparent_58%)] opacity-0 transition group-hover:opacity-100" />
+                    {reward.asset.path && (
+                      <img src={reward.asset.path} alt={reward.title} className="relative h-full w-full object-contain p-3 transition duration-300 group-hover:scale-[1.03]" />
+                    )}
+                  </div>
+                  <div className="mt-4 flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-300">{reward.type}</p>
+                      <h3 className="mt-1 text-base font-black">{reward.title}</h3>
+                    </div>
+                    <span className={`rounded-full border px-2.5 py-1.5 text-[8px] font-black uppercase ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-900/70 bg-blue-950/35 text-blue-200'}`}>
+                      {reward.rarity.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{reward.description}</p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className={`rounded-2xl border p-6 text-sm font-bold ${isLight ? 'border-[#c7d4e4] bg-white/90 text-slate-600' : 'border-blue-900/55 bg-[#050914] text-slate-400'}`}>
+              {lang === 'pt'
+                ? 'Os selos da obra aparecerão aqui conforme forem desbloqueados.'
+                : 'Work collection items will appear here as they are unlocked.'}
+            </div>
+          )}
+        </section>
+
         <AchievementsPanel isLight={isLight} />
 
         <div className="mt-8 text-center">
@@ -127,6 +220,25 @@ const ThemeCollectionPage: React.FC = () => {
             </div>
             <a href={previewTheme.image} target="_blank" rel="noreferrer" download className="block" title={lang === 'pt' ? 'Abrir ou salvar imagem' : 'Open or save image'}>
               <img src={previewTheme.image} alt={getThemeCopy(previewTheme, lang).name} className="mx-auto max-h-[76vh] w-auto max-w-full rounded-2xl object-contain" />
+            </a>
+          </div>
+        </div>
+      )}
+      {previewAsset && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/82 p-4 backdrop-blur-xl" onClick={() => setPreviewAsset(null)}>
+          <div className={`max-h-[92vh] w-full max-w-5xl overflow-auto rounded-3xl border p-4 shadow-2xl ${isLight ? 'border-slate-200 bg-white' : 'border-blue-900/60 bg-slate-950'}`} onClick={event => event.stopPropagation()}>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-400">{lang === 'pt' ? 'Item desbloqueado' : 'Unlocked item'}</p>
+                <h2 className="text-lg font-black">{previewAsset.name}</h2>
+                <p className={`mt-1 text-xs font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{previewAsset.subtitle}</p>
+              </div>
+              <button onClick={() => setPreviewAsset(null)} className={`rounded-xl border px-4 py-2 text-[10px] font-black uppercase ${isLight ? 'border-slate-200 text-slate-700' : 'border-slate-700 text-slate-200'}`}>
+                {lang === 'pt' ? 'Fechar' : 'Close'}
+              </button>
+            </div>
+            <a href={previewAsset.image} target="_blank" rel="noreferrer" download className="block" title={lang === 'pt' ? 'Abrir ou salvar imagem' : 'Open or save image'}>
+              <img src={previewAsset.image} alt={previewAsset.name} className="mx-auto max-h-[76vh] w-auto max-w-full rounded-2xl object-contain" />
             </a>
           </div>
         </div>

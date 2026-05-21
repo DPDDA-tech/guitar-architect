@@ -327,7 +327,7 @@ const GreekModesPage: React.FC = () => {
           {GREEK_MODES.map(mode => {
             const modeCopy = getModeCopy(mode, lang);
             return (
-            <article key={mode.id} className={`rounded-2xl border p-4 transition-all ${activeMode.id === mode.id ? (isLight ? 'border-blue-400 bg-blue-50/80 shadow-[0_18px_42px_rgba(37,99,235,0.18)] ring-2 ring-blue-200/70' : 'border-blue-400 bg-blue-950/24 shadow-[0_18px_42px_rgba(37,99,235,0.20)] ring-2 ring-blue-500/25') : isLight ? 'border-[#c6d3e2] bg-white/98 shadow-[0_14px_34px_rgba(71,85,105,0.10)]' : 'border-blue-900/55 bg-[#070d18]/95 shadow-[0_12px_28px_rgba(2,6,23,0.28)]'}`}>
+            <article key={mode.id} className={`rounded-2xl border p-4 transition-all ${activeMode.id === mode.id ? (isLight ? 'border-blue-400 bg-blue-50/95 shadow-[0_18px_42px_rgba(37,99,235,0.22)] ring-2 ring-blue-200/80' : 'border-blue-300 bg-[linear-gradient(145deg,rgba(30,64,175,0.42),rgba(7,13,24,0.98))] shadow-[0_0_36px_rgba(37,99,235,0.28),0_18px_42px_rgba(2,6,23,0.34)] ring-2 ring-blue-400/40') : isLight ? 'border-[#c6d3e2] bg-white/98 shadow-[0_14px_34px_rgba(71,85,105,0.10)]' : 'border-blue-900/55 bg-[#070d18]/95 shadow-[0_12px_28px_rgba(2,6,23,0.28)]'}`}>
               <div className={`mb-4 h-1.5 rounded-full bg-gradient-to-r ${mode.colorClass}`} />
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-300">{String(mode.order).padStart(2, '0')} / {modeCopy.parentDegree}</p>
               <h2 className="mt-2 text-xl font-black">{modeCopy.name}</h2>

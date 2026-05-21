@@ -389,11 +389,20 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       setActiveControlTab(detail.tab);
       setIsControlPanelOpen(true);
     };
+    const openQuickTabPanel = (event: Event) => {
+      const detail = (event as CustomEvent<{ tab?: string }>).detail;
+      if (!detail?.tab) return;
+      setActiveControlTab(detail.tab);
+      setOpenQuickTab(detail.tab);
+      setIsControlPanelOpen(false);
+    };
     window.addEventListener('ga-close-diagram-panels', closePanels);
     window.addEventListener('ga-open-diagram-panel', openPanel);
+    window.addEventListener('ga-open-quick-tab', openQuickTabPanel);
     return () => {
       window.removeEventListener('ga-close-diagram-panels', closePanels);
       window.removeEventListener('ga-open-diagram-panel', openPanel);
+      window.removeEventListener('ga-open-quick-tab', openQuickTabPanel);
     };
   }, [activeControlTab, isControlPanelOpen, preferredPracticeTool]);
 
@@ -1762,8 +1771,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         <button onClick={() => activateScaleFollowMode('region')} className={scaleActionButton(scaleFollowMode === 'region')}>
           {lang === 'pt' ? 'Região' : 'Region'}
         </button>
-        <button onClick={() => shiftScaleRegion(-1)} className={scaleActionButton(false)} aria-label={lang === 'pt' ? 'Região anterior' : 'Previous region'}>-</button>
-        <button onClick={() => shiftScaleRegion(1)} className={scaleActionButton(false)} aria-label={lang === 'pt' ? 'Próxima região' : 'Next region'}>+</button>
+        <button onClick={() => shiftScaleRegion(-1)} className={`${scaleActionButton(false)} text-base leading-none`} aria-label={lang === 'pt' ? 'Região anterior' : 'Previous region'}>-</button>
+        <button onClick={() => shiftScaleRegion(1)} className={`${scaleActionButton(false)} text-base leading-none`} aria-label={lang === 'pt' ? 'Próxima região' : 'Next region'}>+</button>
         <button onClick={() => activateScaleFollowMode('connections')} className={scaleActionButton(scaleFollowMode === 'connections')}>
           {lang === 'pt' ? 'Conexões' : 'Connections'}
         </button>
@@ -2678,11 +2687,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         <button
           type="button"
           onClick={() => setIsControlPanelOpen(prev => !prev)}
-          className={`fixed right-0 top-1/2 z-[82] hidden -translate-y-1/2 items-center gap-2 rounded-l-2xl border-y border-l px-2 py-5 text-[9px] font-black uppercase tracking-[0.18em] shadow-2xl transition-all lg:flex ${isControlPanelOpen ? 'translate-x-full opacity-0 pointer-events-none' : ''} ${isLight ? 'border-blue-200 bg-white/95 text-blue-700 shadow-blue-200/40' : 'border-blue-700/70 bg-[#07111f]/96 text-blue-200 shadow-blue-950/70'}`}
+          className={`fixed right-0 top-1/2 z-[82] hidden -translate-y-1/2 items-center gap-2 rounded-l-2xl border-y border-l px-3 py-6 text-[9px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all lg:flex ${isControlPanelOpen ? 'translate-x-full opacity-0 pointer-events-none' : ''} ${isLight ? 'border-blue-300 bg-[linear-gradient(180deg,#ffffff,#eef5ff)] text-blue-700 shadow-[0_0_34px_rgba(37,99,235,0.22)]' : 'border-blue-500/80 bg-[linear-gradient(180deg,rgba(17,39,74,0.98),rgba(4,13,28,0.98))] text-blue-100 shadow-[0_0_38px_rgba(37,99,235,0.42)]'}`}
           aria-label={lang === 'pt' ? 'Abrir painel lateral' : 'Open side panel'}
           title={lang === 'pt' ? 'Abrir painel lateral' : 'Open side panel'}
         >
-          <span className="h-3 w-3 rounded-full bg-blue-500 shadow-[0_0_18px_rgba(59,130,246,0.9)]" />
+          <span className="h-3.5 w-3.5 animate-pulse rounded-full bg-blue-400 shadow-[0_0_22px_rgba(59,130,246,1)]" />
           <span className="[writing-mode:vertical-rl] rotate-180">{lang === 'pt' ? 'Painel' : 'Panel'}</span>
         </button>
         <div className={`fixed inset-x-0 bottom-[52px] z-[80] max-h-[62vh] overflow-y-auto border-t p-4 shadow-2xl transition-transform lg:fixed lg:inset-x-auto lg:right-6 lg:top-28 lg:bottom-6 lg:w-[390px] lg:max-h-none lg:rounded-2xl lg:border ${panelShell} ${isControlPanelOpen ? 'translate-y-0 lg:translate-y-0' : 'translate-y-[calc(100%+72px)] lg:translate-y-0 lg:translate-x-[calc(100%+32px)]'}`}>

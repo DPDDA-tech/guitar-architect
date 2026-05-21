@@ -1178,6 +1178,11 @@ const handleLogout = async () => {
         window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: pending?.tool || 'exercises' } }));
       }, 160);
     }
+    if (pending.action === 'triads' || pending.harmonyMode === 'TRIADS') {
+      window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('ga-open-quick-tab', { detail: { tab: 'harmony' } }));
+      }, 180);
+    }
 
     setSaveStatus('saving');
   }, [activeInstanceIndex, defaultInstrument, lang]);

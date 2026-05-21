@@ -30,6 +30,8 @@ interface AchievementsPanelProps {
   isLight: boolean;
 }
 
+const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
+
 const rarityClass: Record<Achievement['rarity'], string> = {
   common: 'border-slate-400/30 text-slate-200 bg-slate-950/24',
   rare: 'border-blue-400/35 text-blue-200 bg-blue-950/28',
@@ -74,6 +76,12 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
     
     checkAdminStatus();
   }, []);
+
+  useEffect(() => {
+    if (isCheckingAdmin) return;
+    if (unlockedIds.includes(CORE_ACHIEVEMENT_ID)) return;
+    setUnlockedIds(unlockAchievement(CORE_ACHIEVEMENT_ID, currentUserId));
+  }, [currentUserId, isCheckingAdmin, unlockedIds]);
   
   const visibleAchievements = useMemo(() => getVisibleAchievements(unlockedIds), [unlockedIds]);
   const unlockedRewards = useMemo(() => getUnlockedRewards(unlockedIds), [unlockedIds]);

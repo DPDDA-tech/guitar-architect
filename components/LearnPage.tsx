@@ -22,6 +22,7 @@ const MoonIcon = () => (
 
 const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
+const COMPLETED_LEARN_MODULES_KEY = 'ga_completed_learn_modules';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -63,9 +64,30 @@ const lightCategoryClasses: Record<LearnModuleCategory, string> = {
   technique: 'border-rose-200 text-rose-700 bg-rose-50',
 };
 
-const statusLabel = (module: LearnModule, active: boolean) => {
+const getLearnProgressKey = () => {
+  const userId = getInitialConfig()?.currentUser || 'guest';
+  return `${COMPLETED_LEARN_MODULES_KEY}_${userId}`;
+};
+
+const loadCompletedLearnModules = () => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(getLearnProgressKey());
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveCompletedLearnModules = (ids: string[]) => {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(getLearnProgressKey(), JSON.stringify(Array.from(new Set(ids))));
+};
+
+const statusLabel = (module: LearnModule, active: boolean, completed: boolean) => {
   if (active) return 'Ativo';
-  if (module.status === 'completed') return 'Concluído';
+  if (completed || module.status === 'completed') return 'Concluído';
   return 'Disponível';
 };
 
@@ -143,7 +165,10 @@ const executeLearnAction = (action: LearnAction, module?: LearnModule, openQuick
 const LearnPage: React.FC = () => {
   const [lang, setLang] = useState<Lang>(() => getInitialConfig()?.lang || 'pt');
   const [theme, setTheme] = useState<ThemeMode>(() => getInitialConfig()?.theme || 'dark');
-  const [activeModuleId, setActiveModuleId] = useState(LEARN_MODULES[0].id);
+  const [completedModuleIds, setCompletedModuleIds] = useState<string[]>(loadCompletedLearnModules);
+  const [activeModuleId, setActiveModuleId] = useState(() => (
+    LEARN_MODULES.find(module => !loadCompletedLearnModules().includes(module.id) && module.status !== 'completed')?.id || LEARN_MODULES[0].id
+  ));
   const [quickTool, setQuickTool] = useState<'tuner' | 'metronome' | null>(null);
   const isLight = theme === 'light';
   const t = translations[lang].harmonicCycle;
@@ -180,6 +205,16 @@ const LearnPage: React.FC = () => {
   const openHeaderTool = (tool: 'tuner' | 'metronome') => {
     if (tool === 'metronome') recordAchievementEvent({ type: 'exploration', key: 'open_metronome' });
     setQuickTool(tool);
+  };
+
+  const selectModule = (moduleId: string) => {
+    setActiveModuleId(moduleId);
+    setCompletedModuleIds(prev => {
+      const next = Array.from(new Set([...prev, moduleId]));
+      saveCompletedLearnModules(next);
+      recordAchievementEvent({ type: 'module_completion', moduleId });
+      return next;
+    });
   };
 
   return (
@@ -238,11 +273,11 @@ const LearnPage: React.FC = () => {
             <div className="mt-5 space-y-3">
               {LEARN_MODULES.map(module => {
                 const active = module.id === activeModule.id;
-                const completed = module.status === 'completed';
+                const completed = module.status === 'completed' || completedModuleIds.includes(module.id);
                 return (
                   <button
                     key={module.id}
-                    onClick={() => setActiveModuleId(module.id)}
+                    onClick={() => selectModule(module.id)}
                     className={`group w-full rounded-xl border p-4 text-left transition duration-300 hover:-translate-y-0.5 ${
                       active
                         ? 'border-blue-400 bg-[linear-gradient(135deg,rgba(37,99,235,0.98),rgba(14,165,233,0.72))] text-white shadow-[0_18px_42px_rgba(37,99,235,0.26)]'
@@ -258,7 +293,7 @@ const LearnPage: React.FC = () => {
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <span className={`text-[9px] font-black uppercase tracking-[0.16em] ${active ? 'text-blue-100' : completed ? 'text-emerald-400' : 'text-zinc-500'}`}>
-                          {String(module.order).padStart(2, '0')} - {statusLabel(module, active)}
+                          {String(module.order).padStart(2, '0')} - {statusLabel(module, active, completed)}
                         </span>
                         <h2 className="mt-2 text-base font-black tracking-tight sm:text-lg">{module.title}</h2>
                         <p className={`mt-1.5 text-sm font-semibold leading-relaxed ${active ? 'text-blue-100' : isLight ? 'text-slate-500' : 'text-slate-400'}`}>{module.subtitle}</p>
