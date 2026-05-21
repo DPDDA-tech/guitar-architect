@@ -8,7 +8,7 @@ import AchievementsPanel from './AchievementsPanel';
 import { THEME_REGISTRY, DEFAULT_THEME_ID } from '../features/themeCollection/themeRegistry';
 import { getThemeCopy } from '../features/themeCollection/themeCopy';
 import { getThemeWithState, loadThemeCollectionState, saveThemeCollectionState, selectTheme } from '../features/themeCollection/themeUtils';
-import { getUnlockedRewards } from '../utils/achievementUtils';
+import { getUnlockedAchievements, getUnlockedRewards } from '../utils/achievementUtils';
 import { getUnlockedAchievementIds, unlockAchievement } from '../utils/achievementStorage';
 import type { Reward } from '../types/reward';
 
@@ -42,16 +42,37 @@ const ThemeCollectionPage: React.FC = () => {
   const currentUserId = useMemo(() => getInitialConfig()?.currentUser, []);
   const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<string[]>(() => getUnlockedAchievementIds(currentUserId));
   const isLight = theme === 'light';
-  const items = useMemo(() => THEME_REGISTRY.map(item => getThemeWithState(item, collectionState)), [collectionState]);
+  const achievementUnlockedThemeIds = useMemo(() => {
+    const unlockedAssets = new Set<string>();
+    getUnlockedAchievements(unlockedAchievementIds).forEach(achievement => {
+      if (achievement.asset.status === 'ready' && achievement.asset.path && !achievement.asset.path.includes('/tierothers/')) {
+        unlockedAssets.add(achievement.asset.path);
+      }
+    });
+    getUnlockedRewards(unlockedAchievementIds).forEach(reward => {
+      if (reward.asset.status === 'ready' && reward.asset.path && !reward.asset.path.includes('/tierothers/')) {
+        unlockedAssets.add(reward.asset.path);
+      }
+    });
+    return THEME_REGISTRY
+      .filter(themeItem => themeItem.unlocked || unlockedAssets.has(themeItem.image))
+      .map(themeItem => themeItem.id);
+  }, [unlockedAchievementIds]);
+  const effectiveCollectionState = useMemo(() => ({
+    ...collectionState,
+    unlockedThemeIds: Array.from(new Set([...collectionState.unlockedThemeIds, ...achievementUnlockedThemeIds])),
+  }), [achievementUnlockedThemeIds, collectionState]);
+  const items = useMemo(() => THEME_REGISTRY.map(item => getThemeWithState(item, effectiveCollectionState)), [effectiveCollectionState]);
   const workRewards = useMemo(() => {
     const rewardMap = new Map<string, Reward>();
     getUnlockedRewards(unlockedAchievementIds).forEach(reward => {
       if (!reward.asset.path) return;
+      if (!reward.asset.path.includes('/tierothers/')) return;
       rewardMap.set(reward.id, reward);
     });
     return Array.from(rewardMap.values());
   }, [unlockedAchievementIds]);
-  const activeTheme = items.find(item => item.id === collectionState.activeThemeId) || items.find(item => item.id === DEFAULT_THEME_ID) || items[0];
+  const activeTheme = items.find(item => item.id === effectiveCollectionState.activeThemeId) || items.find(item => item.id === DEFAULT_THEME_ID) || items[0];
   const activeThemeCopy = getThemeCopy(activeTheme, lang);
   const unlockedCount = items.filter(item => item.unlocked).length;
   const t = translations[lang].harmonicCycle;
@@ -100,7 +121,7 @@ const ThemeCollectionPage: React.FC = () => {
   };
 
   const handleSelect = (themeId: string) => {
-    const next = selectTheme(themeId, collectionState);
+    const next = selectTheme(themeId, effectiveCollectionState);
     setCollectionState(next);
     saveThemeCollectionState(next);
   };
@@ -134,13 +155,13 @@ const ThemeCollectionPage: React.FC = () => {
           </div>
         </section>
 
-        <ThemeGrid category="tier0" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier1" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier2" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier3" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier4" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier5" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier6" items={items} activeThemeId={collectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier0" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier1" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier2" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier3" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier4" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier5" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier6" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
 
         <section className="mt-10">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
