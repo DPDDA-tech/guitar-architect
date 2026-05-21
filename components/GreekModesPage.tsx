@@ -27,6 +27,19 @@ const PanelSurface = ({ children, isLight, className = '' }: { children: React.R
   </section>
 );
 
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
+  </svg>
+);
+
 const makePayload = (mode: GreekModeInfo, action: 'scale' | 'triads' | 'field' | 'progression' | 'startPractice', extra: Record<string, unknown> = {}) => ({
   source: 'study-module',
   action,
@@ -99,7 +112,14 @@ const GreekModesPage: React.FC = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button onClick={toggleTheme} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>{isLight ? 'Escuro' : 'Claro'}</button>
+            <button
+              onClick={toggleTheme}
+              className={`flex h-11 w-11 items-center justify-center rounded-xl border text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}
+              title={isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
+              aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
+            >
+              {isLight ? <MoonIcon /> : <SunIcon />}
+            </button>
             <button onClick={toggleLang} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>{lang === 'pt' ? 'EN' : 'PORT'}</button>
             <button onClick={() => openHeaderTool('metronome')} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>Metrônomo</button>
             <button onClick={() => openHeaderTool('tuner')} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>Afinador</button>
@@ -130,7 +150,7 @@ const GreekModesPage: React.FC = () => {
 
         <section className="grid gap-4 lg:grid-cols-7">
           {GREEK_MODES.map(mode => (
-            <article key={mode.id} className={`rounded-2xl border p-4 ${isLight ? 'border-[#c6d3e2] bg-white/98 shadow-[0_14px_34px_rgba(71,85,105,0.10)]' : 'border-blue-900/55 bg-[#070d18]/95 shadow-[0_12px_28px_rgba(2,6,23,0.28)]'}`}>
+            <article key={mode.id} className={`rounded-2xl border p-4 transition-all ${activeMode.id === mode.id ? (isLight ? 'border-blue-400 bg-blue-50/80 shadow-[0_18px_42px_rgba(37,99,235,0.18)] ring-2 ring-blue-200/70' : 'border-blue-400 bg-blue-950/24 shadow-[0_18px_42px_rgba(37,99,235,0.20)] ring-2 ring-blue-500/25') : isLight ? 'border-[#c6d3e2] bg-white/98 shadow-[0_14px_34px_rgba(71,85,105,0.10)]' : 'border-blue-900/55 bg-[#070d18]/95 shadow-[0_12px_28px_rgba(2,6,23,0.28)]'}`}>
               <div className={`mb-4 h-1.5 rounded-full bg-gradient-to-r ${mode.colorClass}`} />
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-300">{String(mode.order).padStart(2, '0')} / {mode.parentDegree}</p>
               <h2 className="mt-2 text-xl font-black">{mode.name}</h2>

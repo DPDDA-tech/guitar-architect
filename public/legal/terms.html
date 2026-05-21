@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Termos de Uso — Guitar Architect</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script id="ga-legal-theme">
+      try {
+        const config = JSON.parse(localStorage.getItem('ga_config') || '{}');
+        if (config.theme === 'dark') document.documentElement.classList.add('dark');
+      } catch {}
+    </script>
     <style>
         body {
             background-color: #f8fafc;
@@ -17,6 +23,21 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
         }
+            html.dark body {
+            background-color: #050914;
+            background-image:
+                linear-gradient(rgba(37,99,235,0.22) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(37,99,235,0.22) 1px, transparent 1px);
+            color: #e5edf7;
+        }
+        html.dark .content-card {
+            background: rgba(7, 17, 31, 0.96);
+            border-color: rgba(30,64,175,0.45);
+            box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+        }
+        html.dark h1, html.dark h2, html.dark h3 { color: #bfdbfe !important; }
+        html.dark p, html.dark li { color: #cbd5e1; }
+        html.dark section { border-color: rgba(30,64,175,0.35) !important; background-color: rgba(15,23,42,0.45) !important; }
     </style>
 </head>
 <body class="text-zinc-800 font-sans leading-relaxed">

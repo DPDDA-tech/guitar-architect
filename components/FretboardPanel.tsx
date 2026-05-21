@@ -1323,6 +1323,16 @@ const handleLogout = async () => {
                   {lang === 'pt' ? 'Coleções' : 'Collections'}
                 </button>
               </div>
+              <button
+                onClick={() => {
+                  refreshLocalUserOptions();
+                  setShowLoginModal(true);
+                  setShowProjectMenu(false);
+                }}
+                className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-emerald-200 text-emerald-700' : 'border-emerald-900/60 text-emerald-200'}`}
+              >
+                {lang === 'pt' ? 'Migrar dados locais' : 'Migrate local data'}
+              </button>
               <button onClick={() => openModulePage('/learn')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                 {lang === 'pt' ? 'Aprender' : 'Learn'}
               </button>
@@ -1330,7 +1340,7 @@ const handleLogout = async () => {
                 {lang === 'pt' ? 'Praticar' : 'Practice'}
               </button>
               <button onClick={() => openModulePage('/theme-collection')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                {lang === 'pt' ? 'Coleção' : 'Collection'}
+                {lang === 'pt' ? 'Cole��es' : 'Collections'}
               </button>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
@@ -1405,13 +1415,14 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
             <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
                <div className="hidden xl:flex flex-col gap-1.5">
-                 <div className="grid grid-cols-5 gap-1.5">
+              <div className="grid grid-cols-6 gap-1.5">
                    {[
                      { label: lang === 'pt' ? 'Aprender' : 'Learn', onClick: () => openModulePage('/learn') },
                      { label: lang === 'pt' ? 'Praticar' : 'Practice', onClick: () => openModulePage('/practice') },
-                     { label: 'Metron.', onClick: openMetronomeTool },
+                     { label: lang === 'pt' ? 'Metrônomo' : 'Metronome', onClick: openMetronomeTool },
                      { label: lang === 'pt' ? 'Afinador' : 'Tuner', onClick: openTunerTool },
                      { label: lang === 'pt' ? 'Instrumentos' : 'Instruments', onClick: openMyInstruments },
+                     { label: lang === 'pt' ? 'Coleções' : 'Collections', onClick: () => openModulePage('/theme-collection') },
                    ].map(item => (
                      <button
                        key={item.label}
@@ -1429,7 +1440,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                      { label: 'CAGED', path: '/caged' },
                      { label: lang === 'pt' ? 'Acordes' : 'Chords', path: '/chords' },
                      { label: 'Tri/Tetrad', path: '/triads-tetrads' },
-                     { label: lang === 'pt' ? 'Colecao' : 'Collection', path: '/theme-collection' },
+                     { label: lang === 'pt' ? 'Treinar tría.' : 'Triad train.', path: '/triads-tetrads?trainer=1' },
                    ].map(item => (
                      <button
                        key={item.path}
@@ -1611,6 +1622,16 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
         <button onClick={() => openModulePage('/profile')} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
           {lang === 'pt' ? 'PERFIL' : 'PROFILE'}
+        </button>
+        <button
+          onClick={() => {
+            refreshLocalUserOptions();
+            setShowLoginModal(true);
+            setShowProjectMenu(false);
+          }}
+          className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-emerald-200 text-emerald-700 hover:border-emerald-400' : 'border-emerald-900/70 text-emerald-200 hover:border-emerald-500'}`}
+        >
+          {lang === 'pt' ? 'MIGRAR DADOS LOCAIS' : 'MIGRATE LOCAL DATA'}
         </button>
 
         <div className="grid grid-cols-2 gap-2">
@@ -1805,7 +1826,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   }`}
 >
 
-        {!isExporting && (
+        {!isExporting && (!authUser || localUserOptions.length > 0) && (
           <div className={`rounded-[24px] border p-4 md:p-5 shadow-xl ${isLight ? 'border-blue-100 bg-white/92 text-zinc-800' : 'border-blue-900/50 bg-[#07111f]/92 text-zinc-100'}`}>
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
