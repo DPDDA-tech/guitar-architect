@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SUPPORTER_PIX_KEY } from '../utils/supporterConstants';
 
 interface SupportModalProps {
   isOpen: boolean;
@@ -6,14 +7,12 @@ interface SupportModalProps {
   isLight: boolean;
 }
 
-const PIX_KEY = 'contato@guitararchitect.com.br';
-
 const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, isLight }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(PIX_KEY);
+      await navigator.clipboard.writeText(SUPPORTER_PIX_KEY);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (err) {
@@ -65,7 +64,7 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, isLight })
                   : 'bg-zinc-800 border-zinc-700 text-zinc-100'
               }`}
             >
-              {PIX_KEY}
+              {SUPPORTER_PIX_KEY}
             </div>
 
             <button

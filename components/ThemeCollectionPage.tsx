@@ -11,8 +11,10 @@ import { getThemeWithState, loadThemeCollectionState, saveThemeCollectionState, 
 import { getUnlockedAchievements, getUnlockedRewards } from '../utils/achievementUtils';
 import { getUnlockedAchievementIds, unlockAchievement } from '../utils/achievementStorage';
 import { getCollectionLoreByPath, type CollectionLoreItem } from '../data/collectionLore';
-import { supporterRewards, getUnlockedSupporterRewards } from '../data/supporterRewards';
+import { supporterRewards, getUnlockedSupporterRewards, getCurrentSupporterTier } from '../data/supporterRewards';
 import { getSupporterContributionTotal, setSupporterContributionTotal, syncUnlockedSupporterRewards } from '../utils/supporterStorage';
+import { SUPPORTER_PIX_KEY, SUPPORTER_CONTACT_EMAIL } from '../utils/supporterConstants';
+import { getSupporterTierInfo, formatTierName } from '../utils/supporterTierHelpers';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
 
@@ -123,6 +125,7 @@ const ThemeCollectionPage: React.FC = () => {
   const [collectionState, setCollectionState] = useState(loadThemeCollectionState);
   const [previewTheme, setPreviewTheme] = useState<typeof THEME_REGISTRY[number] | null>(null);
   const [previewAsset, setPreviewAsset] = useState<CollectionPreview | null>(null);
+  const [supporterToast, setSupporterToast] = useState<string | null>(null);
   const currentUserId = useMemo(() => getInitialConfig()?.currentUser, []);
   const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<string[]>(() => getUnlockedAchievementIds(currentUserId));
   const [supporterTotal, setSupporterTotal] = useState(() => getSupporterContributionTotal());
@@ -240,9 +243,48 @@ const ThemeCollectionPage: React.FC = () => {
   };
 
   const updateSupporterTotal = () => {
+    // TODO: Admin Panel /admin/supporters
+    // - Validar contribuição via Supabase
+    // - Registrar histórico de mudanças
+    // - Enviar notificação ao usuário
+    // - Aprovar/rejeitar com observações admin
+    
+    // SECURITY: Apenas permitir em modo DEV
+    if (!import.meta.env.DEV) {
+      console.warn('SECURITY: Tentativa de alterar supporterContributionTotal em produção bloqueada');
+      return;
+    }
+
     const value = Number(supporterInput);
+    if (value < 0) {
+      setSupporterInput('0');
+      return;
+    }
+    
     setSupporterContributionTotal(value);
     setSupporterTotal(getSupporterContributionTotal());
+  };
+
+  const handleCopyPixKey = async () => {
+    try {
+      await navigator.clipboard.writeText(SUPPORTER_PIX_KEY);
+      setSupporterToast(lang === 'pt' ? 'Chave PIX copiada.' : 'PIX key copied.');
+      setTimeout(() => setSupporterToast(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy PIX key: ', err);
+    }
+  };
+
+  const handleBecomeSupporter = () => {
+    setSupporterToast(
+      lang === 'pt'
+        ? 'Veja os dados de apoio e envie o comprovante para validação do selo.'
+        : 'Check the support details and send proof for badge validation.'
+    );
+    setTimeout(() => setSupporterToast(null), 3000);
+    setTimeout(() => {
+      document.getElementById('supporter-payment-info')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   return (
@@ -302,24 +344,77 @@ const ThemeCollectionPage: React.FC = () => {
             </span>
           </div>
           {import.meta.env.DEV && (
-            <div className={`mb-4 rounded-2xl border p-4 ${isLight ? 'border-amber-200 bg-amber-50/80' : 'border-amber-900/55 bg-amber-950/18'}`}>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-400">Dev / Supporter Preview</p>
-              <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-                <input
-                  type="number"
-                  min="0"
-                  value={supporterInput}
-                  onChange={event => setSupporterInput(event.target.value)}
-                  className={`min-h-11 flex-1 rounded-xl border px-4 text-sm font-black outline-none ${isLight ? 'border-amber-200 bg-white text-slate-900' : 'border-amber-900/60 bg-slate-950 text-white'}`}
-                  aria-label={lang === 'pt' ? 'Valor de apoio acumulado' : 'Accumulated support value'}
-                />
-                <button
-                  type="button"
-                  onClick={updateSupporterTotal}
-                  className="rounded-xl border border-amber-300/50 bg-amber-500 px-5 py-3 text-[10px] font-black uppercase text-slate-950 shadow-lg shadow-amber-950/20"
-                >
-                  {lang === 'pt' ? 'Atualizar contribuição' : 'Update contribution'}
-                </button>
+            <div className={`mb-4 rounded-2xl border p-5 ${isLight ? 'border-amber-200/70 bg-[linear-gradient(135deg,rgba(255,251,235,0.95),rgba(255,255,255,0.92))] shadow-[0_12px_28px_rgba(146,64,14,0.14),inset_0_1px_0_rgba(255,255,255,0.8)]' : 'border-amber-900/60 bg-[linear-gradient(135deg,rgba(24,18,8,0.96),rgba(15,10,4,0.94))] shadow-[0_16px_40px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(245,158,11,0.12)]'}`}>
+              <div className="absolute inset-0 pointer-events-none rounded-2xl bg-[radial-gradient(circle_at_15%_0%,rgba(251,191,36,0.15),transparent_40%)]" />
+              <div className="relative">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.28em] text-amber-500">DEV / Admin Tools</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-400 mt-1">Supporter Preview</p>
+                  </div>
+                  <span className={`rounded-full border px-2.5 py-1 text-[8px] font-black uppercase ${isLight ? 'border-amber-300/50 bg-amber-300/20 text-amber-700' : 'border-amber-700/60 bg-amber-900/30 text-amber-300'}`}>
+                    MODO DEV
+                  </span>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3 mb-4">
+                  <div className={`rounded-xl border p-3 ${isLight ? 'border-amber-100/60 bg-white/50' : 'border-amber-900/40 bg-slate-950/30'}`}>
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">Total Acumulado</p>
+                    <p className="text-xl font-black mt-1 text-amber-700 dark:text-amber-300">R$ {supporterTotal}</p>
+                  </div>
+                  
+                  {(() => {
+                    const tierInfo = getSupporterTierInfo(supporterTotal, lang);
+                    return (
+                      <div className={`rounded-xl border p-3 ${isLight ? 'border-amber-100/60 bg-white/50' : 'border-amber-900/40 bg-slate-950/30'}`}>
+                        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">Tier Atual</p>
+                        <p className="text-lg font-black mt-1 text-amber-700 dark:text-amber-300">{tierInfo.currentTier ? formatTierName(tierInfo.currentTier.title) : (lang === 'pt' ? 'Nenhum' : 'None')}</p>
+                      </div>
+                    );
+                  })()}
+
+                  {(() => {
+                    const tierInfo = getSupporterTierInfo(supporterTotal, lang);
+                    const remaining = tierInfo.remaining;
+                    return (
+                      <div className={`rounded-xl border p-3 ${isLight ? 'border-amber-100/60 bg-white/50' : 'border-amber-900/40 bg-slate-950/30'}`}>
+                        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">Próximo Tier</p>
+                        {tierInfo.isMaxTier ? (
+                          <p className="text-base font-black mt-1 text-amber-600 dark:text-amber-400">Max ✓</p>
+                        ) : (
+                          <p className="text-sm font-black mt-1 text-amber-700 dark:text-amber-300">
+                            Faltam <span className="text-amber-600 dark:text-amber-400">R$ {remaining}</span>
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <input
+                    type="number"
+                    min="0"
+                    value={supporterInput}
+                    onChange={event => setSupporterInput(event.target.value)}
+                    placeholder={lang === 'pt' ? 'Valor acumulado em R$' : 'Accumulated value in R$'}
+                    className={`flex-1 min-h-11 rounded-xl border px-4 text-sm font-black outline-none transition-all ${isLight ? 'border-amber-200/60 bg-white/70 text-slate-900 focus:border-amber-400 focus:bg-white focus:shadow-[0_0_0_3px_rgba(251,191,36,0.1)]' : 'border-amber-900/60 bg-slate-950/50 text-white focus:border-amber-700 focus:bg-slate-900/70 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.08)]'}`}
+                    aria-label={lang === 'pt' ? 'Valor de apoio acumulado' : 'Accumulated support value'}
+                  />
+                  <button
+                    type="button"
+                    onClick={updateSupporterTotal}
+                    className={`rounded-xl border px-5 py-3 text-[10px] font-black uppercase transition-all ${isLight ? 'border-amber-300/60 bg-amber-400/80 text-amber-900 hover:bg-amber-400 shadow-[0_4px_12px_rgba(146,64,14,0.15)]' : 'border-amber-700/60 bg-amber-500/60 text-amber-950 hover:bg-amber-500 shadow-[0_4px_12px_rgba(251,191,36,0.18)]'} active:scale-95`}
+                  >
+                    {lang === 'pt' ? 'Simular' : 'Simulate'}
+                  </button>
+                </div>
+
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] mt-3 text-amber-700 dark:text-amber-400 opacity-75">
+                  {lang === 'pt' 
+                    ? 'Alterações persistem em localStorage. Apenas DEV pode editar. Não afeta produção.' 
+                    : 'Changes persist in localStorage. Only DEV can edit. Does not affect production.'}
+                </p>
               </div>
             </div>
           )}
@@ -401,26 +496,29 @@ const ThemeCollectionPage: React.FC = () => {
                     : 'In this initial phase, support is registered manually. After contributing, the supporter may send proof for validation and badge release in the profile.'}
                 </p>
               </div>
-              <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white/78' : 'border-blue-950/60 bg-slate-950/45'}`}>
+              <div id="supporter-payment-info" className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white/78' : 'border-blue-950/60 bg-slate-950/45'}`}>
                 <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">
                   {lang === 'pt' ? 'Dados de apoio' : 'Support details'}
                 </p>
                 <div className={`mt-2 space-y-2 text-sm font-black ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                  <p>{lang === 'pt' ? 'Chave PIX:' : 'PIX key:'} <span className="text-amber-300">contato@guitararchitect.com.br</span></p>
-                  <p>{lang === 'pt' ? 'Contato:' : 'Contact:'} <span className="text-amber-300">contato@guitararchitect.com.br</span></p>
+                  <p>{lang === 'pt' ? 'Chave PIX:' : 'PIX key:'} <span className="text-amber-300">{SUPPORTER_PIX_KEY}</span></p>
+                  <p>{lang === 'pt' ? 'Contato:' : 'Contact:'} <span className="text-amber-300">{SUPPORTER_CONTACT_EMAIL}</span></p>
                 </div>
+                <button type="button" onClick={handleCopyPixKey} className="mt-3 w-full rounded-xl border border-amber-300/50 bg-amber-500/20 px-4 py-2.5 text-[10px] font-black uppercase text-amber-300 transition-colors hover:bg-amber-500/30">
+                  {lang === 'pt' ? 'Copiar chave PIX' : 'Copy PIX key'}
+                </button>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <button type="button" className="rounded-xl border border-amber-300/55 bg-amber-500 px-5 py-3 text-[10px] font-black uppercase text-slate-950 shadow-lg shadow-amber-950/20">
+                <button type="button" onClick={handleBecomeSupporter} className="rounded-xl border border-amber-300/55 bg-amber-500 px-5 py-3 text-[10px] font-black uppercase text-slate-950 shadow-lg shadow-amber-950/20">
                   {lang === 'pt' ? 'Tornar-se apoiador' : 'Become a supporter'}
                 </button>
-                <button type="button" onClick={() => document.getElementById('supporter-badges')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className={`rounded-xl border px-5 py-3 text-[10px] font-black uppercase ${isLight ? 'border-slate-200 bg-white text-slate-700' : 'border-slate-700 bg-slate-950/70 text-slate-200'}`}>
+                <button type="button" onClick={() => document.getElementById('supporter-rewards-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className={`rounded-xl border px-5 py-3 text-[10px] font-black uppercase ${isLight ? 'border-slate-200 bg-white text-slate-700' : 'border-slate-700 bg-slate-950/70 text-slate-200'}`}>
                   {lang === 'pt' ? 'Ver selos na coleção' : 'View badges in collection'}
                 </button>
               </div>
             </div>
           </div>
-          <div id="supporter-badges" className="scroll-mt-6" />
+          <div id="supporter-rewards-grid" className="scroll-mt-6" />
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {supporterRewards.map(reward => {
               const unlocked = unlockedSupporterIds.includes(reward.id);
@@ -559,6 +657,12 @@ const ThemeCollectionPage: React.FC = () => {
             </a>
             {renderLorePanel(previewAsset.image, isLight, lang)}
           </div>
+        </div>
+      )}
+
+      {supporterToast && (
+        <div className={`fixed bottom-5 right-5 z-[150] max-w-sm rounded-2xl border p-4 text-sm font-bold backdrop-blur-xl transition-all ${isLight ? 'border-amber-200 bg-amber-50/95 text-amber-900 shadow-lg' : 'border-amber-800/60 bg-amber-950/90 text-amber-100 shadow-2xl shadow-amber-950/40'}`}>
+          {supporterToast}
         </div>
       )}
     </div>
