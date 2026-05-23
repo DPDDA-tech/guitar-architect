@@ -15,10 +15,12 @@ import { supporterRewards, getUnlockedSupporterRewards, getCurrentSupporterTier 
 import { getSupporterContributionTotal, setSupporterContributionTotal, syncUnlockedSupporterRewards } from '../utils/supporterStorage';
 import { SUPPORTER_PIX_KEY, SUPPORTER_CONTACT_EMAIL } from '../utils/supporterConstants';
 import { getSupporterTierInfo, formatTierName } from '../utils/supporterTierHelpers';
+import { PinBadgeAction } from './themeCollection/PinBadgeAction';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
 
 type CollectionPreview = {
+  id: string;
   image: string;
   name: string;
   subtitle: string;
@@ -530,7 +532,7 @@ const ThemeCollectionPage: React.FC = () => {
                   key={reward.id}
                   type="button"
                   disabled={!unlocked}
-                  onClick={() => unlocked && setPreviewAsset({ image: reward.image, name: reward.title, subtitle: reward.description })}
+                  onClick={() => unlocked && setPreviewAsset({ id: reward.id, image: reward.image, name: reward.title, subtitle: reward.description })}
                   className={`group overflow-hidden rounded-2xl border p-4 text-left transition duration-300 ${unlocked ? 'hover:-translate-y-1' : 'cursor-not-allowed grayscale'} ${isLight ? 'border-[#c7d4e4] bg-white/94 shadow-[0_18px_42px_rgba(71,85,105,0.12)]' : 'border-amber-900/35 bg-[linear-gradient(145deg,rgba(9,13,23,0.96),rgba(3,7,18,0.98))] shadow-[0_22px_70px_rgba(2,6,23,0.42)]'} ${unlocked ? '' : 'opacity-55'}`}
                 >
                   <div className={`relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl border ${isLight ? 'border-amber-100 bg-slate-50' : 'border-amber-950/50 bg-slate-950'}`}>
@@ -583,7 +585,7 @@ const ThemeCollectionPage: React.FC = () => {
                 <button
                   key={reward.id}
                   type="button"
-                  onClick={() => setPreviewAsset({ image: reward.image, name: reward.title, subtitle: reward.description })}
+                  onClick={() => setPreviewAsset({ id: reward.id, image: reward.image, name: reward.title, subtitle: reward.description })}
                   className={`group overflow-hidden rounded-2xl border p-4 text-left transition duration-300 hover:-translate-y-1 ${isLight ? 'border-[#c7d4e4] bg-white/94 shadow-[0_18px_42px_rgba(71,85,105,0.12)]' : 'border-blue-900/55 bg-[linear-gradient(145deg,rgba(7,13,24,0.96),rgba(3,7,18,0.98))] shadow-[0_22px_70px_rgba(2,6,23,0.42)]'}`}
                 >
                   <div className={`relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl border ${isLight ? 'border-slate-200 bg-slate-50' : 'border-blue-950/60 bg-slate-950'}`}>
@@ -647,6 +649,11 @@ const ThemeCollectionPage: React.FC = () => {
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-400">{lang === 'pt' ? 'Item desbloqueado' : 'Unlocked item'}</p>
                 <h2 className="text-lg font-black">{previewAsset.name}</h2>
                 <p className={`mt-1 text-xs font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{previewAsset.subtitle}</p>
+
+                <PinBadgeAction 
+                  rewardId={previewAsset.id} 
+                  isUnlocked={true} 
+                />
               </div>
               <button onClick={() => setPreviewAsset(null)} className={`rounded-xl border px-4 py-2 text-[10px] font-black uppercase ${isLight ? 'border-slate-200 text-slate-700' : 'border-slate-700 text-slate-200'}`}>
                 {lang === 'pt' ? 'Fechar' : 'Close'}
