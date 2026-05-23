@@ -1,6 +1,7 @@
 import { getAchievementById, getRewardById } from './achievementUtils';
 import { supporterRewards } from '../data/supporterRewards';
 import { supporterFirstRewards } from '../data/supporterFirstRewards';
+import { constancyRewards } from '../data/constancyRewards';
 
 export interface RewardMetadata {
   id: string;
@@ -26,6 +27,12 @@ export function getRewardMetadataById(id: string): RewardMetadata | null {
   const firstSupporter = supporterFirstRewards.find(r => r.id === id);
   if (firstSupporter) {
     return { id: firstSupporter.id, title: firstSupporter.title, image: firstSupporter.image, category: firstSupporter.category };
+  }
+
+  // 1.2 Tentar Selos de Constância (IDs simples)
+  const constancy = constancyRewards.find(r => r.id === id);
+  if (constancy) {
+    return { id: constancy.id, title: constancy.title, image: constancy.image, category: constancy.category };
   }
 
   // 2. Tentar IDs prefixados (usados na Coleção da Obra)
