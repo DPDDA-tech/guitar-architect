@@ -11,11 +11,21 @@ import ThemeCollectionPage from './components/ThemeCollectionPage';
 import GreekModesPage from './components/GreekModesPage';
 import ProfilePage from './components/ProfilePage';
 import AchievementUnlockToast from './components/AchievementUnlockToast';
+import { recordConstancyVisit } from './utils/constancyStorage';
 
 const getCurrentPath = () => window.location.pathname;
 
 const App: React.FC = () => {
   const [path, setPath] = useState(getCurrentPath());
+
+  useEffect(() => {
+    try {
+      // Registro automático de visita para o sistema de constância
+      recordConstancyVisit();
+    } catch {
+      // TODO: Integrar toasts e UI premium de constância.
+    }
+  }, []);
 
   useEffect(() => {
     const syncPath = () => setPath(getCurrentPath());
