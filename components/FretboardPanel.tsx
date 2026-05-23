@@ -34,6 +34,7 @@ import { supabase } from '../src/lib/supabase';
 import { migrateLocalIdentityToSupabase, pushLocalSnapshotToSupabase, syncSupabaseSnapshot } from '../src/lib/cloudSync';
 import { canUseDisplayName, getDisplayNameError, getSupabaseDisplayName } from '../src/lib/userIdentity';
 import { listInstruments, replaceInstruments } from '../utils/instrumentRegistry';
+import { PinnedProfileBadges } from './PinnedProfileBadges';
 
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
 const LOCAL_MIGRATION_DEADLINE_PT = '17/06/2026';
@@ -1412,56 +1413,73 @@ const handleLogout = async () => {
       )}
 
 
-      <div className={`fixed top-0 left-0 w-full z-50 border-b backdrop-blur-2xl px-4 md:px-10 transition-all duration-500
+      <div
+  className={`fixed top-0 left-0 w-full z-50 border-b backdrop-blur-2xl px-4 md:px-10 transition-all duration-500
 ${isLight ? 'bg-white/90 border-zinc-200 shadow-sm' : 'bg-zinc-950/90 border-zinc-800'}
 ${isExporting ? 'hidden' : ''}
 ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 `}
 >
+  <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
+    <div className="flex items-center gap-3 md:gap-5 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => openModulePage('/theme-collection')}
+        className="shrink-0 rounded-2xl transition-transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-blue-400"
+        title={lang === 'pt' ? 'Trocar logo desbloqueada' : 'Change unlocked logo'}
+        aria-label={lang === 'pt' ? 'Abrir coleções para trocar a logo' : 'Open collections to change logo'}
+      >
+        <LogoIcon brand={displayedBrandAssets} />
+      </button>
 
-         <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3 md:gap-5 overflow-hidden">
-               <button
-                 type="button"
-                 onClick={() => openModulePage('/theme-collection')}
-                 className="shrink-0 rounded-2xl transition-transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-blue-400"
-                 title={lang === 'pt' ? 'Trocar logo desbloqueada' : 'Change unlocked logo'}
-                 aria-label={lang === 'pt' ? 'Abrir coleções para trocar a logo' : 'Open collections to change logo'}
-               >
-                 <LogoIcon brand={displayedBrandAssets} />
-               </button>
-               <div className="min-w-0">
-                  <h1 className={`text-[16px] md:text-2xl font-black italic leading-none tracking-tighter uppercase truncate ${titleColorClass}`}>GUITAR ARCHITECT</h1>
-                  <p className="text-[8px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-tight mt-1">{t.tagline}</p>
-                  <label className={`mt-2 flex max-w-[260px] items-center gap-2 rounded-lg border px-2 py-1 ${isLight ? 'bg-white/70 border-zinc-200' : 'bg-zinc-900/70 border-zinc-800'}`}>
-                    <span className="text-[8px] font-black uppercase tracking-[0.18em] text-zinc-400">{lang === 'pt' ? 'Projeto' : 'Project'}</span>
-                    <input
-                      value={projectName}
-                      onChange={e => setProjectName(e.target.value)}
-                      maxLength={28}
-                      className={`min-w-0 flex-1 bg-transparent font-black text-[10px] md:text-xs focus:outline-none truncate ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}
-                      placeholder={t.projectName}
-                    />
-                  </label>
-                  <div className="flex items-center gap-1.5 mt-2">
-                     <span className={`text-[10px] md:text-[11px] font-black uppercase truncate max-w-[130px] md:max-w-none ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>
-                        <span className="text-zinc-400">{lang === 'pt' ? 'Usuário:' : 'User:'}</span> {authUser ? getSupabaseDisplayName(authUser) : user || (lang === 'pt' ? 'Visitante' : 'Guest')}
-                     </span>
-                     <span className={`rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.08em] ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-900/70 bg-blue-950/40 text-blue-200'}`}>
-                       {currentUserTierName}
-                     </span>
-                     <div className="flex gap-2">
-  <button
-    onClick={handleLogout}
-    className={`text-[8px] md:text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tight active:scale-95 transition-all border ${isLight ? 'border-zinc-200 text-zinc-500 hover:border-red-300 hover:text-red-600' : 'border-zinc-700 text-zinc-400 hover:border-red-500 hover:text-red-400'}`}
-  >
-    LOGOFF
-  </button>
-</div>
+      <div className="min-w-0">
+        <h1 className={`text-[16px] md:text-2xl font-black italic leading-none tracking-tighter uppercase truncate ${titleColorClass}`}>
+          GUITAR ARCHITECT
+        </h1>
 
-                  </div>
-               </div>
-            </div>
+        <p className="text-[8px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-tight mt-1">
+          {t.tagline}
+        </p>
+
+        <label className={`mt-2 flex max-w-[260px] items-center gap-2 rounded-lg border px-2 py-1 ${isLight ? 'bg-white/70 border-zinc-200' : 'bg-zinc-900/70 border-zinc-800'}`}>
+          <span className="text-[8px] font-black uppercase tracking-[0.18em] text-zinc-400">
+            {lang === 'pt' ? 'Projeto' : 'Project'}
+          </span>
+          <input
+            value={projectName}
+            onChange={e => setProjectName(e.target.value)}
+            maxLength={28}
+            className={`min-w-0 flex-1 bg-transparent font-black text-[10px] md:text-xs focus:outline-none truncate ${isLight ? 'text-zinc-900' : 'text-zinc-100'}`}
+            placeholder={t.projectName}
+          />
+        </label>
+
+        <div className={`mt-2 min-w-0 flex items-center gap-1 text-[10px] md:text-[11px] font-black uppercase ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>
+          <span className="hidden 2xl:inline text-zinc-400 shrink-0">
+            {lang === 'pt' ? 'Usuário:' : 'User:'}
+          </span>
+          <span className="truncate max-w-[220px] md:max-w-[320px] xl:max-w-[420px] 2xl:max-w-none">
+            {authUser ? getSupabaseDisplayName(authUser) : user || (lang === 'pt' ? 'Visitante' : 'Guest')}
+          </span>
+        </div>
+      </div>
+
+      <div className="hidden lg:flex flex-col items-start gap-2 shrink-0">
+        <PinnedProfileBadges isLight={isLight} />
+
+        <div className="flex items-center gap-2">
+          <span className={`rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.08em] ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-900/70 bg-blue-950/40 text-blue-200'}`}>
+            {currentUserTierName}
+          </span>
+          <button
+            onClick={handleLogout}
+            className={`text-[8px] md:text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tight active:scale-95 transition-all border ${isLight ? 'border-zinc-200 text-zinc-500 hover:border-red-300 hover:text-red-600' : 'border-zinc-700 text-zinc-400 hover:border-red-500 hover:text-red-400'}`}
+          >
+            LOGOFF
+          </button>
+        </div>
+      </div>
+    </div>
 
             <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
                <div className="hidden xl:flex flex-col gap-1.5">

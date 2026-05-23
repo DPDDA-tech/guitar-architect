@@ -1,5 +1,5 @@
 export const PINNED_PROFILE_BADGES_STORAGE_KEY = 'ga_pinned_profile_badges'
-export const MAX_PINNED_PROFILE_BADGES = 5
+export const MAX_PINNED_PROFILE_BADGES = 10
 
 type PinReason = 'already_pinned' | 'limit_reached' | 'invalid_id'
 
