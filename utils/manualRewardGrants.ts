@@ -1,60 +1,98 @@
 /**
- * Utilitários para gestão de concessões manuais de recompensas.
- * Camada temporária que centraliza permissões especiais antes da migração total para Supabase.
+ * Camada de persistência local para concessões de recompensas via Admin/DEV.
  */
 
-export type ManualRewardGrant = {
+export type AdminRewardGrant = {
   email: string;
   rewardId: string;
   reason?: string;
-  grantedAt?: string;
-  source: 'manual-local' | 'supabase';
+  grantedAt: string;
+  source: 'admin-local';
 };
 
-/**
- * Lista local temporária de grants.
- * CENTRALIZAÇÃO: O e-mail de desenvolvedor/admin vive apenas aqui nesta fase.
- */
-const LOCAL_MANUAL_GRANTS: ManualRewardGrant[] = [
-  {
-    email: 'dilioalvarenga@gmail.com',
-    rewardId: 'first_supporter_arquiteto',
-    reason: 'Founder / Alpha Tester',
-    grantedAt: '2024-05-18T00:00:00Z',
-    source: 'manual-local',
-  },
-];
+export const ADMIN_GRANTS_STORAGE_KEY = 'ga_admin_reward_grants_v1';
 
-/**
- * Normaliza o e-mail para comparação consistente.
- */
-function normalize(email?: string | null): string {
+function normalizeEmail(email?: string | null): string {
   return (email || '').trim().toLowerCase();
 }
 
-/**
- * Retorna todos os grants manuais associados a um e-mail.
- */
-export function getManualRewardGrantsForEmail(email?: string | null): ManualRewardGrant[] {
-  const normalizedEmail = normalize(email);
-  if (!normalizedEmail) return [];
+export function getStoredAdminRewardGrants(): AdminRewardGrant[] {
+  if (typeof window === 'undefined') return [];
 
-  return LOCAL_MANUAL_GRANTS.filter(
-    (grant) => normalize(grant.email) === normalizedEmail
-  );
+  try {
+    const raw = window.localStorage.getItem(ADMIN_GRANTS_STORAGE_KEY);
+    if (!raw) return [];
+
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.filter((grant: unknown): grant is AdminRewardGrant => {
+      if (!grant || typeof grant !== 'object') return false;
+
+      const candidate = grant as Partial<AdminRewardGrant>;
+
+      return (
+        typeof candidate.email === 'string' &&
+        typeof candidate.rewardId === 'string' &&
+        typeof candidate.grantedAt === 'string' &&
+        candidate.source === 'admin-local'
+      );
+    });
+  } catch (error) {
+    console.warn('[AdminGrantStorage] Erro ao ler grants locais:', error);
+    return [];
+  }
 }
 
-/**
- * Verifica se um usuário possui concessão manual para uma recompensa específica.
- */
-export function hasManualRewardGrant(
+export function saveStoredAdminRewardGrants(grants: AdminRewardGrant[]): void {
+  if (typeof window === 'undefined') return;
+
+  window.localStorage.setItem(ADMIN_GRANTS_STORAGE_KEY, JSON.stringify(grants));
+}
+
+export function addStoredAdminRewardGrant(grant: Omit<AdminRewardGrant, 'source'>): void {
+  const grants = getStoredAdminRewardGrants();
+  const email = normalizeEmail(grant.email);
+
+  if (!email || !grant.rewardId) return;
+
+  const alreadyExists = grants.some(
+    (storedGrant: AdminRewardGrant) =>
+      normalizeEmail(storedGrant.email) === email && storedGrant.rewardId === grant.rewardId
+  );
+
+  if (alreadyExists) return;
+
+  saveStoredAdminRewardGrants([
+    ...grants,
+    {
+      ...grant,
+      email,
+      source: 'admin-local',
+    },
+  ]);
+}
+
+export function removeStoredAdminRewardGrant(email: string, rewardId: string): void {
+  const normalizedEmail = normalizeEmail(email);
+
+  const filtered = getStoredAdminRewardGrants().filter(
+    (grant: AdminRewardGrant) =>
+      normalizeEmail(grant.email) !== normalizedEmail || grant.rewardId !== rewardId
+  );
+
+  saveStoredAdminRewardGrants(filtered);
+}
+
+export function hasStoredAdminRewardGrant(
   email: string | null | undefined,
   rewardId: string
 ): boolean {
-  const normalizedEmail = normalize(email);
+  const normalizedEmail = normalizeEmail(email);
   if (!normalizedEmail || !rewardId) return false;
 
-  return LOCAL_MANUAL_GRANTS.some(
-    (grant) => normalize(grant.email) === normalizedEmail && grant.rewardId === rewardId
+  return getStoredAdminRewardGrants().some(
+    (grant: AdminRewardGrant) =>
+      normalizeEmail(grant.email) === normalizedEmail && grant.rewardId === rewardId
   );
 }
