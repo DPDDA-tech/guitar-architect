@@ -8,6 +8,19 @@ import {
   revokeRewardFromEmail,
   toggleRewardGrant,
 } from '../utils/adminRewardActions';
+import { supporterFirstRewards } from '../data/supporterFirstRewards';
+import { constancyRewards } from '../data/constancyRewards';
+
+type KnownReward = {
+  id: string;
+  title: string;
+  source: 'supporter-first' | 'constancy';
+};
+
+const knownRewards: KnownReward[] = [
+  ...supporterFirstRewards.map(r => ({ id: r.id, title: r.title, source: 'supporter-first' as const })),
+  ...constancyRewards.map(r => ({ id: r.id, title: r.title, source: 'constancy' as const }))
+];
 
 export const DevRewardGrantPanel: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -32,6 +45,15 @@ export const DevRewardGrantPanel: React.FC = () => {
 
     action();
     refreshList();
+  };
+
+  const handleCopy = () => {
+    if (!rewardId.trim()) return;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(rewardId).then(() => {
+        alert('Reward ID copiado!');
+      });
+    }
   };
 
   if (!isLocal) return null;
@@ -73,13 +95,34 @@ export const DevRewardGrantPanel: React.FC = () => {
         </div>
 
         <div>
-          <label className="mb-1 block text-zinc-500">Reward ID:</label>
-          <input
-            value={rewardId}
-            onChange={(event) => setRewardId(event.target.value)}
-            placeholder="first_supporter_arquiteto"
-            className="w-full rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-zinc-200 outline-none focus:border-blue-500"
-          />
+          <div className="flex justify-between items-end mb-1">
+            <label className="block text-zinc-500">Reward ID:</label>
+            <button 
+              type="button" 
+              onClick={handleCopy}
+              className="text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              copy
+            </button>
+          </div>
+          <div className="space-y-1.5">
+            <input
+              value={rewardId}
+              onChange={(event) => setRewardId(event.target.value)}
+              placeholder="Ex: first_supporter_arquiteto"
+              className="w-full rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-zinc-200 outline-none focus:border-blue-500"
+            />
+            <select 
+              className="w-full rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-zinc-400 outline-none focus:border-blue-500"
+              onChange={(e) => e.target.value && setRewardId(e.target.value)}
+              value=""
+            >
+              <option value="">Selecionar reward...</option>
+              {knownRewards.map(reward => (
+                <option key={reward.id} value={reward.id}>{reward.title} — {reward.id}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-1">

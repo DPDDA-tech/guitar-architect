@@ -13,6 +13,7 @@ import AchievementUnlockToast from './components/AchievementUnlockToast';
 import { recordConstancyVisit } from './utils/constancyStorage';
 import { constancyRewards, type ConstancyReward } from './data/constancyRewards';
 import { ConstancyUnlockToast } from './components/ConstancyUnlockToast';
+import { DevRewardGrantPanel } from './components/DevRewardGrantPanel';
 
 const getCurrentPath = () => window.location.pathname;
 
@@ -58,47 +59,41 @@ const App: React.FC = () => {
     />
   ) : null;
 
-  if (path === '/harmonic-cycle') {
-    return <><HarmonicCyclePage /><AchievementUnlockToast />{constancyToast}</>;
+  const renderPage = () => {
+  switch (path) {
+    case '/harmonic-cycle':
+      return <HarmonicCyclePage />;
+    case '/learn':
+      return <LearnPage />;
+    case '/practice':
+      return <PracticePage />;
+    case '/chords':
+      return <ChordsPage />;
+    case '/caged':
+      return <CagedPage />;
+    case '/triads-trainer':
+      return <TriadsTetradsPage openTrainer />;
+    case '/triads-tetrads':
+      return <TriadsTetradsPage />;
+    case '/greek-modes':
+      return <GreekModesPage />;
+    case '/theme-collection':
+      return <ThemeCollectionPage />;
+    case '/profile':
+      return <ProfilePage />;
+    default:
+      return <FretboardPanel />;
   }
+};
 
-  if (path === '/learn') {
-    return <><LearnPage /><AchievementUnlockToast />{constancyToast}</>;
-  }
-
-  if (path === '/practice') {
-    return <><PracticePage /><AchievementUnlockToast />{constancyToast}</>;
-  }
-
-  if (path === '/chords') {
-    return <><ChordsPage /><AchievementUnlockToast />{constancyToast}</>;
-  }
-
-  if (path === '/caged') {
-    return <><CagedPage /><AchievementUnlockToast />{constancyToast}</>;
-  }
-
-  if (path === '/triads-trainer') {
-    return <><TriadsTetradsPage openTrainer /><AchievementUnlockToast />{constancyToast}</>;
-  }
-
-  if (path === '/triads-tetrads') {
-    return <><TriadsTetradsPage /><AchievementUnlockToast />{constancyToast}</>;
-  }
-
-  if (path === '/greek-modes') {
-    return <><GreekModesPage /><AchievementUnlockToast />{constancyToast}</>;
-  }
-
-  if (path === '/theme-collection') {
-    return <><ThemeCollectionPage /><AchievementUnlockToast />{constancyToast}</>;
-  }
-
-  if (path === '/profile') {
-    return <><ProfilePage /><AchievementUnlockToast />{constancyToast}</>;
-  }
-
-  return <><FretboardPanel /><AchievementUnlockToast />{constancyToast}</>;
+  return (
+    <>
+      {renderPage()}
+      <AchievementUnlockToast />
+      {constancyToast}
+      <DevRewardGrantPanel />
+    </>
+  );
 };
 
 export default App;
