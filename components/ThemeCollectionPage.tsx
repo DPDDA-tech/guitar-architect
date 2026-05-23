@@ -16,6 +16,9 @@ import { getSupporterContributionTotal, setSupporterContributionTotal, syncUnloc
 import { SUPPORTER_PIX_KEY, SUPPORTER_CONTACT_EMAIL } from '../utils/supporterConstants';
 import { getSupporterTierInfo, formatTierName } from '../utils/supporterTierHelpers';
 import { PinBadgeAction } from './themeCollection/PinBadgeAction';
+import { supporterFirstRewards } from '../data/supporterFirstRewards';
+import { getEligibleFirstSupporterRewardIds } from '../utils/supporterFirstEligibility';
+import { supabase } from '../src/lib/supabase';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
 
@@ -128,6 +131,7 @@ const ThemeCollectionPage: React.FC = () => {
   const [previewTheme, setPreviewTheme] = useState<typeof THEME_REGISTRY[number] | null>(null);
   const [previewAsset, setPreviewAsset] = useState<CollectionPreview | null>(null);
   const [supporterToast, setSupporterToast] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const currentUserId = useMemo(() => getInitialConfig()?.currentUser, []);
   const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<string[]>(() => getUnlockedAchievementIds(currentUserId));
   const [supporterTotal, setSupporterTotal] = useState(() => getSupporterContributionTotal());
@@ -200,6 +204,25 @@ const ThemeCollectionPage: React.FC = () => {
       backgroundSize: '20px 20px',
     }
     : undefined;
+
+  useEffect(() => {
+    // TODO: Centralizar obtenção de email via hook global ou Context para evitar múltiplas chamadas ao Auth do Supabase
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data.user?.email) {
+        setUserEmail(data.user.email);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const eligibleFirstSupporterIds = useMemo(() => {
+    const effectiveFirstSupporterEmail = import.meta.env.DEV
+      ? 'dilioalvarega@gmail.com'
+      : userEmail;
+
+    return getEligibleFirstSupporterRewardIds(effectiveFirstSupporterEmail);
+  }, [userEmail]);
 
   useEffect(() => {
     if (unlockedAchievementIds.includes(CORE_ACHIEVEMENT_ID)) return;
@@ -551,6 +574,67 @@ const ThemeCollectionPage: React.FC = () => {
                     </div>
                     <span className={`rounded-full border px-2.5 py-1.5 text-[8px] font-black uppercase ${isLight ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-amber-900/70 bg-amber-950/35 text-amber-200'}`}>
                       {reward.tier.replaceAll('_', ' ')}
+                    </span>
+                  </div>
+                  <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{reward.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="mt-10">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300">
+                Supporter | {lang === 'pt' ? 'Primeiros Apoiadores' : 'Early Supporters'}
+              </p>
+              <h2 className="mt-2 text-2xl font-black uppercase tracking-tight">
+                {lang === 'pt' ? 'Primeiros da Obra' : 'First of the Work'}
+              </h2>
+              <p className={`mt-2 max-w-3xl text-sm font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                {lang === 'pt'
+                  ? 'Selos históricos concedidos aos primeiros apoiadores de cada nível durante a Season 1.'
+                  : 'Historical badges awarded to the first supporters of each level during Season 1.'}
+              </p>
+            </div>
+            <span className={`w-fit rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-amber-800/60 bg-amber-950/30 text-amber-200'}`}>
+              {eligibleFirstSupporterIds.length}/{supporterFirstRewards.length} {lang === 'pt' ? 'liberados' : 'unlocked'}
+            </span>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {supporterFirstRewards.map(reward => {
+              const unlocked = eligibleFirstSupporterIds.includes(reward.id);
+              return (
+                <button
+                  key={reward.id}
+                  type="button"
+                  disabled={!unlocked}
+                  onClick={() => unlocked && setPreviewAsset({ id: reward.id, image: reward.image, name: reward.title, subtitle: reward.description })}
+                  className={`group overflow-hidden rounded-2xl border p-4 text-left transition duration-300 ${unlocked ? 'hover:-translate-y-1' : 'cursor-not-allowed grayscale'} ${isLight ? 'border-[#c7d4e4] bg-white/94 shadow-[0_18px_42px_rgba(71,85,105,0.12)]' : 'border-amber-900/35 bg-[linear-gradient(145deg,rgba(9,13,23,0.96),rgba(3,7,18,0.98))] shadow-[0_22px_70px_rgba(2,6,23,0.42)]'} ${unlocked ? '' : 'opacity-55'}`}
+                >
+                  <div className={`relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl border ${isLight ? 'border-amber-100 bg-slate-50' : 'border-amber-950/50 bg-slate-950'}`}>
+                    <div className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(245,158,11,0.24),transparent_58%)] transition ${unlocked ? 'opacity-100 group-hover:opacity-100' : 'opacity-30'}`} />
+                    <img src={reward.image} alt={reward.title} className={`relative h-full w-full object-contain p-3 transition duration-300 ${unlocked ? 'group-hover:scale-[1.03]' : 'blur-[1px]'}`} />
+                    {!unlocked && (
+                      <div className="absolute flex flex-col items-center gap-1">
+                        <span className="text-xl" role="img" aria-label="locked">🔒</span>
+                        <span className="rounded-full border border-white/40 bg-black/35 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white">
+                          {lang === 'pt' ? 'Bloqueado' : 'Locked'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-4 flex items-start justify-between gap-3">
+                    <div>
+                      <p className={`text-[9px] font-black uppercase tracking-[0.18em] ${unlocked ? 'text-amber-300' : 'text-zinc-500'}`}>
+                        {unlocked ? (lang === 'pt' ? 'Desbloqueado' : 'Unlocked') : (lang === 'pt' ? 'Bloqueado' : 'Locked')}
+                      </p>
+                      <h3 className="mt-1 text-base font-black">{reward.title}</h3>
+                    </div>
+                    <span className={`rounded-full border px-2.5 py-1.5 text-[8px] font-black uppercase ${isLight ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-amber-800/60 bg-amber-950/35 text-amber-200'}`}>
+                      {reward.supporterTier.replaceAll('_', ' ')}
                     </span>
                   </div>
                   <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{reward.description}</p>
