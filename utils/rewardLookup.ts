@@ -1,5 +1,6 @@
 import { getAchievementById, getRewardById } from './achievementUtils';
 import { supporterRewards } from '../data/supporterRewards';
+import { supporterFirstRewards } from '../data/supporterFirstRewards';
 
 export interface RewardMetadata {
   id: string;
@@ -19,6 +20,12 @@ export function getRewardMetadataById(id: string): RewardMetadata | null {
   const supporter = supporterRewards.find(r => r.id === id);
   if (supporter) {
     return { id: supporter.id, title: supporter.title, image: supporter.image, category: 'supporter' };
+  }
+
+  // 1.1 Tentar Primeiros Apoiadores (IDs simples)
+  const firstSupporter = supporterFirstRewards.find(r => r.id === id);
+  if (firstSupporter) {
+    return { id: firstSupporter.id, title: firstSupporter.title, image: firstSupporter.image, category: firstSupporter.category };
   }
 
   // 2. Tentar IDs prefixados (usados na Coleção da Obra)
