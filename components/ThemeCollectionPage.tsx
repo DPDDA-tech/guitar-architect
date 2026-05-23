@@ -19,6 +19,8 @@ import { PinBadgeAction } from './themeCollection/PinBadgeAction';
 import { supporterFirstRewards } from '../data/supporterFirstRewards';
 import { getEligibleFirstSupporterRewardIds } from '../utils/supporterFirstEligibility';
 import { supabase } from '../src/lib/supabase';
+import { constancyRewards } from '../data/constancyRewards';
+import { getConstancyState, getNextConstancyMilestone } from '../utils/constancyStorage';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
 
@@ -132,6 +134,8 @@ const ThemeCollectionPage: React.FC = () => {
   const [previewAsset, setPreviewAsset] = useState<CollectionPreview | null>(null);
   const [supporterToast, setSupporterToast] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const constancyState = useMemo(() => getConstancyState(), []);
+  const nextMilestone = useMemo(() => getNextConstancyMilestone(constancyState.currentStreak), [constancyState.currentStreak]);
   const currentUserId = useMemo(() => getInitialConfig()?.currentUser, []);
   const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<string[]>(() => getUnlockedAchievementIds(currentUserId));
   const [supporterTotal, setSupporterTotal] = useState(() => getSupporterContributionTotal());
@@ -576,6 +580,105 @@ const ThemeCollectionPage: React.FC = () => {
                       {reward.tier.replaceAll('_', ' ')}
                     </span>
                   </div>
+                  <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{reward.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="mt-10">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-300">
+                {lang === 'pt' ? 'Constância' : 'Constancy'}
+              </p>
+              <h2 className="mt-2 text-2xl font-black uppercase tracking-tight">
+                {lang === 'pt' ? 'Presença na Obra' : 'Presence in the Work'}
+              </h2>
+              <p className={`mt-2 max-w-3xl text-sm font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                {lang === 'pt'
+                  ? 'Selos conquistados por dias consecutivos de uso real do Guitar Architect. Se a sequência for interrompida, a contagem atual reinicia, mas os selos já desbloqueados permanecem na coleção.'
+                  : 'Badges earned through consecutive days of actual Guitar Architect use. If the streak is broken, the current count restarts, but already unlocked badges remain in the collection.'}
+              </p>
+            </div>
+            <span className={`w-fit rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-800/60 bg-blue-950/30 text-blue-200'}`}>
+              {constancyState.unlockedRewardIds.length}/{constancyRewards.length} {lang === 'pt' ? 'liberados' : 'unlocked'}
+            </span>
+          </div>
+
+          <div className="mb-6 grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                label: lang === 'pt' ? 'Constância Atual' : 'Current Streak',
+                value: lang === 'pt' ? `${constancyState.currentStreak} dias consecutivos` : `${constancyState.currentStreak} consecutive days`,
+                icon: '📅'
+              },
+              {
+                label: lang === 'pt' ? 'Maior Constância' : 'Highest Streak',
+                value: lang === 'pt' ? `${constancyState.highestStreak} dias` : `${constancyState.highestStreak} days`,
+                icon: '🏆'
+              },
+              {
+                label: lang === 'pt' ? 'Próximo Marco' : 'Next Milestone',
+                value: nextMilestone.nextRequiredDays 
+                  ? (lang === 'pt' ? `${nextMilestone.nextRequiredDays} dias (faltam ${nextMilestone.daysRemaining})` : `${nextMilestone.nextRequiredDays} days (${nextMilestone.daysRemaining} remaining)`)
+                  : (lang === 'pt' ? 'Todos os marcos alcançados' : 'All milestones reached'),
+                icon: '🎯'
+              }
+            ].map((stat) => (
+              <div key={stat.label} className={`rounded-2xl border p-4 ${isLight ? 'border-blue-100 bg-white/80 shadow-sm' : 'border-blue-900/35 bg-blue-950/20 shadow-[inset_0_1px_0_rgba(96,165,250,0.05)]'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs" role="img" aria-hidden="true">{stat.icon}</span>
+                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-400">{stat.label}</p>
+                </div>
+                <p className="text-sm font-black tracking-tight">{stat.value}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {constancyRewards.map(reward => {
+              const unlocked = constancyState.unlockedRewardIds.includes(reward.id);
+              return (
+                <button
+                  key={reward.id}
+                  type="button"
+                  disabled={!unlocked}
+                  onClick={() => unlocked && setPreviewAsset({ id: reward.id, image: reward.image, name: reward.title, subtitle: reward.description })}
+                  className={`group overflow-hidden rounded-2xl border p-4 text-left transition duration-300 ${unlocked ? 'hover:-translate-y-1' : 'cursor-not-allowed grayscale'} ${isLight ? 'border-[#c7d4e4] bg-white/94 shadow-[0_18px_42px_rgba(71,85,105,0.12)]' : 'border-blue-900/35 bg-[linear-gradient(145deg,rgba(9,13,23,0.96),rgba(3,7,18,0.98))] shadow-[0_22px_70px_rgba(2,6,23,0.42)]'} ${unlocked ? '' : 'opacity-55'}`}
+                >
+                  <div className={`relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl border ${isLight ? 'border-blue-100 bg-slate-50' : 'border-blue-950/50 bg-slate-950'}`}>
+                    <div className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(59,130,246,0.18),transparent_58%)] transition ${unlocked ? 'opacity-100 group-hover:opacity-100' : 'opacity-30'}`} />
+                    <img src={reward.image} alt={reward.title} className={`relative h-full w-full object-contain p-3 transition duration-300 ${unlocked ? 'group-hover:scale-[1.03]' : 'blur-[1px]'}`} />
+                    {!unlocked && (
+                      <div className="absolute flex flex-col items-center gap-1">
+                        <span className="text-xl" role="img" aria-label="locked">🔒</span>
+                        <span className="rounded-full border border-white/40 bg-black/35 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white">
+                          {lang === 'pt' ? 'Bloqueado' : 'Locked'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-4 flex items-start justify-between gap-3">
+                    <div>
+                      <p className={`text-[9px] font-black uppercase tracking-[0.18em] ${unlocked ? 'text-blue-400' : 'text-zinc-500'}`}>
+                        {unlocked 
+                          ? (lang === 'pt' ? 'Desbloqueado' : 'Unlocked') 
+                          : (lang === 'pt' ? `Requer ${reward.requiredDays} dias` : `Requires ${reward.requiredDays} days`)
+                        }
+                      </p>
+                      <h3 className="mt-1 text-base font-black">{reward.title}</h3>
+                    </div>
+                    <span className={`rounded-full border px-2.5 py-1.5 text-[8px] font-black uppercase ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-900/60 bg-blue-950/35 text-blue-200'}`}>
+                      {reward.requiredDays} {lang === 'pt' ? 'dias' : 'days'}
+                    </span>
+                  </div>
+                  {!unlocked && (
+                    <p className="mt-2 text-[10px] font-black uppercase tracking-wider text-blue-400/80">
+                      {lang === 'pt' ? `Faltam ${reward.requiredDays - constancyState.highestStreak} dias de recorde` : `${reward.requiredDays - constancyState.highestStreak} days remaining for record`}
+                    </p>
+                  )}
                   <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{reward.description}</p>
                 </button>
               );
