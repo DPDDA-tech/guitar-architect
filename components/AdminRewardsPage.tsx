@@ -242,12 +242,12 @@ const AdminRewardsPage: React.FC = () => {
                         <option key={r.id} value={r.id}>{r.title} ({r.id})</option>
                       ))}
                     </optgroup>
-                    <optgroup label="AUTOM. / MANUAL">
+                    <optgroup label="AUTOMÁTICO / MANUAL">
                       {catalog.filter(r => r.grantMode === 'automatic').map(r => (
                         <option key={r.id} value={r.id}>{r.title} ({r.id})</option>
                       ))}
                     </optgroup>
-                    <optgroup label="MANUAL/AUTOM.">
+                    <optgroup label="MANUAL/AUTOMÁTICO">
                       {catalog.filter(r => r.grantMode === 'manual-or-automatic').map(r => (
                         <option key={r.id} value={r.id}>{r.title} ({r.id})</option>
                       ))}
