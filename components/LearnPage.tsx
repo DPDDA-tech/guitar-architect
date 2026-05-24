@@ -170,6 +170,7 @@ const LearnPage: React.FC = () => {
     LEARN_MODULES.find(module => !loadCompletedLearnModules().includes(module.id) && module.status !== 'completed')?.id || LEARN_MODULES[0].id
   ));
   const [quickTool, setQuickTool] = useState<'tuner' | 'metronome' | null>(null);
+  const [isMobileModuleListOpen, setIsMobileModuleListOpen] = useState(false);
   const isLight = theme === 'light';
   const t = translations[lang].harmonicCycle;
   const activeModule = useMemo(
@@ -209,12 +210,7 @@ const LearnPage: React.FC = () => {
 
   const selectModule = (moduleId: string) => {
     setActiveModuleId(moduleId);
-    setCompletedModuleIds(prev => {
-      const next = Array.from(new Set([...prev, moduleId]));
-      saveCompletedLearnModules(next);
-      recordAchievementEvent({ type: 'module_completion', moduleId });
-      return next;
-    });
+    setIsMobileModuleListOpen(false);
   };
 
   return (
@@ -257,6 +253,23 @@ const LearnPage: React.FC = () => {
       <main className="mx-auto max-w-[1700px] px-4 py-7">
         <div className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
           <PanelSurface isLight={isLight} className="p-5 sm:p-6">
+            {/* Mobile Module Selector Toggle */}
+            <button
+              onClick={() => setIsMobileModuleListOpen(!isMobileModuleListOpen)}
+              className={`mb-4 flex w-full items-center justify-between rounded-xl border p-4 xl:hidden transition-all active:scale-[0.98] ${isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-zinc-900/50 border-blue-900/40 shadow-inner'}`}
+            >
+              <div className="text-left">
+                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-blue-400">
+                  {isMobileModuleListOpen ? (lang === 'pt' ? 'Recolher mapa' : 'Collapse map') : (lang === 'pt' ? 'Mudar módulo' : 'Switch module')}
+                </p>
+                <h3 className="mt-1 text-sm font-black uppercase tracking-tight line-clamp-1">{activeModule.title}</h3>
+              </div>
+              <span className={`text-blue-400 transition-transform duration-300 ${isMobileModuleListOpen ? 'rotate-180' : ''}`}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </span>
+            </button>
+
+            <div className={`${isMobileModuleListOpen ? 'block' : 'hidden'} xl:block`}>
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">Mapa de estudo</p>
@@ -305,6 +318,7 @@ const LearnPage: React.FC = () => {
                   </button>
                 );
               })}
+            </div>
             </div>
           </PanelSurface>
 
