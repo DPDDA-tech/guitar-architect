@@ -152,7 +152,7 @@ export const LEARN_MODULES: LearnModule[] = [
     actions: [
       { id: 'open-tuner', label: 'Abrir afinador', type: 'openTool', payload: openToolAction('tuner') },
       { id: 'open-metronome', label: 'Abrir metrônomo', type: 'openTool', payload: openToolAction('metronome') },
-      { id: 'start-bpm', label: 'Iniciar prática com BPM', type: 'startPractice', payload: startPracticeAction('C', 'Major (Ionian)', 80) },
+      { id: 'sincronia-zero-action', label: 'Praticar Sincronia Zero', type: 'startPractice', payload: startPracticeAction('C', 'Major (Ionian)', 60, { exerciseId: 'sincronia-zero', practiceMode: 'rhythm', subdivision: 'quarters', quickTab: 'visual' }) },
     ],
     relatedTools: [
       { id: 'tool-tuner', label: 'Afinador', description: 'Prepare a afinação antes do estudo.', type: 'openTool', payload: openToolAction('tuner') },
