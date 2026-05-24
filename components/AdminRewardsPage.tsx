@@ -10,6 +10,7 @@ import {
   revokeSupabaseRewardFromEmail,
   grantRewardToAllUsers
 } from '../utils/supabaseRewardGrants';
+import { listAllAdminEligibleUsers } from '../utils/supabaseAdminUsers';
 
 type UnifiedGrant = {
   email: string;
@@ -29,6 +30,8 @@ const AdminRewardsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
+
+  const [registeredUserCount, setRegisteredUserCount] = useState<number | null>(null);
 
   // States para o formulário
   const [targetEmail, setTargetEmail] = useState('');
@@ -83,6 +86,11 @@ const AdminRewardsPage: React.FC = () => {
     setGrants([...remote, ...local]);
   };
 
+  const refreshUserCount = async () => {
+    const users = await listAllAdminEligibleUsers();
+    setRegisteredUserCount(users.length > 0 ? users.length : 0);
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data } = await supabase.auth.getUser();
@@ -90,7 +98,10 @@ const AdminRewardsPage: React.FC = () => {
       setCurrentUserEmail(email);
       const authorized = isAdminEmail(email);
       setIsAuthorized(authorized);
-      if (authorized) refreshGrants();
+      if (authorized) {
+        refreshGrants();
+        refreshUserCount();
+      }
       setLoading(false);
     };
     checkAuth();
@@ -186,6 +197,16 @@ const AdminRewardsPage: React.FC = () => {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-10 md:px-12">
+        {/* Admin Stats Summary */}
+        <div className="flex gap-4 mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl px-6 py-4 shadow-sm">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">Registered users</p>
+            <p className={`mt-1 text-2xl font-black ${registeredUserCount === null ? 'text-zinc-600 text-[10px]' : 'text-blue-500'}`}>
+              {registeredUserCount === null ? 'User count unavailable' : registeredUserCount}
+            </p>
+          </div>
+        </div>
+
         <div className="grid gap-8 lg:grid-cols-[1fr_1.5fr]">
           {/* Coluna de Ações */}
           <section className="space-y-6">
