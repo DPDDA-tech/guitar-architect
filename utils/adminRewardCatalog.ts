@@ -41,5 +41,19 @@ export function getAdminRewardCatalog(): AdminRewardCatalogItem[] {
     });
   });
 
-  return catalog;
+  // 3. Gallery Anniversary (AUTOMATIC)
+Array.from({ length: 10 }, (_, i) => {
+  const year = i + 1;
+  const yearStr = year.toString().padStart(2, '0');
+
+  catalog.push({
+    id: `agallery-${yearStr}`,
+    title: `Gallery Anniversary • ${yearStr} ${year === 1 ? 'Year' : 'Years'}`,
+    category: 'system',
+    grantMode: 'automatic',
+    source: 'system/agallery'
+  });
+});
+
+return catalog;
 }
