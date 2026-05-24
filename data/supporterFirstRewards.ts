@@ -5,7 +5,8 @@ export type SupporterFirstTier =
   | 'contramestre'
   | 'mestre_de_obras'
   | 'engenheiro'
-  | 'arquiteto';
+  | 'arquiteto'
+  | 'prime_architect';
 
 export type SupporterFirstReward = {
   id: string;
@@ -83,6 +84,15 @@ export const supporterFirstRewards: SupporterFirstReward[] = [
     image: firstSupporterPath('togafirst7arq.webp'),
     supporterTier: 'arquiteto',
     manualOnly: true,
-    allowedEmails: ['dilioalvarega@gmail.com'],
+    allowedEmails: ['dilioalvarenga@gmail.com'],
+  },
+  {
+    id: 'first_supporter_prime_architect',
+    title: 'Prime Architect',
+    category: 'SUPPORTER | PRIMEIROS APOIADORES',
+    description: 'Reconhecimento especial reservado ao apoiador fundador Prime Architect.',
+    image: firstSupporterPath('togafirst8primea.webp'),
+    supporterTier: 'prime_architect',
+    manualOnly: true,
   },
 ];
