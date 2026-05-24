@@ -37,8 +37,30 @@ const AdminRewardsPage: React.FC = () => {
   const [grantMode, setGrantMode] = useState<'single' | 'all-users'>('single');
   const [bulkProcessing, setBulkProcessing] = useState(false);
   const [lastBulkResult, setBulkResult] = useState<{ s: number; f: number } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterRewardId, setFilterRewardId] = useState('');
 
   const catalog = useMemo(() => getAdminRewardCatalog(), []);
+
+  const filteredGrants = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+
+    return grants
+      .filter((grant) => {
+        const matchesReward = filterRewardId === '' || grant.rewardId === filterRewardId;
+        const matchesSearch =
+          q === '' ||
+          grant.email.toLowerCase().includes(q) ||
+          grant.rewardId.toLowerCase().includes(q);
+
+        return matchesReward && matchesSearch;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.grantedAt).getTime() -
+          new Date(a.grantedAt).getTime()
+      );
+  }, [grants, searchQuery, filterRewardId]);
 
   const refreshGrants = async () => {
     const local = getStoredAdminRewardGrants().map(g => ({
@@ -272,12 +294,34 @@ const AdminRewardsPage: React.FC = () => {
               <button onClick={refreshGrants} className="text-blue-500 text-[10px] font-black uppercase tracking-widest hover:underline">Atualizar</button>
             </div>
 
+            <div className="mb-4 flex flex-wrap gap-2">
+              <input 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar por e-mail ou reward..."
+                className="flex-1 min-w-[180px] bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-[10px] font-bold outline-none focus:border-blue-500 transition-colors"
+              />
+              <select 
+                value={filterRewardId}
+                onChange={(e) => setFilterRewardId(e.target.value)}
+                className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-[10px] font-black uppercase outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer"
+              >
+                <option value="">Filtrar Reward...</option>
+                {catalog.map(r => (
+                  <option key={r.id} value={r.id}>{r.id}</option>
+                ))}
+              </select>
+              <div className="flex items-center px-2 text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                {filteredGrants.length} items
+              </div>
+            </div>
+
             <div className="space-y-3">
-              {grants.length === 0 ? (
+              {filteredGrants.length === 0 ? (
                 <div className="py-20 text-center border border-dashed border-zinc-800 rounded-3xl">
                   <p className="text-zinc-600 font-bold uppercase text-xs">Nenhuma concessão encontrada.</p>
                 </div>
-              ) : grants.map((grant, idx) => (
+              ) : filteredGrants.map((grant, idx) => (
                 <div key={`${grant.email}-${grant.rewardId}-${idx}`} className="group relative bg-zinc-900/30 border border-zinc-800 hover:border-zinc-700 rounded-2xl p-5 transition-all">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="min-w-0 flex-1">
