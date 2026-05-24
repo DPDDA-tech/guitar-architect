@@ -2,9 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../src/lib/supabase';
 import { isAdminEmail } from '../utils/adminAccess';
 import { getStoredAdminRewardGrants, type AdminRewardGrant } from '../utils/adminRewardGrantStorage';
-import { grantRewardToEmail, revokeRewardFromEmail } from '../utils/adminRewardActions';
-import { supporterFirstRewards } from '../data/supporterFirstRewards';
-import { constancyRewards } from '../data/constancyRewards';
+import { grantRewardToEmail, revokeRewardFromEmail, toggleRewardGrant } from '../utils/adminRewardActions';
+import { getAdminRewardCatalog } from '../utils/adminRewardCatalog';
 import { 
   listActiveSupabaseRewardGrants, 
   grantSupabaseRewardToEmail, 
@@ -36,10 +35,7 @@ const AdminRewardsPage: React.FC = () => {
   const [selectedRewardId, setSelectedRewardId] = useState('');
   const [grants, setGrants] = useState<UnifiedGrant[]>([]);
 
-  const knownRewards = useMemo(() => [
-    ...supporterFirstRewards.map(r => ({ id: r.id, title: r.title, type: 'MANUAL' })),
-    ...constancyRewards.map(r => ({ id: r.id, title: r.title, type: 'AUTO/TEST' }))
-  ], []);
+  const catalog = useMemo(() => getAdminRewardCatalog(), []);
 
   const refreshGrants = async () => {
     const local = getStoredAdminRewardGrants().map(g => ({
@@ -169,13 +165,13 @@ const AdminRewardsPage: React.FC = () => {
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm font-bold focus:border-blue-500 outline-none transition-colors appearance-none"
                   >
                     <option value="">Selecionar reward...</option>
-                    <optgroup label="PRIMEIROS APOIADORES (MANUAL)">
-                      {knownRewards.filter(r => r.type === 'MANUAL').map(r => (
+                    <optgroup label="MANUAIS (HISTÓRICO/APOIO)">
+                      {catalog.filter(r => r.grantMode === 'manual').map(r => (
                         <option key={r.id} value={r.id}>{r.title} ({r.id})</option>
                       ))}
                     </optgroup>
-                    <optgroup label="CONSTÂNCIA (AUTO/TEST)">
-                      {knownRewards.filter(r => r.type === 'AUTO/TEST').map(r => (
+                    <optgroup label="AUTOMÁTICOS / TESTE">
+                      {catalog.filter(r => r.grantMode === 'automatic').map(r => (
                         <option key={r.id} value={r.id}>{r.title} ({r.id})</option>
                       ))}
                     </optgroup>
@@ -184,10 +180,10 @@ const AdminRewardsPage: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <button onClick={handleGrant} className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-[10px] font-black uppercase shadow-lg shadow-blue-950/20 active:scale-95 transition-all">
-                    Conceder
+                    Conceder Global
                   </button>
                   <button onClick={() => handleRevoke(targetEmail, selectedRewardId, 'admin-supabase')} className="border border-red-900/50 bg-red-950/20 text-red-400 hover:bg-red-950/40 rounded-xl py-3 text-[10px] font-black uppercase active:scale-95 transition-all">
-                    Revogar
+                    Revogar Global
                   </button>
                 </div>
               </div>
@@ -203,7 +199,7 @@ const AdminRewardsPage: React.FC = () => {
           {/* Coluna da Lista */}
           <section>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-black uppercase tracking-tight">Active Grants</h2>
+              <h2 className="text-xl font-black uppercase tracking-tight">Active Reward Grants</h2>
               <button onClick={refreshGrants} className="text-blue-500 text-[10px] font-black uppercase tracking-widest hover:underline">Atualizar</button>
             </div>
 
