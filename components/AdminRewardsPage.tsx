@@ -237,12 +237,12 @@ const AdminRewardsPage: React.FC = () => {
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm font-bold focus:border-blue-500 outline-none transition-colors appearance-none"
                   >
                     <option value="">Selecionar reward...</option>
-                    <optgroup label="MANUAIS (HISTÓRICO/APOIO)">
+                    <optgroup label="MANUAL">
                       {catalog.filter(r => r.grantMode === 'manual').map(r => (
                         <option key={r.id} value={r.id}>{r.title} ({r.id})</option>
                       ))}
                     </optgroup>
-                    <optgroup label="AUTOMÁTICOS / TESTE">
+                    <optgroup label="AUTOM. / MANUAL">
                       {catalog.filter(r => r.grantMode === 'automatic').map(r => (
                         <option key={r.id} value={r.id}>{r.title} ({r.id})</option>
                       ))}
@@ -312,7 +312,7 @@ const AdminRewardsPage: React.FC = () => {
                 ))}
               </select>
               <div className="flex items-center px-2 text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                {filteredGrants.length} items
+                {filteredGrants.length} grants
               </div>
             </div>
 
