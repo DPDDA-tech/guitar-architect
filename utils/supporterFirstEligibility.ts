@@ -1,4 +1,5 @@
 import { SupporterFirstReward, supporterFirstRewards } from '../data/supporterFirstRewards';
+import { hasStoredAdminRewardGrant } from './adminRewardGrantStorage';
 
 /**
  * TODO:
@@ -23,6 +24,12 @@ export function isEligibleForFirstSupporterReward(
   reward: SupporterFirstReward,
   email?: string | null
 ): boolean {
+  // 1. Prioridade: Verificar se há uma concessão administrativa persistida (Admin/Manual)
+  if (hasStoredAdminRewardGrant(email, reward.id)) {
+    return true;
+  }
+
+  // 2. Fallback: Sistema legado de bypass por e-mail (allowedEmails)
   if (!reward.allowedEmails || reward.allowedEmails.length === 0) {
     return false;
   }
