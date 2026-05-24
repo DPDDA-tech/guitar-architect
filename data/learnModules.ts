@@ -93,6 +93,11 @@ export const LEARN_MODULES: LearnModule[] = [
         body: 'O braço é uma grade musical. Cordas, casas e afinação determinam onde cada nota aparece.',
       },
       {
+        id: 'alphabet',
+        eyebrow: 'Alfabeto Musical',
+        body: 'As notas são representadas pelas letras A, B, C, D, E, F e G. Para nós: C=Dó, D=Ré, E=Mi, F=Fá, G=Sol, A=Lá e B=Si.',
+      },
+      {
         id: 'in-ga',
         eyebrow: 'No Guitar Architect',
         body: 'Use o fretboard para visualizar notas, tônicas, oitavas e regiões equivalentes sem perder o instrumento e a afinação atuais.',
@@ -125,7 +130,7 @@ export const LEARN_MODULES: LearnModule[] = [
       {
         id: 'concept',
         eyebrow: 'Conceito',
-        body: 'Antes de estudar escalas e acordes, o instrumento precisa estar afinado e o estudo precisa ter pulso.',
+        body: 'Antes de estudar escalas e acordes, o instrumento precisa estar afinado e o estudo precisa ter pulso — a batida constante da música.',
       },
       {
         id: 'in-ga',
@@ -133,10 +138,15 @@ export const LEARN_MODULES: LearnModule[] = [
         body: 'O afinador ajuda a preparar o instrumento. O metrônomo organiza o tempo e prepara exercícios com BPM.',
       },
       {
+        id: 'rhythm',
+        eyebrow: 'Ritmo básico',
+        body: 'A semínima é a forma mais simples de ritmo: toque exatamente uma nota para cada clique (batida) do metrônomo.',
+      },
+      {
         id: 'routine',
         eyebrow: 'Rotina curta',
         body: 'Afine, defina o BPM e pratique uma sequência pequena antes de aumentar velocidade ou complexidade.',
-        examples: ['Afinar cordas soltas', 'Metrônomo em 80 BPM', 'Tocar escala em semínimas'],
+        examples: ['Afinar cordas soltas', 'Metrônomo em 80 BPM', 'Palhetada constante: 1 nota por batida'],
       },
     ],
     actions: [
