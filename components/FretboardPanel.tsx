@@ -984,7 +984,11 @@ const handleLogout = async () => {
       accentShadow: activeCollectionTheme.glowColor || brandAssets.accentShadow,
     }
     : brandAssets;
+
+  const isGuestMode = !authUser && !user;
+
   const currentUserTier = useMemo(() => {
+    if (!user) return 0;
     const unlocked = getUnlockedAchievementIds(user);
     const tiers = unlocked
       .map(id => getAchievementById(id)?.tier)
@@ -1465,7 +1469,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       </div>
 
       <div className="hidden lg:flex flex-col items-start gap-2 shrink-0">
-        <PinnedProfileBadges isLight={isLight} />
+        {!isGuestMode && <PinnedProfileBadges isLight={isLight} />}
 
         <div className="flex items-center gap-2">
           {authUser && isAdminEmail(authUser.email) && (
@@ -1477,7 +1481,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             </a>
           )}
           <span className={`rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.08em] ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-900/70 bg-blue-950/40 text-blue-200'}`}>
-            {currentUserTierName}
+            {isGuestMode ? (lang === 'pt' ? 'VISITANTE' : 'VISITOR') : currentUserTierName}
           </span>
           <button
             onClick={handleLogout}
@@ -2164,6 +2168,13 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   Confirmar Identidade
 </button>
               )}
+
+             <button
+               onClick={() => setShowLoginModal(false)}
+               className="mt-4 w-full py-2 text-[10px] font-black uppercase text-zinc-500 hover:text-zinc-400 transition-colors tracking-widest"
+             >
+               {lang === 'pt' ? 'Continuar como visitante' : 'Continue as guest'}
+             </button>
 </div>
 </div>
 )}
