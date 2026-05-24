@@ -2895,8 +2895,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
              <button onClick={redo} className={`rounded-xl border px-2 py-2.5 text-[9px] font-black uppercase ${isLight ? 'bg-white border-zinc-200 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-200'}`} aria-label={t.redo}>
                {lang === 'pt' ? 'Refazer' : 'Redo'}
              </button>
-             <button onClick={clearEverything} className="col-span-2 rounded-xl border border-red-200 bg-white px-2 py-2.5 text-[9px] font-black uppercase text-red-600 dark:bg-zinc-950" aria-label={lang === 'pt' ? 'Limpar todo o diagrama' : 'Clear the whole diagram'}>
-               {lang === 'pt' ? 'Limpar tudo' : 'Clear all'}
+             <button onClick={clearEverything} className="rounded-xl border border-red-200 bg-white px-2 py-2.5 text-[9px] font-black uppercase text-red-600 dark:bg-zinc-950" aria-label={lang === 'pt' ? 'Limpar todo o diagrama' : 'Clear the whole diagram'}>
+               {lang === 'pt' ? 'Reset' : 'Reset'}
+             </button>
+             <button onClick={onRemove} className="rounded-xl bg-red-600 px-2 py-2.5 text-[9px] font-black uppercase text-white shadow-sm active:scale-95 transition-all" aria-label={lang === 'pt' ? 'Remover diagrama' : 'Remove diagram'}>
+               {lang === 'pt' ? 'Excluir' : 'Remove'}
              </button>
            </div>
          )}
@@ -2977,5 +2980,3 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 };
 
 export default React.memo(FretboardInstance);
-
-
