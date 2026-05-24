@@ -480,6 +480,11 @@ const ThemeCollectionPage: React.FC = () => {
                       ? 'Selos de temporada podem ser limitados ao período da campanha e permanecer vinculados ao perfil do apoiador.'
                       : 'Season badges may be limited to the campaign period and remain tied to the supporter profile.'}
                   </p>
+                  <p className={`mt-3 text-[10px] font-black uppercase tracking-[0.14em] ${isLight ? 'text-amber-600' : 'text-amber-500'}`}>
+                    {lang === 'pt'
+                      ? 'A Season 1 permanece aberta para registros de apoio até 31/05/2027.'
+                      : 'Season 1 remains open for support registrations until May 31, 2027.'}
+                  </p>
                 </div>
               </div>
               <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white/80' : 'border-blue-950/60 bg-slate-950/50'}`}>
