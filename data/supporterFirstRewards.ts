@@ -84,7 +84,6 @@ export const supporterFirstRewards: SupporterFirstReward[] = [
     image: firstSupporterPath('togafirst7arq.webp'),
     supporterTier: 'arquiteto',
     manualOnly: true,
-    allowedEmails: ['dilioalvarenga@gmail.com'],
   },
   {
     id: 'first_supporter_prime_architect',
