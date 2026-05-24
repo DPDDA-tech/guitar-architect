@@ -1401,9 +1401,15 @@ const handleLogout = async () => {
                 {lang === 'pt' ? 'Canhoto' : 'Left-handed'}
               </button>
               <div className="mt-2 grid grid-cols-2 gap-2">
-                <button onClick={handleLogout} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-red-200 text-red-600' : 'border-red-950/70 text-red-300'}`}>
-                  {lang === 'pt' ? 'Sair da conta' : 'Log out'}
-                </button>
+                {authUser ? (
+                  <button onClick={handleLogout} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-red-200 text-red-600' : 'border-red-950/70 text-red-300'}`}>
+                    {lang === 'pt' ? 'Sair da conta' : 'Log out'}
+                  </button>
+                ) : (
+                  <button onClick={() => { setShowLoginModal(true); setShowProjectMenu(false); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'border-blue-500 bg-blue-600 text-white shadow-lg shadow-blue-950/20'}`}>
+                    {lang === 'pt' ? 'Entrar na conta' : 'Sign in'}
+                  </button>
+                )}
                 <button onClick={() => { setShowProjectMenu(false); void handleLogout(); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
                   {lang === 'pt' ? 'Trocar conta' : 'Switch account'}
                 </button>
@@ -1483,12 +1489,21 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           <span className={`rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.08em] ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-900/70 bg-blue-950/40 text-blue-200'}`}>
             {isGuestMode ? (lang === 'pt' ? 'VISITANTE' : 'VISITOR') : currentUserTierName}
           </span>
-          <button
-            onClick={handleLogout}
-            className={`text-[8px] md:text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tight active:scale-95 transition-all border ${isLight ? 'border-zinc-200 text-zinc-500 hover:border-red-300 hover:text-red-600' : 'border-zinc-700 text-zinc-400 hover:border-red-500 hover:text-red-400'}`}
-          >
-            LOGOFF
-          </button>
+          {authUser ? (
+            <button
+              onClick={handleLogout}
+              className={`text-[8px] md:text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tight active:scale-95 transition-all border ${isLight ? 'border-zinc-200 text-zinc-500 hover:border-red-300 hover:text-red-600' : 'border-zinc-700 text-zinc-400 hover:border-red-500 hover:text-red-400'}`}
+            >
+              LOGOFF
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className={`text-[8px] md:text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tight active:scale-95 transition-all border ${isLight ? 'border-blue-200 text-blue-600 hover:border-blue-400 hover:bg-blue-50' : 'border-blue-900 text-blue-400 hover:border-blue-500 hover:bg-blue-950/20'}`}
+            >
+              {lang === 'pt' ? 'ENTRAR' : 'LOGIN'}
+            </button>
+          )}
         </div>
       </div>
     </div>
