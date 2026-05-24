@@ -1208,11 +1208,15 @@ const handleReturnToContext = () => {
       'visual'
     );
 
+    const eventName = (targetTab === 'tools' || targetTab === 'chords')
+      ? 'ga-open-diagram-panel'
+      : 'ga-open-quick-tab';
+
     window.setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { 
+      window.dispatchEvent(new CustomEvent(eventName, { 
         detail: { 
           tab: targetTab, 
-          tool: (pending.action === 'startPractice' || pending.tool) 
+          tool: eventName === 'ga-open-diagram-panel' 
             ? (pending.tool || 'exercises') 
             : undefined 
         } 
