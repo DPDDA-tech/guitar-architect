@@ -1201,16 +1201,23 @@ const handleReturnToContext = () => {
       return [...prev, created];
     });
 
-    if (pending.action === 'startPractice' || pending.tool) {
-      window.setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { detail: { tab: 'tools', tool: pending?.tool || 'exercises' } }));
-      }, 160);
-    }
-    if (pending.action === 'triads' || pending.harmonyMode === 'TRIADS') {
-      window.setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('ga-open-quick-tab', { detail: { tab: 'harmony' } }));
-      }, 180);
-    }
+    const targetTab = (pending as any).quickTab || (pending as any).tab || (
+      (pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression' || pending.harmonyMode) ? 'harmony' :
+      pending.action === 'scale' ? 'scale' :
+      (pending.action === 'startPractice' || pending.tool) ? 'tools' :
+      'visual'
+    );
+
+    window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('ga-open-diagram-panel', { 
+        detail: { 
+          tab: targetTab, 
+          tool: (pending.action === 'startPractice' || pending.tool) 
+            ? (pending.tool || 'exercises') 
+            : undefined 
+        } 
+      }));
+    }, 160);
 
     setSaveStatus('saving');
   }, [activeInstanceIndex, defaultInstrument, lang]);
