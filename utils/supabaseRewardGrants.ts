@@ -1,4 +1,5 @@
 import { supabase } from '../src/lib/supabase';
+import { listAllAdminEligibleUsers } from './supabaseAdminUsers';
 
 export type SupabaseRewardGrant = {
   id: string;
@@ -115,4 +116,52 @@ export async function revokeSupabaseRewardFromEmail(email: string, rewardId: str
 
   if (error) console.warn('[SupabaseRewards] Falha ao revogar selo:', error);
   return { ok: !error, error };
+}
+
+/**
+ * Concede uma recompensa para todos os usuários cadastrados no sistema.
+ */
+export async function grantRewardToAllUsers(
+  rewardId: string,
+  reason: string,
+  grantedBy: string
+): Promise<{ successCount: number; failCount: number; totalProcessed: number }> {
+  const users = await listAllAdminEligibleUsers();
+
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const user of users) {
+    const email = user.email?.trim().toLowerCase();
+    if (!email) continue;
+
+    const result = await grantSupabaseRewardToEmail({
+      email,
+      rewardId,
+      reason: `[BULK] ${reason}`,
+      grantedBy,
+    });
+
+    if (result.ok) {
+      successCount += 1;
+      continue;
+    }
+
+    const errorCode = (result.error as { code?: string } | null | undefined)?.code;
+    const errorMessage = String(result.error || '');
+
+    const isDuplicate =
+      errorCode === '23505' ||
+      errorMessage.toLowerCase().includes('duplicate');
+
+    if (!isDuplicate) {
+      failCount += 1;
+    }
+  }
+
+  return {
+    successCount,
+    failCount,
+    totalProcessed: users.length,
+  };
 }

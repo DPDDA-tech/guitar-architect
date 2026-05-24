@@ -2,13 +2,13 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../src/lib/supabase';
 import { isAdminEmail } from '../utils/adminAccess';
 import { getStoredAdminRewardGrants, type AdminRewardGrant } from '../utils/adminRewardGrantStorage';
-import { grantRewardToEmail, revokeRewardFromEmail, toggleRewardGrant } from '../utils/adminRewardActions';
+import { grantRewardToEmail, revokeRewardFromEmail } from '../utils/adminRewardActions';
 import { getAdminRewardCatalog } from '../utils/adminRewardCatalog';
 import { 
   listActiveSupabaseRewardGrants, 
   grantSupabaseRewardToEmail, 
   revokeSupabaseRewardFromEmail,
-  type SupabaseRewardGrant
+  grantRewardToAllUsers
 } from '../utils/supabaseRewardGrants';
 
 type UnifiedGrant = {
@@ -34,6 +34,9 @@ const AdminRewardsPage: React.FC = () => {
   const [targetEmail, setTargetEmail] = useState('');
   const [selectedRewardId, setSelectedRewardId] = useState('');
   const [grants, setGrants] = useState<UnifiedGrant[]>([]);
+  const [grantMode, setGrantMode] = useState<'single' | 'all-users'>('single');
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+  const [lastBulkResult, setBulkResult] = useState<{ s: number; f: number } | null>(null);
 
   const catalog = useMemo(() => getAdminRewardCatalog(), []);
 
@@ -72,12 +75,34 @@ const AdminRewardsPage: React.FC = () => {
   }, []);
 
   const handleGrant = async () => {
-    if (!targetEmail.trim() || !selectedRewardId.trim()) {
-      alert('Preencha o e-mail e selecione uma recompensa.');
+    if (!selectedRewardId) {
+      alert('Selecione uma recompensa.');
+      return;
+    }
+
+    if (grantMode === 'all-users') {
+      if (!confirm('Esta ação concederá o selo selecionado para TODOS os usuários cadastrados. Confirmar?')) return;
+      
+      setBulkProcessing(true);
+      setBulkResult(null);
+      
+      const res = await grantRewardToAllUsers(
+        selectedRewardId, 
+        'Bulk Admin UI Grant', 
+        currentUserEmail || 'admin'
+      );
+      
+      setBulkResult({ s: res.successCount, f: res.failCount });
+      setBulkProcessing(false);
+      refreshGrants();
       return;
     }
     
-    // Tenta primeiro no Supabase
+    if (!targetEmail.trim()) {
+      alert('Preencha o e-mail do beneficiário.');
+      return;
+    }
+
     const res = await grantSupabaseRewardToEmail({
       email: targetEmail,
       rewardId: selectedRewardId,
@@ -142,20 +167,45 @@ const AdminRewardsPage: React.FC = () => {
         <div className="grid gap-8 lg:grid-cols-[1fr_1.5fr]">
           {/* Coluna de Ações */}
           <section className="space-y-6">
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-xl">
-              <h2 className="text-lg font-black uppercase tracking-tight mb-6">Conceder Recompensa</h2>
+            <div className={`rounded-3xl border p-6 shadow-xl transition-all ${
+              grantMode === 'all-users' ? 'border-amber-500/30 bg-amber-500/5' : 'border-zinc-800 bg-zinc-900/50'
+            } ${bulkProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+              <h2 className="text-lg font-black uppercase tracking-tight mb-6">Nova Concessão</h2>
               
               <div className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">E-mail do Beneficiário</label>
-                  <input 
-                    type="email"
-                    value={targetEmail}
-                    onChange={e => setTargetEmail(e.target.value)}
-                    placeholder="usuario@email.com"
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm font-bold focus:border-blue-500 outline-none transition-colors"
-                  />
+                <div className="flex gap-2 p-1 bg-zinc-950 rounded-2xl border border-zinc-800">
+                  <button 
+                    onClick={() => setGrantMode('single')}
+                    className={`flex-1 py-2 text-[9px] font-black uppercase rounded-xl transition-all ${grantMode === 'single' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  >
+                    Usuário Único
+                  </button>
+                  <button 
+                    onClick={() => setGrantMode('all-users')}
+                    className={`flex-1 py-2 text-[9px] font-black uppercase rounded-xl transition-all ${grantMode === 'all-users' ? 'bg-amber-600/20 text-amber-500 shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  >
+                    Todos (Bulk)
+                  </button>
                 </div>
+
+                {grantMode === 'single' ? (
+                  <div className="animate-in fade-in slide-in-from-top-1">
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">E-mail do Beneficiário</label>
+                    <input 
+                      type="email"
+                      value={targetEmail}
+                      onChange={e => setTargetEmail(e.target.value)}
+                      placeholder="usuario@email.com"
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm font-bold focus:border-blue-500 outline-none transition-colors"
+                    />
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 animate-in zoom-in-95">
+                    <p className="text-[11px] font-black uppercase leading-tight text-amber-500">
+                      ⚠️ Esta ação concederá o selo selecionado para TODOS os usuários cadastrados.
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Selo / Reward ID</label>
@@ -178,14 +228,33 @@ const AdminRewardsPage: React.FC = () => {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <button onClick={handleGrant} className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-[10px] font-black uppercase shadow-lg shadow-blue-950/20 active:scale-95 transition-all">
-                    Conceder Global
+                <div className="flex flex-col gap-3 pt-2">
+                  <button onClick={handleGrant} className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-[10px] font-black uppercase shadow-lg shadow-blue-950/20 active:scale-95 transition-all w-full">
+                    {grantMode === 'all-users' ? 'Executar Concessão em Massa' : 'Conceder Selo'}
                   </button>
-                  <button onClick={() => handleRevoke(targetEmail, selectedRewardId, 'admin-supabase')} className="border border-red-900/50 bg-red-950/20 text-red-400 hover:bg-red-950/40 rounded-xl py-3 text-[10px] font-black uppercase active:scale-95 transition-all">
-                    Revogar Global
-                  </button>
+                  {grantMode === 'single' && (
+                    <button onClick={() => handleRevoke(targetEmail, selectedRewardId, 'admin-supabase')} className="border border-red-900/50 bg-red-950/20 text-red-400 hover:bg-red-950/40 rounded-xl py-3 text-[10px] font-black uppercase active:scale-95 transition-all w-full">
+                      Revogar
+                    </button>
+                  )}
                 </div>
+
+                {bulkProcessing && (
+                  <div className="text-center py-2 animate-pulse">
+                    <p className="text-[10px] font-black uppercase text-blue-400">Processando...</p>
+                  </div>
+                )}
+
+                {lastBulkResult && (
+                  <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-center animate-in fade-in slide-in-from-top-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Resultado:</p>
+                    <p className="mt-1 text-[11px] font-bold">
+                      <span className="text-emerald-500">✔ {lastBulkResult.s} sucessos</span>
+                      <span className="mx-2 text-zinc-700">|</span>
+                      <span className="text-red-500">✖ {lastBulkResult.f} falhas</span>
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -216,6 +285,9 @@ const AdminRewardsPage: React.FC = () => {
                         <span className="text-[10px] font-black text-blue-400 truncate">{grant.email}</span>
                         <span className="text-zinc-700 text-xs">•</span>
                         <span className={`text-[9px] font-black uppercase tracking-widest ${grant.source === 'admin-supabase' ? 'text-emerald-500' : 'text-zinc-500'}`}>{grant.source}</span>
+                        <span className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase border ${grant.reason?.includes('[BULK]') ? 'border-amber-900/50 text-amber-500' : 'border-zinc-800 text-zinc-500'}`}>
+                          {grant.reason?.includes('[BULK]') ? 'BULK' : 'SINGLE'}
+                        </span>
                       </div>
                       <h3 className="text-base font-black text-amber-500 truncate">{grant.rewardId}</h3>
                       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] font-bold text-zinc-500 uppercase">
