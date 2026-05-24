@@ -1996,13 +1996,13 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
       {showLoginModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xl">
-          <div className={`max-h-[calc(100vh-32px)] w-full max-w-md overflow-y-auto rounded-[40px] border p-8 shadow-2xl md:p-12 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
-             <div className="flex flex-col items-center mb-8">
-                <LogoIcon brand={displayedBrandAssets} variant="large" />
+          <div className={`max-h-[calc(100vh-32px)] w-full max-w-md overflow-y-auto rounded-[40px] border p-6 shadow-2xl md:p-8 ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+             <div className="flex flex-col items-center mb-4">
+                <LogoIcon brand={displayedBrandAssets} variant="default" />
                 <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-center">
                   {lang === 'pt' ? 'Conta Guitar Architect' : 'Guitar Architect Account'}
                 </h2>
-                <p className="mt-2 text-center text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                <p className="mt-1 text-center text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
                   {authUser
                     ? (lang === 'pt' ? 'Conta sincronizada' : 'Synced account')
                     : (lang === 'pt' ? 'Entre, crie conta ou continue localmente' : 'Sign in, create an account or continue locally')}
@@ -2184,12 +2184,13 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 </button>
               )}
 
-             <button
-               onClick={() => setShowLoginModal(false)}
-               className="mt-4 w-full py-2 text-[10px] font-black uppercase text-zinc-500 hover:text-zinc-400 transition-colors tracking-widest"
-             >
-               {lang === 'pt' ? 'Continuar como visitante' : 'Continue as guest'}
-             </button>
+            <button
+              onClick={() => setShowLoginModal(false)}
+              className={`mt-6 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border transition-all uppercase text-[10px] font-black tracking-widest ${isLight ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' : 'bg-red-950/10 border-red-500/40 text-red-400 hover:bg-red-900/20 hover:border-red-500/60 shadow-lg shadow-red-900/10'}`}
+            >
+              <span className="text-xs">👤</span>
+              {lang === 'pt' ? 'Continuar como visitante' : 'Continue as guest'}
+            </button>
 </div>
 </div>
 )}
