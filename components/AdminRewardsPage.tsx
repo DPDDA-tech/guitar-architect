@@ -295,7 +295,7 @@ const AdminRewardsPage: React.FC = () => {
           {/* Coluna da Lista */}
           <section>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-black uppercase tracking-tight">Active Reward Grants</h2>
+              <h2 className="text-xl font-black uppercase tracking-tight">Admin Grants</h2>
               <button onClick={refreshGrants} className="text-blue-500 text-[10px] font-black uppercase tracking-widest hover:underline">Atualizar</button>
             </div>
 
