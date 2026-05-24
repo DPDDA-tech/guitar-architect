@@ -14,6 +14,7 @@ import { recordConstancyVisit } from './utils/constancyStorage';
 import { constancyRewards, type ConstancyReward } from './data/constancyRewards';
 import { ConstancyUnlockToast } from './components/ConstancyUnlockToast';
 import { DevRewardGrantPanel } from './components/DevRewardGrantPanel';
+import AdminRewardsPage from './components/AdminRewardsPage';
 
 const getCurrentPath = () => window.location.pathname;
 
@@ -59,39 +60,31 @@ const App: React.FC = () => {
     />
   ) : null;
 
+  const devPanel = <DevRewardGrantPanel />;
+
   const renderPage = () => {
-  switch (path) {
-    case '/harmonic-cycle':
-      return <HarmonicCyclePage />;
-    case '/learn':
-      return <LearnPage />;
-    case '/practice':
-      return <PracticePage />;
-    case '/chords':
-      return <ChordsPage />;
-    case '/caged':
-      return <CagedPage />;
-    case '/triads-trainer':
-      return <TriadsTetradsPage openTrainer />;
-    case '/triads-tetrads':
-      return <TriadsTetradsPage />;
-    case '/greek-modes':
-      return <GreekModesPage />;
-    case '/theme-collection':
-      return <ThemeCollectionPage />;
-    case '/profile':
-      return <ProfilePage />;
-    default:
-      return <FretboardPanel />;
-  }
-};
+    switch (path) {
+      case '/harmonic-cycle': return <HarmonicCyclePage />;
+      case '/learn': return <LearnPage />;
+      case '/practice': return <PracticePage />;
+      case '/chords': return <ChordsPage />;
+      case '/caged': return <CagedPage />;
+      case '/triads-trainer': return <TriadsTetradsPage openTrainer />;
+      case '/triads-tetrads': return <TriadsTetradsPage />;
+      case '/greek-modes': return <GreekModesPage />;
+      case '/theme-collection': return <ThemeCollectionPage />;
+      case '/profile': return <ProfilePage />;
+    case '/admin/rewards': return <AdminRewardsPage />;
+      default: return <FretboardPanel />;
+    }
+  };
 
   return (
     <>
       {renderPage()}
       <AchievementUnlockToast />
       {constancyToast}
-      <DevRewardGrantPanel />
+      {devPanel}
     </>
   );
 };
