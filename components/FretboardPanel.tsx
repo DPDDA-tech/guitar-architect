@@ -479,14 +479,15 @@ useEffect(() => {
       }
 
       setAuthUser(null);
-      setAllowLocalIdentity(false);
+      setAuthEmail('');
+      setAllowLocalIdentity(true);
       setUser('');
       setUserLogo(undefined);
       setInstances([DEFAULT_FRETBOARD((config?.lang as Lang) || 'pt', config?.defaultInstrument || 'guitar-6')]);
       setProjectName('Novo Projeto');
       setProjectId(crypto.randomUUID());
       setGlobalTranspose(0);
-      setShowLoginModal(true);
+      setShowLoginModal(false);
       initialized.current = true;
       return;
     }
