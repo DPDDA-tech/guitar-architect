@@ -55,5 +55,17 @@ Array.from({ length: 10 }, (_, i) => {
   });
 });
 
+// 4. Instrument Gallery (AUTOMATIC)
+[1, 3, 5, 8, 10].forEach(count => {
+  const countStr = count.toString().padStart(2, '0');
+  catalog.push({
+    id: `collectors-${countStr}`,
+    title: `Instrument Gallery • ${countStr} ${count === 1 ? 'Instrument' : 'Instruments'}`,
+    category: 'system',
+    grantMode: 'automatic',
+    source: 'system/collectors'
+  });
+});
+
 return catalog;
 }
