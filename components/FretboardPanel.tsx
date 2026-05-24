@@ -35,6 +35,7 @@ import { migrateLocalIdentityToSupabase, pushLocalSnapshotToSupabase, syncSupaba
 import { canUseDisplayName, getDisplayNameError, getSupabaseDisplayName } from '../src/lib/userIdentity';
 import { listInstruments, replaceInstruments } from '../utils/instrumentRegistry';
 import { PinnedProfileBadges } from './PinnedProfileBadges';
+import { isAdminEmail } from '../utils/adminAccess';
 
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
 const LOCAL_MIGRATION_DEADLINE_PT = '17/06/2026';
@@ -1468,6 +1469,14 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         <PinnedProfileBadges isLight={isLight} />
 
         <div className="flex items-center gap-2">
+          {authUser && isAdminEmail(authUser.email) && (
+            <a
+              href="/admin/rewards"
+              className={`text-[8px] md:text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tight transition-all border ${isLight ? 'border-zinc-200 text-zinc-400 hover:border-blue-400 hover:text-blue-600' : 'border-zinc-700 text-zinc-500 hover:border-blue-500 hover:text-blue-400'}`}
+            >
+              ADMIN
+            </a>
+          )}
           <span className={`rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.08em] ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-900/70 bg-blue-950/40 text-blue-200'}`}>
             {currentUserTierName}
           </span>
