@@ -2,9 +2,24 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../src/lib/supabase';
 import { isAdminEmail } from '../utils/adminAccess';
 import { getStoredAdminRewardGrants, type AdminRewardGrant } from '../utils/adminRewardGrantStorage';
-import { grantRewardToEmail, revokeRewardFromEmail, toggleRewardGrant } from '../utils/adminRewardActions';
+import { grantRewardToEmail, revokeRewardFromEmail } from '../utils/adminRewardActions';
 import { supporterFirstRewards } from '../data/supporterFirstRewards';
 import { constancyRewards } from '../data/constancyRewards';
+import { 
+  listActiveSupabaseRewardGrants, 
+  grantSupabaseRewardToEmail, 
+  revokeSupabaseRewardFromEmail,
+  type SupabaseRewardGrant
+} from '../utils/supabaseRewardGrants';
+
+type UnifiedGrant = {
+  email: string;
+  rewardId: string;
+  reason?: string | null;
+  source: string;
+  grantedAt: string;
+  grantedBy?: string | null;
+};
 
 const navigateHome = () => {
   window.history.pushState(null, '', '/');
@@ -19,15 +34,32 @@ const AdminRewardsPage: React.FC = () => {
   // States para o formulário
   const [targetEmail, setTargetEmail] = useState('');
   const [selectedRewardId, setSelectedRewardId] = useState('');
-  const [grants, setGrants] = useState<AdminRewardGrant[]>([]);
+  const [grants, setGrants] = useState<UnifiedGrant[]>([]);
 
   const knownRewards = useMemo(() => [
     ...supporterFirstRewards.map(r => ({ id: r.id, title: r.title, type: 'MANUAL' })),
     ...constancyRewards.map(r => ({ id: r.id, title: r.title, type: 'AUTO/TEST' }))
   ], []);
 
-  const refreshGrants = () => {
-    setGrants(getStoredAdminRewardGrants());
+  const refreshGrants = async () => {
+    const local = getStoredAdminRewardGrants().map(g => ({
+      email: g.email,
+      rewardId: g.rewardId,
+      reason: g.reason,
+      source: g.source,
+      grantedAt: g.grantedAt
+    }));
+
+    const remote = (await listActiveSupabaseRewardGrants()).map(g => ({
+      email: g.email,
+      rewardId: g.reward_id,
+      reason: g.reason,
+      source: g.source,
+      grantedAt: g.granted_at,
+      grantedBy: g.granted_by
+    }));
+
+    setGrants([...remote, ...local]);
   };
 
   useEffect(() => {
@@ -43,12 +75,34 @@ const AdminRewardsPage: React.FC = () => {
     checkAuth();
   }, []);
 
-  const handleAction = (action: () => void) => {
+  const handleGrant = async () => {
     if (!targetEmail.trim() || !selectedRewardId.trim()) {
       alert('Preencha o e-mail e selecione uma recompensa.');
       return;
     }
-    action();
+    
+    // Tenta primeiro no Supabase
+    const res = await grantSupabaseRewardToEmail({
+      email: targetEmail,
+      rewardId: selectedRewardId,
+      reason: 'Admin UI Global Grant',
+      grantedBy: currentUserEmail || 'unknown'
+    });
+
+    if (!res.ok) {
+      // Fallback local se falhar ou se quiser manter ambos (opcional)
+      grantRewardToEmail({ email: targetEmail, rewardId: selectedRewardId, reason: 'Admin UI Local Fallback' });
+    }
+
+    refreshGrants();
+  };
+
+  const handleRevoke = async (email: string, rewardId: string, source: string) => {
+    if (source === 'admin-supabase') {
+      await revokeSupabaseRewardFromEmail(email, rewardId);
+    } else {
+      revokeRewardFromEmail({ email, rewardId });
+    }
     refreshGrants();
   };
 
@@ -129,23 +183,11 @@ const AdminRewardsPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 pt-2">
-                  <button 
-                    onClick={() => handleAction(() => grantRewardToEmail({ email: targetEmail, rewardId: selectedRewardId, reason: 'Admin UI Grant' }))}
-                    className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-[10px] font-black uppercase shadow-lg shadow-blue-950/20 active:scale-95 transition-all"
-                  >
+                  <button onClick={handleGrant} className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-[10px] font-black uppercase shadow-lg shadow-blue-950/20 active:scale-95 transition-all">
                     Conceder
                   </button>
-                  <button 
-                    onClick={() => handleAction(() => revokeRewardFromEmail({ email: targetEmail, rewardId: selectedRewardId }))}
-                    className="border border-red-900/50 bg-red-950/20 text-red-400 hover:bg-red-950/40 rounded-xl py-3 text-[10px] font-black uppercase active:scale-95 transition-all"
-                  >
+                  <button onClick={() => handleRevoke(targetEmail, selectedRewardId, 'admin-supabase')} className="border border-red-900/50 bg-red-950/20 text-red-400 hover:bg-red-950/40 rounded-xl py-3 text-[10px] font-black uppercase active:scale-95 transition-all">
                     Revogar
-                  </button>
-                  <button 
-                    onClick={() => handleAction(() => toggleRewardGrant({ email: targetEmail, rewardId: selectedRewardId, reason: 'Admin UI Toggle' }))}
-                    className="col-span-2 border border-zinc-700 text-zinc-300 hover:bg-zinc-800 rounded-xl py-3 text-[10px] font-black uppercase transition-all"
-                  >
-                    Alternar (Toggle)
                   </button>
                 </div>
               </div>
@@ -153,7 +195,7 @@ const AdminRewardsPage: React.FC = () => {
 
             <div className="p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl">
               <p className="text-[10px] font-bold leading-relaxed text-blue-400/80 italic">
-                Nota: Nesta fase, os grants são salvos apenas no LocalStorage deste navegador. 
+                Painel administrativo de gerenciamento de recompensas premium.
               </p>
             </div>
           </section>
@@ -161,14 +203,14 @@ const AdminRewardsPage: React.FC = () => {
           {/* Coluna da Lista */}
           <section>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-black uppercase tracking-tight">Active Storage Grants</h2>
+              <h2 className="text-xl font-black uppercase tracking-tight">Active Grants</h2>
               <button onClick={refreshGrants} className="text-blue-500 text-[10px] font-black uppercase tracking-widest hover:underline">Atualizar</button>
             </div>
 
             <div className="space-y-3">
               {grants.length === 0 ? (
                 <div className="py-20 text-center border border-dashed border-zinc-800 rounded-3xl">
-                  <p className="text-zinc-600 font-bold uppercase text-xs">Nenhuma concessão local encontrada.</p>
+                  <p className="text-zinc-600 font-bold uppercase text-xs">Nenhuma concessão encontrada.</p>
                 </div>
               ) : grants.map((grant, idx) => (
                 <div key={`${grant.email}-${grant.rewardId}-${idx}`} className="group relative bg-zinc-900/30 border border-zinc-800 hover:border-zinc-700 rounded-2xl p-5 transition-all">
@@ -177,18 +219,18 @@ const AdminRewardsPage: React.FC = () => {
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-[10px] font-black text-blue-400 truncate">{grant.email}</span>
                         <span className="text-zinc-700 text-xs">•</span>
-                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{grant.source}</span>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${grant.source === 'admin-supabase' ? 'text-emerald-500' : 'text-zinc-500'}`}>{grant.source}</span>
                       </div>
                       <h3 className="text-base font-black text-amber-500 truncate">{grant.rewardId}</h3>
                       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] font-bold text-zinc-500 uppercase">
                         <span>Motivo: {grant.reason || '-'}</span>
                         <span>Data: {new Date(grant.grantedAt).toLocaleString()}</span>
+                        {grant.grantedBy && <span className="text-blue-500/80">Por: {grant.grantedBy}</span>}
                       </div>
                     </div>
                     <button 
                       onClick={() => {
-                        revokeRewardFromEmail({ email: grant.email, rewardId: grant.rewardId });
-                        refreshGrants();
+                        handleRevoke(grant.email, grant.rewardId, grant.source);
                       }}
                       className="opacity-0 group-hover:opacity-100 bg-red-950/40 text-red-500 p-2 rounded-lg hover:bg-red-900/40 transition-all"
                       title="Excluir"
