@@ -1,4 +1,5 @@
 import { supporterFirstRewards } from '../data/supporterFirstRewards';
+import { supporterRewards } from '../data/supporterRewards';
 import { constancyRewards } from '../data/constancyRewards';
 
 export type AdminRewardCatalogItem = {
@@ -26,6 +27,18 @@ export function getAdminRewardCatalog(): AdminRewardCatalogItem[] {
       category: 'supporter-first',
       grantMode: 'manual',
       source: 'data/supporterFirstRewards'
+    });
+  });
+
+  // 1.1 Apoiadores por Tier (MANUAL-OR-AUTOMATIC)
+  supporterRewards.forEach(r => {
+    catalog.push({
+      id: r.id,
+      title: `[S1] Supporter • ${r.title}`,
+      description: r.description,
+      category: 'supporter-pix',
+      grantMode: 'manual-or-automatic',
+      source: 'data/supporterRewards'
     });
   });
 
