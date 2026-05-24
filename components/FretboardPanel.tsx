@@ -571,8 +571,6 @@ useEffect(() => {
       setInstances([
         DEFAULT_FRETBOARD('pt', 'guitar-6')
       ]);
-
-      setShowLoginModal(true);
     }
 
     initialized.current = true;
