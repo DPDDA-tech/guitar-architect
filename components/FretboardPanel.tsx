@@ -188,7 +188,7 @@ const FretboardPanel: React.FC = () => {
   const [migrationMessage, setMigrationMessage] = useState('');
   const [allowLocalIdentity, setAllowLocalIdentity] = useState(() => {
     if (typeof window === 'undefined') return true;
-    return window.sessionStorage.getItem('ga_require_account_login') !== '1';
+    return window.localStorage.getItem('ga_require_account_login') !== '1';
   });
   const initialized = useRef(false);
   const authSessionBooted = useRef(false);
@@ -468,7 +468,7 @@ useEffect(() => {
     const config = loadConfig();
     const requiresAccountLogin =
       typeof window !== 'undefined' &&
-      window.sessionStorage.getItem('ga_require_account_login') === '1';
+      window.localStorage.getItem('ga_require_account_login') === '1';
 
     if (requiresAccountLogin) {
       if (config) {
@@ -587,7 +587,7 @@ useEffect(() => {
     setAuthUser(data.user);
     setAuthEmail(data.user.email || '');
     setAllowLocalIdentity(true);
-    window.sessionStorage.removeItem('ga_require_account_login');
+    window.localStorage.removeItem('ga_require_account_login');
 
     if (!authSessionBooted.current) {
       authSessionBooted.current = true;
@@ -607,7 +607,7 @@ useEffect(() => {
       setAuthUser(session.user);
       setAuthEmail(session.user.email || '');
       setAllowLocalIdentity(true);
-      window.sessionStorage.removeItem('ga_require_account_login');
+      window.localStorage.removeItem('ga_require_account_login');
 
       if (!authSessionBooted.current) {
         authSessionBooted.current = true;
@@ -624,7 +624,7 @@ useEffect(() => {
       setAuthUser(null);
       setAllowLocalIdentity(false);
       if (typeof window !== 'undefined') {
-        window.sessionStorage.setItem('ga_require_account_login', '1');
+        window.localStorage.setItem('ga_require_account_login', '1');
       }
       authSessionBooted.current = false;
     }
@@ -726,7 +726,7 @@ const handleLogout = async () => {
   setAuthUser(null);
   setAllowLocalIdentity(false);
   if (typeof window !== 'undefined') {
-    window.sessionStorage.setItem('ga_require_account_login', '1');
+    window.localStorage.setItem('ga_require_account_login', '1');
   }
   authSessionBooted.current = false;
   setInstances([]);
