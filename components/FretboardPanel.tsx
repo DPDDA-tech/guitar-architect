@@ -37,6 +37,7 @@ import { listInstruments, replaceInstruments } from '../utils/instrumentRegistry
 import { PinnedProfileBadges } from './PinnedProfileBadges';
 import { isAdminEmail } from '../utils/adminAccess';
 
+const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
 const LOCAL_MIGRATION_DEADLINE_PT = '17/06/2026';
 const LOCAL_MIGRATION_DEADLINE_EN = 'June 17, 2026';
@@ -178,6 +179,7 @@ const FretboardPanel: React.FC = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
+  const [returnContext, setReturnContext] = useState<{ label: string; path: string; source: string } | null>(null);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -465,6 +467,18 @@ useEffect(() => {
 useEffect(() => {
   if (!initialized.current) {
 
+    const rawReturn = window.localStorage.getItem(RETURN_CONTEXT_KEY);
+    if (rawReturn) {
+      try {
+        const parsed = JSON.parse(rawReturn);
+        if (parsed.path && (parsed.source === 'learn' || parsed.source === 'practice')) {
+          setReturnContext(parsed);
+        }
+      } catch (e) {
+        window.localStorage.removeItem(RETURN_CONTEXT_KEY);
+      }
+    }
+
     const config = loadConfig();
     const requiresAccountLogin =
       typeof window !== 'undefined' &&
@@ -741,6 +755,15 @@ const handleLogout = async () => {
 
   // abre modal de login novamente
   setShowLoginModal(true);
+};
+
+const handleReturnToContext = () => {
+  if (!returnContext) return;
+  const targetPath = returnContext.path;
+  window.localStorage.removeItem(RETURN_CONTEXT_KEY);
+  setReturnContext(null);
+  window.history.pushState(null, '', targetPath);
+  window.dispatchEvent(new Event('ga-route-change'));
 };
 
   const handleGlobalTranspose = (semitones: number) => {
@@ -1920,6 +1943,32 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         : 'pt-24 md:pt-48'
   }`}
 >
+
+        {returnContext && !isExporting && (
+          <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-[24px] border animate-in fade-in slide-in-from-top-2 duration-500 ${isLight ? 'bg-blue-50 border-blue-100 shadow-sm' : 'bg-blue-950/20 border-blue-500/30 shadow-2xl backdrop-blur-sm'}`}>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-500/20">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+              </div>
+              <div className="text-center sm:text-left">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-500">
+                  {returnContext.source === 'learn' ? (lang === 'pt' ? 'Sessão de estudo ativa' : 'Active study session') : (lang === 'pt' ? 'Sessão de prática ativa' : 'Active practice session')}
+                </p>
+                <h3 className={`text-sm font-black uppercase tracking-tight ${isLight ? 'text-zinc-800' : 'text-zinc-100'}`}>
+                  {returnContext.label}
+                </h3>
+              </div>
+            </div>
+            <button
+              onClick={handleReturnToContext}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+            >
+              {lang === 'pt' ? 'Voltar' : 'Return'}
+            </button>
+          </div>
+        )}
 
         {!isExporting && (!authUser || localUserOptions.length > 0) && (
           <div className={`rounded-[24px] border p-4 md:p-5 shadow-xl ${isLight ? 'border-blue-100 bg-white/92 text-zinc-800' : 'border-blue-900/50 bg-[#07111f]/92 text-zinc-100'}`}>

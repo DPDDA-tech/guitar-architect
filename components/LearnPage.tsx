@@ -166,9 +166,18 @@ const LearnPage: React.FC = () => {
   const [lang, setLang] = useState<Lang>(() => getInitialConfig()?.lang || 'pt');
   const [theme, setTheme] = useState<ThemeMode>(() => getInitialConfig()?.theme || 'dark');
   const [completedModuleIds, setCompletedModuleIds] = useState<string[]>(loadCompletedLearnModules);
-  const [activeModuleId, setActiveModuleId] = useState(() => (
-    LEARN_MODULES.find(module => !loadCompletedLearnModules().includes(module.id) && module.status !== 'completed')?.id || LEARN_MODULES[0].id
-  ));
+  const [activeModuleId, setActiveModuleId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = window.localStorage.getItem(RETURN_CONTEXT_KEY);
+      if (saved) {
+        try {
+          const ctx = JSON.parse(saved);
+          if (ctx.source === 'learn' && ctx.moduleId) return ctx.moduleId;
+        } catch { /* erro de parse ignora */ }
+      }
+    }
+    return LEARN_MODULES.find(module => !loadCompletedLearnModules().includes(module.id) && module.status !== 'completed')?.id || LEARN_MODULES[0].id;
+  });
   const [quickTool, setQuickTool] = useState<'tuner' | 'metronome' | null>(null);
   const [isMobileModuleListOpen, setIsMobileModuleListOpen] = useState(false);
   const isLight = theme === 'light';
