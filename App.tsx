@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, Suspense } from 'react';
 import FretboardPanel from './components/FretboardPanel';
 import HarmonicCyclePage from './components/HarmonicCyclePage';
 import LearnPage from './components/LearnPage';
@@ -15,6 +16,9 @@ import { constancyRewards, type ConstancyReward } from './data/constancyRewards'
 import { ConstancyUnlockToast } from './components/ConstancyUnlockToast';
 import { DevRewardGrantPanel } from './components/DevRewardGrantPanel';
 import AdminRewardsPage from './components/AdminRewardsPage';
+import EcosystemPage from './components/EcosystemPage';
+import KidsPage from './components/KidsPage';
+import TeensPage from './components/TeensPage';
 
 const getCurrentPath = () => window.location.pathname;
 
@@ -74,14 +78,17 @@ const App: React.FC = () => {
       case '/greek-modes': return <GreekModesPage />;
       case '/theme-collection': return <ThemeCollectionPage />;
       case '/profile': return <ProfilePage />;
-    case '/admin/rewards': return <AdminRewardsPage />;
+      case '/admin/rewards': return <AdminRewardsPage />;
+      case '/ecosystem': return <EcosystemPage />;
+      case '/kids': return <KidsPage />;
+      case '/teens': return <TeensPage />;
       default: return <FretboardPanel />;
     }
   };
 
   return (
     <>
-      {renderPage()}
+      {renderPage()} 
       <AchievementUnlockToast />
       {constancyToast}
       {devPanel}
