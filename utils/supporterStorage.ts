@@ -12,16 +12,27 @@ const canUseLocalStorage = () => (
 const readStringArray = (key: string, userId?: string | null): string[] => {
   if (!canUseLocalStorage()) return [];
   const scopedKey = getScopedStorageKey(key, userId);
-  try {
-    const data = window.localStorage.getItem(scopedKey);
-    if (data) {
-      const parsed = JSON.parse(data);
-      return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+  const scopedRaw = window.localStorage.getItem(scopedKey);
+
+  if (scopedRaw) {
+    try {
+      const parsed = JSON.parse(scopedRaw);
+      return Array.isArray(parsed)
+        ? parsed.filter((item: unknown): item is string => typeof item === 'string')
+        : [];
+    } catch {
+      return [];
     }
-    // Fallback para dados legados (retrocompatibilidade)
-    const legacy = window.localStorage.getItem(key);
-    const parsed = legacy ? JSON.parse(legacy) : [];
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+  }
+
+  // MIGRATION
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (userId && userId !== 'guest' && raw) {
+      window.localStorage.setItem(scopedKey, raw);
+    }
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((item: unknown): item is string => typeof item === 'string') : [];
   } catch {
     return [];
   }

@@ -64,9 +64,22 @@ export function getConstancyState(userId?: string | null): ConstancyState {
   const checkKey = getScopedStorageKey(GA_LAST_CONSTANCY_CHECK_KEY, userId);
   const rewardsKey = getScopedStorageKey(GA_UNLOCKED_CONSTANCY_REWARDS_KEY, userId);
 
-  const currentStreak = Number(localStorage.getItem(currentKey) || localStorage.getItem(GA_CURRENT_CONSTANCY_STREAK_KEY) || 0);
-  const highestStreak = Number(localStorage.getItem(highestKey) || localStorage.getItem(GA_HIGHEST_CONSTANCY_STREAK_KEY) || 0);
-  const lastCheckDate = localStorage.getItem(checkKey) || localStorage.getItem(GA_LAST_CONSTANCY_CHECK_KEY);
+  const scopedCurrent = localStorage.getItem(currentKey);
+  
+  // MIGRATION TRIGGER
+  if (userId && userId !== 'guest' && scopedCurrent === null) {
+    const legacyCurrent = localStorage.getItem(GA_CURRENT_CONSTANCY_STREAK_KEY);
+    if (legacyCurrent !== null) {
+      localStorage.setItem(currentKey, legacyCurrent);
+      localStorage.setItem(highestKey, localStorage.getItem(GA_HIGHEST_CONSTANCY_STREAK_KEY) || '0');
+      localStorage.setItem(checkKey, localStorage.getItem(GA_LAST_CONSTANCY_CHECK_KEY) || '');
+      localStorage.setItem(rewardsKey, localStorage.getItem(GA_UNLOCKED_CONSTANCY_REWARDS_KEY) || '[]');
+    }
+  }
+
+  const currentStreak = Number(localStorage.getItem(currentKey) || 0);
+  const highestStreak = Number(localStorage.getItem(highestKey) || 0);
+  const lastCheckDate = localStorage.getItem(checkKey);
   
   let unlockedRewardIds: string[] = [];
   try {

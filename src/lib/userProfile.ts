@@ -1,4 +1,5 @@
 import { getScopedStorageKey } from '../../utils/persistence';
+import { isAdminEmail } from '../../utils/adminAccess';
 
 export interface UserProfile {
   displayName: string;
@@ -27,9 +28,33 @@ export const loadUserProfile = (userId?: string | null): UserProfile => {
   if (!canUseLocalStorage()) return getDefaultUserProfile();
 
   const key = getScopedStorageKey(PROFILE_KEY, userId);
+  const scopedData = window.localStorage.getItem(key);
+
+  if (scopedData) {
+    try {
+      return { ...getDefaultUserProfile(), ...JSON.parse(scopedData) };
+    } catch { return getDefaultUserProfile(); }
+  }
+
+  // MIGRATION: Se for usuário real e não tiver dado escopado
   try {
-    const raw = window.localStorage.getItem(key) || window.localStorage.getItem(PROFILE_KEY);
+    const raw = window.localStorage.getItem(PROFILE_KEY);
     if (!raw) return getDefaultUserProfile();
+    
+    const legacyProfile = JSON.parse(raw) as UserProfile;
+    
+    if (userId && userId !== 'guest') {
+      const isUserAdmin = isAdminEmail(legacyProfile.email);
+      // Regra 3: Não migrar dados sensíveis para contas comuns novas
+      const profileToMigrate: UserProfile = isUserAdmin ? legacyProfile : {
+        ...getDefaultUserProfile(),
+        displayName: legacyProfile.displayName,
+        email: legacyProfile.email,
+      };
+      saveUserProfile(profileToMigrate, userId);
+      return profileToMigrate;
+    }
+
     const parsed = JSON.parse(raw) as Partial<UserProfile>;
     return {
       ...getDefaultUserProfile(),

@@ -13,9 +13,19 @@ export const loadThemeCollectionState = (userId?: string | null): ThemeCollectio
   if (typeof window === 'undefined') return getDefaultThemeState();
   const fallback = getDefaultThemeState();
   const key = getScopedStorageKey(STORAGE_KEY, userId);
+  const scopedData = window.localStorage.getItem(key);
+
+  if (scopedData) {
+    try { return JSON.parse(scopedData); } catch { return fallback; }
+  }
+
+  // MIGRATION
   try {
-    const raw = window.localStorage.getItem(key) || window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return fallback;
+    if (userId && userId !== 'guest') {
+      window.localStorage.setItem(key, raw);
+    }
     const parsed = JSON.parse(raw) as Partial<ThemeCollectionState>;
     const knownIds = new Set(THEME_REGISTRY.map(item => item.id));
     const unlockedThemeIds = Array.from(new Set([
