@@ -1,10 +1,14 @@
-
 import { AppState, Project } from '../types';
 import { InstrumentType } from '../types';
 
-// library agora é dinâmica por usuário
-const getProjectsKey = (user: string) =>
-  `ga_library_${user || 'guest'}`;
+/**
+ * Gera uma chave de storage escopada por usuário (UUID) ou guest.
+ */
+export function getScopedStorageKey(baseKey: string, userId?: string | null) {
+  // Impede que e-mail ou displayName sejam usados como chave de persistência
+  const isGuest = !userId || userId === 'guest';
+  return isGuest ? `${baseKey}_guest` : `${baseKey}_${userId}`;
+}
 
 const CONFIG_KEY = 'ga_config';
 const PROJECTS_KEY = 'ga_library';
@@ -18,38 +22,44 @@ const safeParse = <T,>(raw: string | null): T | null => {
   }
 };
 
-export const saveConfig = (state: AppState) => {
-
-  const key = `${CONFIG_KEY}_${state.currentUser || 'guest'}`;
-
+export const saveConfig = (state: AppState, userId?: string | null) => {
+  const effectiveId = userId || state.currentUser;
+  const key = getScopedStorageKey(CONFIG_KEY, effectiveId);
+  
+  // Salva o estado completo na chave escopada (UUID ou guest)
   localStorage.setItem(
     key,
     JSON.stringify(state)
   );
 
-  // bootstrap
+  // Mirror global (Bootstrap leve): apenas o essencial para restaurar a sessão
+  // NÃO inclui userLogo, projetos ativos ou dados de profile
+  const bootstrapConfig = {
+    version: state.version,
+    currentUser: effectiveId,
+    theme: state.theme,
+    lang: state.lang,
+    defaultInstrument: state.defaultInstrument,
+    showTips: state.showTips,
+  };
+
   localStorage.setItem(
     CONFIG_KEY,
-    JSON.stringify(state)
+    JSON.stringify(bootstrapConfig)
   );
 };
 
-export const loadConfig = (): AppState | null => {
-
+export const loadConfig = (userId?: string | null): AppState | null => {
   // 🔎 tenta descobrir último usuário salvo
   const global = localStorage.getItem(CONFIG_KEY);
-
   if (!global) return null;
 
   try {
-
     const parsed = JSON.parse(global);
+    const targetId = userId || parsed.currentUser;
 
-    const userKey =
-      `${CONFIG_KEY}_${parsed.currentUser || 'guest'}`;
-
-    const userConfig =
-      localStorage.getItem(userKey);
+    const userKey = getScopedStorageKey(CONFIG_KEY, targetId);
+    const userConfig = localStorage.getItem(userKey);
 
     return userConfig
       ? JSON.parse(userConfig)
@@ -63,23 +73,14 @@ export const loadConfig = (): AppState | null => {
 
 };
 
-
-export const getLibrary = (user: string): Project[] => {
-  const data = localStorage.getItem(
-    getProjectsKey(user)
-  );
+export const getLibrary = (userId?: string | null): Project[] => {
+  const key = getScopedStorageKey(PROJECTS_KEY, userId);
+  const data = localStorage.getItem(key);
   if (data) return JSON.parse(data);
 
+  // Fallback apenas para projetos legados sem UUID
   const legacyData = localStorage.getItem(PROJECTS_KEY);
-  if (!legacyData) return [];
-
-  try {
-    return JSON.parse(legacyData).filter(
-      (project: Project) => project.user === user
-    );
-  } catch {
-    return [];
-  }
+  return legacyData ? JSON.parse(legacyData) : [];
 };
 
 export const listLocalUsers = (): string[] => {
@@ -111,50 +112,34 @@ export const listLocalUsers = (): string[] => {
   return Array.from(users).sort((a, b) => a.localeCompare(b));
 };
 
-export const saveProjectToLibrary = (project: Project) => {
-
-  const library = getLibrary(project.user);
+export const saveProjectToLibrary = (project: Project, userId?: string | null) => {
+  const effectiveId = userId || project.user;
+  const library = getLibrary(effectiveId);
 
   // 🔒 procura projeto do mesmo usuário + mesmo id
-  const index = library.findIndex(
-    p =>
-      p.id === project.id &&
-      p.user === project.user
-  );
+  const index = library.findIndex(p => p.id === project.id);
 
   if (index >= 0) {
-
-    library[index] = {
-      ...project,
-      lastUpdated: new Date().toISOString()
-    };
+    library[index] = { ...project, lastUpdated: new Date().toISOString() };
 
   } else {
-
-    library.push({
-      ...project,
-      lastUpdated: new Date().toISOString()
-    });
-
+    library.push({ ...project, lastUpdated: new Date().toISOString() });
   }
 
   localStorage.setItem(
-    getProjectsKey(project.user),
+    getScopedStorageKey(PROJECTS_KEY, effectiveId),
     JSON.stringify(library)
   );
 };
 
 export const deleteProject = (
   id: string,
-  user: string
+  userId: string
 ) => {
-
-  const library = getLibrary(user).filter(
-    p => p.id !== id
-  );
+  const library = getLibrary(userId).filter(p => p.id !== id);
 
   localStorage.setItem(
-    getProjectsKey(user),
+    getScopedStorageKey(PROJECTS_KEY, userId),
     JSON.stringify(library)
   );
 };

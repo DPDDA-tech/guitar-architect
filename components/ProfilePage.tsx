@@ -28,8 +28,10 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setAuthUser(data.user ?? null);
-      if (data.user) {
-        const currentProfile = loadUserProfile();
+      const userId = data.user?.id;
+      if (data.user && userId) {
+        // PRIORIDADE: Dados escopados pelo UUID do Supabase
+        const currentProfile = loadUserProfile(userId);
         const next = {
           ...currentProfile,
           displayName: currentProfile.displayName || getSupabaseDisplayName(data.user),
@@ -41,10 +43,11 @@ const ProfilePage: React.FC = () => {
   }, []);
 
   const updateConfig = (patch: Partial<AppState>) => {
-    const current = loadConfig();
+    const userId = authUser?.id;
+    const current = loadConfig(userId);
     if (!current) return;
     const next = { ...current, ...patch };
-    saveConfig(next);
+    saveConfig(next, userId);
     setConfig(next);
   };
 
@@ -54,17 +57,19 @@ const ProfilePage: React.FC = () => {
   };
 
   const syncProfile = async (nextProfile: UserProfile, nextLogo = logo) => {
-    const saved = saveUserProfile(nextProfile);
+    const userId = authUser?.id;
+    const saved = saveUserProfile(nextProfile, userId);
     setProfile(saved);
 
-    const current = loadConfig();
+    const current = loadConfig(userId);
     if (current) {
       const nextConfig = {
         ...current,
-        currentUser: saved.displayName || current.currentUser,
+        // currentUser mantém o UUID para consistência de storage
+        currentUser: userId || current.currentUser,
         userLogo: nextLogo || undefined,
       };
-      saveConfig(nextConfig);
+      saveConfig(nextConfig, userId);
       setConfig(nextConfig);
     }
 

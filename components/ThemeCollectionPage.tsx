@@ -20,6 +20,7 @@ import { supporterFirstRewards } from '../data/supporterFirstRewards';
 import { getEligibleFirstSupporterRewardIds } from '../utils/supporterFirstEligibility';
 import { supabase } from '../src/lib/supabase';
 import { constancyRewards } from '../data/constancyRewards';
+import { isAdminEmail } from '../utils/adminAccess';
 import { getConstancyState, getNextConstancyMilestone } from '../utils/constancyStorage';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
@@ -127,19 +128,23 @@ const getInitialConfig = (): AppState | null => {
 };
 
 const ThemeCollectionPage: React.FC = () => {
-  const [lang, setLang] = useState<Lang>(() => getInitialConfig()?.lang || 'pt');
-  const [theme, setTheme] = useState<ThemeMode>(() => getInitialConfig()?.theme || 'dark');
-  const [collectionState, setCollectionState] = useState(loadThemeCollectionState);
+  const config = useMemo(() => getInitialConfig(), []);
+  const [lang, setLang] = useState<Lang>(() => config?.lang || 'pt');
+  const [theme, setTheme] = useState<ThemeMode>(() => config?.theme || 'dark');
+  const currentUserId = useMemo(() => config?.currentUser, [config]);
+
+  const [collectionState, setCollectionState] = useState(() => loadThemeCollectionState(currentUserId));
   const [previewTheme, setPreviewTheme] = useState<typeof THEME_REGISTRY[number] | null>(null);
   const [previewAsset, setPreviewAsset] = useState<CollectionPreview | null>(null);
   const [supporterToast, setSupporterToast] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const constancyState = useMemo(() => getConstancyState(), []);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const constancyState = useMemo(() => getConstancyState(currentUserId), [currentUserId]);
   const nextMilestone = useMemo(() => getNextConstancyMilestone(constancyState.currentStreak), [constancyState.currentStreak]);
-  const currentUserId = useMemo(() => getInitialConfig()?.currentUser, []);
   const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<string[]>(() => getUnlockedAchievementIds(currentUserId));
-  const [supporterTotal, setSupporterTotal] = useState(() => getSupporterContributionTotal());
-  const [supporterInput, setSupporterInput] = useState(() => String(getSupporterContributionTotal()));
+  const [supporterTotal, setSupporterTotal] = useState(() => getSupporterContributionTotal(currentUserId));
+  const [supporterInput, setSupporterInput] = useState(() => String(getSupporterContributionTotal(currentUserId)));
   const isLight = theme === 'light';
   const achievementUnlockedThemeIds = useMemo(() => {
     const unlockedAssets = new Set<string>();
@@ -215,6 +220,7 @@ const ThemeCollectionPage: React.FC = () => {
       const { data } = await supabase.auth.getUser();
       if (data.user?.email) {
         setUserEmail(data.user.email);
+        setIsAdmin(isAdminEmail(data.user.email));
       }
     };
     fetchUser();
@@ -244,13 +250,13 @@ const ThemeCollectionPage: React.FC = () => {
   }, [currentUserId]);
 
   useEffect(() => {
-    syncUnlockedSupporterRewards(supporterTotal);
+    syncUnlockedSupporterRewards(supporterTotal, currentUserId);
   }, [supporterTotal]);
 
   const persistConfigPatch = (patch: Partial<AppState>) => {
-    const current = loadConfig();
+    const current = loadConfig(currentUserId);
     if (!current) return;
-    saveConfig({ ...current, ...patch });
+    saveConfig({ ...current, ...patch }, currentUserId);
   };
 
   const toggleTheme = () => {
@@ -268,7 +274,7 @@ const ThemeCollectionPage: React.FC = () => {
   const handleSelect = (themeId: string) => {
     const next = selectTheme(themeId, effectiveCollectionState);
     setCollectionState(next);
-    saveThemeCollectionState(next);
+    saveThemeCollectionState(next, currentUserId);
   };
 
   const updateSupporterTotal = () => {
@@ -290,8 +296,8 @@ const ThemeCollectionPage: React.FC = () => {
       return;
     }
     
-    setSupporterContributionTotal(value);
-    setSupporterTotal(getSupporterContributionTotal());
+    setSupporterContributionTotal(value, currentUserId);
+    setSupporterTotal(getSupporterContributionTotal(currentUserId));
   };
 
   const handleCopyPixKey = async () => {

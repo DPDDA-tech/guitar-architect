@@ -1,4 +1,5 @@
 import { constancyRewards } from '../data/constancyRewards';
+import { getScopedStorageKey } from './persistence';
 
 export const GA_CURRENT_CONSTANCY_STREAK_KEY = 'ga_current_constancy_streak';
 export const GA_HIGHEST_CONSTANCY_STREAK_KEY = 'ga_highest_constancy_streak';
@@ -53,19 +54,24 @@ export function getDateDiffInDays(fromDateKey: string, toDateKey: string): numbe
 /**
  * Recupera o estado atual de constância do localStorage.
  */
-export function getConstancyState(): ConstancyState {
+export function getConstancyState(userId?: string | null): ConstancyState {
   if (typeof window === 'undefined') {
     return { currentStreak: 0, highestStreak: 0, lastCheckDate: null, unlockedRewardIds: [] };
   }
 
-  const currentStreak = Number(localStorage.getItem(GA_CURRENT_CONSTANCY_STREAK_KEY) || 0);
-  const highestStreak = Number(localStorage.getItem(GA_HIGHEST_CONSTANCY_STREAK_KEY) || 0);
-  const lastCheckDate = localStorage.getItem(GA_LAST_CONSTANCY_CHECK_KEY);
+  const currentKey = getScopedStorageKey(GA_CURRENT_CONSTANCY_STREAK_KEY, userId);
+  const highestKey = getScopedStorageKey(GA_HIGHEST_CONSTANCY_STREAK_KEY, userId);
+  const checkKey = getScopedStorageKey(GA_LAST_CONSTANCY_CHECK_KEY, userId);
+  const rewardsKey = getScopedStorageKey(GA_UNLOCKED_CONSTANCY_REWARDS_KEY, userId);
+
+  const currentStreak = Number(localStorage.getItem(currentKey) || localStorage.getItem(GA_CURRENT_CONSTANCY_STREAK_KEY) || 0);
+  const highestStreak = Number(localStorage.getItem(highestKey) || localStorage.getItem(GA_HIGHEST_CONSTANCY_STREAK_KEY) || 0);
+  const lastCheckDate = localStorage.getItem(checkKey) || localStorage.getItem(GA_LAST_CONSTANCY_CHECK_KEY);
   
   let unlockedRewardIds: string[] = [];
   try {
-    const stored = localStorage.getItem(GA_UNLOCKED_CONSTANCY_REWARDS_KEY);
-    unlockedRewardIds = stored ? JSON.parse(stored) : [];
+    const raw = localStorage.getItem(rewardsKey) || localStorage.getItem(GA_UNLOCKED_CONSTANCY_REWARDS_KEY);
+    unlockedRewardIds = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(unlockedRewardIds)) unlockedRewardIds = [];
   } catch {
     unlockedRewardIds = [];
@@ -77,15 +83,20 @@ export function getConstancyState(): ConstancyState {
 /**
  * Salva o estado de constância no localStorage.
  */
-export function saveConstancyState(state: ConstancyState): void {
+export function saveConstancyState(state: ConstancyState, userId?: string | null): void {
   if (typeof window === 'undefined') return;
 
-  localStorage.setItem(GA_CURRENT_CONSTANCY_STREAK_KEY, String(state.currentStreak));
-  localStorage.setItem(GA_HIGHEST_CONSTANCY_STREAK_KEY, String(state.highestStreak));
-  localStorage.setItem(GA_LAST_CONSTANCY_CHECK_KEY, state.lastCheckDate || '');
+  const currentKey = getScopedStorageKey(GA_CURRENT_CONSTANCY_STREAK_KEY, userId);
+  const highestKey = getScopedStorageKey(GA_HIGHEST_CONSTANCY_STREAK_KEY, userId);
+  const checkKey = getScopedStorageKey(GA_LAST_CONSTANCY_CHECK_KEY, userId);
+  const rewardsKey = getScopedStorageKey(GA_UNLOCKED_CONSTANCY_REWARDS_KEY, userId);
+
+  localStorage.setItem(currentKey, String(state.currentStreak));
+  localStorage.setItem(highestKey, String(state.highestStreak));
+  localStorage.setItem(checkKey, state.lastCheckDate || '');
   
   const uniqueIds = Array.from(new Set(state.unlockedRewardIds.filter(Boolean)));
-  localStorage.setItem(GA_UNLOCKED_CONSTANCY_REWARDS_KEY, JSON.stringify(uniqueIds));
+  localStorage.setItem(rewardsKey, JSON.stringify(uniqueIds));
 }
 
 /**
@@ -118,8 +129,8 @@ export function getNextConstancyMilestone(streak?: number): NextConstancyMilesto
 /**
  * Registra uma visita e atualiza os streaks e recompensas desbloqueadas.
  */
-export function recordConstancyVisit(date: Date = new Date()): ConstancyUpdateResult {
-  const state = getConstancyState();
+export function recordConstancyVisit(date: Date = new Date(), userId?: string | null): ConstancyUpdateResult {
+  const state = getConstancyState(userId);
   const todayKey = getTodayDateKey(date);
 
   if (state.lastCheckDate === todayKey) {
@@ -153,6 +164,6 @@ export function recordConstancyVisit(date: Date = new Date()): ConstancyUpdateRe
     unlockedRewardIds: nextUnlockedIds
   };
 
-  saveConstancyState(newState);
+  saveConstancyState(newState, userId);
   return { state: newState, newlyUnlockedRewardIds, changed: true };
 }

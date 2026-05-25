@@ -209,36 +209,36 @@ const FretboardPanel: React.FC = () => {
 
   const t = translations[lang] || translations['pt'];
 
-const switchUserSession = (newUser: string) => {
+const switchUserSession = (newUserId: string, displayName: string) => {
 
   // ============================
   // 1️⃣ SALVA SESSÃO ATUAL
   // ============================
 
   if (user && initialized.current) {
-
+    const currentUserId = authUser?.id || 'guest';
     const currentProject: Project = {
       id: projectId,
       name: projectName,
-      user,
+      user: currentUserId, // UUID
       lastUpdated: new Date().toISOString(),
       instances,
       globalTransposition: globalTranspose
     };
 
-    saveProjectToLibrary(currentProject);
+    saveProjectToLibrary(currentProject, currentUserId);
 
     saveConfig({
       version: "1.8.7",
       activeProjectId: projectId,
       theme,
       lang,
-      currentUser: user,
+        currentUser: currentUserId,
       userLogo,
       defaultInstrument,
       showTips
-    });
-  }
+      }, currentUserId);
+    }
 
   // ============================
   // 2️⃣ LIMPA WORKSPACE (CRÍTICO)
@@ -249,6 +249,12 @@ const switchUserSession = (newUser: string) => {
   setProjectId(crypto.randomUUID());
   setGlobalTranspose(0);
 
+  // RESET DE IDENTIDADE (CRÍTICO)
+  // Limpa logos, instruções, contextos de retorno e estados transitórios
+  setUserLogo(undefined);
+  setInstruction(null);
+  setReturnContext(null);
+
   // ⚠️ força novo ciclo de boot
   initialized.current = false;
 
@@ -256,17 +262,26 @@ const switchUserSession = (newUser: string) => {
   // 3️⃣ DEFINE NOVO USUÁRIO
   // ============================
 
-  setUser(newUser);
+  setUser(displayName);
 
   // ============================
   // 4️⃣ BOOT NOVA SESSÃO
   // ============================
 
-  const config = loadConfig();
-  const library = getLibrary(newUser);
+  // Carrega configuração específica do usuário (UUID-scoped)
+  const userSpecificConfig = loadConfig(newUserId);
+  if (userSpecificConfig) {
+    setTheme(userSpecificConfig.theme || 'light');
+    setLang(userSpecificConfig.lang || 'pt');
+    setShowTips(userSpecificConfig.showTips ?? true);
+    setDefaultInstrument(userSpecificConfig.defaultInstrument || 'guitar-6');
+    setUserLogo(userSpecificConfig.userLogo);
+  }
+
+  const library = getLibrary(newUserId);
 
   const userProjects = library
-    .filter(p => p.user === newUser)
+    .filter(p => p.user === newUserId)
     .sort(
       (a, b) =>
         new Date(b.lastUpdated).getTime() -
@@ -294,7 +309,7 @@ const switchUserSession = (newUser: string) => {
 
     // usuário novo → workspace limpo
     setInstances([
-      DEFAULT_FRETBOARD(lang, 'guitar-6')
+        DEFAULT_FRETBOARD(userSpecificConfig?.lang || lang, userSpecificConfig?.defaultInstrument || 'guitar-6')
     ]);
   }
 
@@ -343,9 +358,9 @@ const handleSupabaseAuth = async () => {
   if (result.data.user) {
     const identity = getSupabaseDisplayName(result.data.user);
     setAuthUser(result.data.user);
-    setUser(identity);
+      setUser(identity); // Display Name para UI
     authSessionBooted.current = true;
-    switchUserSession(identity);
+      switchUserSession(result.data.user.id, identity);
     void syncSupabaseSnapshot(result.data.user.id, identity);
   }
 
@@ -623,7 +638,7 @@ useEffect(() => {
 
     if (!authSessionBooted.current) {
       authSessionBooted.current = true;
-      switchUserSession(identity);
+        switchUserSession(data.user.id, identity);
       recordAppLoyaltyVisit(new Date(), identity);
       recordAppAnniversaryVisit(new Date(), data.user.created_at, identity);
       void syncSupabaseSnapshot(data.user.id, identity);
@@ -643,7 +658,7 @@ useEffect(() => {
 
       if (!authSessionBooted.current) {
         authSessionBooted.current = true;
-        switchUserSession(identity);
+        switchUserSession(session.user.id, identity);
         recordAppLoyaltyVisit(new Date(), identity);
         recordAppAnniversaryVisit(new Date(), session.user.created_at, identity);
         void syncSupabaseSnapshot(session.user.id, identity);
@@ -670,33 +685,34 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (initialized.current && !isExporting && user) {
+  if (initialized.current && !isExporting) {
     setSaveStatus('saving');
 
     const timer = setTimeout(() => {
+      const currentUserId = authUser?.id || 'guest';
       const currentProject: Project = {
         id: projectId,
         name: projectName,
-        user: user,
+        user: currentUserId, // UUID
         lastUpdated: new Date().toISOString(),
         instances: instances,
         globalTransposition: globalTranspose
       };
 
-      saveProjectToLibrary(currentProject);
+      saveProjectToLibrary(currentProject, currentUserId);
 
       saveConfig({
         version: "1.8.7",
         activeProjectId: projectId,
         theme,
         lang,
-        currentUser: user,
+        currentUser: currentUserId,
         userLogo: userLogo,
         defaultInstrument,
         showTips,
-      });
+      }, currentUserId);
 
-      if (authUser) {
+      if (authUser?.id) {
         void pushLocalSnapshotToSupabase(authUser.id, user);
       }
 
@@ -726,28 +742,29 @@ const handleLogout = async () => {
 
   // salva sessão atual antes de sair
   if (user && initialized.current) {
+    const currentUserId = authUser?.id || 'guest';
 
     const currentProject: Project = {
       id: projectId,
       name: projectName,
-      user,
+      user: currentUserId, // UUID para ownership
       lastUpdated: new Date().toISOString(),
       instances,
       globalTransposition: globalTranspose
     };
 
-    saveProjectToLibrary(currentProject);
+    saveProjectToLibrary(currentProject, currentUserId);
 
     saveConfig({
       version: "1.8.7",
       activeProjectId: projectId,
       theme,
       lang,
-      currentUser: user,
+      currentUser: currentUserId,
       userLogo,
       defaultInstrument,
       showTips
-    });
+    }, currentUserId);
   }
 
   // limpa sessão
@@ -761,12 +778,16 @@ const handleLogout = async () => {
     window.localStorage.setItem('ga_require_account_login', '1');
   }
   authSessionBooted.current = false;
+
+    // Limpeza profunda de estados em memória
   setInstances([]);
   setUser('');
   setProjectName('Novo Projeto');
   setProjectId(crypto.randomUUID());
   setGlobalTranspose(0);
   setUserLogo(undefined);
+    setInstruction(null);
+    setReturnContext(null);
 
   initialized.current = false;
 
@@ -2250,7 +2271,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       alert(getDisplayNameError(lang));
       return;
     }
-    switchUserSession(user.trim());
+    switchUserSession(authUser?.id || 'guest', user.trim());
     setShowLoginModal(false);
   }
 }}
@@ -2272,7 +2293,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         alert(getDisplayNameError(lang));
         return;
       }
-      switchUserSession(user.trim());
+      switchUserSession(authUser?.id || 'guest', user.trim());
       setShowLoginModal(false);
     }
   }}

@@ -1,3 +1,5 @@
+import { getScopedStorageKey } from '../../utils/persistence';
+
 export interface UserProfile {
   displayName: string;
   email: string;
@@ -21,11 +23,12 @@ export const getDefaultUserProfile = (): UserProfile => ({
   updatedAt: new Date().toISOString(),
 });
 
-export const loadUserProfile = (): UserProfile => {
+export const loadUserProfile = (userId?: string | null): UserProfile => {
   if (!canUseLocalStorage()) return getDefaultUserProfile();
 
+  const key = getScopedStorageKey(PROFILE_KEY, userId);
   try {
-    const raw = window.localStorage.getItem(PROFILE_KEY);
+    const raw = window.localStorage.getItem(key) || window.localStorage.getItem(PROFILE_KEY);
     if (!raw) return getDefaultUserProfile();
     const parsed = JSON.parse(raw) as Partial<UserProfile>;
     return {
@@ -38,14 +41,15 @@ export const loadUserProfile = (): UserProfile => {
   }
 };
 
-export const saveUserProfile = (profile: UserProfile) => {
+export const saveUserProfile = (profile: UserProfile, userId?: string | null) => {
   const next = {
     ...profile,
     updatedAt: new Date().toISOString(),
   };
 
+  const key = getScopedStorageKey(PROFILE_KEY, userId);
   if (canUseLocalStorage()) {
-    window.localStorage.setItem(PROFILE_KEY, JSON.stringify(next));
+    window.localStorage.setItem(key, JSON.stringify(next));
   }
 
   return next;
