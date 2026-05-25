@@ -1418,6 +1418,7 @@ const handleReturnToContext = () => {
               </button>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {[
+                  { label: lang === 'pt' ? 'Ecossistema' : 'Ecosystem', path: '/ecosystem', wide: true },
                   { label: lang === 'pt' ? 'Aprender' : 'Learn', path: '/learn' },
                   { label: lang === 'pt' ? 'Praticar' : 'Practice', path: '/practice' },
                   { label: lang === 'pt' ? 'Acordes' : 'Chords', path: '/chords' },
@@ -1571,8 +1572,9 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
             <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
                <div className="hidden xl:flex flex-col gap-1.5">
-              <div className="grid grid-cols-6 gap-1.5">
+              <div className="grid grid-cols-7 gap-1.5">
                    {[
+                     { label: lang === 'pt' ? 'Ecossistema' : 'Ecosystem', onClick: () => openModulePage('/ecosystem') },
                      { label: lang === 'pt' ? 'Aprender' : 'Learn', onClick: () => openModulePage('/learn') },
                      { label: lang === 'pt' ? 'Praticar' : 'Practice', onClick: () => openModulePage('/practice') },
                      { label: lang === 'pt' ? 'Metrônomo' : 'Metronome', onClick: openMetronomeTool },
@@ -1801,6 +1803,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
         <div className="grid grid-cols-2 gap-2 [&>button]:min-w-0">
           {[
+            { label: lang === 'pt' ? 'ECOSSISTEMA' : 'ECOSYSTEM', path: '/ecosystem', wide: true },
             { label: lang === 'pt' ? 'APRENDER' : 'LEARN', path: '/learn' },
             { label: lang === 'pt' ? 'PRATICAR' : 'PRACTICE', path: '/practice' },
             { label: lang === 'pt' ? 'ACORDES' : 'CHORDS', path: '/chords' },
