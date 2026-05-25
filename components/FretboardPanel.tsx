@@ -36,6 +36,7 @@ import { canUseDisplayName, getDisplayNameError, getSupabaseDisplayName } from '
 import { listInstruments, replaceInstruments } from '../utils/instrumentRegistry';
 import { PinnedProfileBadges } from './PinnedProfileBadges';
 import { isAdminEmail } from '../utils/adminAccess';
+import { FretboardInstructionCard, type FretboardInstruction } from './FretboardInstructionCard';
 
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
@@ -66,6 +67,7 @@ interface PendingFretboardAction {
   moduleLabel?: string;
   tool?: 'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes';
   bpm?: number;
+  instruction?: FretboardInstruction;
   harmonyMode?: 'TRIADS' | 'TETRADS';
   chordQuality?: FretboardState['chordQuality'];
   chordDegree?: number;
@@ -164,6 +166,7 @@ const FretboardPanel: React.FC = () => {
   const [userLogo, setUserLogo] = useState<string | undefined>(undefined);
   const [defaultInstrument, setDefaultInstrument] = useState<InstrumentType>('guitar-6');
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [activeInstruction, setInstruction] = useState<FretboardInstruction | null>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
@@ -1138,6 +1141,14 @@ const handleReturnToContext = () => {
       return;
     }
 
+    if (pending.instruction) {
+      setInstruction(pending.instruction);
+      
+      if (pending.instruction.durationMs && !pending.instruction.persistent) {
+        window.setTimeout(() => setInstruction(null), pending.instruction.durationMs);
+      }
+    }
+
     const applyToDiagram = (instance: FretboardState): FretboardState => {
       const isHarmonyAction = pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression';
       const isScaleAction = pending.action === 'scale' || pending.action === 'startPractice';
@@ -1979,6 +1990,15 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
               {lang === 'pt' ? 'Voltar' : 'Return'}
             </button>
           </div>
+        )}
+
+        {activeInstruction && (
+          <FretboardInstructionCard 
+            instruction={activeInstruction} 
+            isLight={isLight} 
+            lang={lang} 
+            onClose={() => setInstruction(null)} 
+          />
         )}
 
         {!isExporting && (!authUser || localUserOptions.length > 0) && (

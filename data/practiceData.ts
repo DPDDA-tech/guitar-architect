@@ -207,7 +207,19 @@ export const PRACTICE_EXERCISES: PracticeExercise[] = [
     type: 'Ritmo',
     bpmStart: 60,
     bpmTarget: 80,
-    payload: basePayload('startPractice', 'C', 'Major (Ionian)', { practiceMode: 'rhythm', subdivision: 'quarters', quickTab: 'visual' }),
+    payload: basePayload('startPractice', 'C', 'Major (Ionian)', { 
+      practiceMode: 'rhythm', 
+      subdivision: 'quarters', 
+      quickTab: 'visual',
+      instruction: { 
+        title: 'Sincronia Inicial', 
+        description: 'Toque a corda Mi solta lentamente e observe a sincronização entre as mãos.', 
+        hint: 'Mantenha movimentos pequenos.', 
+        source: 'practice',
+        durationMs: 10000,
+        persistent: false 
+      }
+    }),
   },
   {
     id: 'quarter-notes-metronome',

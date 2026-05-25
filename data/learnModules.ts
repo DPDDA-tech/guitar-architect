@@ -152,7 +152,18 @@ export const LEARN_MODULES: LearnModule[] = [
     actions: [
       { id: 'open-tuner', label: 'Abrir afinador', type: 'openTool', payload: openToolAction('tuner') },
       { id: 'open-metronome', label: 'Abrir metrônomo', type: 'openTool', payload: openToolAction('metronome') },
-      { id: 'sincronia-zero-action', label: 'Praticar Sincronia Zero', type: 'startPractice', payload: startPracticeAction('C', 'Major (Ionian)', 60, { exerciseId: 'sincronia-zero', practiceMode: 'rhythm', subdivision: 'quarters', quickTab: 'visual' }) },
+      { 
+        id: 'sincronia-zero-action', 
+        label: 'Praticar Sincronia Zero', 
+        type: 'startPractice', 
+        payload: startPracticeAction('C', 'Major (Ionian)', 60, { 
+          exerciseId: 'sincronia-zero', 
+          practiceMode: 'rhythm', 
+          subdivision: 'quarters', 
+          quickTab: 'visual',
+          instruction: { title: 'Sincronia Inicial', description: 'Toque a corda Mi solta lentamente e observe a sincronização entre as mãos.', hint: 'Mantenha movimentos pequenos.', source: 'learn', durationMs: 8000 }
+        }) 
+      },
     ],
     relatedTools: [
       { id: 'tool-tuner', label: 'Afinador', description: 'Prepare a afinação antes do estudo.', type: 'openTool', payload: openToolAction('tuner') },
