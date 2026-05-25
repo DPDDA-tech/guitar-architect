@@ -172,6 +172,7 @@ const FretboardPanel: React.FC = () => {
   const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showMyInstruments, setShowMyInstruments] = useState(false);
+  const instructionTimeoutRef = useRef<number | null>(null);
   const [showTips, setShowTips] = useState(true);
   const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
 
@@ -198,6 +199,13 @@ const FretboardPanel: React.FC = () => {
   const initialized = useRef(false);
   const authSessionBooted = useRef(false);
   const projectFileInputRef = useRef<HTMLInputElement>(null);
+
+  const clearInstructionTimeout = useCallback(() => {
+    if (instructionTimeoutRef.current) {
+      window.clearTimeout(instructionTimeoutRef.current);
+      instructionTimeoutRef.current = null;
+    }
+  }, []);
 
   const t = translations[lang] || translations['pt'];
 
@@ -442,18 +450,24 @@ const handleMigrateLocalIdentity = async (sourceIdentity: string) => {
 
   useEffect(() => {
   const handleResize = () => {
-    const isTouchLayout = window.matchMedia?.('(pointer: coarse)').matches && window.innerWidth < 1200;
-    setIsSmallScreen(window.innerWidth < 1024 || isTouchLayout);
+    const isTouchLayout =
+      window.matchMedia?.('(pointer: coarse)').matches &&
+      window.innerWidth < 1200;
+
+    setIsSmallScreen(
+      window.innerWidth < 1024 || isTouchLayout
+    );
   };
 
-  handleResize(); // boot inicial
+  handleResize();
 
   window.addEventListener('resize', handleResize);
 
   return () => {
+    clearInstructionTimeout();
     window.removeEventListener('resize', handleResize);
   };
-}, []);
+}, [clearInstructionTimeout]);
 
 useEffect(() => {
   if (isSmallScreen) {
@@ -1142,10 +1156,12 @@ const handleReturnToContext = () => {
     }
 
     if (pending.instruction) {
+      clearInstructionTimeout();
       setInstruction(pending.instruction);
       
+
       if (pending.instruction.durationMs && !pending.instruction.persistent) {
-        window.setTimeout(() => setInstruction(null), pending.instruction.durationMs);
+        instructionTimeoutRef.current = window.setTimeout(() => setInstruction(null), pending.instruction.durationMs);
       }
     }
 
@@ -1997,7 +2013,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             instruction={activeInstruction} 
             isLight={isLight} 
             lang={lang} 
-            onClose={() => setInstruction(null)} 
+            onClose={() => {
+              clearInstructionTimeout();
+              setInstruction(null);
+            }} 
           />
         )}
 
