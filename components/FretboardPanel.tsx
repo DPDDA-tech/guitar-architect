@@ -79,7 +79,7 @@ interface PendingFretboardAction {
 const LogoIcon = ({ brand, variant = 'default' }: { brand: BrandAssets; variant?: 'default' | 'large' | 'footer' }) => {
   const isLarge = variant === 'large';
   const isFooter = variant === 'footer';
-  
+
   return (
     <div className={`flex items-center justify-center ${isLarge ? 'mb-6' : ''}`}>
       <img 
@@ -160,7 +160,11 @@ const FretboardPanel: React.FC = () => {
   const [projectName, setProjectName] = useState('Novo Projeto');
   const [projectId, setProjectId] = useState<string>(crypto.randomUUID());
   const [globalTranspose, setGlobalTranspose] = useState(0);
-  const [theme, setTheme] = useState<ThemeMode>('light');
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof window === 'undefined') return 'light';
+    const savedTheme = loadConfig()?.theme;
+    return savedTheme === 'dark' ? 'dark' : 'light';
+  });
   const [lang, setLang] = useState<Lang>('pt');
   const [user, setUser] = useState('');
   const [userLogo, setUserLogo] = useState<string | undefined>(undefined);
@@ -1278,6 +1282,14 @@ const handleReturnToContext = () => {
     };
   }, []);
 
+  const headerButtonBaseClass = 'rounded-xl border transition-all duration-200 ai-glow font-black uppercase backdrop-blur-[2px] active:scale-[0.98]';
+  const headerButtonThemeClass = isLight
+    ? 'bg-white/90 border-zinc-300 text-zinc-800 hover:bg-white hover:border-zinc-400 hover:shadow-[0_10px_24px_rgba(15,23,42,0.14)]'
+    : 'bg-zinc-900/60 border-zinc-600 text-zinc-100 hover:bg-zinc-800/85 hover:border-zinc-400 hover:shadow-[0_12px_26px_rgba(2,6,23,0.55)]';
+  const headerActionButtonThemeClass = isLight
+    ? 'bg-white border-zinc-300 text-zinc-800 hover:bg-white hover:border-zinc-500 hover:shadow-[0_12px_24px_rgba(15,23,42,0.16)]'
+    : 'bg-zinc-800/90 border-zinc-600 text-zinc-100 hover:bg-zinc-700 hover:border-zinc-300 hover:shadow-[0_14px_28px_rgba(0,0,0,0.55)]';
+
   return (
     <div className={`min-h-screen transition-all ${isExporting ? 'is-exporting-mode' : (isLight ? 'blueprint-grid-light' : 'blueprint-grid-dark')}`}>
       <input
@@ -1598,37 +1610,37 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                      <button
                        key={item.label}
                        onClick={item.onClick}
-                       className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+                        className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}
                      >
                        {item.label}
                      </button>
                    ))}
                  </div>
                  <div className="grid grid-cols-5 gap-1.5">
-                   <button onClick={() => openModulePage('/learn')} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                    <button onClick={() => openModulePage('/learn')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
                      {lang === 'pt' ? 'Aprender' : 'Learn'}
                    </button>
-                   <button onClick={() => openModulePage('/practice')} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                    <button onClick={() => openModulePage('/practice')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
                      {lang === 'pt' ? 'Praticar' : 'Practice'}
                    </button>
-                   <button onClick={() => openModulePage('/triads-tetrads?trainer=1')} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                    <button onClick={() => openModulePage('/triads-tetrads?trainer=1')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
                      {lang === 'pt' ? 'Treinar tríade' : 'Triad train.'}
                    </button>
-                   <button onClick={openMetronomeTool} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                    <button onClick={openMetronomeTool} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
                      {lang === 'pt' ? 'Metrônomo' : 'Metronome'}
                    </button>
-                   <button onClick={openTunerTool} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                    <button onClick={openTunerTool} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
                      {lang === 'pt' ? 'Afinador' : 'Tuner'}
                    </button>
                  </div>
                  <div className="grid grid-cols-3 gap-1.5">
-                   <button onClick={() => openModulePage('/ecosystem')} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                    <button onClick={() => openModulePage('/ecosystem')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
                      {lang === 'pt' ? 'Ecossistema' : 'Ecosystem'}
                    </button>
-                   <button onClick={() => openModulePage('/theme-collection')} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                    <button onClick={() => openModulePage('/theme-collection')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
                      {lang === 'pt' ? 'Coleções' : 'Collections'}
                    </button>
-                   <button onClick={openMyInstruments} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                    <button onClick={openMyInstruments} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
                      {lang === 'pt' ? 'Instrumentos' : 'Instruments'}
                    </button>
                  </div>
@@ -1656,7 +1668,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                <div className="flex flex-col gap-1.5">
 	               <button
 	                 onClick={() => setTheme(isLight ? 'dark' : 'light')}
-                 className={`p-2 rounded-xl border transition-all ai-glow ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+                 className={`p-2 ${headerButtonBaseClass} ${headerButtonThemeClass}`}
                  title={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
                  aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
 	               >
@@ -1664,7 +1676,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 	               </button>
 	               <button
 	                 onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
-	                 className={`px-3 py-2 rounded-xl border transition-all ai-glow font-black text-[10px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+	                 className={`px-3 py-2 text-[10px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}
 	                 title={lang === 'pt' ? 'English' : 'Português'}
 	                 aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para português'}
 	               >
@@ -1674,14 +1686,14 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                <div className="flex flex-col gap-1.5">
 	               <button
 	                 onClick={() => window.dispatchEvent(new CustomEvent('ga-open-active-tour'))}
-                 className={`p-2 rounded-xl border transition-all ai-glow font-black text-xs ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+                 className={`p-2 text-xs ${headerButtonBaseClass} ${headerButtonThemeClass}`}
                  title={lang === 'pt' ? 'Tutorial' : 'Tutorial'}
                  aria-label={lang === 'pt' ? 'Abrir tutorial' : 'Open tutorial'}
                >
                  T
                </button>
                {/* LOAD / SAVE ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â SEPARADOS */}
-               <a href="/legal/help.html" target="_blank" rel="noreferrer" className={`p-2 rounded-xl border transition-all ai-glow text-center font-black text-xs ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`} title={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'} aria-label={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'}>
+                <a href="/legal/help.html" target="_blank" rel="noreferrer" className={`p-2 text-xs text-center ${headerButtonBaseClass} ${headerButtonThemeClass}`} title={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'} aria-label={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'}>
                  ?
                </a>
                </div>
@@ -1694,10 +1706,9 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       px-3 md:px-4 py-1.5 md:py-2
       rounded-xl border font-black uppercase
       text-[9px] md:text-[10px]
-      transition-all shadow-sm ai-glow
-      ${isLight
-        ? 'bg-white border-zinc-300 text-zinc-800 hover:border-blue-500 hover:text-blue-600'
-        : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-blue-500 hover:text-blue-400'}
+      shadow-sm
+      ${headerButtonBaseClass} ${headerActionButtonThemeClass}
+      ${isLight ? 'hover:text-blue-600' : 'hover:text-blue-300'}
     `}
   >
     {lang === 'pt' ? 'ABRIR JSON' : 'OPEN JSON'}
@@ -1710,10 +1721,9 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       px-3 md:px-4 py-1.5 md:py-2
       rounded-xl border font-black uppercase
       text-[9px] md:text-[10px]
-      transition-all shadow-sm ai-glow
-      ${isLight
-        ? 'bg-white border-zinc-300 text-zinc-800 hover:border-emerald-500 hover:text-emerald-600'
-        : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-emerald-500 hover:text-emerald-400'}
+      shadow-sm
+      ${headerButtonBaseClass} ${headerActionButtonThemeClass}
+      ${isLight ? 'hover:text-emerald-600' : 'hover:text-emerald-300'}
     `}
   >
     {lang === 'pt' ? 'SALVAR JSON' : 'SAVE JSON'}
@@ -1780,7 +1790,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       window.dispatchEvent(new CustomEvent('ga-close-diagram-panels'));
       setShowProjectMenu(prev => !prev);
     }}
-    className={`px-4 md:px-5 py-2 md:py-3 rounded-xl border font-black uppercase text-[10px] md:text-[11px] transition-all ai-glow ${isLight ? 'bg-white border-zinc-300 text-zinc-800 hover:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 hover:border-blue-500'}`}
+    className={`px-4 md:px-5 py-2 md:py-3 text-[10px] md:text-[11px] ${headerButtonBaseClass} ${headerActionButtonThemeClass} hover:border-blue-500`}
   >
     MENU
   </button>
