@@ -13,30 +13,41 @@ const canUseLocalStorage = () => (
 
 /**
  * Resolve o ID do usuário para sincronização de apoiador.
- * Converte identificadores legados ("Guitar Architect", "guitar_architect", "guest")
- * para o UUID real do Supabase caso o usuário esteja autenticado.
+ * Converte identificadores legados para o UUID real do Supabase.
  */
 const resolveEffectiveSupporterUserId = (userId?: string | null): string => {
-  console.log(`[SupporterStorage] resolve: incoming userId='${userId}'`);
   const legacyIds = ['guest', 'Guitar Architect', 'guitar_architect'];
   const currentId = userId || 'guest';
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   
-  // Se já for um UUID (não está na lista legacy), retorna direto
-  if (!legacyIds.includes(currentId)) return currentId;
+  if (uuidRegex.test(currentId)) return currentId;
 
-  // Caso contrário, tenta descobrir o UUID do usuário logado via ga_config (bootstrap)
+  // 1. Tentar via ga_config
   try {
     const configRaw = window.localStorage.getItem('ga_config');
-    if (configRaw) {
-      const config = JSON.parse(configRaw);
-      // Se o ga_config tiver um UUID real, usamos ele como autoridade
-      if (config.currentUser && !legacyIds.includes(config.currentUser)) {
-        console.log(`[SupporterStorage] legacy user '${currentId}' normalized to: ${config.currentUser}`);
-        return config.currentUser;
+    const config = configRaw ? JSON.parse(configRaw) : null;
+    if (config?.currentUser && uuidRegex.test(config.currentUser)) {
+      return config.currentUser;
+    }
+  } catch {}
+
+  // 2. Scanner de chaves síncrono no localStorage
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const genericUuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+    const priorityCandidates = new Set<string>();
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith('ga_config_') || k?.startsWith('ga_library_') || k?.startsWith('ga_unlocked_achievements_')) {
+        const match = k.match(genericUuidRegex);
+        if (match) priorityCandidates.add(match[0]);
       }
     }
-  } catch {
-    // Erro silencioso no parse
+
+    if (priorityCandidates.size === 1) {
+      const found = Array.from(priorityCandidates)[0];
+      return found;
+    }
   }
 
   return currentId;
@@ -159,7 +170,8 @@ const migrateLegacySupporterStorage = (userId: string): boolean => {
 
 const writeStringArray = (key: string, value: string[], userId?: string | null) => {
   if (!canUseLocalStorage()) return;
-  const scopedKey = getScopedStorageKey(key, userId);
+  const effectiveId = resolveEffectiveSupporterUserId(userId);
+  const scopedKey = getScopedStorageKey(key, effectiveId);
   window.localStorage.setItem(scopedKey, JSON.stringify(Array.from(new Set(value))));
 };
 
@@ -172,13 +184,18 @@ const arraysEqual = (a: string[], b: string[]) => {
 };
 
 const getSupabaseUserId = async (userId?: string | null) => {
-  if (userId && userId !== 'guest') return userId;
+  const effectiveId = resolveEffectiveSupporterUserId(userId);
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  
+  if (uuidRegex.test(effectiveId)) return effectiveId;
+
   try {
-    const { data } = await supabase.auth.getUser();
-    return data.user?.id ?? null;
-  } catch {
-    return null;
-  }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+      return session.user.id;
+    }
+  } catch {}
+  return null;
 };
 
 // Simple debounce/queue to avoid race conditions from rapid local updates.
@@ -193,7 +210,7 @@ const schedulePush = (userId: string, delay = 1500) => {
   const id = window.setTimeout(() => {
     console.log(`[SupporterStorage] Executing debounced push for user: ${effectiveId}`);
     pushSupporterToServer(effectiveId).catch((err) => {
-      console.error(`[SupporterStorage] Push error in schedulePush:`, err);
+      console.error(`[SupporterStorage] Push error:`, err);
     });
     pendingPushTimers.delete(effectiveId);
   }, delay) as unknown as number;
@@ -334,11 +351,9 @@ export const pushSupporterToServer = async (
   unlocked?: string[] | undefined,
   badges?: string[] | undefined
 ) => {
-  console.log(`[SupporterStorage] push: starting for userId='${userId}'`);
   const effectiveId = await getSupabaseUserId(userId);
-  
   if (!effectiveId || effectiveId === 'guest') {
-    console.log(`[SupporterStorage] push: aborted (effectiveId is '${effectiveId}')`);
+    console.log(`[SupporterStorage] push: aborted (effectiveId is ${effectiveId})`);
     return null;
   }
 
@@ -350,15 +365,15 @@ export const pushSupporterToServer = async (
     const p_unlocked_rewards = Array.isArray(unlocked) ? unlocked : getUnlockedSupporterRewardIds(effectiveId);
     const p_unlocked_badges = Array.isArray(badges) ? badges : getUnlockedSupporterBadgeIds(effectiveId);
 
+    console.log(`[SupporterStorage] push: invoking RPC merge_supporter_data`, {
+      userId: effectiveId,
+      payload: { p_supporter_total, p_unlocked_rewards, p_unlocked_badges }
+    });
+
     const { data, error } = await supabase.rpc('merge_supporter_data', {
       p_supporter_total,
       p_unlocked_rewards,
       p_unlocked_badges
-    });
-
-    console.log(`[SupporterStorage] push: invoking RPC merge_supporter_data`, {
-      rpcUserId: effectiveId,
-      payload: { p_supporter_total, p_unlocked_rewards, p_unlocked_badges }
     });
 
     if (error) {
