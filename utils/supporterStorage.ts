@@ -5,6 +5,7 @@ import { supabase } from '../src/lib/supabase';
 export const SUPPORTER_TOTAL_KEY = 'ga_supporter_total';
 export const UNLOCKED_SUPPORTER_REWARDS_KEY = 'ga_unlocked_supporter_rewards';
 export const UNLOCKED_SUPPORTER_BADGES_KEY = 'ga_unlocked_supporter_badges';
+export const PINNED_BADGES_KEY = 'ga_pinned_profile_badges';
 
 const canUseLocalStorage = () => (
   typeof window !== 'undefined' &&
@@ -93,6 +94,7 @@ const migrateLegacySupporterStorage = (userId: string): boolean => {
   const currentTotalKey = getScopedStorageKey(SUPPORTER_TOTAL_KEY, userId);
   const currentRewardsKey = getScopedStorageKey(UNLOCKED_SUPPORTER_REWARDS_KEY, userId);
   const currentBadgesKey = getScopedStorageKey(UNLOCKED_SUPPORTER_BADGES_KEY, userId);
+  const currentPinnedKey = getScopedStorageKey(PINNED_BADGES_KEY, userId);
 
   // 1. Migração do Total (Math.max)
   const currentTotalRaw = window.localStorage.getItem(currentTotalKey);
@@ -161,6 +163,7 @@ const migrateLegacySupporterStorage = (userId: string): boolean => {
 
   if (migrateArray(UNLOCKED_SUPPORTER_REWARDS_KEY, currentRewardsKey)) hasMigrated = true;
   if (migrateArray(UNLOCKED_SUPPORTER_BADGES_KEY, currentBadgesKey)) hasMigrated = true;
+  if (migrateArray(PINNED_BADGES_KEY, currentPinnedKey)) hasMigrated = true;
 
   if (hasMigrated) {
     console.log(`[SupporterStorage] Local migration completed for ${userId}. Current scope is now populated.`);
@@ -300,6 +303,12 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
     const localTotal = getSupporterContributionTotal(effectiveId);
     const localUnlocked = getUnlockedSupporterRewardIds(effectiveId);
     const localBadges = getUnlockedSupporterBadgeIds(effectiveId);
+    const localPinned = readStringArray(PINNED_BADGES_KEY, effectiveId);
+
+    const hasPrimeLocal = localPinned.includes('first_supporter_prime_architect');
+    if (hasPrimeLocal) {
+      console.log(`[SupporterStorage] hydrate: Prime Architect detected in local pinned badges for ${effectiveId}`);
+    }
 
     if (!data) {
       console.log(`[SupporterStorage] hydrate: no server profile found. checking local progress to bootstrap...`);
@@ -318,7 +327,8 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
     // Se o cliente tem progresso que o servidor não tem, chama o RPC para consolidar
     const hasLocalProgress = localTotal > serverTotal || 
                              localUnlocked.some(id => !serverUnlocked.includes(id)) ||
-                             localBadges.some(id => !serverBadges.includes(id));
+                             localBadges.some(id => !serverBadges.includes(id)) ||
+                             (hasPrimeLocal && !serverBadges.includes('first_supporter_prime_architect'));
 
     console.log(`[SupporterStorage] hydrate sync check:`, {
       server: { total: serverTotal, rewards: serverUnlocked.length, badges: serverBadges.length },
@@ -337,6 +347,23 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
     window.localStorage.setItem(key, String(serverTotal));
     writeStringArray(UNLOCKED_SUPPORTER_REWARDS_KEY, serverUnlocked, effectiveId);
     writeStringArray(UNLOCKED_SUPPORTER_BADGES_KEY, serverBadges, effectiveId);
+
+    // Restaurar o badge Prime Architect na lista de pinned badges se vier do servidor
+    if (serverBadges.includes('first_supporter_prime_architect')) {
+      const currentPinned = readStringArray(PINNED_BADGES_KEY, effectiveId);
+      if (!currentPinned.includes('first_supporter_prime_architect')) {
+        const updatedPinned = [...currentPinned, 'first_supporter_prime_architect'];
+        writeStringArray(PINNED_BADGES_KEY, updatedPinned, effectiveId);
+        
+        // Mirror global (unscoped) para compatibilidade imediata com a UI legada
+        const globalRaw = window.localStorage.getItem(PINNED_BADGES_KEY);
+        const globalPinned = globalRaw ? JSON.parse(globalRaw) : [];
+        if (Array.isArray(globalPinned) && !globalPinned.includes('first_supporter_prime_architect')) {
+          window.localStorage.setItem(PINNED_BADGES_KEY, JSON.stringify([...globalPinned, 'first_supporter_prime_architect']));
+        }
+        console.log(`[SupporterStorage] hydrate: Prime Architect restored to pinned badges.`);
+      }
+    }
 
     return { mergedTotal: serverTotal, mergedUnlocked: serverUnlocked, mergedBadges: serverBadges };
   } catch (err) {
@@ -363,7 +390,14 @@ export const pushSupporterToServer = async (
   try {
     const p_supporter_total = typeof total === 'number' ? total : getSupporterContributionTotal(effectiveId);
     const p_unlocked_rewards = Array.isArray(unlocked) ? unlocked : getUnlockedSupporterRewardIds(effectiveId);
-    const p_unlocked_badges = Array.isArray(badges) ? badges : getUnlockedSupporterBadgeIds(effectiveId);
+    let p_unlocked_badges = Array.isArray(badges) ? badges : getUnlockedSupporterBadgeIds(effectiveId);
+
+    // Mapear Prime Architect de pinned para o payload de sync do servidor
+    const localPinned = readStringArray(PINNED_BADGES_KEY, effectiveId);
+    if (localPinned.includes('first_supporter_prime_architect') && !p_unlocked_badges.includes('first_supporter_prime_architect')) {
+      console.log(`[SupporterStorage] push: mapping Prime Architect from pinned to server badges.`);
+      p_unlocked_badges = [...p_unlocked_badges, 'first_supporter_prime_architect'];
+    }
 
     console.log(`[SupporterStorage] push: invoking RPC merge_supporter_data`, {
       userId: effectiveId,
