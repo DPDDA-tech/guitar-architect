@@ -17,6 +17,7 @@ const canUseLocalStorage = () => (
  * para o UUID real do Supabase caso o usuário esteja autenticado.
  */
 const resolveEffectiveSupporterUserId = (userId?: string | null): string => {
+  console.log(`[SupporterStorage] resolve: incoming userId='${userId}'`);
   const legacyIds = ['guest', 'Guitar Architect', 'guitar_architect'];
   const currentId = userId || 'guest';
   
@@ -333,9 +334,11 @@ export const pushSupporterToServer = async (
   unlocked?: string[] | undefined,
   badges?: string[] | undefined
 ) => {
+  console.log(`[SupporterStorage] push: starting for userId='${userId}'`);
   const effectiveId = await getSupabaseUserId(userId);
+  
   if (!effectiveId || effectiveId === 'guest') {
-    console.log(`[SupporterStorage] push: aborted (effectiveId is ${effectiveId})`);
+    console.log(`[SupporterStorage] push: aborted (effectiveId is '${effectiveId}')`);
     return null;
   }
 
@@ -347,15 +350,15 @@ export const pushSupporterToServer = async (
     const p_unlocked_rewards = Array.isArray(unlocked) ? unlocked : getUnlockedSupporterRewardIds(effectiveId);
     const p_unlocked_badges = Array.isArray(badges) ? badges : getUnlockedSupporterBadgeIds(effectiveId);
 
-    console.log(`[SupporterStorage] push: invoking RPC merge_supporter_data`, {
-      userId: effectiveId,
-      payload: { p_supporter_total, p_unlocked_rewards, p_unlocked_badges }
-    });
-
     const { data, error } = await supabase.rpc('merge_supporter_data', {
       p_supporter_total,
       p_unlocked_rewards,
       p_unlocked_badges
+    });
+
+    console.log(`[SupporterStorage] push: invoking RPC merge_supporter_data`, {
+      rpcUserId: effectiveId,
+      payload: { p_supporter_total, p_unlocked_rewards, p_unlocked_badges }
     });
 
     if (error) {
