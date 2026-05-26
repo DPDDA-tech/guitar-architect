@@ -46,7 +46,7 @@ const migrateLegacySupporterStorage = (userId: string): boolean => {
   if (!canUseLocalStorage() || !userId || userId === 'guest') return false;
 
   let hasMigrated = false;
-  const LEGACY_SCOPES = ['Guitar Architect', 'guest'];
+  const LEGACY_SCOPES = ['Guitar Architect', 'guest', 'guitar_architect'];
   const currentTotalKey = getScopedStorageKey(SUPPORTER_TOTAL_KEY, userId);
   const currentRewardsKey = getScopedStorageKey(UNLOCKED_SUPPORTER_REWARDS_KEY, userId);
   const currentBadgesKey = getScopedStorageKey(UNLOCKED_SUPPORTER_BADGES_KEY, userId);
@@ -99,6 +99,11 @@ const migrateLegacySupporterStorage = (userId: string): boolean => {
 
     LEGACY_SCOPES.forEach(scope => {
       parse(window.localStorage.getItem(`${baseKey}_${scope}`)).forEach(id => mergedSet.add(id));
+      
+      // Fallback para chaves com nomenclatura legada alternativa (ex: sem o prefixo "unlocked_")
+      if (baseKey === UNLOCKED_SUPPORTER_REWARDS_KEY) {
+        parse(window.localStorage.getItem(`ga_supporter_rewards_${scope}`)).forEach(id => mergedSet.add(id));
+      }
     });
     parse(window.localStorage.getItem(baseKey)).forEach(id => mergedSet.add(id));
 

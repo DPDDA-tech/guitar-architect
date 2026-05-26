@@ -19,6 +19,8 @@ import AdminRewardsPage from './components/AdminRewardsPage';
 import EcosystemPage from './components/EcosystemPage';
 import KidsPage from './components/KidsPage';
 import TeensPage from './components/TeensPage';
+import { supabase } from './src/lib/supabase';
+import { hydrateSupporterFromServer } from './utils/supporterStorage';
 
 const getCurrentPath = () => window.location.pathname;
 
@@ -46,6 +48,26 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const initAuthSync = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
+        
+        if (user && user.id) {
+          console.log(`[AppBoot] Supabase user confirmed: ${user.id}`);
+          console.log(`[AppBoot] Calling hydrateSupporterFromServer`);
+          // A hidratação dispara internamente a migração e o push para o servidor se necessário
+          await hydrateSupporterFromServer(user.id);
+        } else {
+          console.log(`[AppBoot] No authenticated user found for sync.`);
+        }
+      } catch (err) {
+        console.error(`[AppBoot] Sync initialization failed:`, err);
+      }
+    };
+
+    initAuthSync();
+
     const syncPath = () => setPath(getCurrentPath());
     window.addEventListener('popstate', syncPath);
     window.addEventListener('ga-route-change', syncPath);
