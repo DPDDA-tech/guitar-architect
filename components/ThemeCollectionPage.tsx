@@ -12,7 +12,7 @@ import { getUnlockedAchievements, getUnlockedRewards } from '../utils/achievemen
 import { getUnlockedAchievementIds, unlockAchievement } from '../utils/achievementStorage';
 import { getCollectionLoreByPath, type CollectionLoreItem } from '../data/collectionLore';
 import { supporterRewards, getUnlockedSupporterRewards, getCurrentSupporterTier } from '../data/supporterRewards';
-import { getSupporterContributionTotal, setSupporterContributionTotal, syncUnlockedSupporterRewards } from '../utils/supporterStorage';
+import { getSupporterContributionTotal, setSupporterContributionTotal, syncUnlockedSupporterRewards, hydrateSupporterFromServer } from '../utils/supporterStorage';
 import { SUPPORTER_PIX_KEY, SUPPORTER_CONTACT_EMAIL } from '../utils/supporterConstants';
 import { getSupporterTierInfo, formatTierName } from '../utils/supporterTierHelpers';
 import { PinBadgeAction } from './themeCollection/PinBadgeAction';
@@ -218,9 +218,22 @@ const ThemeCollectionPage: React.FC = () => {
     // TODO: Centralizar obtenção de email via hook global ou Context para evitar múltiplas chamadas ao Auth do Supabase
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
-      if (data.user?.email) {
-        setUserEmail(data.user.email);
-        setIsAdmin(isAdminEmail(data.user.email));
+      const uid = data.user?.id || null;
+      const email = data.user?.email || null;
+      if (email) setUserEmail(email);
+      setIsAdmin(isAdminEmail(email || ''));
+
+      // Only hydrate after auth state confirms a logged user (not guest)
+      if (uid) {
+        try {
+          const result = await hydrateSupporterFromServer(uid);
+          if (result?.mergedTotal != null) {
+            setSupporterTotal(result.mergedTotal);
+            setSupporterInput(String(result.mergedTotal));
+          }
+        } catch (err) {
+          // non-fatal
+        }
       }
     };
     fetchUser();
