@@ -27,6 +27,7 @@ const getCurrentPath = () => window.location.pathname;
 const App: React.FC = () => {
   const [path, setPath] = useState(getCurrentPath());
   const [unlockedConstancyReward, setUnlockedConstancyReward] = useState<ConstancyReward | null>(null);
+  const [syncTimestamp, setSyncTimestamp] = useState(0);
 
   useEffect(() => {
     try {
@@ -50,21 +51,32 @@ const App: React.FC = () => {
   useEffect(() => {
     const initAuthSync = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const user = session?.user;
-        
-        if (user && user.id) {
-          console.log(`[AppBoot] Supabase user confirmed: ${user.id}`);
-          console.log(`[AppBoot] Calling hydrateSupporterFromServer`);
-          // A hidratação dispara internamente a migração e o push para o servidor se necessário
-          await hydrateSupporterFromServer(user.id);
-        } else {
-          console.log(`[AppBoot] No authenticated user found for sync.`);
+        // 1. Tenta sincronizar imediatamente com a sessão atual
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (currentSession?.user?.id) {
+          await hydrateSupporterFromServer(currentSession.user.id);
         }
       } catch (err) {
         console.error(`[AppBoot] Sync initialization failed:`, err);
       }
     };
+
+    // 2. Escuta mudanças de auth (login/logout) para disparar sync
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user?.id) {
+        console.log(`[AppBoot] User signed in: ${session.user.id}. Triggering sync...`);
+        await hydrateSupporterFromServer(session.user.id);
+      }
+    });
+
+    // 3. Escuta o evento de conclusão de sync para atualizar a UI localmente
+    const handleSyncCompleted = () => {
+      console.log(`[AppBoot] Sync completed event received. Refreshing UI...`);
+      setSyncTimestamp(Date.now());
+    };
+
+    window.addEventListener('ga-supporter-sync-completed', handleSyncCompleted);
+    window.addEventListener('ga-pinned-badges-updated', handleSyncCompleted);
 
     initAuthSync();
 
@@ -72,8 +84,11 @@ const App: React.FC = () => {
     window.addEventListener('popstate', syncPath);
     window.addEventListener('ga-route-change', syncPath);
     return () => {
+      subscription.unsubscribe();
       window.removeEventListener('popstate', syncPath);
       window.removeEventListener('ga-route-change', syncPath);
+      window.removeEventListener('ga-supporter-sync-completed', handleSyncCompleted);
+      window.removeEventListener('ga-pinned-badges-updated', handleSyncCompleted);
     };
   }, []);
 

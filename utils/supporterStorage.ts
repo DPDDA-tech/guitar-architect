@@ -322,7 +322,14 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
 
     const serverTotal = Number(data.supporter_total || 0);
     const serverUnlocked = Array.isArray(data.unlocked_rewards) ? data.unlocked_rewards : [];
-    const serverBadges = Array.isArray(data.unlocked_badges) ? data.unlocked_badges : [];
+    
+    // Parsing robusto para unlocked_badges (lida com array real ou string JSON)
+    const rawBadges = data.unlocked_badges;
+    const serverBadges: string[] = Array.isArray(rawBadges) 
+      ? rawBadges 
+      : (typeof rawBadges === 'string' ? JSON.parse(rawBadges) : []);
+
+    console.log(`[SupporterStorage] hydrate: Server data for ${effectiveId}:`, { serverTotal, serverBadges });
 
     // Se o cliente tem progresso que o servidor não tem, chama o RPC para consolidar
     const hasLocalProgress = localTotal > serverTotal || 
