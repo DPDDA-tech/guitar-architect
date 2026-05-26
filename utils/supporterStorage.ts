@@ -71,9 +71,12 @@ const schedulePush = (userId: string, delay = 1500) => {
   if (existing) {
     clearTimeout(existing);
   }
+  console.log(`[SupporterStorage] schedulePush: user=${userId}, delay=${delay}ms`);
   const id = window.setTimeout(() => {
-    // fire off push but don't await
-    pushSupporterToServer(userId).catch(() => {});
+    console.log(`[SupporterStorage] Executing debounced push for user: ${userId}`);
+    pushSupporterToServer(userId).catch((err) => {
+      console.error(`[SupporterStorage] Push error in schedulePush:`, err);
+    });
     pendingPushTimers.delete(userId);
   }, delay) as unknown as number;
   pendingPushTimers.set(userId, id);
@@ -134,17 +137,22 @@ export const setSupporterContributionTotal = (total: number, userId?: string | n
 
 export const hydrateSupporterFromServer = async (userId?: string | null) => {
   const effectiveId = await getSupabaseUserId(userId);
-  if (!effectiveId || effectiveId === 'guest') return null;
+  if (!effectiveId || effectiveId === 'guest') {
+    console.log(`[SupporterStorage] hydrate: skipping (id=${effectiveId})`);
+    return null;
+  }
+
+  console.log(`[SupporterStorage] hydrate: starting for user ${effectiveId}`);
 
   try {
     const { data, error } = await supabase
       .from('supporter_profiles')
       .select('supporter_total, unlocked_rewards, unlocked_badges, updated_at')
       .eq('user_id', effectiveId)
-      .single();
+      .maybeSingle(); // maybeSingle não retorna erro caso a linha não exista
 
     if (error) {
-      // Table might not exist or no row for user; bail gracefully
+      console.error(`[SupporterStorage] hydrate: fetch error`, error);
       return null;
     }
 
@@ -152,11 +160,13 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
     const localUnlocked = getUnlockedSupporterRewardIds(effectiveId);
     const localBadges = getUnlockedSupporterBadgeIds(effectiveId);
 
-    if (error || !data) {
-      // Sem dados no servidor: se houver progresso local, sobe para o servidor
+    if (!data) {
+      console.log(`[SupporterStorage] hydrate: no server profile found. checking local progress to bootstrap...`);
       if (localTotal > 0 || localUnlocked.length > 0 || localBadges.length > 0) {
+        console.log(`[SupporterStorage] hydrate: local data found (total=${localTotal}). pushing to cloud...`);
         return await pushSupporterToServer(effectiveId, localTotal, localUnlocked, localBadges);
       }
+      console.log(`[SupporterStorage] hydrate: no local data to push.`);
       return null;
     }
 
@@ -169,11 +179,19 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
                              localUnlocked.some(id => !serverUnlocked.includes(id)) ||
                              localBadges.some(id => !serverBadges.includes(id));
 
+    console.log(`[SupporterStorage] hydrate sync check:`, {
+      server: { total: serverTotal, rewards: serverUnlocked.length, badges: serverBadges.length },
+      local: { total: localTotal, rewards: localUnlocked.length, badges: localBadges.length },
+      hasLocalProgress
+    });
+
     if (hasLocalProgress) {
+      console.log(`[SupporterStorage] hydrate: local progress detected. merging via RPC...`);
       return await pushSupporterToServer(effectiveId, localTotal, localUnlocked, localBadges);
     }
 
     // Caso contrário, o servidor é a autoridade. Sincroniza cache local.
+    console.log(`[SupporterStorage] hydrate: server state is authority.`);
     const key = getScopedStorageKey(SUPPORTER_TOTAL_KEY, effectiveId);
     window.localStorage.setItem(key, String(serverTotal));
     writeStringArray(UNLOCKED_SUPPORTER_REWARDS_KEY, serverUnlocked, effectiveId);
@@ -181,6 +199,7 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
 
     return { mergedTotal: serverTotal, mergedUnlocked: serverUnlocked, mergedBadges: serverBadges };
   } catch (err) {
+    console.error(`[SupporterStorage] hydrate: fatal error`, err);
     return null;
   }
 };
@@ -192,12 +211,20 @@ export const pushSupporterToServer = async (
   badges?: string[] | undefined
 ) => {
   const effectiveId = await getSupabaseUserId(userId);
-  if (!effectiveId || effectiveId === 'guest') return null;
+  if (!effectiveId || effectiveId === 'guest') {
+    console.log(`[SupporterStorage] push: aborted (effectiveId is ${effectiveId})`);
+    return null;
+  }
 
   try {
     const p_supporter_total = typeof total === 'number' ? total : getSupporterContributionTotal(effectiveId);
     const p_unlocked_rewards = Array.isArray(unlocked) ? unlocked : getUnlockedSupporterRewardIds(effectiveId);
     const p_unlocked_badges = Array.isArray(badges) ? badges : getUnlockedSupporterBadgeIds(effectiveId);
+
+    console.log(`[SupporterStorage] push: invoking RPC merge_supporter_data`, {
+      userId: effectiveId,
+      payload: { p_supporter_total, p_unlocked_rewards, p_unlocked_badges }
+    });
 
     const { data, error } = await supabase.rpc('merge_supporter_data', {
       p_supporter_total,
@@ -205,12 +232,24 @@ export const pushSupporterToServer = async (
       p_unlocked_badges
     });
 
-    if (error || !data) return null;
+    if (error) {
+      console.error(`[SupporterStorage] push: RPC Error response:`, error);
+      return null;
+    }
+
+    if (!data) {
+      console.warn(`[SupporterStorage] push: RPC call returned no data`);
+      return null;
+    }
+
+    // Suporta retorno tanto de 'returns jsonb' quanto 'returns table'
+    const row = Array.isArray(data) ? data[0] : data;
+    console.log(`[SupporterStorage] push: success! Server returned row:`, row);
 
     const result = { 
-      mergedTotal: Number(data.supporter_total || 0), 
-      mergedUnlocked: Array.isArray(data.unlocked_rewards) ? data.unlocked_rewards : [], 
-      mergedBadges: Array.isArray(data.unlocked_badges) ? data.unlocked_badges : [] 
+      mergedTotal: Number(row.supporter_total || 0), 
+      mergedUnlocked: Array.isArray(row.unlocked_rewards) ? row.unlocked_rewards : [], 
+      mergedBadges: Array.isArray(row.unlocked_badges) ? row.unlocked_badges : [] 
     };
 
     // Atualiza cache local com o resultado final do merge do servidor
@@ -221,6 +260,7 @@ export const pushSupporterToServer = async (
 
     return result;
   } catch (err) {
+    console.error(`[SupporterStorage] push: fatal error`, err);
     return null;
   }
 };
