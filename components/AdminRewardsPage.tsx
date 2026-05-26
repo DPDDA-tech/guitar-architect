@@ -92,45 +92,47 @@ const AdminRewardsPage: React.FC = () => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkAuth = async () => {
-      let nextStatus: AuthStatus = 'signedOut';
+      let status: AuthStatus = 'signedOut';
       try {
-        console.log('[Admin Auth Trace] Iniciando verificação de sessão...');
-        const { data, error } = await supabase.auth.getUser();
-        
-        const user = data.user;
-        const email = user?.email || null;
-        const uid = user?.id || null;
-        
-        console.log(`[Admin Auth Trace] UserID: ${uid}, Email: ${email}`);
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (!isMounted) return;
+
+        const email = session?.user?.email || null;
         setCurrentUserEmail(email);
 
-        if (error || !user || !email) {
-          console.log('[Admin Auth Trace] Sessão não encontrada ou e-mail ausente');
-          nextStatus = 'signedOut';
-          return;
-        }
-
-        const authorized = isAdminEmail(email);
-        console.log(`[Admin Auth Trace] Resultado isAdminEmail: ${authorized}`);
-        
-        if (authorized) {
-          nextStatus = 'authorized';
-          // Carregamento de dados em segundo plano após confirmar autorização
+        if (error || !session?.user || !email) {
+          status = 'signedOut';
+        } else if (isAdminEmail(email)) {
+          status = 'authorized';
           void refreshGrants();
           void refreshUserCount();
         } else {
-          nextStatus = 'unauthorized';
+          status = 'unauthorized';
         }
       } catch (err) {
-        console.error('[Admin Auth Trace] Erro crítico no fluxo de autenticação:', err);
-        nextStatus = 'signedOut';
+        status = 'signedOut';
       } finally {
-        console.log(`[Admin Auth Trace] Estado final definido: ${nextStatus}`);
-        setAuthStatus(nextStatus);
+        if (isMounted) setAuthStatus(status);
       }
     };
+
     checkAuth();
+
+    // Listener para reagir a logoff global
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT' && isMounted) {
+        setAuthStatus('signedOut');
+        setCurrentUserEmail(null);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleGrant = async () => {
@@ -177,6 +179,10 @@ const AdminRewardsPage: React.FC = () => {
     refreshGrants();
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   const handleRevoke = async (email: string, rewardId: string, source: string) => {
     if (source === 'admin-supabase') {
       await revokeSupabaseRewardFromEmail(email, rewardId);
@@ -216,9 +222,14 @@ const AdminRewardsPage: React.FC = () => {
             <p className="text-[10px] font-black uppercase tracking-[0.32em] text-blue-500">Guitar Architect • Admin</p>
             <h1 className="mt-2 text-3xl font-black italic uppercase tracking-tighter text-white">Reward Management</h1>
           </div>
-          <button onClick={navigateHome} className="w-fit rounded-xl border border-zinc-700 px-5 py-3 text-[10px] font-black uppercase hover:bg-zinc-900 transition-colors">
-            Voltar ao App
-          </button>
+          <div className="flex gap-2">
+            <button onClick={handleLogout} className="w-fit rounded-xl border border-red-900/50 bg-red-950/20 px-5 py-3 text-[10px] font-black uppercase text-red-400 hover:bg-red-900/40 transition-colors">
+              Logoff
+            </button>
+            <button onClick={navigateHome} className="w-fit rounded-xl border border-zinc-700 px-5 py-3 text-[10px] font-black uppercase hover:bg-zinc-900 transition-colors">
+              Voltar ao App
+            </button>
+          </div>
         </div>
       </header>
 
