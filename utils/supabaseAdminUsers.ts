@@ -16,9 +16,11 @@ type RpcCountRow = {
 };
 
 export async function getRegisteredUserCount(): Promise<number | null> {
+  let rpcAvailable = false;
   try {
     const { data, error } = await supabase.rpc('count_registered_users');
     if (!error) {
+      rpcAvailable = true;
       if (typeof data === 'number' && Number.isFinite(data)) return data;
       if (Array.isArray(data) && data.length > 0) {
         const row = data[0] as RpcCountRow;
@@ -44,7 +46,24 @@ export async function getRegisteredUserCount(): Promise<number | null> {
       throw error;
     }
 
-    return typeof count === 'number' ? count : 0;
+    if (typeof count === 'number' && count > 0) {
+      return count;
+    }
+
+    // Secondary fallback: users that already synced supporter profile.
+    const supporterCountResult = await supabase
+      .from('supporter_profiles')
+      .select('user_id', { count: 'exact', head: true });
+
+    if (!supporterCountResult.error && typeof supporterCountResult.count === 'number' && supporterCountResult.count > 0) {
+      return supporterCountResult.count;
+    }
+
+    // Avoid showing a misleading zero when we cannot reliably count registered auth users from client-side.
+    if (!rpcAvailable) {
+      return null;
+    }
+    return 0;
   } catch (error) {
     console.warn('[AdminUsers] Falha ao contar usuários registrados:', error);
     return null;
