@@ -357,8 +357,11 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
 
     // Restaurar o badge Prime Architect na lista de pinned badges se vier do servidor
     if (serverBadges.includes('first_supporter_prime_architect')) {
+      const BADGE_ID = 'first_supporter_prime_architect';
+      const ACHIEVEMENTS_KEY = 'ga_unlocked_achievements';
       let restored = false;
-      const parsePinned = (raw: string | null): string[] => {
+      
+      const parseList = (raw: string | null): string[] => {
         if (!raw) return [];
         try {
           const p = JSON.parse(raw);
@@ -366,19 +369,32 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
         } catch { return []; }
       };
 
-      // 1. Garantir no scoped storage (UUID)
+      // 1. Pinned Badges - Scoped
       const scopedKey = getScopedStorageKey(PINNED_BADGES_KEY, effectiveId);
-      const scopedPinned = parsePinned(window.localStorage.getItem(scopedKey));
-      if (!scopedPinned.includes('first_supporter_prime_architect')) {
-        window.localStorage.setItem(scopedKey, JSON.stringify([...scopedPinned, 'first_supporter_prime_architect']));
+      const scopedPinned = parseList(window.localStorage.getItem(scopedKey));
+      if (!scopedPinned.includes(BADGE_ID)) {
+        window.localStorage.setItem(scopedKey, JSON.stringify([...scopedPinned, BADGE_ID]));
         restored = true;
       }
 
-      // 2. Garantir no global storage (Autoridade atual da UI)
-      const globalPinned = parsePinned(window.localStorage.getItem(PINNED_BADGES_KEY));
-      if (!globalPinned.includes('first_supporter_prime_architect')) {
-        window.localStorage.setItem(PINNED_BADGES_KEY, JSON.stringify([...globalPinned, 'first_supporter_prime_architect']));
+      // 2. Pinned Badges - Global
+      const globalPinned = parseList(window.localStorage.getItem(PINNED_BADGES_KEY));
+      if (!globalPinned.includes(BADGE_ID)) {
+        window.localStorage.setItem(PINNED_BADGES_KEY, JSON.stringify([...globalPinned, BADGE_ID]));
         restored = true;
+      }
+
+      // 3. Unlocked Achievements (Galeria) - Scoped & Global
+      // Isso faz o Prime Architect aparecer na galeria como os selos de colecionador
+      const scopedAchKey = getScopedStorageKey(ACHIEVEMENTS_KEY, effectiveId);
+      const scopedAch = parseList(window.localStorage.getItem(scopedAchKey));
+      if (!scopedAch.includes(BADGE_ID)) {
+        window.localStorage.setItem(scopedAchKey, JSON.stringify([...scopedAch, BADGE_ID]));
+        restored = true;
+      }
+      const globalAch = parseList(window.localStorage.getItem(ACHIEVEMENTS_KEY));
+      if (!globalAch.includes(BADGE_ID)) {
+        window.localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify([...globalAch, BADGE_ID]));
       }
 
       if (restored) {
