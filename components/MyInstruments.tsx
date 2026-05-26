@@ -31,6 +31,7 @@ interface MyInstrumentsProps {
   onToggleLang: () => void;
   theme: ThemeMode;
   lang: 'pt' | 'en';
+  onInstrumentsChanged?: () => void;
 }
 
 type InstrumentSortKey = 'purchaseDate' | 'paidValue' | 'manufactureYear' | 'brandModel' | 'updatedAt';
@@ -446,7 +447,7 @@ const exportInstrumentToPdf = async (instrument: UserInstrument, lang: 'pt' | 'e
   pdf.save(fileName);
 };
 
-const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggleTheme, onToggleLang, theme, lang }) => {
+const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggleTheme, onToggleLang, theme, lang, onInstrumentsChanged }) => {
   const isLight = theme === 'light';
   const fileInputRef = useRef<HTMLInputElement>(null);
   const backupInputRef = useRef<HTMLInputElement>(null);
@@ -595,6 +596,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
     };
     await saveInstrument(next, currentUserId);
     const list = await refresh();
+    onInstrumentsChanged?.();
     recordAchievementEvent({ type: 'instrument_collection', count: list.length }, currentUserId);
     setDraft(null);
     setSelected(list.find(item => item.id === next.id) || next);
@@ -641,6 +643,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
       const instruments = rawInstruments.map((item: Partial<UserInstrument>) => normalizeImportedInstrument(item));
       await replaceInstruments(instruments, currentUserId);
       const next = await refresh();
+      onInstrumentsChanged?.();
       recordAchievementEvent({ type: 'instrument_collection', count: next.length }, currentUserId);
       setSelected(next[0] || null);
       setDraft(null);
@@ -662,6 +665,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
     if (!ok) return;
     await deleteInstrument(instrument.id);
     await refresh();
+    onInstrumentsChanged?.();
     setSelected(null);
     setDraft(null);
   };
@@ -682,6 +686,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
     await saveInstrument(next, currentUserId);
     setSelected(next);
     await refresh();
+    onInstrumentsChanged?.();
     setMaintenanceTitle('');
     setMaintenanceNotes('');
   };

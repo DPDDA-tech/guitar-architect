@@ -46,7 +46,7 @@ export const PinnedProfileBadges: React.FC<PinnedProfileBadgesProps> = ({ isLigh
       </div>
 
       {previewBadge && (
-        <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/82 p-4 backdrop-blur-xl" onClick={() => setPreviewBadge(null)}>
+        <div className="fixed inset-0 z-[140] flex items-start justify-center bg-black/82 px-4 pb-4 pt-[10vh] backdrop-blur-xl" onClick={() => setPreviewBadge(null)}>
           <div
             className={`max-h-[92vh] w-full max-w-3xl overflow-auto rounded-3xl border p-5 shadow-2xl ${isLight ? 'border-slate-200 bg-white' : 'border-blue-900/60 bg-slate-950'}`}
             onClick={event => event.stopPropagation()}

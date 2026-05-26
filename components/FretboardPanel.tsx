@@ -173,6 +173,7 @@ const FretboardPanel: React.FC = () => {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showMyInstruments, setShowMyInstruments] = useState(false);
   const instructionTimeoutRef = useRef<number | null>(null);
+  const instrumentsSyncTimeoutRef = useRef<number | null>(null);
   const [showTips, setShowTips] = useState(true);
   const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
 
@@ -361,7 +362,7 @@ const handleSupabaseAuth = async () => {
       setUser(identity); // Display Name para UI
     authSessionBooted.current = true;
       switchUserSession(result.data.user.id, identity);
-    void syncSupabaseSnapshot(result.data.user.id, identity);
+    void syncSupabaseSnapshot(result.data.user.id, result.data.user.id);
   }
 
   setAuthStatus('success');
@@ -641,7 +642,7 @@ useEffect(() => {
         switchUserSession(data.user.id, identity);
       recordAppLoyaltyVisit(new Date(), identity);
       recordAppAnniversaryVisit(new Date(), data.user.created_at, identity);
-      void syncSupabaseSnapshot(data.user.id, identity);
+      void syncSupabaseSnapshot(data.user.id, data.user.id);
       setShowLoginModal(false);
     }
   });
@@ -661,7 +662,7 @@ useEffect(() => {
         switchUserSession(session.user.id, identity);
         recordAppLoyaltyVisit(new Date(), identity);
         recordAppAnniversaryVisit(new Date(), session.user.created_at, identity);
-        void syncSupabaseSnapshot(session.user.id, identity);
+        void syncSupabaseSnapshot(session.user.id, session.user.id);
       }
 
       setShowLoginModal(false);
@@ -713,7 +714,7 @@ useEffect(() => {
       }, currentUserId);
 
       if (authUser?.id) {
-        void pushLocalSnapshotToSupabase(authUser.id, user);
+        void pushLocalSnapshotToSupabase(authUser.id, authUser.id);
       }
 
       setSaveStatus('saved');
@@ -1060,6 +1061,25 @@ const handleReturnToContext = () => {
     window.history.pushState(null, '', '/harmonic-cycle');
     window.dispatchEvent(new Event('ga-route-change'));
   }, [defaultInstrument, lang, projectId, showTips, theme, user, userLogo]);
+
+  const handleInstrumentsChanged = useCallback(() => {
+    if (!authUser?.id) return;
+    if (instrumentsSyncTimeoutRef.current) {
+      window.clearTimeout(instrumentsSyncTimeoutRef.current);
+    }
+    instrumentsSyncTimeoutRef.current = window.setTimeout(() => {
+      void pushLocalSnapshotToSupabase(authUser.id, authUser.id);
+      instrumentsSyncTimeoutRef.current = null;
+    }, 350);
+  }, [authUser?.id]);
+
+  useEffect(() => {
+    return () => {
+      if (instrumentsSyncTimeoutRef.current) {
+        window.clearTimeout(instrumentsSyncTimeoutRef.current);
+      }
+    };
+  }, []);
   const openModulePage = useCallback((path: string) => {
     saveConfig({
       version: "1.8.7",
@@ -2382,6 +2402,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   onToggleLang={() => setLang(lang === 'pt' ? 'en' : 'pt')}
   theme={theme}
   lang={lang}
+  onInstrumentsChanged={handleInstrumentsChanged}
 />
 
 </div>
