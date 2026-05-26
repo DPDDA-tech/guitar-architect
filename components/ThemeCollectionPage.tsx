@@ -11,7 +11,7 @@ import { getThemeWithState, loadThemeCollectionState, saveThemeCollectionState, 
 import { getUnlockedAchievements, getUnlockedRewards } from '../utils/achievementUtils';
 import { getUnlockedAchievementIds, unlockAchievement } from '../utils/achievementStorage';
 import { getCollectionLoreByPath, type CollectionLoreItem } from '../data/collectionLore';
-import { supporterRewards, getUnlockedSupporterRewards, getCurrentSupporterTier } from '../data/supporterRewards';
+import { supporterRewards, getUnlockedSupporterRewards } from '../data/supporterRewards';
 import { getSupporterContributionTotal, setSupporterContributionTotal, syncUnlockedSupporterRewards, hydrateSupporterFromServer } from '../utils/supporterStorage';
 import { SUPPORTER_PIX_KEY, SUPPORTER_CONTACT_EMAIL } from '../utils/supporterConstants';
 import { getSupporterTierInfo, formatTierName } from '../utils/supporterTierHelpers';
@@ -20,6 +20,7 @@ import { supporterFirstRewards } from '../data/supporterFirstRewards';
 import { getEligibleFirstSupporterRewardIds } from '../utils/supporterFirstEligibility';
 import { supabase } from '../src/lib/supabase';
 import { constancyRewards } from '../data/constancyRewards';
+import { getRewardMetadataById } from '../utils/rewardLookup';
 import { isAdminEmail } from '../utils/adminAccess';
 import { getConstancyState, getNextConstancyMilestone } from '../utils/constancyStorage';
 
@@ -194,6 +195,23 @@ const ThemeCollectionPage: React.FC = () => {
         image: reward.asset.path,
       });
     });
+    
+    // FIX: Adicionar itens "órfãos" que estão desbloqueados mas não são conquistas padrão
+    unlockedAchievementIds.forEach(id => {
+      const meta = getRewardMetadataById(id);
+      if (meta && meta.image && meta.image.includes('/tierothers/')) {
+        if (!itemMap.has(meta.image)) {
+          itemMap.set(meta.image, {
+            id: meta.id.startsWith('reward:') || meta.id.startsWith('achievement:') ? meta.id : `reward:${meta.id}`,
+            title: meta.title,
+            description: (meta as any).description || 'Item especial desbloqueado.',
+            type: meta.category || 'Special',
+            rarity: (meta as any).rarity || 'rare',
+            image: meta.image
+          });
+        }
+      }
+    });
     return Array.from(itemMap.values());
   }, [unlockedAchievementIds]);
   const activeTheme = items.find(item => item.id === effectiveCollectionState.activeThemeId) || items.find(item => item.id === DEFAULT_THEME_ID) || items[0];
@@ -244,8 +262,36 @@ const ThemeCollectionPage: React.FC = () => {
       ? 'dilioalvarega@gmail.com'
       : userEmail;
 
-    return getEligibleFirstSupporterRewardIds(effectiveFirstSupporterEmail);
-  }, [userEmail]);
+    const eligibleByEmail = getEligibleFirstSupporterRewardIds(effectiveFirstSupporterEmail);
+    
+    // FIX: Também considerar como elegível se o ID estiver na lista de conquistas desbloqueadas
+    // (Isso permite que selos sincronizados via Supabase/Hydrate apareçam na UI)
+    const eligibleBySync = unlockedAchievementIds.filter(id => 
+      supporterFirstRewards.some(r => r.id === id)
+    );
+
+    return Array.from(new Set([...eligibleByEmail, ...eligibleBySync]));
+  }, [userEmail, unlockedAchievementIds]);
+
+  // LOGS TEMPORÁRIOS DE INVESTIGAÇÃO UI
+  useEffect(() => {
+    if (import.meta.env.DEV || window.location.hostname.includes('vercel.app') || true) {
+      console.group('[GA UI Debug] Badge Rendering');
+      console.log('Unlocked IDs (Storage):', unlockedAchievementIds);
+      console.log('Eligible First Supporter IDs:', eligibleFirstSupporterIds);
+      
+      const target = 'first_supporter_prime_architect';
+      const hasInStorage = unlockedAchievementIds.includes(target);
+      const hasInEligibility = eligibleFirstSupporterIds.includes(target);
+      
+      if (hasInStorage && !hasInEligibility) {
+        console.warn(`[UI Mismatch] ${target} está no localStorage mas o memo de elegibilidade falhou.`);
+      } else if (hasInStorage && hasInEligibility) {
+        console.log(`[UI Success] ${target} está pronto para renderizar.`);
+      }
+      console.groupEnd();
+    }
+  }, [unlockedAchievementIds, eligibleFirstSupporterIds]);
 
   useEffect(() => {
     if (unlockedAchievementIds.includes(CORE_ACHIEVEMENT_ID)) return;
