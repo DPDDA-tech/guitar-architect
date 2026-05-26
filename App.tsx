@@ -62,10 +62,14 @@ const App: React.FC = () => {
     };
 
     // 2. Escuta mudanças de auth (login/logout) para disparar sync
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user?.id) {
         console.log(`[AppBoot] User signed in: ${session.user.id}. Triggering sync...`);
-        await hydrateSupporterFromServer(session.user.id);
+        window.setTimeout(() => {
+          void hydrateSupporterFromServer(session.user.id).catch((err) => {
+            console.error('[AppBoot] Deferred hydrate failed:', err);
+          });
+        }, 0);
       }
 
       if (event === 'SIGNED_OUT') {

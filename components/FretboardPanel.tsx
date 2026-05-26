@@ -212,7 +212,7 @@ const FretboardPanel: React.FC = () => {
 const switchUserSession = (newUserId: string, displayName: string) => {
 
   // ============================
-  // 1️⃣ SALVA SESSÃO ATUAL
+  // 1ï¸âƒ£ SALVA SESSÃƒO ATUAL
   // ============================
 
   if (user && initialized.current) {
@@ -241,7 +241,7 @@ const switchUserSession = (newUserId: string, displayName: string) => {
     }
 
   // ============================
-  // 2️⃣ LIMPA WORKSPACE (CRÍTICO)
+  // 2ï¸âƒ£ LIMPA WORKSPACE (CRÃTICO)
   // ============================
 
   setInstances([]);
@@ -249,26 +249,26 @@ const switchUserSession = (newUserId: string, displayName: string) => {
   setProjectId(crypto.randomUUID());
   setGlobalTranspose(0);
 
-  // RESET DE IDENTIDADE (CRÍTICO)
-  // Limpa logos, instruções, contextos de retorno e estados transitórios
+  // RESET DE IDENTIDADE (CRÃTICO)
+  // Limpa logos, instruÃ§Ãµes, contextos de retorno e estados transitÃ³rios
   setUserLogo(undefined);
   setInstruction(null);
   setReturnContext(null);
 
-  // ⚠️ força novo ciclo de boot
+  // âš ï¸ forÃ§a novo ciclo de boot
   initialized.current = false;
 
   // ============================
-  // 3️⃣ DEFINE NOVO USUÁRIO
+  // 3ï¸âƒ£ DEFINE NOVO USUÃRIO
   // ============================
 
   setUser(displayName);
 
   // ============================
-  // 4️⃣ BOOT NOVA SESSÃO
+  // 4ï¸âƒ£ BOOT NOVA SESSÃƒO
   // ============================
 
-  // Carrega configuração específica do usuário (UUID-scoped)
+  // Carrega configuraÃ§Ã£o especÃ­fica do usuÃ¡rio (UUID-scoped)
   const userSpecificConfig = loadConfig(newUserId);
   if (userSpecificConfig) {
     setTheme(userSpecificConfig.theme || 'light');
@@ -307,7 +307,7 @@ const switchUserSession = (newUserId: string, displayName: string) => {
 
   } else {
 
-    // usuário novo → workspace limpo
+    // usuÃ¡rio novo â†’ workspace limpo
     setInstances([
         DEFAULT_FRETBOARD(userSpecificConfig?.lang || lang, userSpecificConfig?.defaultInstrument || 'guitar-6')
     ]);
@@ -421,7 +421,7 @@ const handleMigrateLocalIdentity = async (sourceIdentity: string) => {
       : '';
     setMigrationMessage(
       lang === 'pt'
-        ? `Não foi possível sincronizar agora.${errorMessage ? ` Detalhe: ${errorMessage}` : ' Tente novamente em instantes.'}`
+        ? `NÃ£o foi possÃ­vel sincronizar agora.${errorMessage ? ` Detalhe: ${errorMessage}` : ' Tente novamente em instantes.'}`
         : `Could not sync right now.${errorMessage ? ` Detail: ${errorMessage}` : ' Try again shortly.'}`,
     );
     return;
@@ -450,7 +450,7 @@ const handleMigrateLocalIdentity = async (sourceIdentity: string) => {
   };
 
   useEffect(() => {
-    // Manter o idioma acessível globalmente para o SVG
+    // Manter o idioma acessÃ­vel globalmente para o SVG
     (window as any).ga_lang = lang;
   }, [lang]);
 
@@ -668,18 +668,13 @@ useEffect(() => {
     }
 
     if (event === 'SIGNED_OUT') {
-  setAuthUser(null);
-  setAllowLocalIdentity(true);
-
-  if (typeof window !== 'undefined') {
-    window.localStorage.removeItem('ga_require_account_login');
-  }
-
-  authSessionBooted.current = false;
-
-  window.history.pushState(null, '', '/');
-  window.dispatchEvent(new Event('ga-route-change'));
-}
+      setAuthUser(null);
+      setAllowLocalIdentity(false);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('ga_require_account_login', '1');
+      }
+      authSessionBooted.current = false;
+    }
   });
 
   return () => {
@@ -744,16 +739,22 @@ useEffect(() => {
 ]);
 
 const handleLogout = async () => {
-  // Preserva o workspace atual e apenas encerra a sessão autenticada.
-  localStorage.removeItem('ga_require_account_login');
-
+  console.log('[Auth Trace] Fretboard handleLogout iniciado');
   if (authUser) {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('[Auth Trace] signOut retornou erro:', error);
+      return;
+    }
+    console.log('[Auth Trace] signOut concluído com sucesso');
+  } else {
+    console.log('[Auth Trace] handleLogout sem authUser ativo.');
   }
 
-  setAuthUser(null);
   setAllowLocalIdentity(true);
-  authSessionBooted.current = false;
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem('ga_require_account_login');
+  }
 };
 
 const handleReturnToContext = () => {
@@ -865,7 +866,7 @@ const handleReturnToContext = () => {
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith('.json')) {
-      alert(lang === 'pt' ? 'Selecione um arquivo .json válido.' : 'Select a valid .json file.');
+      alert(lang === 'pt' ? 'Selecione um arquivo .json vÃ¡lido.' : 'Select a valid .json file.');
       return;
     }
 
@@ -874,7 +875,7 @@ const handleReturnToContext = () => {
       try {
         const payload = parseProjectFile(String(reader.result || ''));
         const confirmMsg = lang === 'pt'
-          ? 'Importar este projeto substituirá o projeto aberto agora. Continuar?'
+          ? 'Importar este projeto substituirÃ¡ o projeto aberto agora. Continuar?'
           : 'Importing this project will replace the currently open project. Continue?';
 
         if (!window.confirm(confirmMsg)) return;
@@ -920,7 +921,7 @@ const handleReturnToContext = () => {
         setSaveStatus('saving');
         setShowProjectMenu(false);
       } catch {
-        alert(lang === 'pt' ? 'Arquivo de projeto inválido.' : 'Invalid project file.');
+        alert(lang === 'pt' ? 'Arquivo de projeto invÃ¡lido.' : 'Invalid project file.');
       }
     };
     reader.readAsText(file);
@@ -941,7 +942,7 @@ const handleReturnToContext = () => {
 
   const clearAll = useCallback(() => {
     const confirmMsg = lang === 'pt' 
-      ? "LIMPAR PROJETO INTEIRO?\n\nIsso excluirá todos os diagramas." 
+      ? "LIMPAR PROJETO INTEIRO?\n\nIsso excluirÃ¡ todos os diagramas." 
       : "CLEAR ENTIRE PROJECT?\n\nThis will delete all diagrams.";
     
     if (window.confirm(confirmMsg)) {
@@ -1190,11 +1191,11 @@ const handleReturnToContext = () => {
       if (prev.length >= 24) {
         const canOverwrite = window.confirm(
           lang === 'pt'
-            ? 'Você atingiu o limite de 24 diagramas. Posso substituir o último diagrama para abrir esta tarefa?'
+            ? 'VocÃª atingiu o limite de 24 diagramas. Posso substituir o Ãºltimo diagrama para abrir esta tarefa?'
             : 'You reached the 24 diagram limit. Can I replace the last diagram to open this task?',
         );
         if (!canOverwrite) {
-          window.alert(lang === 'pt' ? 'Não foi possível abrir a tarefa sem substituir um diagrama.' : 'The task could not be opened without replacing a diagram.');
+          window.alert(lang === 'pt' ? 'NÃ£o foi possÃ­vel abrir a tarefa sem substituir um diagrama.' : 'The task could not be opened without replacing a diagram.');
           return prev;
         }
         setActiveInstanceId(created.id);
@@ -1273,14 +1274,14 @@ const handleReturnToContext = () => {
     shadow-lg
   ">
     <span>
-      🎸 Otimizado para desktop. Use paisagem para melhor experiência.
+      ðŸŽ¸ Otimizado para desktop. Use paisagem para melhor experiÃªncia.
     </span>
 
     <button
       onClick={() => setShowMobileHint(false)}
       className="bg-white/20 hover:bg-white/40 px-2 py-0.5 rounded-md transition-colors"
     >
-      ✕
+      âœ•
     </button>
   </div>
 )}
@@ -1332,8 +1333,8 @@ const handleReturnToContext = () => {
 	              <button
 	                onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
 	                className={`flex h-10 min-w-10 items-center justify-center rounded-xl border px-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
-                aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para português'}
-                title={lang === 'pt' ? 'English' : 'Português'}
+                aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para portuguÃªs'}
+                title={lang === 'pt' ? 'English' : 'PortuguÃªs'}
 	              >
 	                {lang === 'pt' ? 'EN' : 'PORT'}
 	              </button>
@@ -1348,8 +1349,8 @@ const handleReturnToContext = () => {
 	              <button
                   onClick={openMetronomeTool}
                 className={`rounded-xl border px-2.5 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
-                aria-label={lang === 'pt' ? 'Abrir metrônomo e ferramentas' : 'Open metronome and tools'}
-                title={lang === 'pt' ? 'Metrônomo' : 'Metronome'}
+                aria-label={lang === 'pt' ? 'Abrir metrÃ´nomo e ferramentas' : 'Open metronome and tools'}
+                title={lang === 'pt' ? 'MetrÃ´nomo' : 'Metronome'}
               >
                 BPM
               </button>
@@ -1385,7 +1386,7 @@ const handleReturnToContext = () => {
                   {lang === 'pt' ? 'Instrumentos' : 'Instruments'}
                 </button>
                 <button onClick={() => openModulePage('/theme-collection')} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                  {lang === 'pt' ? 'Coleções' : 'Collections'}
+                  {lang === 'pt' ? 'ColeÃ§Ãµes' : 'Collections'}
                 </button>
               </div>
               <button
@@ -1408,7 +1409,7 @@ const handleReturnToContext = () => {
                   { label: 'Tri/Tetrad', path: '/triads-tetrads' },
                   { label: lang === 'pt' ? 'Modos' : 'Modes', path: '/greek-modes' },
                   { label: translations[lang].harmonicCycle.menu, path: 'harmonic-cycle', wide: true },
-                  { label: lang === 'pt' ? 'Treinar tría.' : 'Triad train.', path: '/triads-tetrads?trainer=1', wide: true },
+                  { label: lang === 'pt' ? 'Treinar trÃ­a.' : 'Triad train.', path: '/triads-tetrads?trainer=1', wide: true },
                 ].map(item => (
                   <button
                     key={item.path}
@@ -1481,7 +1482,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         onClick={() => openModulePage('/theme-collection')}
         className="shrink-0 rounded-2xl transition-transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-blue-400"
         title={lang === 'pt' ? 'Trocar logo desbloqueada' : 'Change unlocked logo'}
-        aria-label={lang === 'pt' ? 'Abrir coleções para trocar a logo' : 'Open collections to change logo'}
+        aria-label={lang === 'pt' ? 'Abrir coleÃ§Ãµes para trocar a logo' : 'Open collections to change logo'}
       >
         <LogoIcon brand={displayedBrandAssets} />
       </button>
@@ -1510,7 +1511,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
         <div className={`mt-2 min-w-0 flex items-center gap-1 text-[10px] md:text-[11px] font-black uppercase ${isLight ? 'text-zinc-800' : 'text-zinc-200'}`}>
           <span className="hidden 2xl:inline text-zinc-400 shrink-0">
-            {lang === 'pt' ? 'Usuário:' : 'User:'}
+            {lang === 'pt' ? 'UsuÃ¡rio:' : 'User:'}
           </span>
           <span className="truncate max-w-[220px] md:max-w-[320px] xl:max-w-[420px] 2xl:max-w-none">
             {authUser ? getSupabaseDisplayName(authUser) : user || (lang === 'pt' ? 'Visitante' : 'Guest')}
@@ -1559,10 +1560,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                      { label: lang === 'pt' ? 'Ecossistema' : 'Ecosystem', onClick: () => openModulePage('/ecosystem') },
                      { label: lang === 'pt' ? 'Aprender' : 'Learn', onClick: () => openModulePage('/learn') },
                      { label: lang === 'pt' ? 'Praticar' : 'Practice', onClick: () => openModulePage('/practice') },
-                     { label: lang === 'pt' ? 'Metrônomo' : 'Metronome', onClick: openMetronomeTool },
+                     { label: lang === 'pt' ? 'MetrÃ´nomo' : 'Metronome', onClick: openMetronomeTool },
                      { label: lang === 'pt' ? 'Afinador' : 'Tuner', onClick: openTunerTool },
                      { label: lang === 'pt' ? 'Instrumentos' : 'Instruments', onClick: openMyInstruments },
-                     { label: lang === 'pt' ? 'Coleções' : 'Collections', onClick: () => openModulePage('/theme-collection') },
+                     { label: lang === 'pt' ? 'ColeÃ§Ãµes' : 'Collections', onClick: () => openModulePage('/theme-collection') },
                    ].map(item => (
                      <button
                        key={item.label}
@@ -1580,7 +1581,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                      { label: 'CAGED', path: '/caged' },
                      { label: lang === 'pt' ? 'Acordes' : 'Chords', path: '/chords' },
                      { label: 'Tri/Tetrad', path: '/triads-tetrads' },
-                     { label: lang === 'pt' ? 'Treinar tría.' : 'Triad train.', path: '/triads-tetrads?trainer=1' },
+                     { label: lang === 'pt' ? 'Treinar trÃ­a.' : 'Triad train.', path: '/triads-tetrads?trainer=1' },
                    ].map(item => (
                      <button
                        key={item.path}
@@ -1601,7 +1602,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                    { label: 'CAGED', path: '/caged' },
                    { label: lang === 'pt' ? 'Triades' : 'Triads', path: '/triads-tetrads' },
                    { label: lang === 'pt' ? 'Modos' : 'Modes', path: '/greek-modes' },
-                   { label: lang === 'pt' ? 'Coleção' : 'Collection', path: '/theme-collection' },
+                   { label: lang === 'pt' ? 'ColeÃ§Ã£o' : 'Collection', path: '/theme-collection' },
                  ].map(item => (
                    <button
                      key={item.path}
@@ -1624,8 +1625,8 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 	               <button
 	                 onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
 	                 className={`px-3 py-2 rounded-xl border transition-all ai-glow font-black text-[10px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
-	                 title={lang === 'pt' ? 'English' : 'Português'}
-	                 aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para português'}
+	                 title={lang === 'pt' ? 'English' : 'PortuguÃªs'}
+	                 aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para portuguÃªs'}
 	               >
 	                 {lang === 'pt' ? 'EN' : 'PORT'}
 	               </button>
@@ -1639,7 +1640,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                >
                  T
                </button>
-               {/* LOAD / SAVE — SEPARADOS */}
+               {/* LOAD / SAVE â€” SEPARADOS */}
                <a href="/legal/help.html" target="_blank" rel="noreferrer" className={`p-2 rounded-xl border transition-all ai-glow text-center font-black text-xs ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`} title={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'} aria-label={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'}>
                  ?
                </a>
@@ -1681,20 +1682,20 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 </div>
 
 
-               {/* EXPORTAÇÃO */}
+               {/* EXPORTAÃ‡ÃƒO */}
 <div className="flex flex-col items-center md:items-start leading-none">
 
-  {/* TÍTULO */}
+  {/* TÃTULO */}
   <span className={`
     text-[8px] md:text-[8px]
     font-black uppercase tracking-wider
     mb-1
     ${isLight ? 'text-zinc-500' : 'text-zinc-400'}
   `}>
-    {lang === 'pt' ? 'Exportação' : 'Export'}
+    {lang === 'pt' ? 'ExportaÃ§Ã£o' : 'Export'}
   </span>
 
-  {/* BOTÕES */}
+  {/* BOTÃ•ES */}
   <div className="flex flex-col gap-1">
     <button
       onClick={handleExportPNG}
@@ -1779,7 +1780,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             {lang === 'pt' ? 'INSTRUMENTOS' : 'INSTRUMENTS'}
           </button>
           <button onClick={() => openModulePage('/theme-collection')} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-            {lang === 'pt' ? 'COLEÇÕES' : 'COLLECTIONS'}
+            {lang === 'pt' ? 'COLEÃ‡Ã•ES' : 'COLLECTIONS'}
           </button>
         </div>
 
@@ -1790,7 +1791,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             { label: lang === 'pt' ? 'PRATICAR' : 'PRACTICE', path: '/practice' },
             { label: lang === 'pt' ? 'ACORDES' : 'CHORDS', path: '/chords' },
             { label: 'CAGED', path: '/caged' },
-            { label: lang === 'pt' ? 'TRÍADES' : 'TRIADS', path: '/triads-tetrads' },
+            { label: lang === 'pt' ? 'TRÃADES' : 'TRIADS', path: '/triads-tetrads' },
             { label: lang === 'pt' ? 'MODOS' : 'MODES', path: '/greek-modes' },
             { label: translations[lang].harmonicCycle.menu, path: 'harmonic-cycle' },
           ].map(item => (
@@ -1845,7 +1846,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 </div>
 
 
-{/* GLOBAL TRANSPOSE — HEADER */}
+{/* GLOBAL TRANSPOSE â€” HEADER */}
 <div className="hidden flex-col items-center leading-none select-none">
 
   {/* LABEL */}
@@ -1854,7 +1855,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
     ${isLight ? 'text-zinc-500' : 'text-zinc-400'}
   `}>
     {lang === 'pt'
-      ? 'Transposição Global'
+      ? 'TransposiÃ§Ã£o Global'
       : 'Global Transpose'}
   </span>
 
@@ -1896,7 +1897,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       onClick={() => handleGlobalTranspose(-1)}
       className="w-7 h-7 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
     >
-      −
+      âˆ’
     </button>
 
   </div>
@@ -1977,7 +1978,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
               </div>
               <div className="text-center sm:text-left">
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-500">
-                  {returnContext.source === 'learn' ? (lang === 'pt' ? 'Sessão de estudo ativa' : 'Active study session') : (lang === 'pt' ? 'Sessão de prática ativa' : 'Active practice session')}
+                  {returnContext.source === 'learn' ? (lang === 'pt' ? 'SessÃ£o de estudo ativa' : 'Active study session') : (lang === 'pt' ? 'SessÃ£o de prÃ¡tica ativa' : 'Active practice session')}
                 </p>
                 <h3 className={`text-sm font-black uppercase tracking-tight ${isLight ? 'text-zinc-800' : 'text-zinc-100'}`}>
                   {returnContext.label}
@@ -2010,7 +2011,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className={`text-[10px] font-black uppercase tracking-[0.22em] ${isLight ? 'text-blue-600' : 'text-blue-300'}`}>
-                  {lang === 'pt' ? 'Migração de dados locais' : 'Local data migration'}
+                  {lang === 'pt' ? 'MigraÃ§Ã£o de dados locais' : 'Local data migration'}
                 </p>
                 <h2 className="mt-1 text-lg font-black uppercase tracking-tight">
                   {lang === 'pt'
@@ -2019,7 +2020,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                 </h2>
                 <p className={`mt-2 max-w-4xl text-sm font-semibold leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
                   {lang === 'pt'
-                    ? `Se você já usava o Guitar Architect com um nome local, entre ou crie sua conta e use "Migrar dados locais" até ${LOCAL_MIGRATION_DEADLINE_PT}. Depois desse prazo, a migração assistida poderá ser encerrada; o JSON continuará como backup manual.`
+                    ? `Se vocÃª jÃ¡ usava o Guitar Architect com um nome local, entre ou crie sua conta e use "Migrar dados locais" atÃ© ${LOCAL_MIGRATION_DEADLINE_PT}. Depois desse prazo, a migraÃ§Ã£o assistida poderÃ¡ ser encerrada; o JSON continuarÃ¡ como backup manual.`
                     : `If you used Guitar Architect with a local name, sign in or create your account and use "Migrate local data" by ${LOCAL_MIGRATION_DEADLINE_EN}. After that date, assisted migration may be discontinued; JSON will remain available as a manual backup.`}
                 </p>
               </div>
@@ -2065,16 +2066,16 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
          <div className="max-w-[1700px] mx-auto px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
                <LogoIcon brand={displayedBrandAssets} variant="footer" />
-               <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Guitar Architect • DPDDA-tech</p>
+               <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Guitar Architect â€¢ DPDDA-tech</p>
             </div>
             <div className="flex gap-4 md:gap-8 text-[10px] font-black uppercase text-zinc-500">
                <a href="/legal/privacy.html" target="_blank" className="hover:text-blue-600 transition-colors">Privacidade</a>
                <a href="/legal/terms.html" target="_blank" className="hover:text-blue-600 transition-colors">Termos</a>
-               <a href="/legal/license.html" target="_blank" className="hover:text-blue-600 transition-colors">Licença</a>
+               <a href="/legal/license.html" target="_blank" className="hover:text-blue-600 transition-colors">LicenÃ§a</a>
                <a href="/legal/help.html" target="_blank" className="hover:text-blue-600 transition-colors">Ajuda</a>
                <a href="#" onClick={() => setShowSupportModal(true)} className="hover:text-blue-600 transition-colors cursor-pointer">Apoie o projeto</a>
             </div>
-            <p className={`text-[10px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>© 2026</p>
+            <p className={`text-[10px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>Â© 2026</p>
          </div>
       </footer>
 
@@ -2241,7 +2242,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  className={`w-full p-4 rounded-2xl font-bold outline-none border transition-all text-center text-sm md:text-base placeholder:text-zinc-400 placeholder:font-normal placeholder:opacity-50 ${isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-900 focus:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:border-blue-500'}`} 
                />
                {!user && (
-                 <p className="absolute -bottom-5 left-0 w-full text-center text-[9px] font-black uppercase text-zinc-400 tracking-tighter opacity-40">Apenas sugestão. Digite o que desejar.</p>
+                 <p className="absolute -bottom-5 left-0 w-full text-center text-[9px] font-black uppercase text-zinc-400 tracking-tighter opacity-40">Apenas sugestÃ£o. Digite o que desejar.</p>
                )}
               </div>
               )}
@@ -2272,7 +2273,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
               onClick={() => setShowLoginModal(false)}
               className={`mt-6 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border transition-all uppercase text-[10px] font-black tracking-widest ${isLight ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' : 'bg-red-950/10 border-red-500/40 text-red-400 hover:bg-red-900/20 hover:border-red-500/60 shadow-lg shadow-red-900/10'}`}
             >
-              <span className="text-xs">👤</span>
+              <span className="text-xs">ðŸ‘¤</span>
               {lang === 'pt' ? 'Continuar como visitante' : 'Continue as guest'}
             </button>
 </div>
@@ -2283,7 +2284,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
            <div className={`w-full max-w-2xl rounded-[32px] p-6 md:p-8 border shadow-3xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
               <div className="flex justify-between items-center mb-6">
                  <h2 className="text-xl font-black italic text-blue-500 uppercase tracking-tighter">{t.importTitle}</h2>
-                 <button onClick={() => setShowImportModal(false)} className="text-zinc-500 text-2xl hover:text-red-500 transition-colors">×</button>
+                 <button onClick={() => setShowImportModal(false)} className="text-zinc-500 text-2xl hover:text-red-500 transition-colors">Ã—</button>
               </div>
               <textarea 
                  autoFocus 
