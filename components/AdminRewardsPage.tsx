@@ -21,16 +21,16 @@ type UnifiedGrant = {
   grantedBy?: string | null;
 };
 
+type AuthStatus = 'checking' | 'authorized' | 'unauthorized' | 'signedOut';
+
 const navigateHome = () => {
   window.history.pushState(null, '', '/');
   window.dispatchEvent(new CustomEvent('ga-route-change'));
 };
 
 const AdminRewardsPage: React.FC = () => {
-  const [loading, setLoading] = useState(true);
+  const [authStatus, setAuthStatus] = useState<AuthStatus>('checking');
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-
   const [registeredUserCount, setRegisteredUserCount] = useState<number | null>(null);
 
   // States para o formulário
@@ -93,16 +93,42 @@ const AdminRewardsPage: React.FC = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getUser();
-      const email = data.user?.email || null;
-      setCurrentUserEmail(email);
-      const authorized = isAdminEmail(email);
-      setIsAuthorized(authorized);
-      if (authorized) {
-        refreshGrants();
-        refreshUserCount();
+      let nextStatus: AuthStatus = 'signedOut';
+      try {
+        console.log('[Admin Auth Trace] Iniciando verificação de sessão...');
+        const { data, error } = await supabase.auth.getUser();
+        
+        const user = data.user;
+        const email = user?.email || null;
+        const uid = user?.id || null;
+        
+        console.log(`[Admin Auth Trace] UserID: ${uid}, Email: ${email}`);
+        setCurrentUserEmail(email);
+
+        if (error || !user || !email) {
+          console.log('[Admin Auth Trace] Sessão não encontrada ou e-mail ausente');
+          nextStatus = 'signedOut';
+          return;
+        }
+
+        const authorized = isAdminEmail(email);
+        console.log(`[Admin Auth Trace] Resultado isAdminEmail: ${authorized}`);
+        
+        if (authorized) {
+          nextStatus = 'authorized';
+          // Carregamento de dados em segundo plano após confirmar autorização
+          void refreshGrants();
+          void refreshUserCount();
+        } else {
+          nextStatus = 'unauthorized';
+        }
+      } catch (err) {
+        console.error('[Admin Auth Trace] Erro crítico no fluxo de autenticação:', err);
+        nextStatus = 'signedOut';
+      } finally {
+        console.log(`[Admin Auth Trace] Estado final definido: ${nextStatus}`);
+        setAuthStatus(nextStatus);
       }
-      setLoading(false);
     };
     checkAuth();
   }, []);
@@ -160,13 +186,13 @@ const AdminRewardsPage: React.FC = () => {
     refreshGrants();
   };
 
-  if (loading) return (
+  if (authStatus === 'checking') return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-400 font-black uppercase tracking-widest">
       Verificando Credenciais...
     </div>
   );
 
-  if (!currentUserEmail) return (
+  if (authStatus === 'signedOut') return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-6 text-center text-zinc-100">
       <h1 className="text-xl font-black text-red-500 uppercase tracking-tight">Acesso administrativo restrito</h1>
       <p className="mt-2 text-zinc-400 font-bold max-w-sm">Faça login com uma conta autorizada para acessar as ferramentas de gestão.</p>
@@ -174,7 +200,7 @@ const AdminRewardsPage: React.FC = () => {
     </div>
   );
 
-  if (!isAuthorized) return (
+  if (authStatus === 'unauthorized') return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-6 text-center text-zinc-100">
       <h1 className="text-xl font-black text-red-500 uppercase tracking-tight">Acesso negado</h1>
       <p className="mt-2 text-zinc-400 font-bold">O e-mail ({currentUserEmail}) não possui permissões administrativas.</p>
