@@ -832,7 +832,8 @@ const handleReturnToContext = () => {
   };
 
   const exportProjectFile = async () => {
-    const instruments = await listInstruments(user).catch(() => []);
+    const currentUserId = authUser?.id || 'guest';
+    const instruments = await listInstruments(currentUserId).catch(() => []);
     const payload = serializeProjectFile({
       projectId,
       projectName,
@@ -846,9 +847,9 @@ const handleReturnToContext = () => {
       showTips,
       themeCollection: loadThemeCollectionState(),
       achievements: {
-        unlockedAchievementIds: getUnlockedAchievementIds(),
-        progress: getAchievementProgressState(),
-        selectedRewardBadgeId: getSelectedRewardBadgeId(),
+        unlockedAchievementIds: getUnlockedAchievementIds(currentUserId),
+        progress: getAchievementProgressState(currentUserId),
+        selectedRewardBadgeId: getSelectedRewardBadgeId(currentUserId),
       },
       instruments,
     });
@@ -871,7 +872,7 @@ const handleReturnToContext = () => {
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith('.json')) {
-      alert(lang === 'pt' ? 'Selecione um arquivo .json vÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido.' : 'Select a valid .json file.');
+      alert(lang === 'pt' ? 'Selecione um arquivo .json valido.' : 'Select a valid .json file.');
       return;
     }
 
@@ -880,15 +881,16 @@ const handleReturnToContext = () => {
       try {
         const payload = parseProjectFile(String(reader.result || ''));
         const confirmMsg = lang === 'pt'
-          ? 'Importar este projeto substituirÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ o projeto aberto agora. Continuar?'
+          ? 'Importar este projeto substituira o projeto aberto agora. Continuar?'
           : 'Importing this project will replace the currently open project. Continue?';
 
         if (!window.confirm(confirmMsg)) return;
 
-        const importIdentity = authUser ? user : (payload.project.user || user);
+        const importUserId = authUser?.id || payload.project.user || 'guest';
+        const importDisplayName = authUser ? getSupabaseDisplayName(authUser) : (payload.project.user || user);
         setProjectId(payload.project.id || crypto.randomUUID());
         setProjectName(payload.project.name || (lang === 'pt' ? 'Projeto Importado' : 'Imported Project'));
-        setUser(importIdentity);
+        setUser(importDisplayName);
         setInstances(payload.project.instances);
         setGlobalTranspose(payload.project.globalTransposition || 0);
         setTheme(payload.settings.theme || theme);
@@ -912,21 +914,21 @@ const handleReturnToContext = () => {
           });
         }
         payload.settings.achievements?.unlockedAchievementIds?.forEach(id => {
-          if (getAchievementById(id)?.asset.status === 'ready') unlockAchievement(id);
+          if (getAchievementById(id)?.asset.status === 'ready') unlockAchievement(id, importUserId);
         });
         if (payload.settings.achievements?.progress) {
-          mergeAchievementProgressState(payload.settings.achievements.progress);
+          mergeAchievementProgressState(payload.settings.achievements.progress, importUserId);
         }
         if (payload.settings.achievements?.selectedRewardBadgeId && getRewardById(payload.settings.achievements.selectedRewardBadgeId)?.asset.status === 'ready') {
-          setSelectedRewardBadgeId(payload.settings.achievements.selectedRewardBadgeId);
+          setSelectedRewardBadgeId(payload.settings.achievements.selectedRewardBadgeId, importUserId);
         }
         if (payload.instruments && payload.instruments.length > 0) {
-          void replaceInstruments(payload.instruments, importIdentity);
+          void replaceInstruments(payload.instruments, importUserId);
         }
         setSaveStatus('saving');
         setShowProjectMenu(false);
       } catch {
-        alert(lang === 'pt' ? 'Arquivo de projeto invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lido.' : 'Invalid project file.');
+        alert(lang === 'pt' ? 'Arquivo de projeto invalido.' : 'Invalid project file.');
       }
     };
     reader.readAsText(file);
@@ -1818,7 +1820,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             {lang === 'pt' ? 'INSTRUMENTOS' : 'INSTRUMENTS'}
           </button>
           <button onClick={() => openModulePage('/theme-collection')} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-            {lang === 'pt' ? 'ColeÃ§Ãµes' : 'Collections'}
+            {lang === 'pt' ? 'Colecoes' : 'Collections'}
           </button>
         </div>
 
@@ -1829,7 +1831,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             { label: lang === 'pt' ? 'PRATICAR' : 'PRACTICE', path: '/practice' },
             { label: lang === 'pt' ? 'ACORDES' : 'CHORDS', path: '/chords' },
             { label: 'CAGED', path: '/caged' },
-            { label: lang === 'pt' ? 'TRÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂADES' : 'TRIADS', path: '/triads-tetrads' },
+            { label: lang === 'pt' ? 'TRIADES' : 'TRIADS', path: '/triads-tetrads' },
             { label: lang === 'pt' ? 'MODOS' : 'MODES', path: '/greek-modes' },
             { label: translations[lang].harmonicCycle.menu, path: 'harmonic-cycle' },
           ].map(item => (
@@ -1893,7 +1895,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
     ${isLight ? 'text-zinc-500' : 'text-zinc-400'}
   `}>
     {lang === 'pt'
-      ? 'TransposiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o Global'
+      ? 'Transposicao Global'
       : 'Global Transpose'}
   </span>
 

@@ -233,10 +233,22 @@ export const mergeCloudSnapshots = mergeSnapshots;
 export const buildLocalCloudSnapshot = async (identity: string): Promise<UserCloudSnapshot> => {
   const appState = loadConfig();
   const scopedInstruments = await listInstruments(identity).catch(() => []);
+  const scopedAchievementIds = getUnlockedAchievementIds(identity);
+  const scopedAchievementProgress = getAchievementProgressState(identity);
+  const scopedSelectedBadgeId = getSelectedRewardBadgeId(identity);
   const legacyIdentity = appState?.currentUser;
   const legacyInstruments = legacyIdentity && legacyIdentity !== identity
     ? await listInstruments(legacyIdentity).catch(() => [])
     : [];
+  const legacyAchievementIds = legacyIdentity && legacyIdentity !== identity
+    ? getUnlockedAchievementIds(legacyIdentity)
+    : [];
+  const legacyAchievementProgress = legacyIdentity && legacyIdentity !== identity
+    ? getAchievementProgressState(legacyIdentity)
+    : {};
+  const legacySelectedBadgeId = legacyIdentity && legacyIdentity !== identity
+    ? getSelectedRewardBadgeId(legacyIdentity)
+    : null;
 
   return {
     appState,
@@ -245,9 +257,12 @@ export const buildLocalCloudSnapshot = async (identity: string): Promise<UserClo
     instruments: mergeInstruments(scopedInstruments, legacyInstruments),
     themeCollection: loadThemeCollectionState(),
     achievements: {
-      unlockedAchievementIds: getUnlockedAchievementIds(identity),
-      progress: getAchievementProgressState(identity),
-      selectedRewardBadgeId: getSelectedRewardBadgeId(identity),
+      unlockedAchievementIds: unique([
+        ...scopedAchievementIds,
+        ...legacyAchievementIds,
+      ]),
+      progress: mergeProgress(scopedAchievementProgress, legacyAchievementProgress),
+      selectedRewardBadgeId: scopedSelectedBadgeId || legacySelectedBadgeId,
     },
     syncedAt: new Date().toISOString(),
   };
