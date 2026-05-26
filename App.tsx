@@ -18,6 +18,7 @@ import { DevRewardGrantPanel } from './components/DevRewardGrantPanel';
 import AdminRewardsPage from './components/AdminRewardsPage';
 import EcosystemPage from './components/EcosystemPage';
 import KidsPage from './components/KidsPage';
+import KidsWorkshopPage from './components/KidsWorkshopPage';
 import TeensPage from './components/TeensPage';
 import { supabase } from './src/lib/supabase';
 import { hydrateSupporterFromServer } from './utils/supporterStorage';
@@ -136,6 +137,7 @@ const App: React.FC = () => {
       case '/admin/rewards': return <AdminRewardsPage />;
       case '/ecosystem': return <EcosystemPage />;
       case '/kids': return <KidsPage />;
+      case '/kids/workshop': return <KidsWorkshopPage />;
       case '/teens': return <TeensPage />;
       default: return <FretboardPanel />;
     }
