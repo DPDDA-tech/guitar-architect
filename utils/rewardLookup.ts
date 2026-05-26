@@ -53,5 +53,8 @@ export function getRewardMetadataById(id: string): RewardMetadata | null {
   const achRaw = getAchievementById(id);
   if (achRaw && achRaw.asset.path) return { id: achRaw.id, title: achRaw.title, image: achRaw.asset.path, description: achRaw.description };
 
+  const rewardRaw = getRewardById(id);
+  if (rewardRaw && rewardRaw.asset.path) return { id: rewardRaw.id, title: rewardRaw.title, image: rewardRaw.asset.path, category: rewardRaw.type, description: rewardRaw.description };
+
   return null;
 }
