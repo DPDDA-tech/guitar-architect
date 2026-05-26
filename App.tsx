@@ -104,6 +104,14 @@ const App: React.FC = () => {
   const devPanel = <DevRewardGrantPanel />;
 
   const renderPage = () => {
+    const currentPath = window.location.pathname;
+    console.log(`[AppRouter] Path State: ${path} | URL Path: ${currentPath}`);
+
+    if (currentPath === '/admin/rewards') {
+      console.log('[AppRouter] Route matched: admin rewards');
+      return <AdminRewardsPage />;
+    }
+
     switch (path) {
       case '/harmonic-cycle': return <HarmonicCyclePage />;
       case '/learn': return <LearnPage />;

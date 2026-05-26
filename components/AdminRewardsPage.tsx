@@ -92,29 +92,37 @@ const AdminRewardsPage: React.FC = () => {
   };
 
   useEffect(() => {
+    console.log('[Admin Auth Trace] AdminRewardsPage montado. Iniciando checkAuth...');
     let isMounted = true;
 
     const checkAuth = async () => {
       let status: AuthStatus = 'signedOut';
       try {
+        console.log('[Admin Auth Trace] Chamando getSession...');
         const { data: { session }, error } = await supabase.auth.getSession();
         if (!isMounted) return;
 
         const email = session?.user?.email || null;
+        console.log(`[Admin Auth Trace] Sessão: ${!!session}, Email: ${email}, Erro:`, error);
         setCurrentUserEmail(email);
 
         if (error || !session?.user || !email) {
+          console.log('[Admin Auth Trace] Usuário não logado ou sem email.');
           status = 'signedOut';
         } else if (isAdminEmail(email)) {
+          console.log('[Admin Auth Trace] ADMIN AUTORIZADO via utils/adminAccess');
           status = 'authorized';
           void refreshGrants();
           void refreshUserCount();
         } else {
+          console.log('[Admin Auth Trace] EMAIL NÃO AUTORIZADO PARA ADMIN');
           status = 'unauthorized';
         }
       } catch (err) {
+        console.error('[Admin Auth Trace] ERRO CRÍTICO no checkAuth:', err);
         status = 'signedOut';
       } finally {
+        console.log(`[Admin Auth Trace] Definindo estado final: ${status}`);
         if (isMounted) setAuthStatus(status);
       }
     };
@@ -180,7 +188,15 @@ const AdminRewardsPage: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      console.log('[Admin Auth Trace] handleLogout iniciado');
+      await supabase.auth.signOut();
+      localStorage.removeItem('ga_require_account_login'); // Evita abertura automática do modal no FretboardPanel
+      window.history.pushState(null, '', '/');
+      window.dispatchEvent(new Event('ga-route-change'));
+    } catch (err) {
+      console.error('[Admin Auth Trace] Erro no signOut:', err);
+    }
   };
 
   const handleRevoke = async (email: string, rewardId: string, source: string) => {
