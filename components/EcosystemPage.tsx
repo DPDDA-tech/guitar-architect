@@ -30,7 +30,7 @@ const EcosystemPage: React.FC = () => {
         </h1>
 
         <p className="mt-4 mb-16 text-zinc-500 font-bold uppercase text-[14px] tracking-[0.25em]">
-          Defina sua etapa na obra
+          Defina sua etapa na construção musical
         </p>
 
         <div className="grid gap-8 md:grid-cols-3">
@@ -58,17 +58,23 @@ const EcosystemPage: React.FC = () => {
               title: 'Studio',
               logo: '/gastudiologo.webp',
               desc: 'Construa mapas, escalas, acordes e arquitetura musical.',
-              path: '/',
+              path: '/studio',
               btn: 'bg-blue-600',
               cta: 'Abrir Studio',
             },
-          ].map(area => (
+          ].map(area => {
+            const isStudio = area.id === 'studio';
+            return (
             <button
               key={area.id}
               onClick={() => navigateTo(area.path)}
               className={`group p-10 md:p-12 rounded-[64px] border transition-all duration-500 text-center flex flex-col items-center ${
                 isLight ? 'bg-white/80 border-zinc-200' : 'bg-zinc-900/80 border-zinc-800'
-              } hover:-translate-y-2 shadow-2xl`}
+              } hover:-translate-y-2 shadow-2xl ${
+                isStudio
+                  ? 'scale-[1.03] md:scale-[1.04] border-blue-400/60 shadow-[0_0_35px_rgba(37,99,235,0.28)]'
+                  : ''
+              }`}
             >
               <div className="w-48 h-48 md:w-64 md:h-64 mb-10 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center">
                 <img
@@ -86,11 +92,12 @@ const EcosystemPage: React.FC = () => {
                 {area.desc}
               </p>
 
-              <div className={`px-8 py-3 rounded-xl ${area.btn} text-white text-[10px] font-black uppercase tracking-widest`}>
+              <div className={`px-8 ${isStudio ? 'py-4 text-[11px]' : 'py-3 text-[10px]'} rounded-xl ${area.btn} text-white font-black uppercase tracking-widest`}>
                 {area.cta}
               </div>
             </button>
-          ))}
+          );
+          })}
         </div>
       </div>
     </div>
