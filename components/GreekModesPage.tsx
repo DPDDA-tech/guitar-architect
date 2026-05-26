@@ -263,7 +263,7 @@ const GreekModesPage: React.FC = () => {
     recordAchievementEvent({ type: 'module_completion', moduleId: 'greek-modes' });
     if (action === 'scale' || action === 'startPractice') recordAchievementEvent({ type: 'exploration', key: 'apply_scale' });
     window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify(makePayload(mode, action, extra)));
-    navigateTo('/');
+    navigateTo('/studio');
   };
 
   const openHeaderTool = (tool: 'tuner' | 'metronome') => {
@@ -296,7 +296,7 @@ const GreekModesPage: React.FC = () => {
             <button onClick={toggleLang} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>{lang === 'pt' ? 'EN' : 'PORT'}</button>
             <button onClick={() => openHeaderTool('metronome')} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>{copy.metronome}</button>
             <button onClick={() => openHeaderTool('tuner')} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>{copy.tuner}</button>
-            <button onClick={() => navigateTo('/')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">{t.backToFretboard}</button>
+            <button onClick={() => navigateTo('/studio')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">{t.backToFretboard}</button>
           </div>
         </div>
       </header>

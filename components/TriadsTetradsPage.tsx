@@ -133,7 +133,7 @@ const TriadsTetradsPage: React.FC<{ openTrainer?: boolean }> = ({ openTrainer = 
       ...action.payload,
       createdAt: new Date().toISOString(),
     }));
-    navigateTo('/');
+    navigateTo('/studio');
   };
 
   return (
@@ -166,7 +166,7 @@ const TriadsTetradsPage: React.FC<{ openTrainer?: boolean }> = ({ openTrainer = 
             >
               {showTrainer ? (lang === 'pt' ? 'Fechar Trainer' : 'Close Trainer') : (lang === 'pt' ? 'Triad Trainer 🎯' : 'Triad Trainer 🎯')}
             </button>
-            <button onClick={() => navigateTo('/')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
+            <button onClick={() => navigateTo('/studio')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
               {t.backToFretboard}
             </button>
           </div>

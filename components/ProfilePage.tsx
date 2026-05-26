@@ -8,7 +8,7 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { AppState, ThemeMode } from '../types';
 
 const navigateHome = () => {
-  window.history.pushState(null, '', '/');
+  window.history.pushState(null, '', '/studio');
   window.dispatchEvent(new CustomEvent('ga-route-change'));
 };
 

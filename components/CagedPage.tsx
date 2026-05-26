@@ -455,7 +455,7 @@ const CagedPage: React.FC = () => {
 
     recordAchievementEvent({ type: 'module_completion', moduleId: 'caged' });
     window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify(payload));
-    navigateTo('/');
+    navigateTo('/studio');
   };
 
   return (
@@ -482,7 +482,7 @@ const CagedPage: React.FC = () => {
             <button onClick={toggleLang} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>
               {lang === 'pt' ? 'EN' : 'PORT'}
             </button>
-            <button onClick={() => navigateTo('/')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
+            <button onClick={() => navigateTo('/studio')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
               {t.backToFretboard}
             </button>
           </div>

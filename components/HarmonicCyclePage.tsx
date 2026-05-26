@@ -285,7 +285,7 @@ const HarmonicCyclePage: React.FC = () => {
       harmonyMode: action === 'field' || action === 'progression' ? 'TETRADS' : action === 'triads' ? 'TRIADS' : 'OFF',
       createdAt: new Date().toISOString(),
     }));
-    navigateTo('/');
+    navigateTo('/studio');
   };
 
   const persistConfigPatch = (patch: Partial<AppState>) => {
@@ -351,7 +351,7 @@ const HarmonicCyclePage: React.FC = () => {
             <button onClick={toggleLang} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${neutralButtonClass}`}>
               {lang === 'pt' ? 'EN' : 'PORT'}
             </button>
-            <button onClick={() => navigateTo('/')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
+            <button onClick={() => navigateTo('/studio')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
               {t.backToFretboard}
             </button>
           </div>

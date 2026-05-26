@@ -22,7 +22,7 @@ type UnifiedGrant = {
 };
 
 const navigateHome = () => {
-  window.history.pushState(null, '', '/');
+  window.history.pushState(null, '', '/studio');
   window.dispatchEvent(new CustomEvent('ga-route-change'));
 };
 

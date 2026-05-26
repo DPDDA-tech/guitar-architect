@@ -389,7 +389,7 @@ const ThemeCollectionPage: React.FC = () => {
         totalCount={items.length}
         isLight={isLight}
         lang={lang}
-        onBack={() => navigateTo('/')}
+        onBack={() => navigateTo('/studio')}
         onToggleTheme={toggleTheme}
         onToggleLang={toggleLang}
       />
@@ -874,7 +874,7 @@ const ThemeCollectionPage: React.FC = () => {
         <AchievementsPanel isLight={isLight} />
 
         <div className="mt-8 text-center">
-          <button onClick={() => navigateTo('/')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-5 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
+          <button onClick={() => navigateTo('/studio')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-5 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
             {t.backToFretboard}
           </button>
         </div>

@@ -107,7 +107,7 @@ const TriadTrainer: React.FC<TriadTrainerProps> = ({ isLight, lang, tuning, onAc
         soundEnabled,
       }
     });
-    window.history.pushState(null, '', '/');
+    window.history.pushState(null, '', '/studio');
     window.dispatchEvent(new Event('ga-route-change'));
   };
 
@@ -124,7 +124,7 @@ const TriadTrainer: React.FC<TriadTrainerProps> = ({ isLight, lang, tuning, onAc
         soundEnabled,
       }
     });
-    window.history.pushState(null, '', '/');
+    window.history.pushState(null, '', '/studio');
     window.dispatchEvent(new Event('ga-route-change'));
   };
 
