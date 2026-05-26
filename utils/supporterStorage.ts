@@ -11,9 +11,40 @@ const canUseLocalStorage = () => (
   typeof window.localStorage !== 'undefined'
 );
 
+/**
+ * Resolve o ID do usuário para sincronização de apoiador.
+ * Converte identificadores legados ("Guitar Architect", "guitar_architect", "guest")
+ * para o UUID real do Supabase caso o usuário esteja autenticado.
+ */
+const resolveEffectiveSupporterUserId = (userId?: string | null): string => {
+  const legacyIds = ['guest', 'Guitar Architect', 'guitar_architect'];
+  const currentId = userId || 'guest';
+  
+  // Se já for um UUID (não está na lista legacy), retorna direto
+  if (!legacyIds.includes(currentId)) return currentId;
+
+  // Caso contrário, tenta descobrir o UUID do usuário logado via ga_config (bootstrap)
+  try {
+    const configRaw = window.localStorage.getItem('ga_config');
+    if (configRaw) {
+      const config = JSON.parse(configRaw);
+      // Se o ga_config tiver um UUID real, usamos ele como autoridade
+      if (config.currentUser && !legacyIds.includes(config.currentUser)) {
+        console.log(`[SupporterStorage] legacy user '${currentId}' normalized to: ${config.currentUser}`);
+        return config.currentUser;
+      }
+    }
+  } catch {
+    // Erro silencioso no parse
+  }
+
+  return currentId;
+};
+
 const readStringArray = (key: string, userId?: string | null): string[] => {
   if (!canUseLocalStorage()) return [];
-  const scopedKey = getScopedStorageKey(key, userId);
+  const effectiveId = resolveEffectiveSupporterUserId(userId);
+  const scopedKey = getScopedStorageKey(key, effectiveId);
   const scopedRaw = window.localStorage.getItem(scopedKey);
 
   if (scopedRaw) {
@@ -152,24 +183,26 @@ const getSupabaseUserId = async (userId?: string | null) => {
 // Simple debounce/queue to avoid race conditions from rapid local updates.
 const pendingPushTimers = new Map<string, number>();
 const schedulePush = (userId: string, delay = 1500) => {
-  const existing = pendingPushTimers.get(userId);
+  const effectiveId = resolveEffectiveSupporterUserId(userId);
+  const existing = pendingPushTimers.get(effectiveId);
   if (existing) {
     clearTimeout(existing);
   }
-  console.log(`[SupporterStorage] schedulePush: user=${userId}, delay=${delay}ms`);
+  console.log(`[SupporterStorage] schedulePush: user=${effectiveId}, delay=${delay}ms`);
   const id = window.setTimeout(() => {
-    console.log(`[SupporterStorage] Executing debounced push for user: ${userId}`);
-    pushSupporterToServer(userId).catch((err) => {
+    console.log(`[SupporterStorage] Executing debounced push for user: ${effectiveId}`);
+    pushSupporterToServer(effectiveId).catch((err) => {
       console.error(`[SupporterStorage] Push error in schedulePush:`, err);
     });
-    pendingPushTimers.delete(userId);
+    pendingPushTimers.delete(effectiveId);
   }, delay) as unknown as number;
-  pendingPushTimers.set(userId, id);
+  pendingPushTimers.set(effectiveId, id);
 };
 
 export const getSupporterContributionTotal = (userId?: string | null) => {
   if (!canUseLocalStorage()) return 0;
-  const scopedKey = getScopedStorageKey(SUPPORTER_TOTAL_KEY, userId);
+  const effectiveId = resolveEffectiveSupporterUserId(userId);
+  const scopedKey = getScopedStorageKey(SUPPORTER_TOTAL_KEY, effectiveId);
   const data = window.localStorage.getItem(scopedKey) || window.localStorage.getItem(SUPPORTER_TOTAL_KEY);
   const value = data ? Number(data) : 0;
   return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
@@ -180,14 +213,15 @@ export const getUnlockedSupporterRewardIds = (userId?: string | null) => readStr
 export const getUnlockedSupporterBadgeIds = (userId?: string | null) => readStringArray(UNLOCKED_SUPPORTER_BADGES_KEY, userId);
 
 export const syncUnlockedSupporterRewards = (total: number, userId?: string | null) => {
+  const effectiveId = resolveEffectiveSupporterUserId(userId);
   const unlockedIds = getUnlockedSupporterRewards(total).map(reward => reward.id);
-  writeStringArray(UNLOCKED_SUPPORTER_REWARDS_KEY, unlockedIds, userId);
+  writeStringArray(UNLOCKED_SUPPORTER_REWARDS_KEY, unlockedIds, effectiveId);
   // Schedule a conservative push to server (debounced). Do not block UI.
   (async () => {
     try {
-      const effectiveId = await getSupabaseUserId(userId);
-      if (!effectiveId || effectiveId === 'guest') return;
-      schedulePush(effectiveId);
+      const finalId = await getSupabaseUserId(effectiveId);
+      if (!finalId || finalId === 'guest') return;
+      schedulePush(finalId);
     } catch (err) {
       // ignore
     }
@@ -197,19 +231,20 @@ export const syncUnlockedSupporterRewards = (total: number, userId?: string | nu
 };
 
 export const setSupporterContributionTotal = (total: number, userId?: string | null) => {
+  const effectiveId = resolveEffectiveSupporterUserId(userId);
   const normalized = Number.isFinite(total) && total > 0 ? Math.floor(total) : 0;
-  const key = getScopedStorageKey(SUPPORTER_TOTAL_KEY, userId);
+  const key = getScopedStorageKey(SUPPORTER_TOTAL_KEY, effectiveId);
   if (canUseLocalStorage()) {
     window.localStorage.setItem(key, String(normalized));
   }
-  const result = syncUnlockedSupporterRewards(normalized, userId);
+  const result = syncUnlockedSupporterRewards(normalized, effectiveId);
 
   // Schedule a debounced push (avoids race conditions)
   (async () => {
     try {
-      const effectiveId = await getSupabaseUserId(userId);
-      if (!effectiveId || effectiveId === 'guest') return;
-      schedulePush(effectiveId);
+      const finalId = await getSupabaseUserId(effectiveId);
+      if (!finalId || finalId === 'guest') return;
+      schedulePush(finalId);
     } catch (err) {
       // ignore
     }
