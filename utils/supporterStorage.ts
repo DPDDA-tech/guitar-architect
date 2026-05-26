@@ -27,17 +27,97 @@ const readStringArray = (key: string, userId?: string | null): string[] => {
     }
   }
 
-  // MIGRATION
+  // Fallback para chave sem escopo (legado absoluto)
+  const raw = window.localStorage.getItem(key);
+  if (!raw) return [];
   try {
-    const raw = window.localStorage.getItem(key);
-    if (userId && userId !== 'guest' && raw) {
-      window.localStorage.setItem(scopedKey, raw);
-    }
-    const parsed = raw ? JSON.parse(raw) : [];
+    const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.filter((item: unknown): item is string => typeof item === 'string') : [];
   } catch {
     return [];
   }
+};
+
+/**
+ * Migra dados de apoiador do storage legado (escopo "Guitar Architect", "guest" ou sem escopo)
+ * para o escopo do UUID atual do usuário autenticado usando merge conservador.
+ */
+const migrateLegacySupporterStorage = (userId: string): boolean => {
+  if (!canUseLocalStorage() || !userId || userId === 'guest') return false;
+
+  let hasMigrated = false;
+  const LEGACY_SCOPES = ['Guitar Architect', 'guest'];
+  const currentTotalKey = getScopedStorageKey(SUPPORTER_TOTAL_KEY, userId);
+  const currentRewardsKey = getScopedStorageKey(UNLOCKED_SUPPORTER_REWARDS_KEY, userId);
+  const currentBadgesKey = getScopedStorageKey(UNLOCKED_SUPPORTER_BADGES_KEY, userId);
+
+  // 1. Migração do Total (Math.max)
+  const currentTotalRaw = window.localStorage.getItem(currentTotalKey);
+  let maxTotal = currentTotalRaw ? Number(currentTotalRaw) : 0;
+  if (isNaN(maxTotal)) maxTotal = 0;
+
+  let foundLegacyTotal = false;
+  LEGACY_SCOPES.forEach(scope => {
+    const raw = window.localStorage.getItem(`${SUPPORTER_TOTAL_KEY}_${scope}`);
+    if (raw) {
+      const val = Number(raw);
+      if (!isNaN(val) && val > maxTotal) {
+        maxTotal = val;
+        foundLegacyTotal = true;
+      }
+    }
+  });
+  
+  const unscopedTotalRaw = window.localStorage.getItem(SUPPORTER_TOTAL_KEY);
+  if (unscopedTotalRaw) {
+    const val = Number(unscopedTotalRaw);
+    if (!isNaN(val) && val > maxTotal) {
+      maxTotal = val;
+      foundLegacyTotal = true;
+    }
+  }
+
+  if (foundLegacyTotal) {
+    console.log(`[SupporterStorage] Migration: Total updated to ${maxTotal} for ${userId}`);
+    window.localStorage.setItem(currentTotalKey, String(maxTotal));
+    hasMigrated = true;
+  }
+
+  // 2. Migração de Recompensas e Selos (Union)
+  const migrateArray = (baseKey: string, currentKey: string) => {
+    const parse = (raw: string | null) => {
+      if (!raw) return [];
+      try {
+        const p = JSON.parse(raw);
+        return Array.isArray(p) ? p.filter((x): x is string => typeof x === 'string') : [];
+      } catch { return []; }
+    };
+
+    const currentRaw = window.localStorage.getItem(currentKey);
+    const currentList = parse(currentRaw);
+    const mergedSet = new Set(currentList);
+
+    LEGACY_SCOPES.forEach(scope => {
+      parse(window.localStorage.getItem(`${baseKey}_${scope}`)).forEach(id => mergedSet.add(id));
+    });
+    parse(window.localStorage.getItem(baseKey)).forEach(id => mergedSet.add(id));
+
+    if (mergedSet.size > currentList.length) {
+      const result = Array.from(mergedSet);
+      console.log(`[SupporterStorage] Migration: ${baseKey} expanded to ${result.length} items for ${userId}`);
+      window.localStorage.setItem(currentKey, JSON.stringify(result));
+      return true;
+    }
+    return false;
+  };
+
+  if (migrateArray(UNLOCKED_SUPPORTER_REWARDS_KEY, currentRewardsKey)) hasMigrated = true;
+  if (migrateArray(UNLOCKED_SUPPORTER_BADGES_KEY, currentBadgesKey)) hasMigrated = true;
+
+  if (hasMigrated) {
+    console.log(`[SupporterStorage] Local migration completed for ${userId}. Current scope is now populated.`);
+  }
+  return hasMigrated;
 };
 
 const writeStringArray = (key: string, value: string[], userId?: string | null) => {
@@ -142,6 +222,9 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
     return null;
   }
 
+  // MIGRATION: Garante que dados legados (ex: "Guitar Architect") subam para o UUID atual
+  migrateLegacySupporterStorage(effectiveId);
+
   console.log(`[SupporterStorage] hydrate: starting for user ${effectiveId}`);
 
   try {
@@ -215,6 +298,9 @@ export const pushSupporterToServer = async (
     console.log(`[SupporterStorage] push: aborted (effectiveId is ${effectiveId})`);
     return null;
   }
+
+  // MIGRATION: Garante que o push inclua dados migrados localmente antes de enviar
+  migrateLegacySupporterStorage(effectiveId);
 
   try {
     const p_supporter_total = typeof total === 'number' ? total : getSupporterContributionTotal(effectiveId);
