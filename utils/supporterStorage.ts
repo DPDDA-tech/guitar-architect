@@ -350,18 +350,35 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
 
     // Restaurar o badge Prime Architect na lista de pinned badges se vier do servidor
     if (serverBadges.includes('first_supporter_prime_architect')) {
-      const currentPinned = readStringArray(PINNED_BADGES_KEY, effectiveId);
-      if (!currentPinned.includes('first_supporter_prime_architect')) {
-        const updatedPinned = [...currentPinned, 'first_supporter_prime_architect'];
-        writeStringArray(PINNED_BADGES_KEY, updatedPinned, effectiveId);
-        
-        // Mirror global (unscoped) para compatibilidade imediata com a UI legada
-        const globalRaw = window.localStorage.getItem(PINNED_BADGES_KEY);
-        const globalPinned = globalRaw ? JSON.parse(globalRaw) : [];
-        if (Array.isArray(globalPinned) && !globalPinned.includes('first_supporter_prime_architect')) {
-          window.localStorage.setItem(PINNED_BADGES_KEY, JSON.stringify([...globalPinned, 'first_supporter_prime_architect']));
-        }
-        console.log(`[SupporterStorage] hydrate: Prime Architect restored to pinned badges.`);
+      let restored = false;
+      const parsePinned = (raw: string | null): string[] => {
+        if (!raw) return [];
+        try {
+          const p = JSON.parse(raw);
+          return Array.isArray(p) ? p : [];
+        } catch { return []; }
+      };
+
+      // 1. Garantir no scoped storage (UUID)
+      const scopedKey = getScopedStorageKey(PINNED_BADGES_KEY, effectiveId);
+      const scopedPinned = parsePinned(window.localStorage.getItem(scopedKey));
+      if (!scopedPinned.includes('first_supporter_prime_architect')) {
+        window.localStorage.setItem(scopedKey, JSON.stringify([...scopedPinned, 'first_supporter_prime_architect']));
+        restored = true;
+      }
+
+      // 2. Garantir no global storage (Autoridade atual da UI)
+      const globalPinned = parsePinned(window.localStorage.getItem(PINNED_BADGES_KEY));
+      if (!globalPinned.includes('first_supporter_prime_architect')) {
+        window.localStorage.setItem(PINNED_BADGES_KEY, JSON.stringify([...globalPinned, 'first_supporter_prime_architect']));
+        restored = true;
+      }
+
+      if (restored) {
+        console.log(`[SupporterStorage] Prime Architect restored from cloud.`);
+        // Dispara eventos para que a UI (ProfilePage/Navigation) re-renderize os selos
+        window.dispatchEvent(new Event('ga-supporter-sync-completed'));
+        window.dispatchEvent(new Event('ga-pinned-badges-updated'));
       }
     }
 
