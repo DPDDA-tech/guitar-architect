@@ -68,7 +68,7 @@ const TeensPage: React.FC = () => {
             onClick={() => navigateTo('/')}
             className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-colors"
           >
-            Modo Profissional (Core)
+            Modo Profissional (Studio)
           </button>
         </div>
       </div>

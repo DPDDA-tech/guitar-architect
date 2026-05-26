@@ -1305,12 +1305,18 @@ const handleReturnToContext = () => {
               MENU
             </button>
             <button
-              onClick={handleLogout}
+              onClick={() => {
+                if (authUser) {
+                  void handleLogout();
+                } else {
+                  setShowLoginModal(true);
+                }
+              }}
               className={`rounded-xl border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
-              aria-label={lang === 'pt' ? 'Sair da conta' : 'Log out'}
-              title={lang === 'pt' ? 'Sair da conta' : 'Log out'}
+              aria-label={authUser ? (lang === 'pt' ? 'Sair da conta' : 'Log out') : (lang === 'pt' ? 'Entrar na conta' : 'Sign in')}
+              title={authUser ? (lang === 'pt' ? 'Sair da conta' : 'Log out') : (lang === 'pt' ? 'Entrar na conta' : 'Sign in')}
             >
-              {lang === 'pt' ? 'Sair' : 'Exit'}
+              {authUser ? (lang === 'pt' ? 'Sair' : 'Exit') : (lang === 'pt' ? 'Entrar' : 'Sign in')}
             </button>
 
             <div className="min-w-0 flex-1 text-center">
@@ -1413,7 +1419,7 @@ const handleReturnToContext = () => {
                   { label: 'Tri/Tetrad', path: '/triads-tetrads' },
                   { label: lang === 'pt' ? 'Modos' : 'Modes', path: '/greek-modes' },
                   { label: translations[lang].harmonicCycle.menu, path: 'harmonic-cycle', wide: true },
-                  { label: lang === 'pt' ? 'Treinar trÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a.' : 'Triad train.', path: '/triads-tetrads?trainer=1', wide: true },
+                  { label: lang === 'pt' ? 'Treinar tríade' : 'Triad train.', path: '/triads-tetrads?trainer=1', wide: true },
                 ].map(item => (
                   <button
                     key={item.path}
@@ -1479,14 +1485,14 @@ ${isExporting ? 'hidden' : ''}
 ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 `}
 >
-  <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2">
-    <div className="flex items-center gap-3 md:gap-5 overflow-hidden">
+  <div className="max-w-[1700px] mx-auto flex items-start justify-between gap-3">
+    <div className="flex min-w-[320px] flex-1 items-center gap-3 md:gap-5">
       <button
         type="button"
         onClick={() => openModulePage('/theme-collection')}
         className="shrink-0 rounded-2xl transition-transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-blue-400"
         title={lang === 'pt' ? 'Trocar logo desbloqueada' : 'Change unlocked logo'}
-        aria-label={lang === 'pt' ? 'Abrir coleÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âµes para trocar a logo' : 'Open collections to change logo'}
+        aria-label={lang === 'pt' ? 'Abrir coleções para trocar a logo' : 'Open collections to change logo'}
       >
         <LogoIcon brand={displayedBrandAssets} />
       </button>
@@ -1557,44 +1563,52 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       </div>
     </div>
 
-            <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
-               <div className="hidden xl:flex flex-col gap-1.5">
-              <div className="grid grid-cols-7 gap-1.5">
+            <div className="flex min-w-0 items-start gap-1.5 md:gap-3">
+               <div className="hidden xl:flex flex-col gap-1.5 min-w-0">
+              <div className="grid grid-cols-5 gap-1.5">
                    {[
-                     { label: lang === 'pt' ? 'Ecossistema' : 'Ecosystem', onClick: () => openModulePage('/ecosystem') },
-                     { label: lang === 'pt' ? 'Aprender' : 'Learn', onClick: () => openModulePage('/learn') },
-                     { label: lang === 'pt' ? 'Praticar' : 'Practice', onClick: () => openModulePage('/practice') },
-                     { label: lang === 'pt' ? 'Metrônomo' : 'Metronome', onClick: openMetronomeTool },
-                     { label: lang === 'pt' ? 'Afinador' : 'Tuner', onClick: openTunerTool },
-                     { label: lang === 'pt' ? 'Instrumentos' : 'Instruments', onClick: openMyInstruments },
-                     { label: lang === 'pt' ? 'Coleções' : 'Collections', onClick: () => openModulePage('/theme-collection') },
+                     { label: lang === 'pt' ? 'Ciclo' : 'Cycle', onClick: () => openModulePage('/harmonic-cycle') },
+                     { label: lang === 'pt' ? 'Modos' : 'Modes', onClick: () => openModulePage('/greek-modes') },
+                     { label: 'CAGED', onClick: () => openModulePage('/caged') },
+                     { label: lang === 'pt' ? 'Acordes' : 'Chords', onClick: () => openModulePage('/chords') },
+                     { label: 'Tri/Tetrad', onClick: () => openModulePage('/triads-tetrads') },
                    ].map(item => (
                      <button
                        key={item.label}
                        onClick={item.onClick}
-                       className={`min-w-[86px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
+                       className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
                      >
                        {item.label}
                      </button>
                    ))}
                  </div>
-                 <div className="grid grid-cols-6 gap-1.5">
-                   {[
-                     { label: lang === 'pt' ? 'Ciclo' : 'Cycle', path: '/harmonic-cycle' },
-                     { label: lang === 'pt' ? 'Modos' : 'Modes', path: '/greek-modes' },
-                     { label: 'CAGED', path: '/caged' },
-                     { label: lang === 'pt' ? 'Acordes' : 'Chords', path: '/chords' },
-                     { label: 'Tri/Tetrad', path: '/triads-tetrads' },
-                     { label: lang === 'pt' ? 'Treinar trÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a.' : 'Triad train.', path: '/triads-tetrads?trainer=1' },
-                   ].map(item => (
-                     <button
-                       key={item.path}
-                       onClick={() => openModulePage(item.path)}
-                       className={`min-w-[74px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
-                     >
-                       {item.label}
-                     </button>
-                   ))}
+                 <div className="grid grid-cols-5 gap-1.5">
+                   <button onClick={() => openModulePage('/learn')} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                     {lang === 'pt' ? 'Aprender' : 'Learn'}
+                   </button>
+                   <button onClick={() => openModulePage('/practice')} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                     {lang === 'pt' ? 'Praticar' : 'Practice'}
+                   </button>
+                   <button onClick={() => openModulePage('/triads-tetrads?trainer=1')} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                     {lang === 'pt' ? 'Treinar tríade' : 'Triad train.'}
+                   </button>
+                   <button onClick={openMetronomeTool} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                     {lang === 'pt' ? 'Metrônomo' : 'Metronome'}
+                   </button>
+                   <button onClick={openTunerTool} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                     {lang === 'pt' ? 'Afinador' : 'Tuner'}
+                   </button>
+                 </div>
+                 <div className="grid grid-cols-3 gap-1.5">
+                   <button onClick={() => openModulePage('/ecosystem')} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                     {lang === 'pt' ? 'Ecossistema' : 'Ecosystem'}
+                   </button>
+                   <button onClick={() => openModulePage('/theme-collection')} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                     {lang === 'pt' ? 'Coleções' : 'Collections'}
+                   </button>
+                   <button onClick={openMyInstruments} className={`min-w-[96px] px-2 py-2 rounded-xl border transition-all ai-glow font-black text-[8px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}>
+                     {lang === 'pt' ? 'Instrumentos' : 'Instruments'}
+                   </button>
                  </div>
                </div>
                <div className="hidden">
@@ -1606,7 +1620,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                    { label: 'CAGED', path: '/caged' },
                    { label: lang === 'pt' ? 'Triades' : 'Triads', path: '/triads-tetrads' },
                    { label: lang === 'pt' ? 'Modos' : 'Modes', path: '/greek-modes' },
-                   { label: lang === 'pt' ? 'ColeÃƒÂ§ÃƒÂ£o' : 'Collection', path: '/theme-collection' },
+                   { label: lang === 'pt' ? 'Coleção' : 'Collection', path: '/theme-collection' },
                  ].map(item => (
                    <button
                      key={item.path}
@@ -1629,8 +1643,8 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 	               <button
 	                 onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
 	                 className={`px-3 py-2 rounded-xl border transition-all ai-glow font-black text-[10px] uppercase ${isLight ? 'border-zinc-300 text-zinc-700 hover:bg-zinc-100' : 'border-zinc-700 text-zinc-100 hover:bg-zinc-800'}`}
-	                 title={lang === 'pt' ? 'English' : 'PortuguÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªs'}
-	                 aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para portuguÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªs'}
+	                 title={lang === 'pt' ? 'English' : 'Português'}
+	                 aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para português'}
 	               >
 	                 {lang === 'pt' ? 'EN' : 'PORT'}
 	               </button>
@@ -2070,16 +2084,16 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
          <div className="max-w-[1700px] mx-auto px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
                <LogoIcon brand={displayedBrandAssets} variant="footer" />
-               <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Guitar Architect ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ DPDDA-tech</p>
+               <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Guitar Architect • DPDDA-tech</p>
             </div>
             <div className="flex gap-4 md:gap-8 text-[10px] font-black uppercase text-zinc-500">
                <a href="/legal/privacy.html" target="_blank" className="hover:text-blue-600 transition-colors">Privacidade</a>
                <a href="/legal/terms.html" target="_blank" className="hover:text-blue-600 transition-colors">Termos</a>
-               <a href="/legal/license.html" target="_blank" className="hover:text-blue-600 transition-colors">LicenÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§a</a>
+               <a href="/legal/license.html" target="_blank" className="hover:text-blue-600 transition-colors">Licença</a>
                <a href="/legal/help.html" target="_blank" className="hover:text-blue-600 transition-colors">Ajuda</a>
                <a href="#" onClick={() => setShowSupportModal(true)} className="hover:text-blue-600 transition-colors cursor-pointer">Apoie o projeto</a>
             </div>
-            <p className={`text-[10px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© 2026</p>
+            <p className={`text-[10px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>© 2026</p>
          </div>
       </footer>
 

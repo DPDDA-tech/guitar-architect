@@ -8,6 +8,7 @@ export interface RewardMetadata {
   title: string;
   image: string;
   category?: string;
+  description?: string;
 }
 
 /**
@@ -20,37 +21,37 @@ export function getRewardMetadataById(id: string): RewardMetadata | null {
   // 1. Tentar Supporter Rewards (IDs simples)
   const supporter = supporterRewards.find(r => r.id === id);
   if (supporter) {
-    return { id: supporter.id, title: supporter.title, image: supporter.image, category: 'supporter' };
+    return { id: supporter.id, title: supporter.title, image: supporter.image, category: 'supporter', description: supporter.description };
   }
 
   // 1.1 Tentar Primeiros Apoiadores (IDs simples)
   const firstSupporter = supporterFirstRewards.find(r => r.id === id);
   if (firstSupporter) {
-    return { id: firstSupporter.id, title: firstSupporter.title, image: firstSupporter.image, category: firstSupporter.category };
+    return { id: firstSupporter.id, title: firstSupporter.title, image: firstSupporter.image, category: firstSupporter.category, description: firstSupporter.description };
   }
 
   // 1.2 Tentar Selos de Constância (IDs simples)
   const constancy = constancyRewards.find(r => r.id === id);
   if (constancy) {
-    return { id: constancy.id, title: constancy.title, image: constancy.image, category: constancy.category };
+    return { id: constancy.id, title: constancy.title, image: constancy.image, category: constancy.category, description: constancy.description };
   }
 
   // 2. Tentar IDs prefixados (usados na Coleção da Obra)
   if (id.startsWith('achievement:')) {
     const achId = id.replace('achievement:', '');
     const ach = getAchievementById(achId);
-    if (ach && ach.asset.path) return { id, title: ach.title, image: ach.asset.path, category: ach.category };
+    if (ach && ach.asset.path) return { id, title: ach.title, image: ach.asset.path, category: ach.category, description: ach.description };
   }
 
   if (id.startsWith('reward:')) {
     const rewId = id.replace('reward:', '');
     const rew = getRewardById(rewId);
-    if (rew && rew.asset.path) return { id, title: rew.title, image: rew.asset.path, category: rew.type };
+    if (rew && rew.asset.path) return { id, title: rew.title, image: rew.asset.path, category: rew.type, description: rew.description };
   }
 
   // 3. Fallback: Tentar busca direta por ID bruto em conquistas/recompensas
   const achRaw = getAchievementById(id);
-  if (achRaw && achRaw.asset.path) return { id: achRaw.id, title: achRaw.title, image: achRaw.asset.path };
+  if (achRaw && achRaw.asset.path) return { id: achRaw.id, title: achRaw.title, image: achRaw.asset.path, description: achRaw.description };
 
   return null;
 }

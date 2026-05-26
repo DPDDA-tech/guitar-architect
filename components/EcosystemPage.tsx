@@ -56,7 +56,7 @@ const EcosystemPage: React.FC = () => {
             {
               id: 'studio',
               title: 'Studio',
-              logo: '/tier0/tier0-ga6-oficial.webp',
+              logo: '/gastudiologo.webp',
               desc: 'Construa mapas, escalas, acordes e arquitetura musical.',
               path: '/',
               btn: 'bg-blue-600',
