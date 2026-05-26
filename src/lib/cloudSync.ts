@@ -230,19 +230,28 @@ const mergeSnapshots = (
 
 export const mergeCloudSnapshots = mergeSnapshots;
 
-export const buildLocalCloudSnapshot = async (identity: string): Promise<UserCloudSnapshot> => ({
-  appState: loadConfig(),
-  profile: loadUserProfile(),
-  projects: getLibrary(identity),
-  instruments: await listInstruments(identity).catch(() => []),
-  themeCollection: loadThemeCollectionState(),
-  achievements: {
-    unlockedAchievementIds: getUnlockedAchievementIds(identity),
-    progress: getAchievementProgressState(identity),
-    selectedRewardBadgeId: getSelectedRewardBadgeId(identity),
-  },
-  syncedAt: new Date().toISOString(),
-});
+export const buildLocalCloudSnapshot = async (identity: string): Promise<UserCloudSnapshot> => {
+  const appState = loadConfig();
+  const scopedInstruments = await listInstruments(identity).catch(() => []);
+  const legacyIdentity = appState?.currentUser;
+  const legacyInstruments = legacyIdentity && legacyIdentity !== identity
+    ? await listInstruments(legacyIdentity).catch(() => [])
+    : [];
+
+  return {
+    appState,
+    profile: loadUserProfile(),
+    projects: getLibrary(identity),
+    instruments: mergeInstruments(scopedInstruments, legacyInstruments),
+    themeCollection: loadThemeCollectionState(),
+    achievements: {
+      unlockedAchievementIds: getUnlockedAchievementIds(identity),
+      progress: getAchievementProgressState(identity),
+      selectedRewardBadgeId: getSelectedRewardBadgeId(identity),
+    },
+    syncedAt: new Date().toISOString(),
+  };
+};
 
 export const applyCloudSnapshotLocally = async (snapshot: UserCloudSnapshot, identity: string) => {
   snapshot.projects.forEach(project => {

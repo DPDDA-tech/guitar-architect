@@ -32,6 +32,7 @@ interface MyInstrumentsProps {
   theme: ThemeMode;
   lang: 'pt' | 'en';
   onInstrumentsChanged?: () => void;
+  authUserId?: string;
 }
 
 type InstrumentSortKey = 'purchaseDate' | 'paidValue' | 'manufactureYear' | 'brandModel' | 'updatedAt';
@@ -447,7 +448,7 @@ const exportInstrumentToPdf = async (instrument: UserInstrument, lang: 'pt' | 'e
   pdf.save(fileName);
 };
 
-const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggleTheme, onToggleLang, theme, lang, onInstrumentsChanged }) => {
+const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggleTheme, onToggleLang, theme, lang, onInstrumentsChanged, authUserId }) => {
   const isLight = theme === 'light';
   const fileInputRef = useRef<HTMLInputElement>(null);
   const backupInputRef = useRef<HTMLInputElement>(null);
@@ -499,7 +500,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
   useEffect(() => {
     if (!isOpen) return;
     const config = loadConfig();
-    const userId = config?.currentUser;
+    const userId = authUserId || config?.currentUser;
     setCurrentUserId(userId);
     listInstruments(userId)
       .then(next => {
@@ -507,7 +508,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
         recordAchievementEvent({ type: 'instrument_collection', count: next.length }, userId);
       })
       .catch(() => setItems([]));
-  }, [isOpen]);
+  }, [isOpen, authUserId]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

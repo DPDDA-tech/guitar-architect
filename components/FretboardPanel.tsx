@@ -413,7 +413,7 @@ const handleMigrateLocalIdentity = async (sourceIdentity: string) => {
   setMigrationStatus('loading');
   setMigrationMessage('');
 
-  const result = await migrateLocalIdentityToSupabase(authUser.id, user, sourceIdentity);
+  const result = await migrateLocalIdentityToSupabase(authUser.id, authUser.id, sourceIdentity);
 
   if (!result.ok) {
     setMigrationStatus('error');
@@ -978,7 +978,7 @@ const handleReturnToContext = () => {
   };
 
   const isLight = theme === 'light';
-  const userLibrary = getLibrary(user);
+  const userLibrary = getLibrary(authUser?.id || 'guest');
   const activeInstanceIndex = Math.max(0, instances.findIndex(instance => instance.id === activeInstanceId));
   const activeInstance = instances[activeInstanceIndex] || instances[0];
   const primaryInstrument = activeInstance?.instrumentType || defaultInstrument;
@@ -2311,7 +2311,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
               onClick={() => setShowLoginModal(false)}
               className={`mt-6 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border transition-all uppercase text-[10px] font-black tracking-widest ${isLight ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' : 'bg-red-950/10 border-red-500/40 text-red-400 hover:bg-red-900/20 hover:border-red-500/60 shadow-lg shadow-red-900/10'}`}
             >
-              <span className="text-xs">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¹Ã…â€œÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤</span>
+              <span className="text-xs">↩</span>
               {lang === 'pt' ? 'Continuar como visitante' : 'Continue as guest'}
             </button>
 </div>
@@ -2403,6 +2403,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   theme={theme}
   lang={lang}
   onInstrumentsChanged={handleInstrumentsChanged}
+  authUserId={authUser?.id}
 />
 
 </div>
