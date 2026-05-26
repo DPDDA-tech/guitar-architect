@@ -10,7 +10,7 @@ import {
   revokeSupabaseRewardFromEmail,
   grantRewardToAllUsers
 } from '../utils/supabaseRewardGrants';
-import { listAllAdminEligibleUsers } from '../utils/supabaseAdminUsers';
+import { getRegisteredUserCount } from '../utils/supabaseAdminUsers';
 
 type UnifiedGrant = {
   email: string;
@@ -33,7 +33,7 @@ const AdminRewardsPage: React.FC = () => {
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [registeredUserCount, setRegisteredUserCount] = useState<number | null>(null);
 
-  // States para o formulÃƒÂ¡rio
+  // States para o formulÃƒÆ’Ã‚Â¡rio
   const [targetEmail, setTargetEmail] = useState('');
   const [selectedRewardId, setSelectedRewardId] = useState('');
   const [grants, setGrants] = useState<UnifiedGrant[]>([]);
@@ -87,8 +87,8 @@ const AdminRewardsPage: React.FC = () => {
   };
 
   const refreshUserCount = async () => {
-    const users = await listAllAdminEligibleUsers();
-    setRegisteredUserCount(users.length > 0 ? users.length : 0);
+    const count = await getRegisteredUserCount();
+    setRegisteredUserCount(count);
   };
 
   useEffect(() => {
@@ -109,7 +109,7 @@ const AdminRewardsPage: React.FC = () => {
         if (!isMounted) return;
 
         if (result.type === 'timeout') {
-          console.error(`[Admin Auth Trace] getSession TIMEOUT após ${Date.now() - startedAt}ms`);
+          console.error(`[Admin Auth Trace] getSession TIMEOUT apÃ³s ${Date.now() - startedAt}ms`);
           status = 'signedOut';
           setCurrentUserEmail(null);
           return;
@@ -118,11 +118,11 @@ const AdminRewardsPage: React.FC = () => {
         const { data: { session }, error } = result.res;
         console.log(`[Admin Auth Trace] getSession resolvido em ${Date.now() - startedAt}ms`);
         const email = session?.user?.email || null;
-        console.log(`[Admin Auth Trace] SessÃƒÂ£o: ${!!session}, Email: ${email}, Erro:`, error);
+        console.log(`[Admin Auth Trace] SessÃƒÆ’Ã‚Â£o: ${!!session}, Email: ${email}, Erro:`, error);
         setCurrentUserEmail(email);
 
         if (error || !session?.user || !email) {
-          console.log('[Admin Auth Trace] UsuÃƒÂ¡rio nÃƒÂ£o logado ou sem email.');
+          console.log('[Admin Auth Trace] ÃÂ¡rio nÃƒÆÃÂ£o’Ã‚Â¡rio nÃƒÆ’Ã‚Â£o logado ou sem email.');
           status = 'signedOut';
         } else if (isAdminEmail(email)) {
           console.log('[Admin Auth Trace] ADMIN AUTORIZADO via utils/adminAccess');
@@ -130,11 +130,11 @@ const AdminRewardsPage: React.FC = () => {
           void refreshGrants();
           void refreshUserCount();
         } else {
-          console.log('[Admin Auth Trace] EMAIL NÃƒÆ’O AUTORIZADO PARA ADMIN');
+          console.log('[Admin Auth Trace] EMAIL Ã†â€™O NÃO; Rep CRÃƒÆÃÂTICO CRÍTICO; Rep beneficiÃƒÆÃÂ¡rio beneficiário; Rep concluÃƒÂ­do concluído; Rep FaÃƒÆÃÂ§a Faça; Rep gestÃƒÆÃÂ£o gestão; Rep nÃƒÆÃÂ£o’Ã†â€™O AUTORIZADO PARA ADMIN');
           status = 'unauthorized';
         }
       } catch (err) {
-        console.error('[Admin Auth Trace] ERRO CRÃƒÂTICO no checkAuth:', err);
+        console.error('[Admin Auth Trace] ERRO CRÃƒÆ’Ã‚ÂTICO no checkAuth:', err);
         status = 'signedOut';
       } finally {
         console.log(`[Admin Auth Trace] Definindo estado final: ${status}`);
@@ -165,7 +165,7 @@ const AdminRewardsPage: React.FC = () => {
     }
 
     if (grantMode === 'all-users') {
-      if (!confirm('Esta aÃƒÂ§ÃƒÂ£o concederÃƒÂ¡ o selo selecionado para TODOS os usuÃƒÂ¡rios cadastrados. Confirmar?')) return;
+      if (!confirm('Esta aÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o concederÃƒÆ’Ã‚Â¡ o selo selecionado para TODOS os usuÃƒÆ’Ã‚Â¡rios cadastrados. Confirmar?')) return;
       
       setBulkProcessing(true);
       setBulkResult(null);
@@ -183,7 +183,7 @@ const AdminRewardsPage: React.FC = () => {
     }
     
     if (!targetEmail.trim()) {
-      alert('Preencha o e-mail do beneficiÃƒÂ¡rio.');
+      alert('Preencha o e-mail do beneficiÃƒÆ’Ã‚Â¡rio.');
       return;
     }
 
@@ -211,7 +211,7 @@ const AdminRewardsPage: React.FC = () => {
       console.error('[Admin Auth Trace] signOut retornou erro:', error);
       return;
     }
-    console.log('[Admin Auth Trace] signOut concluÃ­do com sucesso');
+    console.log('[Admin Auth Trace] signOut concluÃƒÂ­do com sucesso');
   } catch (err) {
     console.error('[Admin Auth Trace] Erro no signOut:', err);
   }
@@ -235,7 +235,7 @@ const AdminRewardsPage: React.FC = () => {
   if (authStatus === 'signedOut') return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-6 text-center text-zinc-100">
       <h1 className="text-xl font-black text-red-500 uppercase tracking-tight">Acesso administrativo restrito</h1>
-      <p className="mt-2 text-zinc-400 font-bold max-w-sm">FaÃƒÂ§a login com uma conta autorizada para acessar as ferramentas de gestÃƒÂ£o.</p>
+      <p className="mt-2 text-zinc-400 font-bold max-w-sm">FaÃƒÆ’Ã‚Â§a login com uma conta autorizada para acessar as ferramentas de gestÃƒÆ’Ã‚Â£o.</p>
       <button onClick={navigateHome} className="mt-8 px-6 py-3 bg-zinc-800 text-white rounded-xl font-black uppercase text-xs transition-colors hover:bg-zinc-700">Voltar ao Fretboard</button>
     </div>
   );
@@ -243,7 +243,7 @@ const AdminRewardsPage: React.FC = () => {
   if (authStatus === 'unauthorized') return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-6 text-center text-zinc-100">
       <h1 className="text-xl font-black text-red-500 uppercase tracking-tight">Acesso negado</h1>
-      <p className="mt-2 text-zinc-400 font-bold">O e-mail ({currentUserEmail}) nÃƒÂ£o possui permissÃƒÂµes administrativas.</p>
+      <p className="mt-2 text-zinc-400 font-bold">O e-mail ({currentUserEmail}) nÃƒÆ’Ã‚Â£o possui permissÃƒÆ’Ã‚Âµes administrativas.</p>
       <button onClick={navigateHome} className="mt-8 px-6 py-3 bg-zinc-800 text-white rounded-xl font-black uppercase text-xs transition-colors hover:bg-zinc-700">Voltar ao Fretboard</button>
     </div>
   );
@@ -253,7 +253,7 @@ const AdminRewardsPage: React.FC = () => {
       <header className="border-b border-zinc-800 px-6 py-8 md:px-12">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.32em] text-blue-500">Guitar Architect Ã¢â‚¬Â¢ Admin</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.32em] text-blue-500">Guitar Architect ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Admin</p>
             <h1 className="mt-2 text-3xl font-black italic uppercase tracking-tighter text-white">Reward Management</h1>
           </div>
           <div className="flex gap-2">
@@ -279,12 +279,12 @@ const AdminRewardsPage: React.FC = () => {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[1fr_1.5fr]">
-          {/* Coluna de AÃƒÂ§ÃƒÂµes */}
+          {/* Coluna de ÃÂ§ÃƒÆÃÂµes’Ã‚Â§ÃƒÆ’Ã‚Âµes */}
           <section className="space-y-6">
             <div className={`rounded-3xl border p-6 shadow-xl transition-all ${
               grantMode === 'all-users' ? 'border-amber-500/30 bg-amber-500/5' : 'border-zinc-800 bg-zinc-900/50'
             } ${bulkProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
-              <h2 className="text-lg font-black uppercase tracking-tight mb-6">Nova ConcessÃƒÂ£o</h2>
+              <h2 className="text-lg font-black uppercase tracking-tight mb-6">Nova ÃÂ£o’Ã‚Â£o</h2>
               
               <div className="space-y-4">
                 <div className="flex gap-2 p-1 bg-zinc-950 rounded-2xl border border-zinc-800">
@@ -292,7 +292,7 @@ const AdminRewardsPage: React.FC = () => {
                     onClick={() => setGrantMode('single')}
                     className={`flex-1 py-2 text-[9px] font-black uppercase rounded-xl transition-all ${grantMode === 'single' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
                   >
-                    UsuÃƒÂ¡rio ÃƒÅ¡nico
+                    ÃÂ¡rio nÃƒÆÃÂ£o’Ã‚Â¡rio ÃƒÆ’Ã…Â¡nico
                   </button>
                   <button 
                     onClick={() => setGrantMode('all-users')}
@@ -304,7 +304,7 @@ const AdminRewardsPage: React.FC = () => {
 
                 {grantMode === 'single' ? (
                   <div className="animate-in fade-in slide-in-from-top-1">
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">E-mail do BeneficiÃƒÂ¡rio</label>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">E-mail do Beneficiário</label>
                     <input 
                       type="email"
                       value={targetEmail}
@@ -316,7 +316,7 @@ const AdminRewardsPage: React.FC = () => {
                 ) : (
                   <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 animate-in zoom-in-95">
                     <p className="text-[11px] font-black uppercase leading-tight text-amber-500">
-                      Ã¢Å¡Â Ã¯Â¸Â Esta aÃƒÂ§ÃƒÂ£o concederÃƒÂ¡ o selo selecionado para TODOS os usuÃƒÂ¡rios cadastrados.
+                      ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Esta aÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o concederÃƒÆ’Ã‚Â¡ o selo selecionado para TODOS os usuÃƒÆ’Ã‚Â¡rios cadastrados.
                     </p>
                   </div>
                 )}
@@ -334,12 +334,12 @@ const AdminRewardsPage: React.FC = () => {
                         <option key={r.id} value={r.id}>{r.title} ({r.id})</option>
                       ))}
                     </optgroup>
-                    <optgroup label="AUTOMÃƒÂTICO/MANUAL">
+                    <optgroup label="AUTOMÃƒÆ’Ã‚ÂTICO/MANUAL">
                       {catalog.filter(r => r.grantMode === 'automatic').map(r => (
                         <option key={r.id} value={r.id}>{r.title} ({r.id})</option>
                       ))}
                     </optgroup>
-                    <optgroup label="MANUAL/AUTOMÃƒÂTICO">
+                    <optgroup label="MANUAL/AUTOMÃƒÆ’Ã‚ÂTICO">
                       {catalog.filter(r => r.grantMode === 'manual-or-automatic').map(r => (
                         <option key={r.id} value={r.id}>{r.title} ({r.id})</option>
                       ))}
@@ -349,7 +349,7 @@ const AdminRewardsPage: React.FC = () => {
 
                 <div className="flex flex-col gap-3 pt-2">
                   <button onClick={handleGrant} className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-[10px] font-black uppercase shadow-lg shadow-blue-950/20 active:scale-95 transition-all w-full">
-                    {grantMode === 'all-users' ? 'Executar ConcessÃƒÂ£o em Massa' : 'Conceder Selo'}
+                    {grantMode === 'all-users' ? 'Executar ÃÂ£o’Ã‚Â£o em Massa' : 'Conceder Selo'}
                   </button>
                   {grantMode === 'single' && (
                     <button onClick={() => handleRevoke(targetEmail, selectedRewardId, 'admin-supabase')} className="border border-red-900/50 bg-red-950/20 text-red-400 hover:bg-red-950/40 rounded-xl py-3 text-[10px] font-black uppercase active:scale-95 transition-all w-full">
@@ -368,9 +368,9 @@ const AdminRewardsPage: React.FC = () => {
                   <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-center animate-in fade-in slide-in-from-top-2">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Resultado:</p>
                     <p className="mt-1 text-[11px] font-bold">
-                      <span className="text-emerald-500">Ã¢Å“â€ {lastBulkResult.s} sucessos</span>
+                      <span className="text-emerald-500">¬â€œ ✖; Rep Esta‚¬Â {lastBulkResult.s} sucessos</span>
                       <span className="mx-2 text-zinc-700">|</span>
-                      <span className="text-red-500">Ã¢Å“â€“ {lastBulkResult.f} falhas</span>
+                      <span className="text-red-500">¬â€œ ✖; Rep Esta‚¬â€œ {lastBulkResult.f} falhas</span>
                     </p>
                   </div>
                 )}
@@ -416,7 +416,7 @@ const AdminRewardsPage: React.FC = () => {
             <div className="space-y-3">
               {filteredGrants.length === 0 ? (
                 <div className="py-20 text-center border border-dashed border-zinc-800 rounded-3xl">
-                  <p className="text-zinc-600 font-bold uppercase text-xs">Nenhuma concessÃƒÂ£o encontrada.</p>
+                  <p className="text-zinc-600 font-bold uppercase text-xs">Nenhuma concessÃƒÆ’Ã‚Â£o encontrada.</p>
                 </div>
               ) : filteredGrants.map((grant, idx) => (
                 <div key={`${grant.email}-${grant.rewardId}-${idx}`} className="group relative bg-zinc-900/30 border border-zinc-800 hover:border-zinc-700 rounded-2xl p-5 transition-all">
@@ -424,7 +424,7 @@ const AdminRewardsPage: React.FC = () => {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-[10px] font-black text-blue-400 truncate">{grant.email}</span>
-                        <span className="text-zinc-700 text-xs">Ã¢â‚¬Â¢</span>
+                        <span className="text-zinc-700 text-xs">ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢</span>
                         <span className={`text-[9px] font-black uppercase tracking-widest ${grant.source === 'admin-supabase' ? 'text-emerald-500' : 'text-zinc-500'}`}>{grant.source}</span>
                         <span className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase border ${grant.reason?.includes('[BULK]') ? 'border-amber-900/50 text-amber-500' : 'border-zinc-800 text-zinc-500'}`}>
                           {grant.reason?.includes('[BULK]') ? 'BULK' : 'SINGLE'}
