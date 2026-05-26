@@ -4,6 +4,7 @@ import { supabase } from '../src/lib/supabase';
 
 export const SUPPORTER_TOTAL_KEY = 'ga_supporter_total';
 export const UNLOCKED_SUPPORTER_REWARDS_KEY = 'ga_unlocked_supporter_rewards';
+export const UNLOCKED_SUPPORTER_BADGES_KEY = 'ga_unlocked_supporter_badges';
 
 const canUseLocalStorage = () => (
   typeof window !== 'undefined' &&
@@ -88,6 +89,8 @@ export const getSupporterContributionTotal = (userId?: string | null) => {
 
 export const getUnlockedSupporterRewardIds = (userId?: string | null) => readStringArray(UNLOCKED_SUPPORTER_REWARDS_KEY, userId);
 
+export const getUnlockedSupporterBadgeIds = (userId?: string | null) => readStringArray(UNLOCKED_SUPPORTER_BADGES_KEY, userId);
+
 export const syncUnlockedSupporterRewards = (total: number, userId?: string | null) => {
   const unlockedIds = getUnlockedSupporterRewards(total).map(reward => reward.id);
   writeStringArray(UNLOCKED_SUPPORTER_REWARDS_KEY, unlockedIds, userId);
@@ -147,32 +150,36 @@ export const hydrateSupporterFromServer = async (userId?: string | null) => {
 
     const localTotal = getSupporterContributionTotal(effectiveId);
     const localUnlocked = getUnlockedSupporterRewardIds(effectiveId);
+    const localBadges = getUnlockedSupporterBadgeIds(effectiveId);
 
     if (error || !data) {
       // Sem dados no servidor: se houver progresso local, sobe para o servidor
-      if (localTotal > 0 || localUnlocked.length > 0) {
-        return await pushSupporterToServer(effectiveId, localTotal, localUnlocked);
+      if (localTotal > 0 || localUnlocked.length > 0 || localBadges.length > 0) {
+        return await pushSupporterToServer(effectiveId, localTotal, localUnlocked, localBadges);
       }
       return null;
     }
 
     const serverTotal = Number(data.supporter_total || 0);
     const serverUnlocked = Array.isArray(data.unlocked_rewards) ? data.unlocked_rewards : [];
+    const serverBadges = Array.isArray(data.unlocked_badges) ? data.unlocked_badges : [];
 
     // Se o cliente tem progresso que o servidor não tem, chama o RPC para consolidar
     const hasLocalProgress = localTotal > serverTotal || 
-                             localUnlocked.some(id => !serverUnlocked.includes(id));
+                             localUnlocked.some(id => !serverUnlocked.includes(id)) ||
+                             localBadges.some(id => !serverBadges.includes(id));
 
     if (hasLocalProgress) {
-      return await pushSupporterToServer(effectiveId, localTotal, localUnlocked);
+      return await pushSupporterToServer(effectiveId, localTotal, localUnlocked, localBadges);
     }
 
     // Caso contrário, o servidor é a autoridade. Sincroniza cache local.
     const key = getScopedStorageKey(SUPPORTER_TOTAL_KEY, effectiveId);
     window.localStorage.setItem(key, String(serverTotal));
     writeStringArray(UNLOCKED_SUPPORTER_REWARDS_KEY, serverUnlocked, effectiveId);
+    writeStringArray(UNLOCKED_SUPPORTER_BADGES_KEY, serverBadges, effectiveId);
 
-    return { mergedTotal: serverTotal, mergedUnlocked: serverUnlocked };
+    return { mergedTotal: serverTotal, mergedUnlocked: serverUnlocked, mergedBadges: serverBadges };
   } catch (err) {
     return null;
   }
@@ -190,7 +197,7 @@ export const pushSupporterToServer = async (
   try {
     const p_supporter_total = typeof total === 'number' ? total : getSupporterContributionTotal(effectiveId);
     const p_unlocked_rewards = Array.isArray(unlocked) ? unlocked : getUnlockedSupporterRewardIds(effectiveId);
-    const p_unlocked_badges = Array.isArray(badges) ? badges : p_unlocked_rewards;
+    const p_unlocked_badges = Array.isArray(badges) ? badges : getUnlockedSupporterBadgeIds(effectiveId);
 
     const { data, error } = await supabase.rpc('merge_supporter_data', {
       p_supporter_total,
@@ -210,6 +217,7 @@ export const pushSupporterToServer = async (
     const key = getScopedStorageKey(SUPPORTER_TOTAL_KEY, effectiveId);
     window.localStorage.setItem(key, String(result.mergedTotal));
     writeStringArray(UNLOCKED_SUPPORTER_REWARDS_KEY, result.mergedUnlocked, effectiveId);
+    writeStringArray(UNLOCKED_SUPPORTER_BADGES_KEY, result.mergedBadges, effectiveId);
 
     return result;
   } catch (err) {
