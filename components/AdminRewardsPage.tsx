@@ -188,16 +188,14 @@ const AdminRewardsPage: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    try {
-      console.log('[Admin Auth Trace] handleLogout iniciado');
-      await supabase.auth.signOut();
-      localStorage.removeItem('ga_require_account_login'); // Evita abertura automática do modal no FretboardPanel
-      window.history.pushState(null, '', '/');
-      window.dispatchEvent(new Event('ga-route-change'));
-    } catch (err) {
-      console.error('[Admin Auth Trace] Erro no signOut:', err);
-    }
-  };
+  try {
+    console.log('[Admin Auth Trace] handleLogout iniciado');
+    localStorage.removeItem('ga_require_account_login');
+    await supabase.auth.signOut();
+  } catch (err) {
+    console.error('[Admin Auth Trace] Erro no signOut:', err);
+  }
+};
 
   const handleRevoke = async (email: string, rewardId: string, source: string) => {
     if (source === 'admin-supabase') {

@@ -668,13 +668,18 @@ useEffect(() => {
     }
 
     if (event === 'SIGNED_OUT') {
-      setAuthUser(null);
-      setAllowLocalIdentity(false);
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('ga_require_account_login', '1');
-      }
-      authSessionBooted.current = false;
-    }
+  setAuthUser(null);
+  setAllowLocalIdentity(true);
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem('ga_require_account_login');
+  }
+
+  authSessionBooted.current = false;
+
+  window.history.pushState(null, '', '/');
+  window.dispatchEvent(new Event('ga-route-change'));
+}
   });
 
   return () => {
@@ -739,60 +744,16 @@ useEffect(() => {
 ]);
 
 const handleLogout = async () => {
+  // Preserva o workspace atual e apenas encerra a sessão autenticada.
+  localStorage.removeItem('ga_require_account_login');
 
-  // salva sessão atual antes de sair
-  if (user && initialized.current) {
-    const currentUserId = authUser?.id || 'guest';
-
-    const currentProject: Project = {
-      id: projectId,
-      name: projectName,
-      user: currentUserId, // UUID para ownership
-      lastUpdated: new Date().toISOString(),
-      instances,
-      globalTransposition: globalTranspose
-    };
-
-    saveProjectToLibrary(currentProject, currentUserId);
-
-    saveConfig({
-      version: "1.8.7",
-      activeProjectId: projectId,
-      theme,
-      lang,
-      currentUser: currentUserId,
-      userLogo,
-      defaultInstrument,
-      showTips
-    }, currentUserId);
-  }
-
-  // limpa sessão
   if (authUser) {
     await supabase.auth.signOut();
   }
 
   setAuthUser(null);
-  setAllowLocalIdentity(false);
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem('ga_require_account_login', '1');
-  }
+  setAllowLocalIdentity(true);
   authSessionBooted.current = false;
-
-    // Limpeza profunda de estados em memória
-  setInstances([]);
-  setUser('');
-  setProjectName('Novo Projeto');
-  setProjectId(crypto.randomUUID());
-  setGlobalTranspose(0);
-  setUserLogo(undefined);
-    setInstruction(null);
-    setReturnContext(null);
-
-  initialized.current = false;
-
-  // abre modal de login novamente
-  setShowLoginModal(true);
 };
 
 const handleReturnToContext = () => {

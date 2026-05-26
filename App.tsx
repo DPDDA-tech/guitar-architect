@@ -67,6 +67,12 @@ const App: React.FC = () => {
         console.log(`[AppBoot] User signed in: ${session.user.id}. Triggering sync...`);
         await hydrateSupporterFromServer(session.user.id);
       }
+
+      if (event === 'SIGNED_OUT') {
+        setPath('/');
+        window.history.pushState(null, '', '/');
+        window.dispatchEvent(new Event('ga-route-change'));
+      }
     });
 
     // 3. Escuta o evento de conclusão de sync para atualizar a UI localmente
