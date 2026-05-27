@@ -22,6 +22,7 @@ type CellInfo = {
   note: NaturalNote;
   midi: number;
 };
+type Region = { id: string; stringStart: number; stringEnd: number; cellIds: number[] };
 
 const NATURAL_ORDER: NaturalNote[] = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 const NATURAL_SEMITONES: Record<NaturalNote, number> = {
@@ -124,13 +125,21 @@ const KidsLightHuntPage: React.FC = () => {
   const selectedTempo = TEMPO_PRESETS.find((preset) => preset.id === tempoId) ?? TEMPO_PRESETS[1];
   const activePathNotes = useCustomPath ? (customPath.length > 0 ? customPath : selectedPath.notes) : selectedPath.notes;
 
-  const cellsByNote = useMemo(() => {
-    const map: Record<NaturalNote, number[]> = { C: [], D: [], E: [], F: [], G: [], A: [], B: [] };
-    CELL_MAP.forEach((cell) => map[cell.note].push(cell.cellId));
-    return map;
-  }, []);
-
   const getCellInfo = (cellId: number) => CELL_MAP[cellId];
+  const regions = useMemo<Region[]>(() => {
+    const list: Region[] = [];
+    for (let stringStart = 0; stringStart <= LIGHT_GRID.strings - 2; stringStart += 1) {
+      const stringEnd = stringStart + 1;
+      const cellIds: number[] = [];
+      for (let s = stringStart; s <= stringEnd; s += 1) {
+        for (let fret = 0; fret < LIGHT_GRID.frets; fret += 1) {
+          cellIds.push(s * LIGHT_GRID.frets + fret);
+        }
+      }
+      list.push({ id: `region-${stringStart}-${stringEnd}`, stringStart, stringEnd, cellIds });
+    }
+    return list;
+  }, []);
 
   const getAudioCtx = async () => {
     const AudioCtx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -165,17 +174,34 @@ const KidsLightHuntPage: React.FC = () => {
 
   const buildSequence = (targetLevel: number) => {
     const length = Math.max(1, Math.min(8, targetLevel));
-    const order = activePathNotes;
-    const start = Math.floor(Math.random() * order.length);
-    const next: number[] = [];
+    const order = activePathNotes.length > 0 ? activePathNotes : selectedPath.notes;
+    const direction = Math.random() > 0.5 ? 1 : -1;
+    const startIndex = Math.floor(Math.random() * order.length);
+    const desiredNotes = Array.from({ length }, (_, i) => {
+      const idx = (startIndex + i * direction + order.length * 3) % order.length;
+      return order[idx];
+    });
 
-    for (let i = 0; i < length; i += 1) {
-      const note = order[(start + i) % order.length];
-      const pool = cellsByNote[note];
-      if (pool.length > 0) next.push(randomFrom(pool));
+    const regionCandidates = regions.filter((region) =>
+      desiredNotes.every((note) => region.cellIds.some((cellId) => getCellInfo(cellId).note === note)),
+    );
+
+    const selectedRegion = randomFrom(regionCandidates.length > 0 ? regionCandidates : regions);
+    const next: number[] = [];
+    let lastFret = -1;
+
+    for (const note of desiredNotes) {
+      const options = selectedRegion.cellIds.filter((cellId) => getCellInfo(cellId).note === note);
+      if (options.length === 0) continue;
+      const picked =
+        lastFret < 0
+          ? randomFrom(options)
+          : [...options].sort((a, b) => Math.abs(getCellInfo(a).fretIndex - lastFret) - Math.abs(getCellInfo(b).fretIndex - lastFret))[0];
+      next.push(picked);
+      lastFret = getCellInfo(picked).fretIndex;
     }
 
-    return next;
+    return next.slice(0, length);
   };
 
   const playSequence = async (target: number[]) => {

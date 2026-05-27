@@ -30,6 +30,7 @@ import KidsBuildBandPage from './components/KidsBuildBandPage';
 import KidsSoundLengthsPage from './components/KidsSoundLengthsPage';
 import KidsLightHuntPage from './components/KidsLightHuntPage';
 import TeensPage from './components/TeensPage';
+import TeenRiffChallengesPage from './components/TeenRiffChallengesPage';
 import { supabase } from './src/lib/supabase';
 import { hydrateSupporterFromServer } from './utils/supporterStorage';
 
@@ -160,6 +161,7 @@ const App: React.FC = () => {
       case '/kids/sound-lengths': return <KidsSoundLengthsPage />;
       case '/kids/light-hunt': return <KidsLightHuntPage />;
       case '/teens': return <TeensPage />;
+      case '/teens/riff-challenges': return <TeenRiffChallengesPage />;
       case '/studio': return <FretboardPanel />;
       case '/': return <EcosystemPage />;
       default: return <EcosystemPage />;

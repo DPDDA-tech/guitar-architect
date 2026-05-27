@@ -15,7 +15,6 @@ const KidsPage: React.FC = () => {
   const copy = lang === 'pt'
     ? {
         subtitle: 'Um espaço lúdico para descobrir instrumentos, cores, sons e as primeiras notas musicais de forma divertida.',
-        workInProgress: 'Obra em andamento',
         firstSteps: 'Primeiros Passos',
         firstStepsSubtitle: 'Pinte as figuras dos instrumentos.',
         discoverInstruments: 'Descobrindo os Instrumentos',
@@ -26,7 +25,6 @@ const KidsPage: React.FC = () => {
         lightHuntSubtitle: 'Siga as luzes pelo braço musical.',
         games: 'Jogos Musicais',
         gamesSubtitle: 'Brinque e descubra no hub de jogos.',
-        available: 'DISPONÍVEL',
         comingSoon: 'EM BREVE',
         backEcosystem: 'Voltar ao Ecossistema',
         backMain: 'Ir para Guitar Architect Principal',
@@ -36,7 +34,6 @@ const KidsPage: React.FC = () => {
       }
     : {
         subtitle: 'A playful space to discover instruments, colors, sounds, and first music notes in a fun way.',
-        workInProgress: 'Work in progress',
         firstSteps: 'First Steps',
         firstStepsSubtitle: 'Paint simple instrument figures.',
         discoverInstruments: 'Discovering Instruments',
@@ -47,7 +44,6 @@ const KidsPage: React.FC = () => {
         lightHuntSubtitle: 'Follow the lights through the musical neck.',
         games: 'Music Games',
         gamesSubtitle: 'Play and discover in the games hub.',
-        available: 'AVAILABLE',
         comingSoon: 'COMING SOON',
         backEcosystem: 'Back to Ecosystem',
         backMain: 'Go to Main Guitar Architect',
@@ -92,9 +88,6 @@ const KidsPage: React.FC = () => {
           </p>
 
           <div className="mt-6 flex w-full items-center justify-center">
-            <span className="px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-[10px] font-black uppercase tracking-widest text-emerald-400">
-              {copy.workInProgress}
-            </span>
             <div className="hidden md:flex absolute right-3 items-center gap-3">
               <button
                 onClick={handleToggleTheme}
@@ -133,15 +126,19 @@ const KidsPage: React.FC = () => {
               title: copy.firstSteps,
               subtitle: copy.firstStepsSubtitle,
               path: '/kids/first-steps',
-              icon: (
-                <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none">
-                  <rect x="8" y="30" width="16" height="10" rx="5" fill="#34d399" />
-                  <rect x="22" y="28" width="10" height="6" rx="3" fill="#fbbf24" />
-                  <circle cx="36" cy="15" r="5" fill="#f472b6" />
-                  <circle cx="31" cy="20" r="4.5" fill="#60a5fa" />
-                  <circle cx="39" cy="22" r="4" fill="#f59e0b" />
-                  <circle cx="35" cy="27" r="3.5" fill="#a78bfa" />
-                  <circle cx="33.5" cy="18" r="1.4" fill="#ffffff" />
+              visual: (
+                <svg viewBox="0 0 320 88" className="h-20 w-full" fill="none">
+                  <path d="M20 58c28-10 56-10 88 0" stroke="#34d399" strokeWidth="9" strokeLinecap="round" />
+                  <path d="M66 64C108 48 142 32 198 18" stroke="#22d3ee" strokeWidth="6" strokeLinecap="round" />
+                  <circle cx="210" cy="20" r="12" fill="#fbbf24" />
+                  <circle cx="236" cy="34" r="10" fill="#f472b6" />
+                  <circle cx="186" cy="36" r="10" fill="#60a5fa" />
+                  <circle cx="257" cy="52" r="9" fill="#a78bfa" />
+                  <circle cx="120" cy="58" r="4.5" fill="#34d399" />
+                  <circle cx="136" cy="62" r="4" fill="#f59e0b" />
+                  <circle cx="152" cy="56" r="3.8" fill="#f472b6" />
+                  <circle cx="199" cy="16" r="3" fill="#fff" />
+                  <circle cx="245" cy="31" r="2.5" fill="#fff" />
                 </svg>
               ),
             },
@@ -149,13 +146,23 @@ const KidsPage: React.FC = () => {
               title: copy.discoverInstruments,
               subtitle: copy.discoverInstrumentsSubtitle,
               path: '/kids/instruments',
-              icon: (
-                <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none">
-                  <circle cx="16" cy="34" r="6" fill="#f472b6" />
-                  <circle cx="31" cy="30" r="6" fill="#a78bfa" />
-                  <rect x="20" y="12" width="4" height="20" rx="2" fill="#f472b6" />
-                  <rect x="35" y="10" width="4" height="18" rx="2" fill="#a78bfa" />
-                  <path d="M24 12l13-3v6l-13 3z" fill="#c4b5fd" />
+              visual: (
+                <svg viewBox="0 0 320 88" className="h-20 w-full" fill="none">
+                  <rect x="20" y="16" width="250" height="56" rx="12" stroke="#0ea5e9" strokeOpacity="0.35" strokeDasharray="5 5" />
+                  <rect x="42" y="26" width="14" height="38" rx="7" fill="#f472b6" />
+                  <path d="M56 30l72-14v18l-72 14z" fill="#ddd6fe" />
+                  <line x1="60" y1="35" x2="145" y2="18" stroke="#7dd3fc" strokeWidth="2" />
+                  <line x1="60" y1="43" x2="145" y2="26" stroke="#7dd3fc" strokeWidth="2" />
+                  <line x1="60" y1="51" x2="145" y2="34" stroke="#7dd3fc" strokeWidth="2" />
+                  <line x1="60" y1="59" x2="145" y2="42" stroke="#7dd3fc" strokeWidth="2" />
+                  <circle cx="182" cy="24" r="3" fill="#22d3ee" />
+                  <circle cx="202" cy="24" r="3" fill="#22d3ee" />
+                  <circle cx="222" cy="24" r="3" fill="#22d3ee" />
+                  <line x1="168" y1="26" x2="168" y2="66" stroke="#38bdf8" strokeWidth="2" />
+                  <line x1="188" y1="26" x2="188" y2="66" stroke="#38bdf8" strokeWidth="2" />
+                  <line x1="208" y1="26" x2="208" y2="66" stroke="#38bdf8" strokeWidth="2" />
+                  <line x1="228" y1="26" x2="228" y2="66" stroke="#38bdf8" strokeWidth="2" />
+                  <line x1="248" y1="26" x2="248" y2="66" stroke="#38bdf8" strokeWidth="2" />
                 </svg>
               ),
             },
@@ -163,11 +170,20 @@ const KidsPage: React.FC = () => {
               title: copy.knowNotes,
               subtitle: copy.knowNotesSubtitle,
               path: '/kids/notes',
-              icon: (
-                <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none">
-                  <path d="M8 20h8l10-8v24l-10-8H8z" fill="#22d3ee" />
-                  <path d="M31 18c3 2 3 10 0 12" stroke="#38bdf8" strokeWidth="3" strokeLinecap="round" />
-                  <path d="M36 14c5 4 5 16 0 20" stroke="#0ea5e9" strokeWidth="3" strokeLinecap="round" />
+              visual: (
+                <svg viewBox="0 0 320 88" className="h-20 w-full" fill="none">
+                  {['#ef4444', '#f97316', '#facc15', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'].map((color, idx) => (
+                    <g key={color}>
+                      <circle cx={32 + idx * 38} cy={44} r="15" fill={color} />
+                      <circle cx={32 + idx * 38} cy={44} r="15" fill="url(#noteGlow)" fillOpacity="0.35" />
+                    </g>
+                  ))}
+                  <defs>
+                    <radialGradient id="noteGlow" cx="0.5" cy="0.5" r="0.6">
+                      <stop offset="0%" stopColor="#fff" stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+                    </radialGradient>
+                  </defs>
                 </svg>
               ),
             },
@@ -175,12 +191,14 @@ const KidsPage: React.FC = () => {
               title: 'O Tamanho dos Sons',
               subtitle: 'Descubra sons rápidos, longos e pausas musicais.',
               path: '/kids/sound-lengths',
-              icon: (
-                <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none">
-                  <rect x="6" y="26" width="8" height="14" rx="4" fill="#22d3ee" />
-                  <rect x="18" y="18" width="8" height="22" rx="4" fill="#34d399" />
-                  <rect x="30" y="10" width="8" height="30" rx="4" fill="#fbbf24" />
-                  <circle cx="42" cy="34" r="2.2" fill="#f472b6" />
+              visual: (
+                <svg viewBox="0 0 320 88" className="h-20 w-full" fill="none">
+                  <rect x="20" y="20" width="40" height="10" rx="5" fill="#22d3ee" />
+                  <rect x="20" y="38" width="84" height="10" rx="5" fill="#34d399" />
+                  <rect x="20" y="56" width="120" height="10" rx="5" fill="#fbbf24" />
+                  <rect x="160" y="38" width="26" height="10" rx="5" fill="#f472b6" />
+                  <rect x="192" y="38" width="26" height="10" rx="5" fill="#f472b6" />
+                  <line x1="230" y1="18" x2="230" y2="66" stroke="#a78bfa" strokeWidth="5" strokeDasharray="4 7" strokeLinecap="round" />
                 </svg>
               ),
             },
@@ -188,12 +206,17 @@ const KidsPage: React.FC = () => {
               title: copy.lightHunt,
               subtitle: copy.lightHuntSubtitle,
               path: '/kids/light-hunt',
-              icon: (
-                <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none">
-                  <circle cx="11" cy="11" r="4" fill="#22d3ee" />
-                  <circle cx="24" cy="24" r="4" fill="#38bdf8" />
-                  <circle cx="37" cy="37" r="4" fill="#0ea5e9" />
-                  <path d="M11 11L24 24L37 37" stroke="#67e8f9" strokeWidth="2.5" strokeLinecap="round" />
+              visual: (
+                <svg viewBox="0 0 320 88" className="h-20 w-full" fill="none">
+                  <line x1="20" y1="20" x2="280" y2="20" stroke="#164e63" strokeWidth="2" />
+                  <line x1="20" y1="36" x2="280" y2="36" stroke="#164e63" strokeWidth="2" />
+                  <line x1="20" y1="52" x2="280" y2="52" stroke="#164e63" strokeWidth="2" />
+                  <line x1="20" y1="68" x2="280" y2="68" stroke="#164e63" strokeWidth="2" />
+                  <circle cx="72" cy="36" r="10" fill="#ef4444" />
+                  <circle cx="122" cy="52" r="10" fill="#f97316" />
+                  <circle cx="176" cy="20" r="10" fill="#22c55e" />
+                  <circle cx="232" cy="68" r="10" fill="#3b82f6" />
+                  <circle cx="232" cy="68" r="16" stroke="#22d3ee" strokeOpacity="0.5" />
                 </svg>
               ),
             },
@@ -201,13 +224,16 @@ const KidsPage: React.FC = () => {
               title: copy.games,
               subtitle: copy.gamesSubtitle,
               path: '/kids/games',
-              icon: (
-                <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none">
-                  <rect x="6" y="14" width="36" height="20" rx="10" fill="#f59e0b" />
-                  <circle cx="16" cy="24" r="2.5" fill="#fff" />
-                  <rect x="14.5" y="19" width="3" height="10" rx="1.5" fill="#fff" />
-                  <circle cx="31" cy="22" r="2.2" fill="#fff" />
-                  <circle cx="35.5" cy="26.5" r="2.2" fill="#fff" />
+              visual: (
+                <svg viewBox="0 0 320 88" className="h-20 w-full" fill="none">
+                  <rect x="24" y="28" width="48" height="32" rx="8" fill="#06b6d4" />
+                  <rect x="82" y="18" width="40" height="26" rx="7" fill="#8b5cf6" />
+                  <rect x="132" y="34" width="48" height="30" rx="8" fill="#22c55e" />
+                  <rect x="190" y="20" width="44" height="26" rx="7" fill="#f59e0b" />
+                  <rect x="244" y="34" width="42" height="30" rx="8" fill="#ec4899" />
+                  <path d="M72 44h10M122 30h10M180 48h10M234 32h10" stroke="#a7f3d0" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M20 74c14-10 28-10 42 0s28 10 42 0 28-10 42 0 28 10 42 0 28-10 42 0" stroke="#22d3ee" strokeWidth="3" strokeLinecap="round" opacity="0.8" />
+                  <circle cx="286" cy="49" r="4.5" fill="#22d3ee" className="animate-pulse" />
                 </svg>
               ),
             },
@@ -220,18 +246,22 @@ const KidsPage: React.FC = () => {
                   if (module.path) navigateTo(module.path);
                 }}
                 style={{ animationDelay: `${idx * 100}ms` }}
-                className={`p-8 rounded-[32px] border flex flex-col items-center text-center transition-all animate-in fade-in slide-in-from-bottom-4 ${isAvailable ? 'opacity-100 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] cursor-pointer' : 'opacity-70 hover:opacity-100 cursor-default'} ${isLight ? 'border-emerald-200 bg-white shadow-md' : 'border-emerald-600/70 bg-emerald-950/70 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.22)]'}`}
+                className={`group p-4 md:p-5 rounded-[26px] border flex flex-col items-start text-left transition-all animate-in fade-in slide-in-from-bottom-4 ${isAvailable ? 'opacity-100 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] cursor-pointer' : 'opacity-70 hover:opacity-100 cursor-default'} ${isLight ? 'border-emerald-200 bg-white shadow-md' : 'border-emerald-600/70 bg-emerald-950/70 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.22)]'}`}
               >
-                <span className="mb-4 relative flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-400/60 bg-gradient-to-br from-emerald-400/20 via-cyan-400/10 to-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.25)] transition-all group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-[0_0_28px_rgba(16,185,129,0.4)]">
-                  {module.icon}
-                </span>
-                <h3 className="text-sm font-black uppercase tracking-tight">{module.title}</h3>
+                <div className={`mb-2 w-full rounded-2xl border px-3 py-2 ${isLight ? 'border-emerald-200 bg-emerald-50/70' : 'border-emerald-500/30 bg-emerald-900/25'}`}>
+                  <div className="h-[88px] w-full overflow-hidden">
+                    {module.visual}
+                  </div>
+                </div>
+                <h3 className={`text-base md:text-[17px] font-black uppercase tracking-wide ${isLight ? 'text-emerald-800 drop-shadow-[0_1px_0_rgba(16,185,129,0.15)]' : 'text-emerald-50 drop-shadow-[0_0_10px_rgba(16,185,129,0.28)]'}`}>{module.title}</h3>
                 {'subtitle' in module && module.subtitle && (
-                  <p className="mt-2 text-[10px] font-bold opacity-70 tracking-normal normal-case">
+                  <p className="mt-1 text-[10px] font-bold opacity-75 tracking-normal normal-case">
                     {module.subtitle}
                   </p>
                 )}
-                <p className="mt-2 text-[10px] font-bold opacity-50 tracking-widest">{isAvailable ? copy.available : copy.comingSoon}</p>
+                {!isAvailable && (
+                  <p className="mt-2 text-[10px] font-bold opacity-50 tracking-widest">{copy.comingSoon}</p>
+                )}
               </button>
             );
           })}

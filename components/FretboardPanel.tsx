@@ -174,6 +174,15 @@ const FretboardPanel: React.FC = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
+  const [mobileMenuOpenGroups, setMobileMenuOpenGroups] = useState<Record<string, boolean>>({
+    projects: false,
+    explore: true,
+    tools: false,
+    instrument: false,
+    galleries: false,
+    account: false,
+    utilities: false,
+  });
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showMyInstruments, setShowMyInstruments] = useState(false);
   const instructionTimeoutRef = useRef<number | null>(null);
@@ -1289,6 +1298,170 @@ const handleReturnToContext = () => {
   const headerActionButtonThemeClass = isLight
     ? 'bg-white border-zinc-300 text-zinc-800 hover:bg-white hover:border-zinc-500 hover:shadow-[0_12px_24px_rgba(15,23,42,0.16)]'
     : 'bg-zinc-800/90 border-zinc-600 text-zinc-100 hover:bg-zinc-700 hover:border-zinc-300 hover:shadow-[0_14px_28px_rgba(0,0,0,0.55)]';
+  const menuSectionTitleClass = `mb-2 px-1 text-[9px] font-black uppercase tracking-[0.2em] ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`;
+  const menuBtnClass = `w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`;
+  const ecosystemBtnClass = 'border-cyan-400/70 bg-gradient-to-r from-cyan-500/25 via-blue-500/20 to-violet-500/25 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.3)] hover:border-cyan-300 hover:text-white';
+
+  const renderMenuGroup = (id: string, title: string, content: React.ReactNode, isMobileMenu: boolean) => {
+    if (!isMobileMenu) {
+      return (
+        <section className="space-y-2">
+          <p className={menuSectionTitleClass}>{title}</p>
+          {content}
+        </section>
+      );
+    }
+
+    const isOpen = mobileMenuOpenGroups[id];
+    return (
+      <section className="rounded-xl border border-zinc-300/30">
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpenGroups(prev => ({ ...prev, [id]: !prev[id] }))}
+          className={`flex w-full items-center justify-between px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] ${isLight ? 'text-zinc-700' : 'text-zinc-200'}`}
+        >
+          <span>{title}</span>
+          <span>{isOpen ? '▼' : '▶'}</span>
+        </button>
+        {isOpen && <div className="px-2 pb-2">{content}</div>}
+      </section>
+    );
+  };
+
+  const renderProjectMenuContent = (isMobileMenu: boolean) => (
+    <div className="space-y-3">
+      {renderMenuGroup(
+        'projects',
+        lang === 'pt' ? 'Projetos' : 'Projects',
+        <div className="space-y-2">
+          <button onClick={() => { setShowLoadModal(true); setShowProjectMenu(false); }} className={menuBtnClass}>
+            {lang === 'pt' ? 'Carregar Projetos Locais' : 'Load Local Projects'}
+          </button>
+          <div className={isMobileMenu ? 'space-y-2' : 'grid grid-cols-2 gap-2'}>
+            <button onClick={() => { void exportProjectFile(); setShowProjectMenu(false); }} className={menuBtnClass}>
+              {lang === 'pt' ? 'Exportar JSON' : 'Export JSON'}
+            </button>
+            <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={menuBtnClass}>
+              {lang === 'pt' ? 'Importar JSON' : 'Import JSON'}
+            </button>
+          </div>
+        </div>,
+        isMobileMenu,
+      )}
+
+      {renderMenuGroup(
+        'explore',
+        lang === 'pt' ? 'Explorar' : 'Explore',
+        <div className={isMobileMenu ? 'space-y-2' : 'grid grid-cols-2 gap-2'}>
+          <button onClick={() => openModulePage('/ecosystem')} className={`${menuBtnClass} ${ecosystemBtnClass} ${!isMobileMenu ? 'col-span-2' : ''}`}>{lang === 'pt' ? 'Ecossistema' : 'Ecosystem'}</button>
+          <button onClick={() => openModulePage('/learn')} className={menuBtnClass}>{lang === 'pt' ? 'Aprender' : 'Learn'}</button>
+          <button onClick={() => openModulePage('/practice')} className={menuBtnClass}>{lang === 'pt' ? 'Praticar' : 'Practice'}</button>
+          <button onClick={() => openModulePage('/chords')} className={menuBtnClass}>{lang === 'pt' ? 'Acordes' : 'Chords'}</button>
+        </div>,
+        isMobileMenu,
+      )}
+
+      {renderMenuGroup(
+        'tools',
+        lang === 'pt' ? 'Ferramentas' : 'Tools',
+        <div className={isMobileMenu ? 'space-y-2' : 'grid grid-cols-2 gap-2'}>
+          <button onClick={() => openModulePage('/caged')} className={menuBtnClass}>CAGED</button>
+          <button onClick={() => openModulePage('/triads-tetrads')} className={menuBtnClass}>{lang === 'pt' ? 'Tríades' : 'Triads'}</button>
+          <button onClick={() => openModulePage('/greek-modes')} className={menuBtnClass}>{lang === 'pt' ? 'Modos' : 'Modes'}</button>
+          <button onClick={openHarmonicCycle} className={`${menuBtnClass} ${!isMobileMenu ? 'col-span-2' : ''}`}>{translations[lang].harmonicCycle.menu}</button>
+        </div>,
+        isMobileMenu,
+      )}
+
+      {renderMenuGroup(
+        'instrument',
+        lang === 'pt' ? 'Instrumento' : 'Instrument',
+        <div className="space-y-2">
+          <button onClick={togglePrimaryLeftHanded} className={`${menuBtnClass} ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : ''}`}>
+            {lang === 'pt' ? 'Canhoto' : 'Left-handed'}
+          </button>
+          <div className={isMobileMenu ? 'space-y-2' : 'grid grid-cols-2 gap-2'}>
+            <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
+              <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Guitarra' : 'Guitar'}</p>
+              <div className="grid grid-cols-3 gap-1">
+                {(['guitar-6', 'guitar-7', 'guitar-8'] as InstrumentType[]).map(instrument => (
+                  <button key={instrument} onClick={() => updatePrimaryInstrument(instrument)} className={`rounded-lg px-2 py-2 text-[9px] font-black uppercase ${primaryInstrument === instrument ? 'bg-blue-600 text-white' : isLight ? 'bg-zinc-50 text-zinc-700' : 'bg-zinc-800 text-zinc-200'}`}>
+                    {instrument.replace('guitar-', '')}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
+              <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Baixo' : 'Bass'}</p>
+              <div className="grid grid-cols-2 gap-1">
+                {(['bass-4', 'bass-5'] as InstrumentType[]).map(instrument => (
+                  <button key={instrument} onClick={() => updatePrimaryInstrument(instrument)} className={`rounded-lg px-2 py-2 text-[9px] font-black uppercase ${primaryInstrument === instrument ? 'bg-blue-600 text-white' : isLight ? 'bg-zinc-50 text-zinc-700' : 'bg-zinc-800 text-zinc-200'}`}>
+                    {instrument.replace('bass-', '')}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>,
+        isMobileMenu,
+      )}
+
+      {renderMenuGroup(
+        'galleries',
+        lang === 'pt' ? 'Galerias' : 'Galleries',
+        <div className={isMobileMenu ? 'space-y-2' : 'grid grid-cols-2 gap-2'}>
+          <button onClick={openMyInstruments} className={menuBtnClass}>
+            {lang === 'pt' ? 'Instrumentos' : 'Instruments'}
+          </button>
+          <button onClick={() => openModulePage('/theme-collection')} className={menuBtnClass}>
+            {lang === 'pt' ? 'Colecionáveis' : 'Collectibles'}
+          </button>
+        </div>,
+        isMobileMenu,
+      )}
+
+      {renderMenuGroup(
+        'account',
+        lang === 'pt' ? 'Conta' : 'Account',
+        <div className={isMobileMenu ? 'space-y-2' : 'grid grid-cols-2 gap-2'}>
+          <button onClick={() => openModulePage('/profile')} className={menuBtnClass}>{lang === 'pt' ? 'Perfil' : 'Profile'}</button>
+          <button onClick={() => { setShowProjectMenu(false); void handleLogout(); }} className={menuBtnClass}>{lang === 'pt' ? 'Trocar Conta' : 'Switch Account'}</button>
+          {authUser ? (
+            <button onClick={handleLogout} className={`${menuBtnClass} ${!isMobileMenu ? 'col-span-2' : ''} ${isLight ? 'border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50' : 'border-red-950/70 text-red-300 hover:border-red-700 hover:bg-red-950/20'}`}>
+              {lang === 'pt' ? 'Sair da Conta' : 'Log Out'}
+            </button>
+          ) : (
+            <button onClick={() => { setShowLoginModal(true); setShowProjectMenu(false); }} className={`${menuBtnClass} ${!isMobileMenu ? 'col-span-2' : ''} ${isLight ? 'border-blue-200 bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'border-blue-500 bg-blue-600 text-white shadow-lg shadow-blue-950/20'}`}>
+              {lang === 'pt' ? 'Entrar na Conta' : 'Sign In'}
+            </button>
+          )}
+        </div>,
+        isMobileMenu,
+      )}
+
+      {renderMenuGroup(
+        'utilities',
+        lang === 'pt' ? 'Utilitários' : 'Utilities',
+        <button
+          onClick={() => {
+            refreshLocalUserOptions();
+            setShowLoginModal(true);
+            setShowProjectMenu(false);
+          }}
+          className={`w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-emerald-200 text-emerald-700 hover:border-emerald-400' : 'border-emerald-900/60 text-emerald-200 hover:border-emerald-500'}`}
+        >
+          {lang === 'pt' ? 'Migrar Dados Locais' : 'Migrate Local Data'}
+        </button>,
+        isMobileMenu,
+      )}
+
+      <section className="pt-1">
+        <button onClick={() => { setShowSupportModal(true); setShowProjectMenu(false); }} className={menuBtnClass}>
+          {lang === 'pt' ? 'Apoiar o Projeto' : 'Support the Project'}
+        </button>
+      </section>
+    </div>
+  );
 
   return (
     <div className={`min-h-screen transition-all ${isExporting ? 'is-exporting-mode' : (isLight ? 'blueprint-grid-light' : 'blueprint-grid-dark')}`}>
@@ -1411,101 +1584,7 @@ const handleReturnToContext = () => {
 
           {showProjectMenu && (
             <div className={`absolute left-3 right-3 top-full mt-2 max-h-[calc(100vh-92px)] overflow-y-auto rounded-2xl border p-3 shadow-2xl ring-1 ${isLight ? 'bg-[linear-gradient(160deg,#fbfdff_0%,#eef5fb_58%,#e8f0f8_100%)] border-[#aebed1] shadow-[0_24px_80px_rgba(71,85,105,0.24)] ring-white/80' : 'bg-[linear-gradient(160deg,#172033_0%,#111827_52%,#0c1322_100%)] border-blue-800/60 shadow-[0_30px_95px_rgba(0,0,0,0.72)] ring-white/5'}`}>
-              <button onClick={() => { setShowLoadModal(true); setShowProjectMenu(false); }} className={`mb-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                {lang === 'pt' ? 'Carregar projetos locais' : 'Load local projects'}
-              </button>
-              <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => { void exportProjectFile(); setShowProjectMenu(false); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                  {lang === 'pt' ? 'Exportar JSON' : 'Export JSON'}
-                </button>
-                <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                  {lang === 'pt' ? 'Importar JSON' : 'Import JSON'}
-                </button>
-              </div>
-              <button onClick={() => openModulePage('/profile')} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                {lang === 'pt' ? 'Perfil' : 'Profile'}
-              </button>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <button onClick={openMyInstruments} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                  {lang === 'pt' ? 'Instrumentos' : 'Instruments'}
-                </button>
-                <button onClick={() => openModulePage('/theme-collection')} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                  {lang === 'pt' ? 'Coleções' : 'Collections'}
-                </button>
-              </div>
-              <button
-                onClick={() => {
-                  refreshLocalUserOptions();
-                  setShowLoginModal(true);
-                  setShowProjectMenu(false);
-                }}
-                className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-emerald-200 text-emerald-700' : 'border-emerald-900/60 text-emerald-200'}`}
-              >
-                {lang === 'pt' ? 'Migrar dados locais' : 'Migrate local data'}
-              </button>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                {[
-                  { label: lang === 'pt' ? 'Ecossistema' : 'Ecosystem', path: '/ecosystem', wide: true },
-                  { label: lang === 'pt' ? 'Aprender' : 'Learn', path: '/learn' },
-                  { label: lang === 'pt' ? 'Praticar' : 'Practice', path: '/practice' },
-                  { label: lang === 'pt' ? 'Acordes' : 'Chords', path: '/chords' },
-                  { label: 'CAGED', path: '/caged' },
-                  { label: 'Tri/Tetrad', path: '/triads-tetrads' },
-                  { label: lang === 'pt' ? 'Modos' : 'Modes', path: '/greek-modes' },
-                  { label: translations[lang].harmonicCycle.menu, path: 'harmonic-cycle', wide: true },
-                  { label: lang === 'pt' ? 'Treinar tríade' : 'Triad train.', path: '/triads-tetrads?trainer=1', wide: true },
-                ].map(item => (
-                  <button
-                    key={item.path}
-                    onClick={() => item.path === 'harmonic-cycle' ? openHarmonicCycle() : openModulePage(item.path)}
-                    className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${item.wide ? 'col-span-2' : ''} ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
-                  <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Guitarra' : 'Guitar'}</p>
-                  <div className="grid grid-cols-3 gap-1">
-                    {(['guitar-6', 'guitar-7', 'guitar-8'] as InstrumentType[]).map(instrument => (
-                      <button key={instrument} onClick={() => updatePrimaryInstrument(instrument)} className={`rounded-lg px-2 py-2 text-[9px] font-black uppercase ${primaryInstrument === instrument ? 'bg-blue-600 text-white' : isLight ? 'bg-zinc-50 text-zinc-700' : 'bg-zinc-800 text-zinc-200'}`}>
-                        {instrument.replace('guitar-', '')}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
-                  <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Baixo' : 'Bass'}</p>
-                  <div className="grid grid-cols-2 gap-1">
-                    {(['bass-4', 'bass-5'] as InstrumentType[]).map(instrument => (
-                      <button key={instrument} onClick={() => updatePrimaryInstrument(instrument)} className={`rounded-lg px-2 py-2 text-[9px] font-black uppercase ${primaryInstrument === instrument ? 'bg-blue-600 text-white' : isLight ? 'bg-zinc-50 text-zinc-700' : 'bg-zinc-800 text-zinc-200'}`}>
-                        {instrument.replace('bass-', '')}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <button onClick={togglePrimaryLeftHanded} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                {lang === 'pt' ? 'Canhoto' : 'Left-handed'}
-              </button>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                {authUser ? (
-                  <button onClick={handleLogout} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-red-200 text-red-600' : 'border-red-950/70 text-red-300'}`}>
-                    {lang === 'pt' ? 'Sair da conta' : 'Log out'}
-                  </button>
-                ) : (
-                  <button onClick={() => { setShowLoginModal(true); setShowProjectMenu(false); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'border-blue-500 bg-blue-600 text-white shadow-lg shadow-blue-950/20'}`}>
-                    {lang === 'pt' ? 'Entrar na conta' : 'Sign in'}
-                  </button>
-                )}
-                <button onClick={() => { setShowProjectMenu(false); void handleLogout(); }} className={`rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                  {lang === 'pt' ? 'Trocar conta' : 'Switch account'}
-                </button>
-              </div>
-              <button onClick={() => { setShowSupportModal(true); setShowProjectMenu(false); }} className={`mt-2 w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase ${isLight ? 'border-zinc-200 text-zinc-700' : 'border-zinc-700 text-zinc-200'}`}>
-                APOIAR O PROJETO
-              </button>
+              {renderProjectMenuContent(true)}
             </div>
           )}
         </div>
@@ -1634,11 +1713,11 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                    </button>
                  </div>
                  <div className="grid grid-cols-3 gap-1.5">
-                    <button onClick={() => openModulePage('/ecosystem')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
+                    <button onClick={() => openModulePage('/ecosystem')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} border-cyan-300/70 bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-violet-500/25 text-cyan-50 shadow-[0_0_18px_rgba(34,211,238,0.35)] hover:shadow-[0_0_26px_rgba(34,211,238,0.45)]`}>
                      {lang === 'pt' ? 'Ecossistema' : 'Ecosystem'}
                    </button>
                     <button onClick={() => openModulePage('/theme-collection')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
-                     {lang === 'pt' ? 'Coleções' : 'Collections'}
+                     {lang === 'pt' ? 'Colecionáveis' : 'Collectibles'}
                    </button>
                     <button onClick={openMyInstruments} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
                      {lang === 'pt' ? 'Instrumentos' : 'Instruments'}
@@ -1797,100 +1876,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
   {showProjectMenu && (
     <div className={`absolute right-0 top-full z-[80] mt-3 max-h-[calc(100vh-112px)] w-[290px] overflow-y-auto rounded-2xl border p-4 shadow-2xl ring-1 ${isLight ? 'bg-[linear-gradient(160deg,#fbfdff_0%,#eef5fb_58%,#e8f0f8_100%)] border-[#aebed1] shadow-[0_24px_80px_rgba(71,85,105,0.24)] ring-white/80' : 'bg-[linear-gradient(160deg,#172033_0%,#111827_52%,#0c1322_100%)] border-blue-800/60 shadow-[0_30px_95px_rgba(0,0,0,0.72)] ring-white/5'}`}>
-      <div className="space-y-4">
-        <button onClick={() => { setShowLoadModal(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-          {lang === 'pt' ? 'CARREGAR PROJETOS LOCAIS' : 'LOAD LOCAL PROJECTS'}
-        </button>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button onClick={() => { void exportProjectFile(); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-emerald-500 hover:text-emerald-600' : 'border-zinc-700 text-zinc-200 hover:border-emerald-500 hover:text-emerald-400'}`}>
-            {lang === 'pt' ? 'EXPORTAR JSON' : 'EXPORT JSON'}
-          </button>
-          <button onClick={() => { setShowProjectMenu(false); projectFileInputRef.current?.click(); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-            {lang === 'pt' ? 'IMPORTAR JSON' : 'IMPORT JSON'}
-          </button>
-        </div>
-
-        <button onClick={() => openModulePage('/profile')} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-          {lang === 'pt' ? 'PERFIL' : 'PROFILE'}
-        </button>
-        <button
-          onClick={() => {
-            refreshLocalUserOptions();
-            setShowLoginModal(true);
-            setShowProjectMenu(false);
-          }}
-          className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-emerald-200 text-emerald-700 hover:border-emerald-400' : 'border-emerald-900/70 text-emerald-200 hover:border-emerald-500'}`}
-        >
-          {lang === 'pt' ? 'MIGRAR DADOS LOCAIS' : 'MIGRATE LOCAL DATA'}
-        </button>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button onClick={openMyInstruments} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-            {lang === 'pt' ? 'INSTRUMENTOS' : 'INSTRUMENTS'}
-          </button>
-          <button onClick={() => openModulePage('/theme-collection')} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-            {lang === 'pt' ? 'Colecoes' : 'Collections'}
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 [&>button]:min-w-0">
-          {[
-            { label: lang === 'pt' ? 'ECOSSISTEMA' : 'ECOSYSTEM', path: '/ecosystem', wide: true },
-            { label: lang === 'pt' ? 'APRENDER' : 'LEARN', path: '/learn' },
-            { label: lang === 'pt' ? 'PRATICAR' : 'PRACTICE', path: '/practice' },
-            { label: lang === 'pt' ? 'ACORDES' : 'CHORDS', path: '/chords' },
-            { label: 'CAGED', path: '/caged' },
-            { label: lang === 'pt' ? 'TRIADES' : 'TRIADS', path: '/triads-tetrads' },
-            { label: lang === 'pt' ? 'MODOS' : 'MODES', path: '/greek-modes' },
-            { label: translations[lang].harmonicCycle.menu, path: 'harmonic-cycle' },
-          ].map(item => (
-            <button key={item.path} onClick={() => item.path === 'harmonic-cycle' ? openHarmonicCycle() : openModulePage(item.path)} className={`flex min-h-[42px] w-full items-center justify-center rounded-xl border px-2 py-2.5 text-center text-[10px] font-black uppercase transition-all ${item.path === 'harmonic-cycle' ? 'col-span-2' : ''} ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-              {item.label}
-            </button>
-          ))}
-        </div>
-
-        <button onClick={togglePrimaryLeftHanded} className={`w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${primaryLeftHanded ? 'border-blue-600 bg-blue-600 text-white' : isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-          {lang === 'pt' ? 'CANHOTO' : 'LEFT-HANDED'}
-        </button>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
-            <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Guitarra' : 'Guitar'}</p>
-            <div className="grid grid-cols-3 gap-1">
-              {(['guitar-6', 'guitar-7', 'guitar-8'] as InstrumentType[]).map(instrument => (
-                <button key={instrument} onClick={() => updatePrimaryInstrument(instrument)} className={`rounded-lg px-2 py-2 text-[9px] font-black uppercase ${primaryInstrument === instrument ? 'bg-blue-600 text-white' : isLight ? 'bg-zinc-50 text-zinc-700' : 'bg-zinc-800 text-zinc-200'}`}>
-                  {instrument.replace('guitar-', '')}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className={`rounded-xl border p-1.5 ${isLight ? 'border-zinc-200' : 'border-zinc-700'}`}>
-            <p className="mb-1 px-1 text-[8px] font-black uppercase text-zinc-400">{lang === 'pt' ? 'Baixo' : 'Bass'}</p>
-            <div className="grid grid-cols-2 gap-1">
-              {(['bass-4', 'bass-5'] as InstrumentType[]).map(instrument => (
-                <button key={instrument} onClick={() => updatePrimaryInstrument(instrument)} className={`rounded-lg px-2 py-2 text-[9px] font-black uppercase ${primaryInstrument === instrument ? 'bg-blue-600 text-white' : isLight ? 'bg-zinc-50 text-zinc-700' : 'bg-zinc-800 text-zinc-200'}`}>
-                  {instrument.replace('bass-', '')}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button onClick={handleLogout} className={`w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${isLight ? 'border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50' : 'border-red-950/70 text-red-300 hover:border-red-700 hover:bg-red-950/20'}`}>
-            {lang === 'pt' ? 'SAIR DA CONTA' : 'LOG OUT'}
-          </button>
-          <button onClick={() => { setShowProjectMenu(false); void handleLogout(); }} className={`w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-            {lang === 'pt' ? 'TROCAR CONTA' : 'SWITCH ACCOUNT'}
-          </button>
-        </div>
-
-        <button onClick={() => { setShowSupportModal(true); setShowProjectMenu(false); }} className={`w-full px-3 py-2.5 text-[10px] font-black border rounded-xl transition-all uppercase ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`}>
-          APOIAR O PROJETO
-        </button>
-      </div>
+      {renderProjectMenuContent(false)}
     </div>
   )}
 </div>
