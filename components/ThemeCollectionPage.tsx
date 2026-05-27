@@ -140,8 +140,9 @@ const ThemeCollectionPage: React.FC = () => {
   const [supporterToast, setSupporterToast] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [constancyRefreshToken, setConstancyRefreshToken] = useState(0);
 
-  const constancyState = useMemo(() => getConstancyState(currentUserId), [currentUserId]);
+  const constancyState = useMemo(() => getConstancyState(currentUserId), [currentUserId, constancyRefreshToken]);
   const nextMilestone = useMemo(() => getNextConstancyMilestone(constancyState.currentStreak), [constancyState.currentStreak]);
   const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<string[]>(() => getUnlockedAchievementIds(currentUserId));
   const [supporterTotal, setSupporterTotal] = useState(() => getSupporterContributionTotal(currentUserId));
@@ -309,6 +310,16 @@ const ThemeCollectionPage: React.FC = () => {
   }, [currentUserId]);
 
   useEffect(() => {
+    const refreshConstancy = () => setConstancyRefreshToken(Date.now());
+    window.addEventListener('ga-constancy-updated', refreshConstancy);
+    window.addEventListener('storage', refreshConstancy);
+    return () => {
+      window.removeEventListener('ga-constancy-updated', refreshConstancy);
+      window.removeEventListener('storage', refreshConstancy);
+    };
+  }, []);
+
+  useEffect(() => {
     syncUnlockedSupporterRewards(supporterTotal, currentUserId);
   }, [supporterTotal]);
 
@@ -419,6 +430,11 @@ const ThemeCollectionPage: React.FC = () => {
         <ThemeGrid category="tier6" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
 
         <section className="mt-10">
+          <details open className="group">
+            <summary className={`mb-4 flex cursor-pointer list-none items-center justify-between rounded-2xl border px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-amber-200 bg-amber-50/70 text-amber-800' : 'border-amber-900/60 bg-amber-950/25 text-amber-200'}`}>
+              <span>{lang === 'pt' ? 'Galeria de Apoiadores' : 'Supporter Gallery'}</span>
+              <span className="transition group-open:rotate-180">▼</span>
+            </summary>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300">
@@ -655,9 +671,15 @@ const ThemeCollectionPage: React.FC = () => {
               );
             })}
           </div>
+          </details>
         </section>
 
         <section className="mt-10">
+          <details open className="group">
+            <summary className={`mb-4 flex cursor-pointer list-none items-center justify-between rounded-2xl border px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-blue-200 bg-blue-50/70 text-blue-800' : 'border-blue-900/60 bg-blue-950/25 text-blue-200'}`}>
+              <span>{lang === 'pt' ? 'Galeria de Constância' : 'Constancy Gallery'}</span>
+              <span className="transition group-open:rotate-180">▼</span>
+            </summary>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-300">
@@ -754,9 +776,15 @@ const ThemeCollectionPage: React.FC = () => {
               );
             })}
           </div>
+          </details>
         </section>
 
         <section className="mt-10">
+          <details open className="group">
+            <summary className={`mb-4 flex cursor-pointer list-none items-center justify-between rounded-2xl border px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-amber-200 bg-amber-50/70 text-amber-800' : 'border-amber-900/60 bg-amber-950/25 text-amber-200'}`}>
+              <span>{lang === 'pt' ? 'Galeria Primeiros Apoiadores' : 'Early Supporter Gallery'}</span>
+              <span className="transition group-open:rotate-180">▼</span>
+            </summary>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300">
@@ -815,9 +843,15 @@ const ThemeCollectionPage: React.FC = () => {
               );
             })}
           </div>
+          </details>
         </section>
 
         <section className="mt-10">
+          <details open className="group">
+            <summary className={`mb-4 flex cursor-pointer list-none items-center justify-between rounded-2xl border px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-blue-200 bg-blue-50/70 text-blue-800' : 'border-blue-900/60 bg-blue-950/25 text-blue-200'}`}>
+              <span>{lang === 'pt' ? 'Galeria da Obra' : 'Work Gallery'}</span>
+              <span className="transition group-open:rotate-180">▼</span>
+            </summary>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-300">
@@ -869,6 +903,7 @@ const ThemeCollectionPage: React.FC = () => {
                 : 'Work collection items will appear here as they are unlocked.'}
             </div>
           )}
+          </details>
         </section>
 
         <AchievementsPanel isLight={isLight} />

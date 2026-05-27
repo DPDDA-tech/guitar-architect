@@ -363,6 +363,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const tourReturnStateRef = useRef<{ isControlPanelOpen: boolean; activeControlTab: string; chordLibraryMode: 'find' | 'identify'; state: FretboardState; editorMode: EditorMode } | null>(null);
   const [scaleShortcutCloseTarget, setScaleShortcutCloseTarget] = useState<'showScale' | 'showTonic' | null>(null);
   const [openQuickTab, setOpenQuickTab] = useState<string | null>(null);
+  const [isLandscapeMobile, setIsLandscapeMobile] = useState(false);
   const [scaleFollowMode, setScaleFollowMode] = useState<ScaleFollowMode>('off');
   const [scaleFollowStatus, setScaleFollowStatus] = useState<ScaleFollowStatus>('idle');
   const [scaleFollowIndex, setScaleFollowIndex] = useState(0);
@@ -545,6 +546,21 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   useEffect(() => {
     setScaleFollowStringIndex(prev => Math.min(prev, Math.max(0, currentTuning.length - 1)));
   }, [currentTuning.length]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const updateOrientation = () => {
+      const isMobileViewport = window.innerWidth < 1024;
+      setIsLandscapeMobile(isMobileViewport && window.innerWidth > window.innerHeight);
+    };
+    updateOrientation();
+    window.addEventListener('resize', updateOrientation);
+    window.addEventListener('orientationchange', updateOrientation);
+    return () => {
+      window.removeEventListener('resize', updateOrientation);
+      window.removeEventListener('orientationchange', updateOrientation);
+    };
+  }, []);
 
   useEffect(() => {
     if (state.followAlongRegion === followAlongRegion) return;
@@ -2666,7 +2682,17 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       </div>
 
       <div className={`operational-btns fixed inset-x-0 bottom-0 z-[75] border-t px-2 pb-1 pt-1 shadow-lg lg:hidden ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-white/90 border-zinc-200' : 'bg-zinc-950/90 border-zinc-800'}`}>
-        <div className="grid grid-cols-5 gap-1">
+        <div className="grid grid-cols-6 gap-1">
+          <button
+            onClick={() => {
+              setOpenQuickTab(null);
+              setIsControlPanelOpen(prev => !prev);
+            }}
+            className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`}
+            aria-label={lang === 'pt' ? 'Abrir painel lateral' : 'Open side panel'}
+          >
+            {lang === 'pt' ? 'Painel' : 'Panel'}
+          </button>
           <button data-tour="quick-layers" onClick={() => openMobileTab('visual')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'visual' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Notas' : 'Notes'}>
             {lang === 'pt' ? 'Notas' : 'Notes'}
           </button>
@@ -2682,6 +2708,30 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <button data-tour="quick-editor" onClick={() => openMobileTab('editor')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'editor' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Editar' : 'Edit'}>{lang === 'pt' ? 'Editar' : 'Edit'}</button>
         </div>
       </div>
+
+      {!isExporting && (
+        <div
+          className={`operational-btns fixed inset-x-0 bottom-[52px] z-[76] border-t p-3 shadow-xl transition-all duration-250 lg:hidden ${
+            openQuickTab ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'
+          } ${isLight ? 'bg-white/95 border-zinc-200' : 'bg-zinc-950/95 border-zinc-800'}`}
+          aria-hidden={!openQuickTab}
+        >
+          <div className="mb-2 flex items-center justify-between">
+            <p className={`text-[9px] font-black uppercase tracking-[0.2em] ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+              {lang === 'pt' ? 'Atalhos rápidos' : 'Quick shortcuts'}
+            </p>
+            <button
+              onClick={() => setOpenQuickTab(null)}
+              className={`rounded-lg border px-2 py-1 text-[9px] font-black uppercase ${isLight ? 'border-zinc-200 bg-white text-zinc-600' : 'border-zinc-700 bg-zinc-900 text-zinc-200'}`}
+            >
+              {lang === 'pt' ? 'Fechar' : 'Close'}
+            </button>
+          </div>
+          <div className={`${isLandscapeMobile ? 'max-h-[52vh]' : 'max-h-[36vh]'} overflow-y-auto`}>
+            {renderQuickControls()}
+          </div>
+        </div>
+      )}
 
       <div className={`operational-btns ${isExporting ? 'hidden' : ''}`}>
         <button

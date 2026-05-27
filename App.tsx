@@ -37,6 +37,7 @@ import TeenChordBuilderPage from './components/TeenChordBuilderPage';
 import TeenBlueprintReadingPage from './components/TeenBlueprintReadingPage';
 import { supabase } from './src/lib/supabase';
 import { hydrateSupporterFromServer } from './utils/supporterStorage';
+import { loadConfig } from './utils/persistence';
 
 const getCurrentPath = () => window.location.pathname;
 
@@ -47,7 +48,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     try {
-      const result = recordConstancyVisit();
+      const result = recordConstancyVisit(new Date(), loadConfig()?.currentUser ?? undefined);
 
       if (result.newlyUnlockedRewardIds.length > 0) {
         const reward = constancyRewards.find(
@@ -70,6 +71,7 @@ const App: React.FC = () => {
         // 1. Tenta sincronizar imediatamente com a sessão atual
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         if (currentSession?.user?.id) {
+          recordConstancyVisit(new Date(), currentSession.user.id);
           await hydrateSupporterFromServer(currentSession.user.id);
         }
       } catch (err) {
@@ -81,6 +83,7 @@ const App: React.FC = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user?.id) {
         console.log(`[AppBoot] User signed in: ${session.user.id}. Triggering sync...`);
+        recordConstancyVisit(new Date(), session.user.id);
         window.setTimeout(() => {
           void hydrateSupporterFromServer(session.user.id).catch((err) => {
             console.error('[AppBoot] Deferred hydrate failed:', err);

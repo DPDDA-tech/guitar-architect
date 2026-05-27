@@ -25,6 +25,27 @@ export type NextConstancyMilestone = {
   daysRemaining: number | null;
 };
 
+const readNumber = (value: string | null, fallback = 0): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const readRewardIds = (value: string | null): string[] => {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return Array.from(new Set(parsed.filter((id): id is string => typeof id === 'string' && id.length > 0)));
+  } catch {
+    return [];
+  }
+};
+
+const parseDateKey = (value: string | null): string | null => {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  return value;
+};
+
 /**
  * Retorna a data atual (ou fornecida) no formato YYYY-MM-DD usando o horário local.
  */
@@ -77,20 +98,46 @@ export function getConstancyState(userId?: string | null): ConstancyState {
     }
   }
 
-  const currentStreak = Number(localStorage.getItem(currentKey) || 0);
-  const highestStreak = Number(localStorage.getItem(highestKey) || 0);
-  const lastCheckDate = localStorage.getItem(checkKey);
-  
-  let unlockedRewardIds: string[] = [];
-  try {
-    const raw = localStorage.getItem(rewardsKey) || localStorage.getItem(GA_UNLOCKED_CONSTANCY_REWARDS_KEY);
-    unlockedRewardIds = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(unlockedRewardIds)) unlockedRewardIds = [];
-  } catch {
-    unlockedRewardIds = [];
+  const scopedState: ConstancyState = {
+    currentStreak: readNumber(localStorage.getItem(currentKey)),
+    highestStreak: readNumber(localStorage.getItem(highestKey)),
+    lastCheckDate: parseDateKey(localStorage.getItem(checkKey)),
+    unlockedRewardIds: readRewardIds(localStorage.getItem(rewardsKey)),
+  };
+
+  const legacyState: ConstancyState = {
+    currentStreak: readNumber(localStorage.getItem(GA_CURRENT_CONSTANCY_STREAK_KEY)),
+    highestStreak: readNumber(localStorage.getItem(GA_HIGHEST_CONSTANCY_STREAK_KEY)),
+    lastCheckDate: parseDateKey(localStorage.getItem(GA_LAST_CONSTANCY_CHECK_KEY)),
+    unlockedRewardIds: readRewardIds(localStorage.getItem(GA_UNLOCKED_CONSTANCY_REWARDS_KEY)),
+  };
+
+  const guestState: ConstancyState = {
+    currentStreak: readNumber(localStorage.getItem(getScopedStorageKey(GA_CURRENT_CONSTANCY_STREAK_KEY, 'guest'))),
+    highestStreak: readNumber(localStorage.getItem(getScopedStorageKey(GA_HIGHEST_CONSTANCY_STREAK_KEY, 'guest'))),
+    lastCheckDate: parseDateKey(localStorage.getItem(getScopedStorageKey(GA_LAST_CONSTANCY_CHECK_KEY, 'guest'))),
+    unlockedRewardIds: readRewardIds(localStorage.getItem(getScopedStorageKey(GA_UNLOCKED_CONSTANCY_REWARDS_KEY, 'guest'))),
+  };
+
+  const merged: ConstancyState = {
+    currentStreak: Math.max(scopedState.currentStreak, legacyState.currentStreak, guestState.currentStreak),
+    highestStreak: Math.max(scopedState.highestStreak, legacyState.highestStreak, guestState.highestStreak),
+    lastCheckDate: [scopedState.lastCheckDate, legacyState.lastCheckDate, guestState.lastCheckDate]
+      .filter((value): value is string => Boolean(value))
+      .sort()
+      .at(-1) ?? null,
+    unlockedRewardIds: Array.from(new Set([
+      ...scopedState.unlockedRewardIds,
+      ...legacyState.unlockedRewardIds,
+      ...guestState.unlockedRewardIds,
+    ])),
+  };
+
+  if (userId && userId !== 'guest') {
+    saveConstancyState(merged, userId);
   }
 
-  return { currentStreak, highestStreak, lastCheckDate, unlockedRewardIds };
+  return merged;
 }
 
 /**
@@ -110,6 +157,7 @@ export function saveConstancyState(state: ConstancyState, userId?: string | null
   
   const uniqueIds = Array.from(new Set(state.unlockedRewardIds.filter(Boolean)));
   localStorage.setItem(rewardsKey, JSON.stringify(uniqueIds));
+  window.dispatchEvent(new Event('ga-constancy-updated'));
 }
 
 /**
