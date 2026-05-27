@@ -152,7 +152,7 @@ const TeensPage: React.FC = () => {
             },
             {
               title: 'Scale Hunter',
-              subtitle: 'Coming soon',
+              subtitle: lang === 'pt' ? 'Caçe padrões por região no braço.' : 'Hunt regional fretboard patterns.',
               visual: (
                 <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
                   <circle cx="64" cy="32" r="18" stroke="#60a5fa" strokeWidth="2.5" />
@@ -164,8 +164,9 @@ const TeensPage: React.FC = () => {
                   <circle cx="198" cy="28" r="4" fill="#22d3ee" />
                 </svg>
               ),
-              available: false,
-              path: '',
+              available: true,
+              path: '/teens/scale-hunter',
+              unlockXp: 220,
             },
             {
               title: 'Chord Builder',
