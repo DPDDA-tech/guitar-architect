@@ -1,6 +1,7 @@
-ï»¿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { getRankProgress, getTeensXp } from '../utils/teenProgress';
+import { TeensGarageSection } from './TeensGarageSection';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -22,11 +23,11 @@ const TeensPage: React.FC = () => {
   const copy = lang === 'pt'
     ? {
         title: 'GA Teens',
-        subtitle: 'Desafios, riffs, treino guiado e evoluÃ§Ã£o musical para a prÃ³xima geraÃ§Ã£o de arquitetos do som.',
+        subtitle: 'Desafios, riffs, treino guiado e evolução musical para a próxima geração de arquitetos do som.',
         earlyAccess: 'Acesso antecipado',
         ecosystem: 'Explorar Ecossistema',
         studio: 'Modo Profissional (Studio)',
-        locked: 'NÃ­vel bloqueado',
+        locked: 'Nível bloqueado',
         theme: 'Tema',
         light: 'Claro',
         dark: 'Escuro',
@@ -84,9 +85,9 @@ const TeensPage: React.FC = () => {
 
           <div className={`mt-5 w-full max-w-md rounded-xl border px-4 py-3 ${isLight ? 'border-violet-200 bg-violet-50/60' : 'border-violet-700/60 bg-violet-950/35'}`}>
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">ProgressÃ£o</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Progressão</p>
               <p className="text-[11px] font-black uppercase">
-                {rankProgress.current.label} Â· XP {xp}
+                {rankProgress.current.label} · XP {xp}
               </p>
             </div>
             <div className={`mt-2 h-2 w-full rounded-full ${isLight ? 'bg-violet-100' : 'bg-zinc-800'}`}>
@@ -139,7 +140,7 @@ const TeensPage: React.FC = () => {
           {[
             {
               title: 'Riff Challenges',
-              subtitle: lang === 'pt' ? 'OuÃ§a, memorize e reproduza riffs.' : 'Listen, memorize and reproduce riffs.',
+              subtitle: lang === 'pt' ? 'Ouça, memorize e reproduza riffs.' : 'Listen, memorize and reproduce riffs.',
               visual: (
                 <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
                   <path d="M10 52h20M38 40h20M66 24h20M94 44h20M122 14h20" stroke="#a855f7" strokeWidth="5" strokeLinecap="round" />
@@ -152,7 +153,7 @@ const TeensPage: React.FC = () => {
             },
             {
               title: 'Scale Hunter',
-              subtitle: lang === 'pt' ? 'CaÃ§e padrÃµes por regiÃ£o no braÃ§o.' : 'Hunt regional fretboard patterns.',
+              subtitle: lang === 'pt' ? 'Caçe padrões por região no braço.' : 'Hunt regional fretboard patterns.',
               visual: (
                 <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
                   <circle cx="64" cy="32" r="18" stroke="#60a5fa" strokeWidth="2.5" />
@@ -170,7 +171,7 @@ const TeensPage: React.FC = () => {
             },
             {
               title: 'Chord Builder',
-              subtitle: lang === 'pt' ? 'Monte blocos harmÃ´nicos por sensaÃ§Ã£o.' : 'Build harmonic blocks by feel.',
+              subtitle: lang === 'pt' ? 'Monte blocos harmônicos por sensação.' : 'Build harmonic blocks by feel.',
               visual: (
                 <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
                   <rect x="20" y="34" width="26" height="18" rx="4" fill="#3b82f6" />
@@ -254,7 +255,7 @@ const TeensPage: React.FC = () => {
                 </p>
               )}
               <p className="mt-3 text-[9px] font-black opacity-40 tracking-[0.2em] group-hover:text-violet-400 transition-colors uppercase">
-                {module.available ? (lang === 'pt' ? 'DisponÃ­vel' : 'Available') : copy.locked}
+                {module.available ? (lang === 'pt' ? 'Disponível' : 'Available') : copy.locked}
               </p>
             </button>
           );
@@ -279,12 +280,14 @@ const TeensPage: React.FC = () => {
                         : 'border-zinc-700 bg-zinc-900 text-zinc-400'
                   }`}
                 >
-                  {reward.label} {unlocked ? 'âœ“' : `(${reward.minXp} XP)`}
+                  {reward.label} {unlocked ? '?' : `(${reward.minXp} XP)`}
                 </span>
               );
             })}
           </div>
         </div>
+
+        <TeensGarageSection isLight={isLight} lang={lang} />
 
         <div className="flex flex-col items-center gap-6 mt-16">
           <button
@@ -307,4 +310,6 @@ const TeensPage: React.FC = () => {
 };
 
 export default TeensPage;
+
+
 
