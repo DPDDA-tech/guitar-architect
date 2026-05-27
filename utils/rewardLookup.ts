@@ -11,6 +11,27 @@ export interface RewardMetadata {
   description?: string;
 }
 
+export function isRewardEligibleForHeaderBadge(id: string): boolean {
+  if (!id) return false;
+
+  if (id.startsWith('reward:')) {
+    const rewId = id.replace('reward:', '');
+    const rew = getRewardById(rewId);
+    return Boolean(rew && rew.type !== 'logo');
+  }
+
+  const rewardRaw = getRewardById(id);
+  if (rewardRaw) return rewardRaw.type !== 'logo';
+
+  // Institutional/simple IDs (supporter, first supporters, constancy) remain allowed.
+  if (supporterRewards.some(r => r.id === id)) return true;
+  if (supporterFirstRewards.some(r => r.id === id)) return true;
+  if (constancyRewards.some(r => r.id === id)) return true;
+
+  // Achievement asset entries are not treated as profile header badges.
+  return false;
+}
+
 /**
  * Resolve um ID de recompensa/selo em metadados para exibição.
  * Procura em: Supporter Rewards, Achievements e Recompensas Avulsas.

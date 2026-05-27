@@ -1,3 +1,4 @@
+import { isRewardEligibleForHeaderBadge } from './rewardLookup'
 export const PINNED_PROFILE_BADGES_STORAGE_KEY = 'ga_pinned_profile_badges'
 export const MAX_PINNED_PROFILE_BADGES = 10
 
@@ -15,6 +16,7 @@ function sanitizePinnedBadges(ids: unknown): string[] {
   const cleanIds = ids
     .map(normalizeId)
     .filter((id): id is string => Boolean(id))
+    .filter((id) => isRewardEligibleForHeaderBadge(id))
 
   return Array.from(new Set(cleanIds)).slice(0, MAX_PINNED_PROFILE_BADGES)
 }

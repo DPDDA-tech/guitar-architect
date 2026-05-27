@@ -4,8 +4,6 @@ import { loadConfig } from './persistence';
 export const UNLOCKED_ACHIEVEMENTS_KEY = 'ga_unlocked_achievements';
 export const ACHIEVEMENT_PROGRESS_KEY = 'ga_achievement_progress';
 export const SELECTED_REWARD_BADGE_KEY = 'ga_selected_reward_badge';
-const PINNED_PROFILE_BADGES_STORAGE_KEY = 'ga_pinned_profile_badges';
-const MAX_PINNED_PROFILE_BADGES = 10;
 
 const canUseLocalStorage = () => (
   typeof window !== 'undefined' &&
@@ -42,17 +40,6 @@ const writeJson = <T,>(key: string, value: T, userId?: string) => {
   if (!canUseLocalStorage()) return;
   const prefixedKey = getUserPrefixedKey(key, userId);
   window.localStorage.setItem(prefixedKey, JSON.stringify(value));
-};
-
-const parseStringArray = (raw: string | null): string[] => {
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
-  } catch {
-    return [];
-  }
 };
 
 const deleteKey = (key: string, userId?: string) => {
@@ -159,13 +146,7 @@ export const setSelectedRewardBadgeId = (rewardId: string | null, userId?: strin
   const prefixedKey = getUserPrefixedKey(SELECTED_REWARD_BADGE_KEY, userId);
   window.localStorage.setItem(prefixedKey, rewardId);
 
-  // Make the selected identity immediately visible in header badges.
-  const currentPinned = parseStringArray(window.localStorage.getItem(PINNED_PROFILE_BADGES_STORAGE_KEY));
-  const nextPinned = [rewardId, ...currentPinned.filter(id => id !== rewardId)].slice(0, MAX_PINNED_PROFILE_BADGES);
-  window.localStorage.setItem(PINNED_PROFILE_BADGES_STORAGE_KEY, JSON.stringify(nextPinned));
-
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('ga-pinned-badges-updated'));
     window.dispatchEvent(new Event('ga-selected-badge-updated'));
   }
   return rewardId;
