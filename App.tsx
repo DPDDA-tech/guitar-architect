@@ -33,6 +33,7 @@ import TeensPage from './components/TeensPage';
 import TeenRiffChallengesPage from './components/TeenRiffChallengesPage';
 import TeenRhythmLabPage from './components/TeenRhythmLabPage';
 import TeenScaleHunterPage from './components/TeenScaleHunterPage';
+import TeenChordBuilderPage from './components/TeenChordBuilderPage';
 import { supabase } from './src/lib/supabase';
 import { hydrateSupporterFromServer } from './utils/supporterStorage';
 
@@ -166,6 +167,7 @@ const App: React.FC = () => {
       case '/teens/riff-challenges': return <TeenRiffChallengesPage />;
       case '/teens/rhythm-lab': return <TeenRhythmLabPage />;
       case '/teens/scale-hunter': return <TeenScaleHunterPage />;
+      case '/teens/chord-builder': return <TeenChordBuilderPage />;
       case '/studio': return <FretboardPanel />;
       case '/': return <EcosystemPage />;
       default: return <EcosystemPage />;

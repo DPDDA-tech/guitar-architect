@@ -170,7 +170,7 @@ const TeensPage: React.FC = () => {
             },
             {
               title: 'Chord Builder',
-              subtitle: 'Coming soon',
+              subtitle: lang === 'pt' ? 'Monte blocos harmônicos por sensação.' : 'Build harmonic blocks by feel.',
               visual: (
                 <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
                   <rect x="20" y="34" width="26" height="18" rx="4" fill="#3b82f6" />
@@ -181,8 +181,9 @@ const TeensPage: React.FC = () => {
                   <path d="M154 38H198" stroke="#22d3ee" strokeWidth="3" strokeLinecap="round" />
                 </svg>
               ),
-              available: false,
-              path: '',
+              available: true,
+              path: '/teens/chord-builder',
+              unlockXp: 280,
             },
             {
               title: 'Rhythm Lab',
