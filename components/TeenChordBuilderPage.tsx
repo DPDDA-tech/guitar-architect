@@ -1,0 +1,312 @@
+﻿import React, { useMemo, useRef, useState } from 'react';
+import { getTeensTheme } from '../utils/ecosystemPreferences';
+import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
+import { teenChordChallenges, teenChordStacks, type TeenChordNote } from '../data/teenChordData';
+
+const navigateTo = (path: string) => {
+  window.history.pushState(null, '', path);
+  window.dispatchEvent(new Event('ga-route-change'));
+};
+
+const noteFreq: Record<TeenChordNote, number> = {
+  DO: 261.63,
+  RE: 293.66,
+  MI: 329.63,
+  FA: 349.23,
+  SOL: 392,
+  LA: 440,
+  SI: 493.88,
+};
+
+const noteColor: Record<TeenChordNote, string> = {
+  DO: 'bg-red-500',
+  RE: 'bg-orange-500',
+  MI: 'bg-yellow-400',
+  FA: 'bg-green-500',
+  SOL: 'bg-blue-500',
+  LA: 'bg-violet-500',
+  SI: 'bg-pink-500',
+};
+
+const TeenChordBuilderPage: React.FC = () => {
+  const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
+  const [activeChallengeId, setActiveChallengeId] = useState(teenChordChallenges[0].id);
+  const [selectedNotes, setSelectedNotes] = useState<TeenChordNote[]>([]);
+  const [feedback, setFeedback] = useState('Escolha um desafio, monte 3 notas e compare o resultado.');
+  const [combo, setCombo] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [xp, setXp] = useState<number>(() => getTeensXp());
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const isLight = theme === 'light';
+  const rankProgress = getRankProgress(xp);
+
+  const activeChallenge = useMemo(
+    () => teenChordChallenges.find((item) => item.id === activeChallengeId) ?? teenChordChallenges[0],
+    [activeChallengeId]
+  );
+
+  const targetStack = useMemo(
+    () => teenChordStacks.find((stack) => stack.id === activeChallenge.targetStackId) ?? teenChordStacks[0],
+    [activeChallenge]
+  );
+  const requiredNotes = targetStack.notes.length;
+
+  const sortedSelected = [...selectedNotes].sort().join('|');
+  const sortedTarget = [...targetStack.notes].sort().join('|');
+
+  const gridStyle = {
+    backgroundImage: `linear-gradient(${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px)`,
+    backgroundSize: '30px 30px',
+  };
+
+  const getAudioCtx = async () => {
+    const AudioCtx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return null;
+    if (!audioContextRef.current) audioContextRef.current = new AudioCtx();
+    if (audioContextRef.current.state === 'suspended') await audioContextRef.current.resume();
+    return audioContextRef.current;
+  };
+
+  const playNote = async (note: TeenChordNote, duration = 0.22, delay = 0) => {
+    const ctx = await getAudioCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime + delay;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(noteFreq[note], now);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + duration + 0.02);
+  };
+
+  const playStack = async (notes: TeenChordNote[]) => {
+    if (!notes.length || isPlaying) return;
+    setIsPlaying(true);
+    for (let i = 0; i < notes.length; i += 1) {
+      await playNote(notes[i], 0.22, i * 0.06);
+    }
+    window.setTimeout(() => setIsPlaying(false), 420);
+  };
+
+  const toggleNote = (note: TeenChordNote) => {
+    setSelectedNotes((prev) => {
+      if (prev.includes(note)) {
+        return prev.filter((n) => n !== note);
+      }
+      if (prev.length >= requiredNotes) {
+        return [...prev.slice(1), note];
+      }
+      return [...prev, note];
+    });
+  };
+
+  const clearBuild = () => {
+    setSelectedNotes([]);
+    setFeedback(`Construção limpa. Monte um novo bloco de ${requiredNotes} notas.`);
+  };
+
+  const checkBuild = () => {
+    if (selectedNotes.length !== requiredNotes) {
+      setFeedback(`Escolha ${requiredNotes} notas para validar o bloco.`);
+      return;
+    }
+
+    if (sortedSelected === sortedTarget) {
+      const nextXp = addTeensXp(activeChallenge.xp);
+      setXp(nextXp);
+      setCombo((v) => v + 1);
+      setStreak((v) => v + 1);
+      setFeedback(`Perfeito! Bloco correto. +${activeChallenge.xp} XP`);
+      return;
+    }
+
+    setCombo(0);
+    setFeedback('Quase! Compare as sensações e tente outra combinação.');
+  };
+
+  const nextChallenge = () => {
+    const pool = teenChordChallenges.filter((challenge) => challenge.id !== activeChallengeId);
+    const next = pool[Math.floor(Math.random() * pool.length)] ?? teenChordChallenges[0];
+    setActiveChallengeId(next.id);
+    setSelectedNotes([]);
+    setFeedback(next.description);
+  };
+
+  return (
+    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#02030a] text-zinc-100'}`}>
+      <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_0%,rgba(59,130,246,0.14),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(168,85,247,0.16),transparent_48%)]" />
+
+      <main className="relative mx-auto max-w-6xl">
+        <header className="mb-8 text-center">
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-400">GA Teens</p>
+          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Chord Builder</h1>
+          <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
+            Monte blocos harmônicos por sensação e prepare o caminho para tríades, tétrades e inversões.
+          </p>
+        </header>
+
+        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Desafio</p>
+              <p className="mt-1 text-lg font-black">{activeChallenge.title}</p>
+            </div>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Streak / Combo</p>
+              <p className="mt-1 text-lg font-black">{streak} / {combo}</p>
+            </div>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">XP por acerto</p>
+              <p className="mt-1 text-lg font-black">{activeChallenge.xp}</p>
+            </div>
+          </div>
+
+          <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-cyan-200 bg-cyan-50' : 'border-cyan-500/30 bg-cyan-500/10'}`}>
+            <p className={`text-[10px] font-black uppercase tracking-[0.22em] ${isLight ? 'text-cyan-700' : 'text-cyan-300'}`}>Arquitetura Do Som</p>
+            <p className={`mt-1 text-xs font-bold ${isLight ? 'text-slate-700' : 'text-zinc-200'}`}>
+              Tijolos: intervalos. Estrutura: tríade (1, 3, 5). Acabamento: tétrades (7). Engenharia: mover formas no braço.
+            </p>
+          </div>
+
+          <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Progressão</p>
+              <p className="text-xs font-black uppercase">
+                Rank: <span className={rankProgress.current.accentClass}>{rankProgress.current.label}</span> · XP {xp}
+              </p>
+            </div>
+            <div className={`mt-2 h-2 w-full rounded-full ${isLight ? 'bg-slate-200' : 'bg-zinc-800'}`}>
+              <div className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-2 md:grid-cols-3">
+            {teenChordChallenges.map((challenge) => (
+              <button
+                key={challenge.id}
+                onClick={() => {
+                  setActiveChallengeId(challenge.id);
+                  setSelectedNotes([]);
+                  setFeedback(challenge.description);
+                }}
+                className={`rounded-xl border px-3 py-3 text-left transition-all ${
+                  activeChallengeId === challenge.id
+                    ? 'border-cyan-400 bg-cyan-500/15 ring-2 ring-cyan-300/40'
+                    : isLight
+                      ? 'border-slate-300 bg-white hover:border-cyan-400'
+                      : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'
+                }`}
+              >
+                <p className="text-sm font-black uppercase">{challenge.title}</p>
+                <p className="mt-1 text-[10px] font-black opacity-70">{challenge.description}</p>
+                <p className="mt-2 text-[10px] font-black text-cyan-300/90">{challenge.hint}</p>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-violet-500/35 bg-violet-500/10 p-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">Bloco-alvo (referência)</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {targetStack.notes.map((note) => (
+                <span key={`target-${note}`} className={`rounded-full border border-violet-200/50 px-3 py-1 text-xs font-black ${noteColor[note]} text-white`}>
+                  {note}
+                </span>
+              ))}
+            </div>
+            <p className="mt-3 text-[11px] font-black text-violet-200/90">
+              Tipo: {targetStack.chordType.toUpperCase()} · {targetStack.blockLabel} · Monte {requiredNotes} notas
+            </p>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
+            {(Object.keys(noteColor) as TeenChordNote[]).map((note) => {
+              const selected = selectedNotes.includes(note);
+              return (
+                <button
+                  key={note}
+                  onClick={() => toggleNote(note)}
+                  className={`h-16 rounded-2xl border text-sm font-black uppercase transition-all ${
+                    selected
+                      ? `${noteColor[note]} border-cyan-100 text-white shadow-[0_0_20px_rgba(34,211,238,0.65)]`
+                      : isLight
+                        ? 'border-slate-300 bg-slate-100 text-slate-700 hover:border-cyan-400'
+                        : 'border-zinc-700 bg-zinc-900 text-zinc-100 hover:border-cyan-500'
+                  }`}
+                >
+                  {note}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            <button
+              onClick={() => void playStack(targetStack.notes)}
+              disabled={isPlaying}
+              className="rounded-xl border border-cyan-400 bg-cyan-500/20 px-4 py-2 text-xs font-black uppercase text-cyan-100 hover:bg-cyan-500/30 disabled:opacity-50"
+            >
+              Ouvir referência
+            </button>
+            <button
+              onClick={() => void playStack(selectedNotes)}
+              disabled={isPlaying || selectedNotes.length === 0}
+              className="rounded-xl border border-violet-400 bg-violet-500/20 px-4 py-2 text-xs font-black uppercase text-violet-100 hover:bg-violet-500/30 disabled:opacity-50"
+            >
+              Ouvir seu bloco
+            </button>
+            <button
+              onClick={checkBuild}
+              className="rounded-xl border border-emerald-400 bg-emerald-500/20 px-4 py-2 text-xs font-black uppercase text-emerald-100 hover:bg-emerald-500/30"
+            >
+              Validar
+            </button>
+            <button
+              onClick={nextChallenge}
+              className="rounded-xl border border-violet-400 bg-violet-500/20 px-4 py-2 text-xs font-black uppercase text-violet-100 hover:bg-violet-500/30"
+            >
+              Próximo exercício
+            </button>
+            <button
+              onClick={clearBuild}
+              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
+            >
+              Limpar
+            </button>
+          </div>
+
+          <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-black ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'}`}>
+            {feedback}
+          </div>
+        </section>
+
+        <div className="mt-6 flex justify-center gap-3">
+          <button
+            onClick={() => navigateTo('/teens')}
+            className="rounded-xl border border-violet-500 bg-violet-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-violet-500"
+          >
+            Voltar ao Teens
+          </button>
+          <button
+            onClick={() => navigateTo('/studio')}
+            className="rounded-xl border border-cyan-500 bg-cyan-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-cyan-500"
+          >
+            Ir para Studio
+          </button>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default TeenChordBuilderPage;
