@@ -1183,7 +1183,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   const openMobileTab = (tab: string) => {
-    if (openQuickTab === tab) {
+    const isSameTabOpen = isControlPanelOpen && activeControlTab === tab;
+    if (isSameTabOpen) {
+      setIsControlPanelOpen(false);
       setOpenQuickTab(null);
       return;
     }
@@ -1200,6 +1202,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     }
     setActiveControlTab(tab);
     setOpenQuickTab(tab);
+    setIsControlPanelOpen(true);
   };
 
   const guidedStudies = useMemo<GuidedStudy[]>(() => ([

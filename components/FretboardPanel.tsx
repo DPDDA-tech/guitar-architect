@@ -1485,14 +1485,16 @@ const handleReturnToContext = () => {
     shadow-lg
   ">
     <span>
-      ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â½ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ Otimizado para desktop. Use paisagem para melhor experiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªncia.
+      {lang === 'pt'
+        ? 'Otimizado para desktop. Use paisagem no celular para melhor experiência.'
+        : 'Optimized for desktop. Use landscape on mobile for a better experience.'}
     </span>
 
     <button
       onClick={() => setShowMobileHint(false)}
       className="bg-white/20 hover:bg-white/40 px-2 py-0.5 rounded-md transition-colors"
     >
-      ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢
+      X
     </button>
   </div>
 )}
