@@ -12,12 +12,10 @@ import {
 } from '../utils/achievementUtils';
 import {
   getAchievementProgressState,
-  getSelectedRewardBadgeId,
   getUnlockedAchievementIds,
   lockAchievement,
   resetAchievementProgress,
   resetAchievements,
-  setSelectedRewardBadgeId,
   unlockAchievement,
 } from '../utils/achievementStorage';
 import { getTierDisplay, getTierName } from '../utils/tierNomenclature';
@@ -53,7 +51,6 @@ const lightRarityClass: Record<Achievement['rarity'], string> = {
 const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
   const [unlockedIds, setUnlockedIds] = useState<string[]>(() => getUnlockedAchievementIds());
   const [progressState, setProgressState] = useState(() => getAchievementProgressState());
-  const [selectedBadgeId, setSelectedBadgeId] = useState<string | null>(() => getSelectedRewardBadgeId());
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
@@ -108,15 +105,8 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
     
     resetAchievements(currentUserId);
     resetAchievementProgress(currentUserId);
-    setSelectedRewardBadgeId(null, currentUserId);
     setUnlockedIds([]);
     setProgressState({});
-    setSelectedBadgeId(null);
-  };
-
-  const selectBadge = (rewardId: string) => {
-    const next = setSelectedRewardBadgeId(rewardId, currentUserId);
-    setSelectedBadgeId(next);
   };
 
   return (
@@ -162,24 +152,6 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
           );
         })}
       </div>
-
-      {unlockedRewards.length > 0 && (
-        <div className={`mt-5 rounded-xl border p-4 ${isLight ? 'border-[#d4dfeb] bg-[#f8fbff]' : 'border-blue-900/50 bg-[#050914]'}`}>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-300">Identidade ativa</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {unlockedRewards.filter(reward => reward.usableInProfile).map(reward => (
-              <button
-                key={reward.id}
-                onClick={() => selectBadge(reward.id)}
-                className={`rounded-xl border px-3 py-2 text-[10px] font-black uppercase transition ${selectedBadgeId === reward.id ? 'border-blue-300 bg-blue-600 text-white shadow-[0_10px_28px_rgba(37,99,235,0.35)]' : isLight ? 'border-blue-200 bg-white text-blue-700' : 'border-blue-900/70 bg-[#070d18] text-blue-200'}`}
-              >
-                {selectedBadgeId === reward.id ? 'Selecionado: ' : 'Usar: '}
-                {reward.title}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className={`mt-5 rounded-xl border p-4 ${isLight ? 'border-[#d4dfeb] bg-[#f8fbff]' : 'border-blue-900/50 bg-[#050914]'}`}>
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-300">Novas trilhas de desbloqueio</p>
