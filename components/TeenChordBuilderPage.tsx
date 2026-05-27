@@ -28,6 +28,38 @@ const noteColor: Record<TeenChordNote, string> = {
   SI: 'bg-pink-500',
 };
 
+type ChordIntervalCard = {
+  id: string;
+  title: string;
+  pair: [TeenChordNote, TeenChordNote];
+  type: '3a' | '5a' | '8a';
+  description: string;
+};
+
+const chordIntervalCards: ChordIntervalCard[] = [
+  {
+    id: 'ci-1',
+    title: 'Terça',
+    pair: ['DO', 'MI'],
+    type: '3a',
+    description: 'A terça muda o humor do acorde: maior (brilho) ou menor (tensão).',
+  },
+  {
+    id: 'ci-2',
+    title: 'Quinta',
+    pair: ['SOL', 'RE'],
+    type: '5a',
+    description: 'A quinta traz estabilidade estrutural e peso para a base.',
+  },
+  {
+    id: 'ci-3',
+    title: 'Oitava',
+    pair: ['LA', 'LA'],
+    type: '8a',
+    description: 'A oitava reforça identidade da nota em outro registro.',
+  },
+];
+
 const TeenChordBuilderPage: React.FC = () => {
   const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
   const [activeChallengeId, setActiveChallengeId] = useState(teenChordChallenges[0].id);
@@ -37,6 +69,7 @@ const TeenChordBuilderPage: React.FC = () => {
   const [streak, setStreak] = useState(0);
   const [xp, setXp] = useState<number>(() => getTeensXp());
   const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedIntervalId, setSelectedIntervalId] = useState(chordIntervalCards[0].id);
 
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -53,6 +86,7 @@ const TeenChordBuilderPage: React.FC = () => {
     [activeChallenge]
   );
   const requiredNotes = targetStack.notes.length;
+  const selectedInterval = chordIntervalCards.find((item) => item.id === selectedIntervalId) ?? chordIntervalCards[0];
 
   const sortedSelected = [...selectedNotes].sort().join('|');
   const sortedTarget = [...targetStack.notes].sort().join('|');
@@ -227,6 +261,31 @@ const TeenChordBuilderPage: React.FC = () => {
             <p className="mt-3 text-[11px] font-black text-violet-200/90">
               Tipo: {targetStack.chordType.toUpperCase()} · {targetStack.blockLabel} · Monte {requiredNotes} notas
             </p>
+          </div>
+
+          <div className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-fuchsia-200 bg-fuchsia-50/80' : 'border-fuchsia-500/30 bg-fuchsia-500/10'}`}>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-400">Intervalos na Arquitetura do Acorde</p>
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              {chordIntervalCards.map((card) => {
+                const active = selectedIntervalId === card.id;
+                return (
+                  <button
+                    key={card.id}
+                    onClick={() => setSelectedIntervalId(card.id)}
+                    className={`rounded-xl border p-3 text-left ${active ? 'border-fuchsia-300 bg-fuchsia-500/20' : ''}`}
+                  >
+                    <p className="text-xs font-black uppercase">{card.title}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className={`h-8 w-8 rounded-full ${noteColor[card.pair[0]]} text-white flex items-center justify-center text-xs font-black`}>{card.pair[0]}</span>
+                      <span className="text-fuchsia-300 font-black">→</span>
+                      <span className={`h-8 w-8 rounded-full ${noteColor[card.pair[1]]} text-white flex items-center justify-center text-xs font-black`}>{card.pair[1]}</span>
+                    </div>
+                    <p className="mt-2 text-[11px] font-black opacity-85">Intervalo: {card.type}</p>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-3 text-xs font-bold opacity-90">{selectedInterval.description}</p>
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">

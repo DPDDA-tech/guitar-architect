@@ -203,6 +203,26 @@ const TeensPage: React.FC = () => {
               path: '/teens/rhythm-lab',
               unlockXp: 120,
             },
+            {
+              title: 'Blueprint Reading',
+              subtitle: lang === 'pt' ? 'Leia pauta + TAB como blueprint musical.' : 'Read staff + TAB as a music blueprint.',
+              visual: (
+                <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
+                  <line x1="12" y1="18" x2="228" y2="18" stroke="#64748b" />
+                  <line x1="12" y1="25" x2="228" y2="25" stroke="#64748b" />
+                  <line x1="12" y1="32" x2="228" y2="32" stroke="#64748b" />
+                  <line x1="12" y1="39" x2="228" y2="39" stroke="#64748b" />
+                  <line x1="12" y1="46" x2="228" y2="46" stroke="#64748b" />
+                  <circle cx="68" cy="39" r="4" fill="#22d3ee" />
+                  <circle cx="120" cy="32" r="4" fill="#a855f7" />
+                  <circle cx="174" cy="25" r="4" fill="#f472b6" />
+                  <path d="M20 56h18M52 56h18M84 56h18M116 56h18M148 56h18M180 56h18" stroke="#22d3ee" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              ),
+              available: true,
+              path: '/teens/blueprint-reading',
+              unlockXp: 360,
+            },
           ].map((module, idx) => {
             const cardTier = xp >= 620 ? 'tier-neon' : xp >= 320 ? 'tier-pulse' : xp >= 120 ? 'tier-trail' : 'tier-base';
             const tierClass = cardTier === 'tier-neon'
