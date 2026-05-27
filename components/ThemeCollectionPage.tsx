@@ -115,6 +115,32 @@ const renderLorePanel = (path: string, isLight: boolean, lang: Lang) => {
   );
 };
 
+const CollectionSectionToggle: React.FC<{
+  titlePt: string;
+  titleEn: string;
+  isOpen: boolean;
+  isLight: boolean;
+  lang: Lang;
+  onToggle: () => void;
+  tone: 'blue' | 'amber';
+}> = ({ titlePt, titleEn, isOpen, isLight, lang, onToggle, tone }) => {
+  const toneClass = tone === 'amber'
+    ? (isLight ? 'border-amber-300 bg-amber-100/95 text-amber-900' : 'border-amber-700/80 bg-amber-950/70 text-amber-100')
+    : (isLight ? 'border-blue-300 bg-blue-100/95 text-blue-900' : 'border-blue-700/80 bg-blue-950/70 text-blue-100');
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`mb-4 flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-[0.99] ${toneClass}`}
+      aria-expanded={isOpen}
+    >
+      <span>{lang === 'pt' ? titlePt : titleEn}</span>
+      <span className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+    </button>
+  );
+};
+
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
   window.dispatchEvent(new Event('ga-route-change'));
@@ -141,6 +167,21 @@ const ThemeCollectionPage: React.FC = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [constancyRefreshToken, setConstancyRefreshToken] = useState(0);
+  const [openThemeCollections, setOpenThemeCollections] = useState<Record<string, boolean>>({
+    tier0: true,
+    tier1: false,
+    tier2: false,
+    tier3: false,
+    tier4: false,
+    tier5: false,
+    tier6: false,
+  });
+  const [openCollectionPanels, setOpenCollectionPanels] = useState({
+    supporter: true,
+    constancy: false,
+    firstSupporters: false,
+    work: false,
+  });
 
   const constancyState = useMemo(() => getConstancyState(currentUserId), [currentUserId, constancyRefreshToken]);
   const nextMilestone = useMemo(() => getNextConstancyMilestone(constancyState.currentStreak), [constancyState.currentStreak]);
@@ -421,20 +462,25 @@ const ThemeCollectionPage: React.FC = () => {
           </div>
         </section>
 
-        <ThemeGrid category="tier0" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier1" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier2" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier3" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier4" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier5" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
-        <ThemeGrid category="tier6" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} />
+        <ThemeGrid category="tier0" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} collapsible isOpen={openThemeCollections.tier0} onToggleOpen={() => setOpenThemeCollections(prev => ({ ...prev, tier0: !prev.tier0 }))} />
+        <ThemeGrid category="tier1" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} collapsible isOpen={openThemeCollections.tier1} onToggleOpen={() => setOpenThemeCollections(prev => ({ ...prev, tier1: !prev.tier1 }))} />
+        <ThemeGrid category="tier2" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} collapsible isOpen={openThemeCollections.tier2} onToggleOpen={() => setOpenThemeCollections(prev => ({ ...prev, tier2: !prev.tier2 }))} />
+        <ThemeGrid category="tier3" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} collapsible isOpen={openThemeCollections.tier3} onToggleOpen={() => setOpenThemeCollections(prev => ({ ...prev, tier3: !prev.tier3 }))} />
+        <ThemeGrid category="tier4" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} collapsible isOpen={openThemeCollections.tier4} onToggleOpen={() => setOpenThemeCollections(prev => ({ ...prev, tier4: !prev.tier4 }))} />
+        <ThemeGrid category="tier5" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} collapsible isOpen={openThemeCollections.tier5} onToggleOpen={() => setOpenThemeCollections(prev => ({ ...prev, tier5: !prev.tier5 }))} />
+        <ThemeGrid category="tier6" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} collapsible isOpen={openThemeCollections.tier6} onToggleOpen={() => setOpenThemeCollections(prev => ({ ...prev, tier6: !prev.tier6 }))} />
 
         <section className="mt-10">
-          <details open className="group">
-            <summary className={`mb-4 flex cursor-pointer list-none items-center justify-between rounded-2xl border px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-amber-200 bg-amber-50/70 text-amber-800' : 'border-amber-900/60 bg-amber-950/25 text-amber-200'}`}>
-              <span>{lang === 'pt' ? 'Galeria de Apoiadores' : 'Supporter Gallery'}</span>
-              <span className="transition group-open:rotate-180">▼</span>
-            </summary>
+          <CollectionSectionToggle
+            titlePt="Galeria de Apoiadores"
+            titleEn="Supporter Gallery"
+            isOpen={openCollectionPanels.supporter}
+            isLight={isLight}
+            lang={lang}
+            tone="amber"
+            onToggle={() => setOpenCollectionPanels(prev => ({ ...prev, supporter: !prev.supporter }))}
+          />
+          <div className={`${openCollectionPanels.supporter ? 'block' : 'hidden'}`}>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300">
@@ -671,15 +717,20 @@ const ThemeCollectionPage: React.FC = () => {
               );
             })}
           </div>
-          </details>
+          </div>
         </section>
 
         <section className="mt-10">
-          <details open className="group">
-            <summary className={`mb-4 flex cursor-pointer list-none items-center justify-between rounded-2xl border px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-blue-200 bg-blue-50/70 text-blue-800' : 'border-blue-900/60 bg-blue-950/25 text-blue-200'}`}>
-              <span>{lang === 'pt' ? 'Galeria de Constância' : 'Constancy Gallery'}</span>
-              <span className="transition group-open:rotate-180">▼</span>
-            </summary>
+          <CollectionSectionToggle
+            titlePt="Galeria de Constância"
+            titleEn="Constancy Gallery"
+            isOpen={openCollectionPanels.constancy}
+            isLight={isLight}
+            lang={lang}
+            tone="blue"
+            onToggle={() => setOpenCollectionPanels(prev => ({ ...prev, constancy: !prev.constancy }))}
+          />
+          <div className={`${openCollectionPanels.constancy ? 'block' : 'hidden'}`}>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-300">
@@ -776,15 +827,20 @@ const ThemeCollectionPage: React.FC = () => {
               );
             })}
           </div>
-          </details>
+          </div>
         </section>
 
         <section className="mt-10">
-          <details open className="group">
-            <summary className={`mb-4 flex cursor-pointer list-none items-center justify-between rounded-2xl border px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-amber-200 bg-amber-50/70 text-amber-800' : 'border-amber-900/60 bg-amber-950/25 text-amber-200'}`}>
-              <span>{lang === 'pt' ? 'Galeria Primeiros Apoiadores' : 'Early Supporter Gallery'}</span>
-              <span className="transition group-open:rotate-180">▼</span>
-            </summary>
+          <CollectionSectionToggle
+            titlePt="Galeria Primeiros Apoiadores"
+            titleEn="Early Supporter Gallery"
+            isOpen={openCollectionPanels.firstSupporters}
+            isLight={isLight}
+            lang={lang}
+            tone="amber"
+            onToggle={() => setOpenCollectionPanels(prev => ({ ...prev, firstSupporters: !prev.firstSupporters }))}
+          />
+          <div className={`${openCollectionPanels.firstSupporters ? 'block' : 'hidden'}`}>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300">
@@ -843,15 +899,20 @@ const ThemeCollectionPage: React.FC = () => {
               );
             })}
           </div>
-          </details>
+          </div>
         </section>
 
         <section className="mt-10">
-          <details open className="group">
-            <summary className={`mb-4 flex cursor-pointer list-none items-center justify-between rounded-2xl border px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'border-blue-200 bg-blue-50/70 text-blue-800' : 'border-blue-900/60 bg-blue-950/25 text-blue-200'}`}>
-              <span>{lang === 'pt' ? 'Galeria da Obra' : 'Work Gallery'}</span>
-              <span className="transition group-open:rotate-180">▼</span>
-            </summary>
+          <CollectionSectionToggle
+            titlePt="Galeria da Obra"
+            titleEn="Work Gallery"
+            isOpen={openCollectionPanels.work}
+            isLight={isLight}
+            lang={lang}
+            tone="blue"
+            onToggle={() => setOpenCollectionPanels(prev => ({ ...prev, work: !prev.work }))}
+          />
+          <div className={`${openCollectionPanels.work ? 'block' : 'hidden'}`}>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-300">
@@ -903,7 +964,7 @@ const ThemeCollectionPage: React.FC = () => {
                 : 'Work collection items will appear here as they are unlocked.'}
             </div>
           )}
-          </details>
+          </div>
         </section>
 
         <AchievementsPanel isLight={isLight} />
