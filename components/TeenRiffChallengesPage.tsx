@@ -1,6 +1,7 @@
 ﻿import React, { useMemo, useRef, useState } from 'react';
 import { getTeensTheme } from '../utils/ecosystemPreferences';
 import { teenRiffChallenges, type TeenRiffChallenge, type TeenRiffDifficulty, type TeenRiffNote } from '../data/teenRiffData';
+import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -33,13 +34,31 @@ const difficultyBadge: Record<TeenRiffDifficulty, string> = {
   hard: 'HARD',
 };
 
+const UNLOCK_STORAGE_KEY = 'ga_teens_riff_unlocks_v1';
+
 const TeenRiffChallengesPage: React.FC = () => {
   const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
-  const [selectedRiffId, setSelectedRiffId] = useState<string>(teenRiffChallenges[0]?.id ?? '');
+  const [unlockedRiffIds, setUnlockedRiffIds] = useState<string[]>(() => {
+    const fallback = teenRiffChallenges[0] ? [teenRiffChallenges[0].id] : [];
+    try {
+      const raw = window.localStorage.getItem(UNLOCK_STORAGE_KEY);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw) as string[];
+      return parsed.length ? parsed : fallback;
+    } catch {
+      return fallback;
+    }
+  });
+  const [selectedRiffId, setSelectedRiffId] = useState<string>(() => teenRiffChallenges[0]?.id ?? '');
   const [userNotes, setUserNotes] = useState<TeenRiffNote[]>([]);
   const [feedback, setFeedback] = useState('Selecione um riff e toque em Ouvir desafio.');
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeNote, setActiveNote] = useState<TeenRiffNote | null>(null);
+  const [streak, setStreak] = useState(0);
+  const [combo, setCombo] = useState(0);
+  const [showAchievement, setShowAchievement] = useState(false);
+  const [lastResult, setLastResult] = useState<'success' | 'error' | null>(null);
+  const [xp, setXp] = useState<number>(() => getTeensXp());
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const playTokenRef = useRef(0);
@@ -49,6 +68,8 @@ const TeenRiffChallengesPage: React.FC = () => {
   const selectedRiff = useMemo<TeenRiffChallenge>(() => {
     return teenRiffChallenges.find((riff) => riff.id === selectedRiffId) ?? teenRiffChallenges[0];
   }, [selectedRiffId]);
+  const selectedIndex = teenRiffChallenges.findIndex((riff) => riff.id === selectedRiff.id);
+  const rankProgress = getRankProgress(xp);
 
   const progressText = `${Math.min(userNotes.length, selectedRiff.notes.length)}/${selectedRiff.notes.length}`;
 
@@ -106,10 +127,30 @@ const TeenRiffChallengesPage: React.FC = () => {
     }
   };
 
+  const persistUnlocks = (nextIds: string[]) => {
+    setUnlockedRiffIds(nextIds);
+    try {
+      window.localStorage.setItem(UNLOCK_STORAGE_KEY, JSON.stringify(nextIds));
+    } catch {
+      // no-op
+    }
+  };
+
+  const unlockNextRiff = (baseIndex: number) => {
+    const nextRiff = teenRiffChallenges[baseIndex + 1];
+    if (!nextRiff) return;
+    if (!unlockedRiffIds.includes(nextRiff.id)) {
+      persistUnlocks([...unlockedRiffIds, nextRiff.id]);
+      setFeedback(`Riff concluído! Novo desafio liberado: ${nextRiff.title}.`);
+    }
+  };
+
   const handleChooseRiff = (riffId: string) => {
+    if (!unlockedRiffIds.includes(riffId)) return;
     setSelectedRiffId(riffId);
     setUserNotes([]);
     setFeedback('Riff selecionado. Ouça e reproduza.');
+    setLastResult(null);
   };
 
   const handleUserNote = async (note: TeenRiffNote) => {
@@ -124,9 +165,20 @@ const TeenRiffChallengesPage: React.FC = () => {
 
       if (next.length === selectedRiff.notes.length) {
         if (JSON.stringify(next) === JSON.stringify(selectedRiff.notes)) {
+          const earnedXp = selectedRiff.difficulty === 'hard' ? 30 : selectedRiff.difficulty === 'medium' ? 22 : 16;
+          const nextXp = addTeensXp(earnedXp);
           setFeedback('Riff concluído!');
+          setStreak((value) => value + 1);
+          setCombo((value) => value + 1);
+          setLastResult('success');
+          setXp(nextXp);
+          setShowAchievement(true);
+          window.setTimeout(() => setShowAchievement(false), 1400);
+          unlockNextRiff(selectedIndex);
         } else {
           setFeedback('Quase! Ouça novamente.');
+          setCombo(0);
+          setLastResult('error');
         }
       } else {
         setFeedback('Continue tocando o riff...');
@@ -139,7 +191,20 @@ const TeenRiffChallengesPage: React.FC = () => {
   const clearUser = () => {
     setUserNotes([]);
     setFeedback('Sua sequência foi limpa.');
+    setLastResult(null);
   };
+
+  const goNextChallenge = () => {
+    const next = teenRiffChallenges[selectedIndex + 1];
+    if (!next) return;
+    if (!unlockedRiffIds.includes(next.id)) return;
+    setSelectedRiffId(next.id);
+    setUserNotes([]);
+    setFeedback(`Novo desafio: ${next.title}`);
+    setLastResult(null);
+  };
+
+  const isNextUnlocked = unlockedRiffIds.includes(teenRiffChallenges[selectedIndex + 1]?.id ?? '');
 
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#02030a] text-zinc-100'}`}>
@@ -171,23 +236,61 @@ const TeenRiffChallengesPage: React.FC = () => {
             </div>
           </div>
 
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Streak</p>
+              <p className="mt-1 text-lg font-black">{streak}</p>
+            </div>
+            <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Combo</p>
+              <p className="mt-1 text-lg font-black">{combo}</p>
+            </div>
+            <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Trilha</p>
+              <p className="mt-1 text-lg font-black">{unlockedRiffIds.length}/{teenRiffChallenges.length}</p>
+            </div>
+          </div>
+
+          <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Progressão</p>
+              <p className="text-xs font-black uppercase">
+                Rank: <span className={rankProgress.current.accentClass}>{rankProgress.current.label}</span> · XP {xp}
+              </p>
+            </div>
+            <div className={`mt-2 h-2 w-full rounded-full ${isLight ? 'bg-slate-200' : 'bg-zinc-800'}`}>
+              <div className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
+            </div>
+            {rankProgress.next && (
+              <p className={`mt-2 text-[11px] font-bold ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
+                Falta {Math.max(0, rankProgress.next.minXp - xp)} XP para {rankProgress.next.label}.
+              </p>
+            )}
+          </div>
+
           <div className="mt-4 grid gap-2 md:grid-cols-3">
-            {teenRiffChallenges.map((riff) => (
-              <button
-                key={riff.id}
-                onClick={() => handleChooseRiff(riff.id)}
-                className={`rounded-xl border px-3 py-3 text-left transition-all ${
-                  selectedRiff.id === riff.id
-                    ? 'border-cyan-400 bg-cyan-500/15 ring-2 ring-cyan-300/40'
-                    : isLight
-                      ? 'border-slate-300 bg-white hover:border-cyan-400'
-                      : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'
-                }`}
-              >
-                <p className="text-sm font-black uppercase">{riff.title}</p>
-                <p className="mt-1 text-[10px] font-black opacity-70 uppercase">{difficultyBadge[riff.difficulty]} · {riff.notes.length} notas</p>
-              </button>
-            ))}
+            {teenRiffChallenges.map((riff) => {
+              const isUnlocked = unlockedRiffIds.includes(riff.id);
+              return (
+                <button
+                  key={riff.id}
+                  onClick={() => handleChooseRiff(riff.id)}
+                  disabled={!isUnlocked}
+                  className={`rounded-xl border px-3 py-3 text-left transition-all ${
+                    selectedRiff.id === riff.id
+                      ? 'border-cyan-400 bg-cyan-500/15 ring-2 ring-cyan-300/40'
+                      : isLight
+                        ? 'border-slate-300 bg-white hover:border-cyan-400'
+                        : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'
+                  } ${!isUnlocked ? 'opacity-45 cursor-not-allowed' : ''}`}
+                >
+                  <p className="text-sm font-black uppercase">{riff.title}</p>
+                  <p className="mt-1 text-[10px] font-black opacity-70 uppercase">
+                    {difficultyBadge[riff.difficulty]} · {riff.notes.length} notas {isUnlocked ? '' : '· LOCKED'}
+                  </p>
+                </button>
+              );
+            })}
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
@@ -210,6 +313,13 @@ const TeenRiffChallengesPage: React.FC = () => {
               className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
             >
               Limpar
+            </button>
+            <button
+              onClick={goNextChallenge}
+              disabled={!isNextUnlocked}
+              className="rounded-xl border border-emerald-400 bg-emerald-500/20 px-4 py-2 text-xs font-black uppercase text-emerald-100 hover:bg-emerald-500/30 disabled:opacity-40"
+            >
+              Próximo desafio
             </button>
           </div>
 
@@ -234,7 +344,25 @@ const TeenRiffChallengesPage: React.FC = () => {
             })}
           </div>
 
-          <div className={`mt-5 rounded-xl border px-4 py-3 text-sm font-black ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'}`}>
+          {showAchievement && (
+            <div className={`mt-5 rounded-xl border px-4 py-3 text-sm font-black animate-pulse ${isLight ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'}`}>
+              +XP ganho • +1 streak • combo {combo} • desafio dominado
+            </div>
+          )}
+
+          <div className={`mt-3 rounded-xl border px-4 py-3 text-sm font-black ${
+            lastResult === 'success'
+              ? isLight
+                ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
+              : lastResult === 'error'
+                ? isLight
+                  ? 'border-amber-300 bg-amber-50 text-amber-800'
+                  : 'border-amber-500/40 bg-amber-500/10 text-amber-200'
+                : isLight
+                  ? 'border-cyan-200 bg-cyan-50 text-cyan-800'
+                  : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'
+          }`}>
             {feedback}
           </div>
         </section>
@@ -259,3 +387,4 @@ const TeenRiffChallengesPage: React.FC = () => {
 };
 
 export default TeenRiffChallengesPage;
+

@@ -1,5 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
+import { getRankProgress, getTeensXp } from '../utils/teenProgress';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -10,6 +11,13 @@ const TeensPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => getTeensTheme());
   const [lang, setLang] = useState<'pt' | 'en'>(() => getTeensLang());
   const isLight = theme === 'light';
+  const xp = getTeensXp();
+  const rankProgress = getRankProgress(xp);
+  const visualRewards = [
+    { id: 'trail', label: 'Trail Glow', minXp: 120 },
+    { id: 'pulse', label: 'Pulse Frame', minXp: 320 },
+    { id: 'neon', label: 'Neon Aura', minXp: 620 },
+  ];
 
   const copy = lang === 'pt'
     ? {
@@ -73,6 +81,24 @@ const TeensPage: React.FC = () => {
           <p className="mt-4 max-w-2xl text-lg font-bold opacity-80 leading-relaxed italic">
             {copy.subtitle}
           </p>
+
+          <div className={`mt-5 w-full max-w-md rounded-xl border px-4 py-3 ${isLight ? 'border-violet-200 bg-violet-50/60' : 'border-violet-700/60 bg-violet-950/35'}`}>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Progressão</p>
+              <p className="text-[11px] font-black uppercase">
+                {rankProgress.current.label} · XP {xp}
+              </p>
+            </div>
+            <div className={`mt-2 h-2 w-full rounded-full ${isLight ? 'bg-violet-100' : 'bg-zinc-800'}`}>
+              <div className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
+            </div>
+            {rankProgress.next && (
+              <p className={`mt-2 text-[11px] font-bold ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                {Math.max(0, rankProgress.next.minXp - xp)} XP para {rankProgress.next.label}
+              </p>
+            )}
+          </div>
+
           <div className="mt-6 flex w-full items-center justify-center">
             <span className="px-5 py-2 rounded-full border border-violet-500/50 bg-violet-500/10 text-[10px] font-black uppercase tracking-[0.3em] text-violet-400 shadow-[0_0_15px_rgba(139,92,246,0.3)]">
               {copy.earlyAccess}
@@ -159,7 +185,7 @@ const TeensPage: React.FC = () => {
             },
             {
               title: 'Rhythm Lab',
-              subtitle: 'Coming soon',
+              subtitle: lang === 'pt' ? 'Treine pulsos e timing em loops curtos.' : 'Train pulses and timing with short loops.',
               visual: (
                 <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
                   <rect x="16" y="30" width="8" height="20" rx="3" fill="#22d3ee" />
@@ -171,17 +197,28 @@ const TeensPage: React.FC = () => {
                   <path d="M120 44C138 26 156 26 174 44C192 26 210 26 224 38" stroke="#22d3ee" strokeWidth="2.5" strokeLinecap="round" />
                 </svg>
               ),
-              available: false,
-              path: '',
+              available: true,
+              path: '/teens/rhythm-lab',
+              unlockXp: 120,
             },
-          ].map((module, idx) => (
+          ].map((module, idx) => {
+            const cardTier = xp >= 620 ? 'tier-neon' : xp >= 320 ? 'tier-pulse' : xp >= 120 ? 'tier-trail' : 'tier-base';
+            const tierClass = cardTier === 'tier-neon'
+              ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-fuchsia-400/35 before:shadow-[0_0_35px_rgba(217,70,239,0.22)]'
+              : cardTier === 'tier-pulse'
+                ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-cyan-400/35 before:shadow-[0_0_26px_rgba(34,211,238,0.2)]'
+                : cardTier === 'tier-trail'
+                  ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-violet-400/30'
+                  : '';
+            const challengeUnlocked = module.unlockXp ? xp >= module.unlockXp : true;
+            return (
             <button
               key={module.title}
               type="button"
               disabled={!module.available}
               onClick={() => module.available && navigateTo(module.path)}
               style={{ animationDelay: `${idx * 150}ms` }}
-              className={`group relative p-7 rounded-[36px] border backdrop-blur-md flex flex-col items-start text-left transition-all animate-in fade-in zoom-in-95 shadow-2xl ${module.available ? 'hover:border-violet-400 cursor-pointer' : 'cursor-not-allowed opacity-80'} ${isLight ? 'border-violet-200 bg-white/85 hover:bg-white' : 'border-violet-800/40 bg-zinc-950/40 hover:bg-zinc-900/60'}`}
+              className={`group relative overflow-hidden p-7 rounded-[36px] border backdrop-blur-md flex flex-col items-start text-left transition-all animate-in fade-in zoom-in-95 shadow-2xl ${module.available ? 'hover:border-violet-400 cursor-pointer' : 'cursor-not-allowed opacity-80'} ${isLight ? 'border-violet-200 bg-white/85 hover:bg-white' : 'border-violet-800/40 bg-zinc-950/40 hover:bg-zinc-900/60'} ${tierClass}`}
             >
               <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1 w-12 rounded-b-full bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className={`mb-3 w-full rounded-2xl border px-3 py-2 ${isLight ? 'border-violet-200 bg-violet-50/70' : 'border-violet-500/25 bg-violet-900/20'}`}>
@@ -189,11 +226,42 @@ const TeensPage: React.FC = () => {
               </div>
               <h3 className="text-sm font-black uppercase tracking-[0.14em]">{module.title}</h3>
               <p className="mt-2 text-[11px] font-bold opacity-70">{module.subtitle}</p>
+              {module.unlockXp && (
+                <p className={`mt-2 text-[9px] font-black uppercase tracking-[0.2em] ${challengeUnlocked ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                  {challengeUnlocked ? 'Visual liberado' : `${module.unlockXp - xp} XP p/ visual`}
+                </p>
+              )}
               <p className="mt-3 text-[9px] font-black opacity-40 tracking-[0.2em] group-hover:text-violet-400 transition-colors uppercase">
                 {module.available ? (lang === 'pt' ? 'Disponível' : 'Available') : copy.locked}
               </p>
             </button>
-          ))}
+          );
+          })}
+        </div>
+
+        <div className={`mb-10 rounded-2xl border px-4 py-4 ${isLight ? 'border-violet-200 bg-white/85' : 'border-violet-700/50 bg-zinc-950/55'}`}>
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Desbloqueios Visuais</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {visualRewards.map((reward) => {
+              const unlocked = xp >= reward.minXp;
+              return (
+                <span
+                  key={reward.id}
+                  className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${
+                    unlocked
+                      ? isLight
+                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                        : 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300'
+                      : isLight
+                        ? 'border-slate-300 bg-slate-100 text-slate-500'
+                        : 'border-zinc-700 bg-zinc-900 text-zinc-400'
+                  }`}
+                >
+                  {reward.label} {unlocked ? '✓' : `(${reward.minXp} XP)`}
+                </span>
+              );
+            })}
+          </div>
         </div>
 
         <div className="flex flex-col items-center gap-6 mt-16">
@@ -217,3 +285,4 @@ const TeensPage: React.FC = () => {
 };
 
 export default TeensPage;
+
