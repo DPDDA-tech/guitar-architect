@@ -40,7 +40,7 @@ const images: ImageItem[] = [
   { src: '/teens/garage/evh/evhneck.webp', alt: 'Braço da guitarra antes e depois da preparação de envelhecimento visual' },
   { src: '/teens/garage/evh/evhreflectors.webp', alt: 'Detalhe dos refletores aplicados na traseira da Frankenstrat' },
   { src: '/teens/garage/evh/evhreflectors2.webp', alt: 'Visão lateral dos refletores na traseira da Frankenstrat' },
-  { src: '/teens/garage/evh/evhborbol.webp', alt: 'Detalhe do parafuso tipo borboleta (wing screw) na configuração da guitarra' },
+  { src: '/teens/garage/evh/evhborbol.webp', alt: 'Detalhe do laço de pintura no horn superior esquerdo da guitarra' },
   { src: '/teens/garage/evh/evhrelic.webp', alt: 'Exemplo visual de relic e desgaste aplicado no instrumento' },
   { src: '/teens/garage/evh/evhplydetail2.webp', alt: 'Detalhe adicional de acabamento e construção da Frankenstein tribute' },
 ];
@@ -177,13 +177,15 @@ const TeensGarageEvhPage: React.FC = () => {
 
           <section className="grid gap-4 md:grid-cols-2 md:items-start">
             <div className="space-y-3">
-              <h4 className="text-sm font-black uppercase tracking-[0.12em] text-violet-300">Detalhe “borboleta”</h4>
-              {renderParagraph(isLight, 'Outro detalhe reconhecível em muitas montagens inspiradas na Frankenstein é a peça chamada popularmente de “borboleta” — tecnicamente, um parafuso/peça tipo wing screw, usado como elemento funcional e visual no conjunto.')}
+              <h4 className="text-sm font-black uppercase tracking-[0.12em] text-violet-300">Laço no horn superior</h4>
+              {renderParagraph(isLight, 'O “laço” no chifre superior esquerdo não é erro de pintura: ele nasce do mascaramento em curva. Visualmente, parece uma gota vazada preta e branca cercada pelo vermelho.')}
+              {renderParagraph(isLight, 'Para reproduzir esse detalhe, faça a curva com fita fina de boa qualidade (3 mm ou 6 mm ajuda bastante) ainda na fase em que as áreas pretas e brancas estão definidas. Depois, aplique o vermelho por cima e remova a fita com cuidado para revelar o desenho do laço.')}
+              {renderParagraph(isLight, 'Na mesma região, o prendedor de palheta da Frankenstein segue a lógica DIY do projeto: em vez de peça refinada de fábrica, a referência mais comum é um pequeno tubing plástico autocolante, adaptado manualmente para uso prático em palco.')}
             </div>
             <ImageCard item={images[21]} onOpen={setActiveImage} />
           </section>
 
-          <section className="grid gap-4 md:grid-cols-2 md:items-start">
+          <section className="mt-3 grid gap-4 md:grid-cols-2 md:items-start">
             <div className="space-y-3">
               <h4 className="text-sm font-black uppercase tracking-[0.12em] text-violet-300">Headstock e marcas</h4>
               {renderParagraph(isLight, 'No headstock, uma marca registrada da estética EVH são as queimaduras próximas às tarraxas. Para uma réplica educacional, vale simular essas marcas com muito cuidado, mantendo irregularidade natural e sem transformar tudo em “efeito decorativo”.')}
@@ -211,10 +213,21 @@ const TeensGarageEvhPage: React.FC = () => {
             </div>
           </section>
 
-          <div className="grid gap-3 md:grid-cols-2">
+          <section className="grid gap-4 md:grid-cols-2 md:items-start">
+            <div className="space-y-3">
+              <h4 className="text-sm font-black uppercase tracking-[0.12em] text-violet-300">Escudo cortado</h4>
+              {renderParagraph(isLight, 'O escudo parcial recortado é um dos traços visuais mais fáceis de reconhecer. O recorte irregular ajuda a manter o ar de instrumento modificado em uso real, não de peça de vitrine.')}
+            </div>
             <ImageCard item={images[10]} onOpen={setActiveImage} />
+          </section>
+
+          <section className="grid gap-4 md:grid-cols-2 md:items-start">
+            <div className="space-y-3">
+              <h4 className="text-sm font-black uppercase tracking-[0.12em] text-violet-300">Volume com knob de tone</h4>
+              {renderParagraph(isLight, 'Outro detalhe clássico é o controle único de volume com estética de knob de tone reaproveitado, solução prática que reforça a linguagem DIY e funcional da Frankenstein.')}
+            </div>
             <ImageCard item={images[23]} onOpen={setActiveImage} />
-          </div>
+          </section>
           <p className={`rounded-2xl border p-3 text-xs font-bold ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-700/40 bg-cyan-950/20 text-cyan-200'}`}>
             Curiosidade rápida: o posicionamento “caótico” de alguns detalhes visuais também era uma forma de provocar imitadores.
           </p>
