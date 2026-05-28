@@ -33,6 +33,16 @@ const images: ImageItem[] = [
   { src: '/teens/garage/evh/012.evhquarter.webp', alt: 'Detalhe do quarter de 1971 aplicado na guitarra' },
   { src: '/teens/garage/evh/013.evhquarterposition.webp', alt: 'Posição do quarter e marcas visuais no corpo da guitarra' },
   { src: '/teens/garage/evh/014.evhhs.webp', alt: 'Headstock com aspecto envelhecido e queimado no estilo Frankenstein' },
+  { src: '/teens/garage/evh/evh0front.webp', alt: 'Corpo da guitarra visto de frente para referência de materiais básicos' },
+  { src: '/teens/garage/evh/evh0back.webp', alt: 'Corpo da guitarra visto de trás para referência de materiais básicos' },
+  { src: '/teens/garage/evh/evh0.2front.webp', alt: 'Pré-etapa da base preta com visual frontal do corpo da guitarra' },
+  { src: '/teens/garage/evh/evh0.2back.webp', alt: 'Pré-etapa da base preta com visual traseiro do corpo da guitarra' },
+  { src: '/teens/garage/evh/evhneck.webp', alt: 'Braço da guitarra antes e depois da preparação de envelhecimento visual' },
+  { src: '/teens/garage/evh/evhreflectors.webp', alt: 'Detalhe dos refletores aplicados na traseira da Frankenstrat' },
+  { src: '/teens/garage/evh/evhreflectors2.webp', alt: 'Visão lateral dos refletores na traseira da Frankenstrat' },
+  { src: '/teens/garage/evh/evhborbol.webp', alt: 'Detalhe do parafuso tipo borboleta (wing screw) na configuração da guitarra' },
+  { src: '/teens/garage/evh/evhrelic.webp', alt: 'Exemplo visual de relic e desgaste aplicado no instrumento' },
+  { src: '/teens/garage/evh/evhplydetail2.webp', alt: 'Detalhe adicional de acabamento e construção da Frankenstein tribute' },
 ];
 
 const badges: string[] = ['DIY', 'Intermediário', '8–20 horas', 'Custom Paint'];
@@ -97,9 +107,15 @@ const TeensGarageEvhPage: React.FC = () => {
       title: 'Seção 2 — Materiais básicos',
       summary: 'Checklist essencial para uma réplica acessível e convincente.',
       content: (
-        <ul className={`list-disc space-y-1 pl-5 text-sm leading-7 ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>
-          <li>corpo estilo Strat/Superstrat;</li><li>lixas 220, 400 e 600;</li><li>primer;</li><li>tinta spray preta;</li><li>tinta spray branca;</li><li>tinta spray vermelha;</li><li>fita crepe azul ou fita automotiva;</li><li>estilete;</li><li>luvas;</li><li>máscara;</li><li>verniz opcional;</li><li>hardware conforme o nível de fidelidade desejado.</li>
-        </ul>
+        <div className="space-y-4">
+          <ul className={`list-disc space-y-1 pl-5 text-sm leading-7 ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>
+            <li>corpo estilo Strat/Superstrat;</li><li>lixas 220, 400 e 600;</li><li>primer;</li><li>tinta spray preta;</li><li>tinta spray branca;</li><li>tinta spray vermelha;</li><li>fita crepe azul ou fita automotiva;</li><li>estilete;</li><li>luvas;</li><li>máscara;</li><li>verniz opcional;</li><li>hardware conforme o nível de fidelidade desejado.</li>
+          </ul>
+          <div className="grid gap-3 md:grid-cols-2">
+            <ImageCard item={images[14]} onOpen={setActiveImage} />
+            <ImageCard item={images[15]} onOpen={setActiveImage} />
+          </div>
+        </div>
       ),
     },
     {
@@ -120,6 +136,7 @@ const TeensGarageEvhPage: React.FC = () => {
       content: (
         <div className="space-y-4">
           {renderParagraph(isLight, 'Com parte do preto protegida pela fita, aplique a tinta branca. Essa etapa cria a fase Black & White, visualmente forte por si só. Depois da secagem, novas áreas podem ser mascaradas para preservar tanto linhas pretas quanto partes brancas. A sobreposição das fitas é o que cria a sensação de camadas.')}
+          <div className="grid gap-3 md:grid-cols-2"><ImageCard item={images[16]} onOpen={setActiveImage} /><ImageCard item={images[17]} onOpen={setActiveImage} /></div>
           <div className="grid gap-3 md:grid-cols-2"><ImageCard item={images[6]} onOpen={setActiveImage} /><ImageCard item={images[7]} onOpen={setActiveImage} /></div>
         </div>
       ),
@@ -151,12 +168,56 @@ const TeensGarageEvhPage: React.FC = () => {
       title: 'Seção 7 — Detalhes icônicos',
       summary: 'Elementos que reforçam o caráter Frankenstein.',
       content: (
-        <div className="space-y-4">
-          {renderParagraph(isLight, 'Alguns detalhes ajudam a aproximar o visual da Frankenstein clássica: o escudo preto recortado, o knob branco, ferragens cromadas, marcas de uso, o quarter de 1971 e o headstock com aspecto queimado/envelhecido. Esses elementos não são apenas decoração; eles reforçam a ideia de uma guitarra construída, testada e modificada ao longo do tempo.')}
+        <div className="space-y-6">
+          <section className="space-y-3">
+            <h4 className="text-sm font-black uppercase tracking-[0.12em] text-violet-300">Braço envelhecido</h4>
+            {renderParagraph(isLight, 'Com o corpo em cura, o próximo foco é o braço. Um caminho comum para envelhecimento visual controlado é trabalhar com lixa fina (como grão 800) e pigmento escuro em camadas suaves, sempre removendo excessos aos poucos. O segredo é paciência: exagerar na primeira passada costuma deixar o braço artificial.')}
+            <ImageCard item={images[18]} onOpen={setActiveImage} wide />
+          </section>
+
+          <section className="grid gap-4 md:grid-cols-2 md:items-start">
+            <div className="space-y-3">
+              <h4 className="text-sm font-black uppercase tracking-[0.12em] text-violet-300">Detalhe “borboleta”</h4>
+              {renderParagraph(isLight, 'Outro detalhe reconhecível em muitas montagens inspiradas na Frankenstein é a peça chamada popularmente de “borboleta” — tecnicamente, um parafuso/peça tipo wing screw, usado como elemento funcional e visual no conjunto.')}
+            </div>
+            <ImageCard item={images[21]} onOpen={setActiveImage} />
+          </section>
+
+          <section className="grid gap-4 md:grid-cols-2 md:items-start">
+            <div className="space-y-3">
+              <h4 className="text-sm font-black uppercase tracking-[0.12em] text-violet-300">Headstock e marcas</h4>
+              {renderParagraph(isLight, 'No headstock, uma marca registrada da estética EVH são as queimaduras próximas às tarraxas. Para uma réplica educacional, vale simular essas marcas com muito cuidado, mantendo irregularidade natural e sem transformar tudo em “efeito decorativo”.')}
+            </div>
+            <ImageCard item={images[13]} onOpen={setActiveImage} />
+          </section>
+
+          <section className="grid gap-4 md:grid-cols-2 md:items-start">
+            <div className="space-y-3">
+              <h4 className="text-sm font-black uppercase tracking-[0.12em] text-violet-300">Quarter de 1971</h4>
+              {renderParagraph(isLight, 'Outro ponto clássico é o quarter de 1971, associado ao ajuste mecânico da ponte em fases antigas do instrumento. Em réplicas, o que importa é posicionamento convincente, leitura visual da moeda e desgaste coerente com o restante da guitarra.')}
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <ImageCard item={images[11]} onOpen={setActiveImage} />
+              <ImageCard item={images[12]} onOpen={setActiveImage} />
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <h4 className="text-sm font-black uppercase tracking-[0.12em] text-violet-300">Refletores traseiros</h4>
+            {renderParagraph(isLight, 'Na traseira, os refletores automotivos reforçam o lado performático da Frankenstein. O conjunto costuma misturar peças redondas e ovais em arranjo aparentemente aleatório. Essa falta de simetria faz parte da identidade do projeto e conversa com o espírito experimental do instrumento.')}
+            <div className="grid gap-3 md:grid-cols-2">
+              <ImageCard item={images[19]} onOpen={setActiveImage} />
+              <ImageCard item={images[20]} onOpen={setActiveImage} />
+            </div>
+          </section>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <ImageCard item={images[10]} onOpen={setActiveImage} />
+            <ImageCard item={images[23]} onOpen={setActiveImage} />
+          </div>
           <p className={`rounded-2xl border p-3 text-xs font-bold ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-700/40 bg-cyan-950/20 text-cyan-200'}`}>
-            Curiosidade rápida: a moeda de 1971 ajudava Eddie a estabilizar o sistema de tremolo.
+            Curiosidade rápida: o posicionamento “caótico” de alguns detalhes visuais também era uma forma de provocar imitadores.
           </p>
-          <div className="grid gap-3 md:grid-cols-2"><ImageCard item={images[10]} onOpen={setActiveImage} /><ImageCard item={images[11]} onOpen={setActiveImage} /><ImageCard item={images[12]} onOpen={setActiveImage} /><ImageCard item={images[13]} onOpen={setActiveImage} /></div>
         </div>
       ),
     },
@@ -164,7 +225,12 @@ const TeensGarageEvhPage: React.FC = () => {
       id: 'sec-8',
       title: 'Seção 8 — Relic e acabamento',
       summary: 'Desgaste consciente para evitar caricatura.',
-      content: renderParagraph(isLight, 'O desgaste deve ser aplicado com moderação. Pequenas áreas de tinta removida, bordas gastas e marcas pontuais podem deixar o instrumento mais convincente. O excesso, porém, pode transformar a réplica em caricatura. A melhor regra é observar referências reais e criar marcas apenas onde o uso faria sentido.'),
+      content: (
+        <div className="space-y-4">
+          {renderParagraph(isLight, 'O desgaste deve ser aplicado com moderação. Pequenas áreas de tinta removida, bordas gastas e marcas pontuais podem deixar o instrumento mais convincente. O excesso, porém, pode transformar a réplica em caricatura. A melhor regra é observar referências reais e criar marcas apenas onde o uso faria sentido.')}
+          <ImageCard item={images[22]} onOpen={setActiveImage} wide />
+        </div>
+      ),
     },
     {
       id: 'sec-9',
@@ -302,3 +368,4 @@ const TeensGarageEvhPage: React.FC = () => {
 };
 
 export default TeensGarageEvhPage;
+
