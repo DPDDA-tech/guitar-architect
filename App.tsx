@@ -35,6 +35,8 @@ import TeenRhythmLabPage from './components/TeenRhythmLabPage';
 import TeenScaleHunterPage from './components/TeenScaleHunterPage';
 import TeenChordBuilderPage from './components/TeenChordBuilderPage';
 import TeenBlueprintReadingPage from './components/TeenBlueprintReadingPage';
+import TeensGarageHubPage from './components/TeensGarageHubPage';
+import TeensGarageEvhPage from './components/TeensGarageEvhPage';
 import { supabase } from './src/lib/supabase';
 import { hydrateSupporterFromServer } from './utils/supporterStorage';
 import { loadConfig } from './utils/persistence';
@@ -168,6 +170,8 @@ const App: React.FC = () => {
       case '/kids/sound-lengths': return <KidsSoundLengthsPage />;
       case '/kids/light-hunt': return <KidsLightHuntPage />;
       case '/teens': return <TeensPage />;
+      case '/teens/garage': return <TeensGarageHubPage />;
+      case '/teens/garage/evh-frankenstein-tribute': return <TeensGarageEvhPage />;
       case '/teens/riff-challenges': return <TeenRiffChallengesPage />;
       case '/teens/rhythm-lab': return <TeenRhythmLabPage />;
       case '/teens/scale-hunter': return <TeenScaleHunterPage />;
