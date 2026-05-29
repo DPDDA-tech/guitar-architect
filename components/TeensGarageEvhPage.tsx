@@ -278,8 +278,8 @@ const TeensGarageEvhPage: React.FC = () => {
   };
 
   const gridStyle = {
-    backgroundImage: `linear-gradient(${isLight ? '#cbd5e1' : '#312e81'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#cbd5e1' : '#312e81'} 1px, transparent 1px)`,
-    backgroundSize: '28px 28px',
+    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(129,140,248,0.25)'} 1px, transparent 1px)`,
+    backgroundSize: '100% 28px',
   };
 
   return (
