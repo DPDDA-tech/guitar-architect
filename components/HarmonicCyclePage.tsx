@@ -212,6 +212,7 @@ const HarmonicCyclePage: React.FC = () => {
   const [root, setRoot] = useState('C');
   const [mode, setMode] = useState<HarmonicCycleMode>('major');
   const [selectedProgression, setSelectedProgression] = useState('');
+  const [selectedChordDegree, setSelectedChordDegree] = useState(0);
   const [isTonicHovered, setIsTonicHovered] = useState(false);
   const t = translations[lang].harmonicCycle;
   const isLight = theme === 'light';
@@ -234,6 +235,8 @@ const HarmonicCyclePage: React.FC = () => {
     () => selectedProgression ? resolveProgression(selectedProgression, info.harmonicField) : [],
     [info.harmonicField, selectedProgression],
   );
+  const resultingChords = progressionChords.length > 0 ? progressionChords : info.harmonicField;
+  const safeSelectedChordDegree = Math.min(Math.max(selectedChordDegree, 0), Math.max(resultingChords.length - 1, 0));
   const selectedCycleIndex = Math.max(
     0,
     FIFTHS_CYCLE.findIndex(item => item.split('/').some(note => normalizeNote(note) === normalizeNote(info.displayRoot))),
@@ -265,7 +268,9 @@ const HarmonicCyclePage: React.FC = () => {
     ? t.none
     : `${info.keySignature.count} ${info.keySignature.type === 'sharps' ? t.sharps : t.flats}`;
 
-  const applyToFretboard = (action: FretboardAction) => {
+  const applyToFretboard = (action: FretboardAction, chordDegreeOverride?: number) => {
+    const activeDegree = typeof chordDegreeOverride === 'number' ? chordDegreeOverride : safeSelectedChordDegree;
+    const activeChord = resultingChords[activeDegree];
     if (action === 'scale') {
       recordAchievementEvent({ type: 'exploration', key: 'apply_scale' });
     }
@@ -275,14 +280,29 @@ const HarmonicCyclePage: React.FC = () => {
     window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify({
       source: 'harmonic-cycle',
       action,
+      quickTab: action === 'progression' ? 'chords' : undefined,
       root: info.root,
       displayRoot: info.displayRoot,
       scaleType: mode === 'major' ? 'Major (Ionian)' : 'Natural Minor (Aeolian)',
       progression: selectedProgression,
       chords: action === 'field'
         ? info.harmonicField.map(item => item.chord)
-        : progressionChords.map(item => item.chord),
-      harmonyMode: action === 'field' || action === 'progression' ? 'TETRADS' : action === 'triads' ? 'TRIADS' : 'OFF',
+        : resultingChords.map(item => item.chord),
+      harmonyMode: action === 'field' ? 'TETRADS' : action === 'triads' ? 'TRIADS' : 'OFF',
+      chordDegree: action === 'progression' || action === 'field' || action === 'triads' ? activeDegree : 0,
+      instruction: action === 'progression'
+        ? {
+            source: 'exercise',
+            persistent: true,
+            title: lang === 'pt' ? `Acorde alvo: ${activeChord?.degree || 'I'} (${activeChord?.chord || '-'})` : `Target chord: ${activeChord?.degree || 'I'} (${activeChord?.chord || '-'})`,
+            description: lang === 'pt'
+              ? 'Mostre primeiro este acorde no braço e depois avance pelos próximos graus do ciclo.'
+              : 'Start with this chord on the fretboard, then move through the next cycle degrees.',
+            hint: lang === 'pt'
+              ? 'Use troca de região para repetir o mesmo grau em diferentes áreas do braço.'
+              : 'Use region switching to repeat the same degree in different fretboard zones.',
+          }
+        : undefined,
       createdAt: new Date().toISOString(),
     }));
     navigateTo('/studio');
@@ -555,7 +575,7 @@ const HarmonicCyclePage: React.FC = () => {
             <h2 className="text-[10px] font-black uppercase tracking-[0.18em] text-blue-300">{t.harmonicField}</h2>
             <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-7">
               {info.harmonicField.map(item => (
-                <button key={item.degree} onClick={() => setSelectedProgression(item.degree)} className={`rounded-xl border px-3 py-3 text-left transition duration-200 hover:-translate-y-0.5 hover:border-blue-500 ${isLight ? 'border-[#dde5ef] bg-white/78 hover:bg-white' : 'border-blue-950/60 bg-[#080b11] hover:bg-[#101827]'}`}>
+                <button key={item.degree} onClick={() => { setSelectedProgression(item.degree); setSelectedChordDegree(0); }} className={`rounded-xl border px-3 py-3 text-left transition duration-200 hover:-translate-y-0.5 hover:border-blue-500 ${isLight ? 'border-[#dde5ef] bg-white/78 hover:bg-white' : 'border-blue-950/60 bg-[#080b11] hover:bg-[#101827]'}`}>
                   <span className="block text-[9px] font-black uppercase text-zinc-500">{item.degree}</span>
                   <span className={`mt-1.5 block text-sm font-black ${isLight ? 'text-zinc-950' : 'text-zinc-100'}`}>{item.chord}</span>
                 </button>
@@ -578,7 +598,7 @@ const HarmonicCyclePage: React.FC = () => {
           <h2 className="text-[10px] font-black uppercase tracking-[0.18em] text-blue-300">{t.progressions}</h2>
           <div className="mt-5 space-y-2.5">
             {progressions.map(progression => (
-              <button key={progression} onClick={() => setSelectedProgression(progression)} className={`w-full rounded-xl border px-4 py-3.5 text-left text-sm font-black transition duration-200 ${selectedProgression === progression ? (isLight ? 'border-blue-400 bg-blue-500 text-white shadow-lg shadow-blue-200/40' : 'border-blue-500 bg-blue-600 text-white shadow-lg shadow-blue-950/25') : isLight ? 'border-[#d3deeb] bg-white text-slate-700 shadow-sm hover:border-blue-300' : 'border-blue-950/60 bg-[#0d1017] text-zinc-300 hover:-translate-y-0.5 hover:border-blue-700 hover:bg-[#111827]'}`}>
+              <button key={progression} onClick={() => { setSelectedProgression(progression); setSelectedChordDegree(0); }} className={`w-full rounded-xl border px-4 py-3.5 text-left text-sm font-black transition duration-200 ${selectedProgression === progression ? (isLight ? 'border-blue-400 bg-blue-500 text-white shadow-lg shadow-blue-200/40' : 'border-blue-500 bg-blue-600 text-white shadow-lg shadow-blue-950/25') : isLight ? 'border-[#d3deeb] bg-white text-slate-700 shadow-sm hover:border-blue-300' : 'border-blue-950/60 bg-[#0d1017] text-zinc-300 hover:-translate-y-0.5 hover:border-blue-700 hover:bg-[#111827]'}`}>
                 {progression}
               </button>
             ))}
@@ -587,17 +607,32 @@ const HarmonicCyclePage: React.FC = () => {
           <div className={`mt-6 rounded-xl border p-5 ${cardClass}`}>
             <p className="text-[8px] font-black uppercase tracking-[0.18em] text-zinc-500">{t.resultingChords}</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {(progressionChords.length > 0 ? progressionChords : info.harmonicField).map(item => (
-                <span key={`${item.degree}-${item.chord}`} className={`rounded-lg border px-3 py-2 text-xs font-black ${isLight ? 'border-blue-200 bg-white text-blue-700 shadow-sm' : 'border-blue-900/50 bg-[#080b11] text-blue-100'}`}>
+              {resultingChords.map((item, index) => (
+                <button
+                  key={`${item.degree}-${item.chord}`}
+                  type="button"
+                  onClick={() => setSelectedChordDegree(index)}
+                  className={`rounded-lg border px-3 py-2 text-xs font-black transition ${index === safeSelectedChordDegree ? (isLight ? 'border-blue-400 bg-blue-500 text-white shadow-md shadow-blue-200/40' : 'border-blue-500 bg-blue-600 text-white shadow-md shadow-blue-950/30') : isLight ? 'border-blue-200 bg-white text-blue-700 shadow-sm hover:border-blue-400' : 'border-blue-900/50 bg-[#080b11] text-blue-100 hover:border-blue-600'}`}
+                >
                   {item.degree}: {item.chord}
-                </span>
+                </button>
               ))}
             </div>
             {mode === 'minor' && selectedProgression.includes('V') && (
               <p className="mt-4 text-xs font-bold text-amber-200">{t.harmonicDominantHint}</p>
             )}
-            <button onClick={() => applyToFretboard('progression')} className={`${isLight ? 'border border-blue-400/30 bg-[linear-gradient(180deg,#4f8df3,#2563eb)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_12px_24px_rgba(37,99,235,0.22)] hover:bg-[linear-gradient(180deg,#5b96f5,#2f6fe8)]' : 'border border-blue-400/22 bg-[linear-gradient(180deg,#2e6af0,#1d4ed8)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_14px_28px_rgba(15,23,42,0.32)] hover:bg-[linear-gradient(180deg,#3775f4,#2563eb)]'} mt-4 w-full rounded-xl px-4 py-3 text-[10px] font-black uppercase text-white transition`}>
+            <button onClick={() => applyToFretboard('progression', safeSelectedChordDegree)} className={`${isLight ? 'border border-blue-400/30 bg-[linear-gradient(180deg,#4f8df3,#2563eb)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_12px_24px_rgba(37,99,235,0.22)] hover:bg-[linear-gradient(180deg,#5b96f5,#2f6fe8)]' : 'border border-blue-400/22 bg-[linear-gradient(180deg,#2e6af0,#1d4ed8)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_14px_28px_rgba(15,23,42,0.32)] hover:bg-[linear-gradient(180deg,#3775f4,#2563eb)]'} mt-4 w-full rounded-xl px-4 py-3 text-[10px] font-black uppercase text-white transition`}>
               {t.showOnFretboard}
+            </button>
+            <button
+              onClick={() => {
+                const nextDegree = resultingChords.length > 0 ? (safeSelectedChordDegree + 1) % resultingChords.length : 0;
+                setSelectedChordDegree(nextDegree);
+                applyToFretboard('progression', nextDegree);
+              }}
+              className={`mt-2.5 w-full rounded-xl border px-4 py-3 text-[10px] font-black uppercase transition hover:border-blue-500 ${isLight ? 'border-blue-200 bg-white/90 text-blue-700 hover:bg-white' : 'border-blue-900/60 bg-[#080b11] text-blue-100'}`}
+            >
+              {lang === 'pt' ? 'Próximo acorde no braço' : 'Next chord on fretboard'}
             </button>
           </div>
         </aside>

@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import FretboardSVG from './FretboardSVG';
 import PracticeTools from './PracticeTools';
@@ -133,7 +133,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         setMusicTip(tip);
       }
     }).catch(() => {
-      // fallback já tratado na utilitária
+      // fallback jÃ¡ tratado na utilitÃ¡ria
     });
 
     return () => {
@@ -180,7 +180,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     if (state.markers.length === 0 && state.lines.length === 0) return;
 
     const label = lang === 'pt'
-      ? 'Limpar apenas marcadores e linhas da edição?'
+      ? 'Limpar apenas marcadores e linhas da ediÃ§Ã£o?'
       : 'Clear only editor markers and lines?';
 
     if (window.confirm(label)) {
@@ -370,6 +370,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const [scaleFollowStringIndex, setScaleFollowStringIndex] = useState(0);
   const [scaleRegionIndex, setScaleRegionIndex] = useState(0);
   const scaleFollowTimerRef = useRef<number | null>(null);
+  const [cycleFollowStatus, setCycleFollowStatus] = useState<'idle' | 'playing' | 'paused'>('idle');
+  const cycleFollowTimerRef = useRef<number | null>(null);
+  const latestStateRef = useRef<FretboardState>(state);
+  const cycleDegreeRef = useRef<number>(state.chordDegree ?? 0);
+  const cycleRegionIndexRef = useRef<number>(0);
+  const cycleRegionInitializedRef = useRef<boolean>(false);
   const [cagedFollowStatus, setCagedFollowStatus] = useState<CagedFollowStatus>('idle');
   const [cagedFollowIndex, setCagedFollowIndex] = useState(0);
   const cagedFollowTimerRef = useRef<number | null>(null);
@@ -406,6 +412,17 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       window.removeEventListener('ga-open-quick-tab', openQuickTabPanel);
     };
   }, [activeControlTab, isControlPanelOpen, preferredPracticeTool]);
+  useEffect(() => {
+    latestStateRef.current = state;
+    cycleDegreeRef.current = state.chordDegree ?? 0;
+    if (!cycleRegionInitializedRef.current) {
+      const detected = CAGED_SCALE_REGIONS.findIndex(region => (
+        state.startFret >= region.startFret && state.startFret <= region.endFret
+      ));
+      cycleRegionIndexRef.current = detected >= 0 ? detected : 0;
+      cycleRegionInitializedRef.current = true;
+    }
+  }, [state]);
 
   const currentTuning = useMemo(() => {
     return getCurrentTuning();
@@ -706,7 +723,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       id: 'welcome',
       title: lang === 'pt' ? 'Bem-vindo' : 'Welcome',
       body: lang === 'pt'
-        ? 'Vamos começar a aprender a usar o Guitar Architect? Em poucos passos voce vai entender o fluxo principal.'
+        ? 'Vamos comeÃ§ar a aprender a usar o Guitar Architect? Em poucos passos voce vai entender o fluxo principal.'
         : 'Ready to learn Guitar Architect? In a few steps you will see the main workflow.'
     },
     {
@@ -722,7 +739,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       target: '[data-tour="new-diagram"]',
       title: lang === 'pt' ? 'Criar diagramas' : 'Create diagrams',
       body: lang === 'pt'
-        ? 'Use Novo diagrama para criar um estudo guiado ou Novo diagrama rapido para adicionar outro braço imediatamente.'
+        ? 'Use Novo diagrama para criar um estudo guiado ou Novo diagrama rápido para adicionar outro braço imediatamente.'
         : 'Use New diagram for a guided setup or Quick new diagram to add another fretboard immediately.'
     },
     {
@@ -746,15 +763,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       target: '[data-tour="quick-scale"]',
       title: lang === 'pt' ? 'Escolha a escala' : 'Choose the scale',
       body: lang === 'pt'
-        ? 'Ative Escala e depois ajuste tônica e tipo de escala na aba Escala.'
+        ? 'Ative Escala e depois ajuste tÃ´nica e tipo de escala na aba Escala.'
         : 'Turn Scale on, then adjust tonic and scale type in the Scale tab.'
     },
     {
       id: 'tonic',
       target: '[data-tour="quick-tonic"]',
-      title: lang === 'pt' ? 'Destaque a tônica' : 'Highlight the tonic',
+      title: lang === 'pt' ? 'Destaque a tÃ´nica' : 'Highlight the tonic',
       body: lang === 'pt'
-        ? 'A tônica ajuda o aluno a enxergar o centro tonal antes de estudar shapes e frases.'
+        ? 'A tÃ´nica ajuda o aluno a enxergar o centro tonal antes de estudar shapes e frases.'
         : 'The tonic helps the student see the tonal center before studying shapes and phrases.'
     },
     {
@@ -853,7 +870,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     { id: 'base', label: 'Base' },
     { id: 'visual', label: lang === 'pt' ? 'Notas' : 'Notes' },
     { id: 'scale', label: lang === 'pt' ? 'Escala' : 'Scale' },
-    { id: 'harmony', label: lang === 'pt' ? 'Harmonia' : 'Harmony' },
+    { id: 'harmony', label: lang === 'pt' ? 'Acordes' : 'Chords' },
     { id: 'editor', label: lang === 'pt' ? 'Editar' : 'Edit' },
     { id: 'chords', label: lang === 'pt' ? 'Acordes' : 'Chords' },
     { id: 'tools', label: lang === 'pt' ? 'Praticar' : 'Practice' },
@@ -937,6 +954,176 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setActiveControlTab(tab);
     setOpenQuickTab(tab);
   };
+  const cycleChordLabels = useMemo(() => {
+    const candidate = state.subtitle || state.notes || '';
+    const parts = candidate
+      .split(':')
+      .pop()
+      ?.split('-')
+      .map(item => item.trim())
+      .filter(Boolean) || [];
+    return parts;
+  }, [state.notes, state.subtitle]);
+  const parseCycleChord = useCallback((symbol: string): { root: string; type: ChordType } | null => {
+    const normalized = symbol.trim();
+    const match = normalized.match(/^([A-G](?:#|b)?)(.*)$/);
+    if (!match) return null;
+    const root = match[1];
+    const quality = (match[2] || '').trim().toLowerCase();
+    if (quality.startsWith('dim') || quality.includes('°') || quality.includes('º')) {
+      // In tonal context this degree is usually half-diminished (m7b5), which is more playable in study flow.
+      return { root, type: 'm7b5' };
+    }
+    if (quality.startsWith('m') && !quality.startsWith('maj')) {
+      return { root, type: 'minor' };
+    }
+    return { root, type: 'major' };
+  }, []);
+  const resolveCycleChordByDegree = useCallback((degreeIndex: number, fretRange?: { startFret: number; endFret: number }): null | {
+    root: string;
+    markers: Marker[];
+    lines: Line[];
+    stringStatuses: StringStatus[];
+    frequencies: number[];
+  } => {
+    const symbol = cycleChordLabels[degreeIndex];
+    if (!symbol) return null;
+    const parsed = parseCycleChord(symbol);
+    if (!parsed) return null;
+    const isLeadingDiminished = /°|º|dim/i.test(symbol);
+    const voicings = generateChordVoicings(parsed.root, parsed.type, currentTuning, {
+      maxFretSpan: 5,
+      maxFret: 15,
+      preferOpenChords: true,
+      preferRootInBass: true,
+    });
+    if (voicings.length === 0) return null;
+    const activeStartFret = fretRange?.startFret ?? state.startFret;
+    const activeEndFret = fretRange?.endFret ?? state.endFret;
+    const inRegion = voicings.filter((voicing) => (
+      voicing.minFret >= activeStartFret && voicing.maxFret <= activeEndFret
+    ));
+    const selected = isLeadingDiminished
+      ? ([...(inRegion.length > 0 ? inRegion : voicings)].sort((a, b) => {
+          const spanDiff = a.fretSpan - b.fretSpan;
+          if (spanDiff !== 0) return spanDiff;
+          const minFretDiff = a.minFret - b.minFret;
+          if (minFretDiff !== 0) return minFretDiff;
+          return b.score - a.score;
+        })[0] || voicings[0])
+      : (inRegion[0] || voicings[0]);
+    const markers: Marker[] = selected.positions.map((position, index) => ({
+      id: crypto.randomUUID(),
+      string: position.string,
+      fret: position.fret,
+      shape: index === 0 ? 'circle' : 'square',
+      color: index === 0 ? '#ef4444' : '#2563eb',
+      finger: position.finger || '1'
+    }));
+    const stringStatuses: StringStatus[] = Array(currentTuning.length).fill('muted');
+    selected.positions.forEach(position => {
+      stringStatuses[position.string] = 'normal';
+    });
+    selected.positions.forEach(position => {
+      if (position.fret === 0 && position.string >= 0 && position.string < stringStatuses.length) {
+        stringStatuses[position.string] = 'open';
+      }
+    });
+    const lines: Line[] = selected.barre ? [{
+      id: crypto.randomUUID(),
+      start: { string: selected.barre.fromString, fret: selected.barre.fret },
+      end: { string: selected.barre.toString, fret: selected.barre.fret },
+      color: isLight ? '#0f172a' : '#f8fafc',
+      width: 11
+    }] : [];
+    const frequencies = selected.positions.map((position) => (
+      getFrequencyForPosition(state.instrumentType, currentTuning, position.string, position.fret)
+    ));
+    return {
+      root: selected.root,
+      markers,
+      lines,
+      stringStatuses,
+      frequencies
+    };
+  }, [currentTuning, cycleChordLabels, isLight, parseCycleChord, state.instrumentType]);
+  const cycleLength = Math.max(1, cycleChordLabels.length || 7);
+  const getCycleRegionRange = useCallback(() => {
+    const region = CAGED_SCALE_REGIONS[cycleRegionIndexRef.current] || CAGED_SCALE_REGIONS[0];
+    return {
+      startFret: region.startFret,
+      endFret: Math.min(24, Math.max(region.endFret, region.startFret + 1)),
+    };
+  }, []);
+  const clearCycleFollowTimer = useCallback(() => {
+    if (cycleFollowTimerRef.current) {
+      window.clearInterval(cycleFollowTimerRef.current);
+      cycleFollowTimerRef.current = null;
+    }
+  }, []);
+  const applyCycleDegree = useCallback((nextDegree: number) => {
+    const currentState = latestStateRef.current;
+    const normalized = ((nextDegree % cycleLength) + cycleLength) % cycleLength;
+    const nextChord = resolveCycleChordByDegree(normalized, getCycleRegionRange());
+    cycleDegreeRef.current = normalized;
+    recordAction({
+      ...currentState,
+      startFret: 0,
+      endFret: Math.max(12, currentState.endFret),
+      root: nextChord?.root || currentState.root,
+      markers: nextChord?.markers || currentState.markers,
+      lines: nextChord?.lines || currentState.lines,
+      stringStatuses: nextChord?.stringStatuses || currentState.stringStatuses,
+      harmonyMode: 'OFF',
+      chordDegree: normalized,
+      labelMode: nextChord ? 'note' : currentState.labelMode,
+      layers: {
+        ...currentState.layers,
+        showScale: false,
+        showAllNotes: false,
+        showTonic: true,
+      },
+    });
+    if (nextChord?.frequencies?.length) {
+      playChord(nextChord.frequencies).catch(() => undefined);
+    }
+  }, [cycleLength, getCycleRegionRange, recordAction, resolveCycleChordByDegree]);
+  const moveCycleDegree = useCallback((step: 1 | -1) => {
+    applyCycleDegree(cycleDegreeRef.current + step);
+  }, [applyCycleDegree]);
+  const shiftCycleRegion = useCallback((step: 1 | -1) => {
+    const currentState = latestStateRef.current;
+    const baseIndex = cycleRegionIndexRef.current;
+    const nextIndex = (baseIndex + step + CAGED_SCALE_REGIONS.length) % CAGED_SCALE_REGIONS.length;
+    cycleRegionIndexRef.current = nextIndex;
+    const nextFretRange = getCycleRegionRange();
+    const nextChord = resolveCycleChordByDegree(cycleDegreeRef.current, nextFretRange);
+    recordAction({
+      ...currentState,
+      startFret: 0,
+      endFret: Math.max(12, currentState.endFret),
+      root: nextChord?.root || currentState.root,
+      markers: nextChord?.markers || currentState.markers,
+      lines: nextChord?.lines || currentState.lines,
+      stringStatuses: nextChord?.stringStatuses || currentState.stringStatuses,
+    });
+  }, [getCycleRegionRange, recordAction, resolveCycleChordByDegree]);
+  const startCycleFollow = useCallback(() => {
+    clearCycleFollowTimer();
+    setCycleFollowStatus('playing');
+    cycleFollowTimerRef.current = window.setInterval(() => {
+      moveCycleDegree(1);
+    }, 1500);
+  }, [clearCycleFollowTimer, moveCycleDegree]);
+  const pauseCycleFollow = useCallback(() => {
+    clearCycleFollowTimer();
+    setCycleFollowStatus('paused');
+  }, [clearCycleFollowTimer]);
+  const stopCycleFollow = useCallback(() => {
+    clearCycleFollowTimer();
+    setCycleFollowStatus('idle');
+    applyCycleDegree(0);
+  }, [applyCycleDegree, clearCycleFollowTimer]);
   const activateScaleFollowMode = (mode: Exclude<ScaleFollowMode, 'off'>) => {
     const nextMode = scaleFollowMode === mode ? 'off' : mode;
     setScaleFollowMode(nextMode);
@@ -1204,6 +1391,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setOpenQuickTab(tab);
     setIsControlPanelOpen(true);
   };
+  useEffect(() => () => clearCycleFollowTimer(), [clearCycleFollowTimer]);
 
   const guidedStudies = useMemo<GuidedStudy[]>(() => ([
     {
@@ -1245,7 +1433,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       actionLabel: lang === 'pt' ? 'Mostrar C aberto' : 'Show open C',
       action: { type: 'chord', root: 'C', symbol: 'C', chordType: 'major' },
       steps: lang === 'pt'
-        ? ['Aplique o acorde.', 'Ouça o som inteiro.', 'Toque corda por corda.', 'Troque para G ou Am na aba Praticar.']
+        ? ['Aplique o acorde.', 'OuÃ§a o som inteiro.', 'Toque corda por corda.', 'Troque para G ou Am na aba Praticar.']
         : ['Apply the chord.', 'Hear the full sound.', 'Play string by string.', 'Move to G or Am in Practice.']
     },
     {
@@ -1837,7 +2025,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
           </select>
           <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${controlButtonBase} px-3 ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>
-            {lang === 'pt' ? 'Nota tônica' : 'Tonic'}
+            {lang === 'pt' ? 'Nota tÃ´nica' : 'Tonic'}
           </button>
           <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${controlButtonBase} px-3 ${state.layers.showScale ? activeButtonClass : inactiveButtonClass}`}>
             {lang === 'pt' ? 'Notas' : 'Notes'}
@@ -1859,12 +2047,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       const transportButtonClass = `flex h-10 w-10 items-center justify-center rounded-xl border text-lg font-black transition-all active:scale-95 ${isLight ? 'border-zinc-900 bg-white text-zinc-950 hover:bg-zinc-100' : 'border-zinc-100 bg-zinc-950 text-white hover:bg-zinc-900'}`;
       return (
         <div className={`mt-3 inline-flex max-w-full flex-wrap items-center gap-2 rounded-2xl border px-3 py-2 shadow-lg ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
+          <select value={state.root} onChange={e => recordAction({ ...state, root: e.target.value, chordDegree: 0, harmonyMode: state.harmonyMode === 'OFF' ? 'TETRADS' : state.harmonyMode, layers: { ...state.layers, showScale: true, showTonic: true } })} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
+            {CHROMATIC_SCALE.map(n => <option key={n} value={n}>{n}</option>)}
+          </select>
+          <button onClick={() => recordAction({ ...state, layers: { ...state.layers, showTonic: !state.layers.showTonic } })} className={`${controlButtonBase} px-3 ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>
+            {lang === 'pt' ? 'Tônica' : 'Tonic'}
+          </button>
           {['OFF', 'TRIADS', 'TETRADS'].map(m => (
             <button key={m} onClick={() => recordAction({...state, harmonyMode: m as any})} className={`${controlButtonBase} px-3 ${state.harmonyMode === m ? activeButtonClass : inactiveButtonClass}`}>{m}</button>
           ))}
-          <select value={state.chordDegree} onChange={e => recordAction({...state, chordDegree: Number(e.target.value)})} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
-            {DEGREE_NAMES.map((d, i) => <option key={d} value={i}>{d}</option>)}
-          </select>
           <select value={state.inversion} onChange={e => recordAction({...state, inversion: Number(e.target.value)})} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
             <option value="0">Root</option><option value="1">1a Inv</option><option value="2">2a Inv</option><option value="3">3a Inv</option>
           </select>
@@ -1883,30 +2074,26 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       );
     }
 
-    if (activeControlTab === 'chords' && chordLibraryMode === 'find') {
+    if (activeControlTab === 'chords') {
+      const transportButtonClass = `flex h-10 w-10 items-center justify-center rounded-xl border text-lg font-black transition-all active:scale-95 ${isLight ? 'border-zinc-900 bg-white text-zinc-950 hover:bg-zinc-100' : 'border-zinc-100 bg-zinc-950 text-white hover:bg-zinc-900'}`;
       return (
         <div className={`mt-3 inline-flex max-w-full flex-wrap items-center gap-2 rounded-2xl border px-3 py-2 shadow-lg ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-700'}`}>
-          <select value={chordFinderRoot} onChange={e => setChordFinderRoot(e.target.value)} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
+          <select value={state.root} onChange={e => recordAction({ ...state, root: e.target.value, chordDegree: 0, layers: { ...state.layers, showScale: true, showTonic: true } })} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
             {CHROMATIC_SCALE.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
-          <select value={chordFinderType} onChange={e => setChordFinderType(e.target.value as ChordType)} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
-            {CHORD_TYPES.map(type => <option key={type} value={type}>{getChordTypeLabel(type)}</option>)}
-          </select>
-          <select value={chordDifficultyFilter} onChange={e => setChordDifficultyFilter(e.target.value as typeof chordDifficultyFilter)} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
-            <option value="all">{lang === 'pt' ? 'Todos' : 'All'}</option>
-            <option value="easy">{lang === 'pt' ? 'Facil' : 'Easy'}</option>
-            <option value="intermediate">{lang === 'pt' ? 'Intermediario' : 'Intermediate'}</option>
-            <option value="advanced">{lang === 'pt' ? 'Avancado' : 'Advanced'}</option>
-          </select>
-          <button onClick={() => applyChordVoicingAtIndex(selectedChordVoicingIndex - 1)} disabled={selectedChordVoicingIndex <= 0 || browseChordVoicings.length === 0} className={`${controlButtonBase} px-3 ${inactiveButtonClass} disabled:opacity-40`}>{lang === 'pt' ? 'Anterior' : 'Previous'}</button>
-          <span className="px-1 text-[9px] font-black uppercase text-zinc-400">{browseChordVoicings.length > 0 ? `${selectedChordVoicingIndex + 1}/${browseChordVoicings.length}` : '0/0'}</span>
-          <button onClick={() => applyChordVoicingAtIndex(selectedChordVoicingIndex + 1)} disabled={selectedChordVoicingIndex >= browseChordVoicings.length - 1 || browseChordVoicings.length === 0} className={`${controlButtonBase} px-3 ${inactiveButtonClass} disabled:opacity-40`}>{lang === 'pt' ? 'Proximo' : 'Next'}</button>
-          <button onClick={() => {
-            const voicing = browseChordVoicings[selectedChordVoicingIndex];
-            if (voicing) playChordVoicing(voicing);
-          }} disabled={browseChordVoicings.length === 0} className={`${controlButtonBase} px-3 ${activeButtonClass} disabled:opacity-40`}>
-            {lang === 'pt' ? 'Tocar' : 'Play'}
+          <button onClick={() => recordAction({ ...state, layers: { ...state.layers, showTonic: !state.layers.showTonic } })} className={`${controlButtonBase} px-3 ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>
+            {lang === 'pt' ? 'Tônica' : 'Tonic'}
           </button>
+          <select value={state.chordDegree} onChange={e => recordAction({ ...state, chordDegree: Number(e.target.value) })} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
+            {DEGREE_NAMES.slice(0, cycleLength).map((d, i) => <option key={d} value={i}>{d}</option>)}
+          </select>
+          <button onClick={() => moveCycleDegree(-1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`}>{lang === 'pt' ? 'Acorde -' : 'Chord -'}</button>
+          <button onClick={() => moveCycleDegree(1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`}>{lang === 'pt' ? 'Acorde +' : 'Chord +'}</button>
+          <button onClick={() => shiftCycleRegion(-1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`}>{lang === 'pt' ? 'Região -' : 'Region -'}</button>
+          <button onClick={() => shiftCycleRegion(1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`}>{lang === 'pt' ? 'Região +' : 'Region +'}</button>
+          <button onClick={startCycleFollow} className={transportButtonClass} aria-label="Play Cycle">{'\u25B6'}</button>
+          <button onClick={pauseCycleFollow} className={transportButtonClass} aria-label="Pause Cycle">{'\u23F8'}</button>
+          <button onClick={stopCycleFollow} className={transportButtonClass} aria-label="Stop Cycle">{'\u25A0'}</button>
         </div>
       );
     }
@@ -2201,7 +2388,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[11px] font-black uppercase">{study.title}</span>
                   <span className="shrink-0 rounded-full bg-zinc-900 px-2 py-1 text-[8px] font-black uppercase text-white dark:bg-white dark:text-zinc-900">
-                    {levelLabel(study.level)} · {study.minutes}min
+                    {levelLabel(study.level)} Â· {study.minutes}min
                   </span>
                 </div>
                 <p className="mt-2 text-[10px] font-semibold leading-relaxed opacity-75">{study.description}</p>
@@ -2455,7 +2642,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <div className="space-y-2">
               <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.inversion}</span>
               <select value={state.inversion} onChange={e => recordAction({...state, inversion: Number(e.target.value)})} className={controlInputClass}>
-                <option value="0">Root</option><option value="1">1ª Inv</option><option value="2">2ª Inv</option><option value="3">3ª Inv</option>
+                <option value="0">Root</option><option value="1">1Âª Inv</option><option value="2">2Âª Inv</option><option value="3">3Âª Inv</option>
               </select>
             </div>
           </div>
@@ -2667,11 +2854,14 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <button data-tour="quick-layers" onClick={() => toggleQuickPanel('visual')} className={`${quickButtonClass} shrink-0 ${openQuickTab === 'visual' ? quickActiveButtonClass : ''}`}>
               {lang === 'pt' ? 'Notas' : 'Notes'}
             </button>
+            <button data-tour="quick-tonic" onClick={() => handleScaleLayerShortcut('showTonic')} className={`${quickButtonClass} shrink-0 ${state.layers.showTonic ? quickActiveButtonClass : ''}`}>
+              {t.tonicHighlight}
+            </button>
             <button data-tour="quick-scale" onClick={() => handleScaleLayerShortcut('showScale')} className={`${quickButtonClass} shrink-0 ${state.layers.showScale ? quickActiveButtonClass : ''}`}>
               {t.scaleNotes}
             </button>
-            <button data-tour="quick-tonic" onClick={() => handleScaleLayerShortcut('showTonic')} className={`${quickButtonClass} shrink-0 ${state.layers.showTonic ? quickActiveButtonClass : ''}`}>
-              {t.tonicHighlight}
+            <button data-tour="quick-chords" onClick={() => toggleQuickPanel('chords')} className={`${quickButtonClass} shrink-0 ${openQuickTab === 'chords' ? quickActiveButtonClass : ''}`}>
+              {lang === 'pt' ? 'Acordes' : 'Chords'}
             </button>
             <button data-tour="quick-harmony" onClick={() => toggleQuickPanel('harmony')} className={`${quickButtonClass} shrink-0 ${openQuickTab === 'harmony' ? quickActiveButtonClass : ''}`}>
               {lang === 'pt' ? 'Harmonia' : 'Harmony'}
@@ -2685,32 +2875,27 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       </div>
 
       <div className={`operational-btns fixed inset-x-0 bottom-0 z-[75] border-t px-2 pb-1 pt-1 shadow-lg lg:hidden ${isExporting ? 'hidden' : ''} ${isLight ? 'bg-white/90 border-zinc-200' : 'bg-zinc-950/90 border-zinc-800'}`}>
-        <div className="grid grid-cols-6 gap-1">
-          <button
-            onClick={() => {
-              setOpenQuickTab(null);
-              setIsControlPanelOpen(prev => !prev);
-            }}
-            className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${isControlPanelOpen ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`}
-            aria-label={lang === 'pt' ? 'Abrir painel lateral' : 'Open side panel'}
-          >
-            {lang === 'pt' ? 'Painel' : 'Panel'}
-          </button>
-          <button data-tour="quick-layers" onClick={() => openMobileTab('visual')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'visual' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Notas' : 'Notes'}>
-            {lang === 'pt' ? 'Notas' : 'Notes'}
-          </button>
-          <button data-tour="mobile-scales" onClick={() => openMobileTab('scale')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'scale' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Escalas' : 'Scales'}>
-            {lang === 'pt' ? 'Escala' : 'Scale'}
-          </button>
-          <button data-tour="quick-tonic" onClick={() => handleScaleLayerShortcut('showTonic')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${state.layers.showTonic ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Tônica' : 'Tonic'}>
-            {lang === 'pt' ? 'Tônica' : 'Tonic'}
-          </button>
-          <button data-tour="quick-harmony" onClick={() => openMobileTab('harmony')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'harmony' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Harmonia' : 'Harmony'}>
-            {lang === 'pt' ? 'Harm.' : 'Harm.'}
-          </button>
-          <button data-tour="quick-editor" onClick={() => openMobileTab('editor')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'editor' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Editar' : 'Edit'}>{lang === 'pt' ? 'Editar' : 'Edit'}</button>
-        </div>
-      </div>
+  <div className="grid grid-cols-6 gap-1">
+    <button data-tour="quick-layers" onClick={() => openMobileTab('visual')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'visual' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Notas' : 'Notes'}>
+      {lang === 'pt' ? 'Notas' : 'Notes'}
+    </button>
+    <button data-tour="quick-tonic" onClick={() => handleScaleLayerShortcut('showTonic')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${state.layers.showTonic ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Tônica' : 'Tonic'}>
+      {lang === 'pt' ? 'Tônica' : 'Tonic'}
+    </button>
+    <button data-tour="mobile-scales" onClick={() => openMobileTab('scale')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'scale' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Escala' : 'Scale'}>
+      {lang === 'pt' ? 'Escala' : 'Scale'}
+    </button>
+    <button data-tour="quick-chords" onClick={() => openMobileTab('chords')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'chords' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Acordes' : 'Chords'}>
+      {lang === 'pt' ? 'Acordes' : 'Chords'}
+    </button>
+    <button data-tour="quick-harmony" onClick={() => openMobileTab('harmony')} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${openQuickTab === 'harmony' ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Harmonia' : 'Harmony'}>
+      {lang === 'pt' ? 'Harm.' : 'Harm.'}
+    </button>
+    <button onClick={() => setSoundEnabled(prev => !prev)} className={`rounded-xl px-1 py-2 text-[9px] font-black uppercase ${soundEnabled ? 'bg-blue-600 text-white' : isLight ? 'text-zinc-600' : 'text-zinc-300'}`} aria-label={lang === 'pt' ? 'Som ligado/desligado' : 'Sound on/off'}>
+      {lang === 'pt' ? (soundEnabled ? 'Som ON' : 'Som OFF') : (soundEnabled ? 'Sound ON' : 'Sound OFF')}
+    </button>
+  </div>
+</div>
 
       {!isExporting && (
         <div
@@ -2796,11 +2981,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     hidden
     flex gap-2 z-20 transition-all
 
-    /* Desktop — posição original */
+    /* Desktop - posição original */
     md:absolute md:top-6
     ${state.isLeftHanded ? 'md:left-6' : 'md:right-6'}
 
-    /* Mobile — fixa fora do fretboard */
+    /* Mobile - fixa fora do fretboard */
     max-md:fixed
     max-md:bottom-4
     max-md:${state.isLeftHanded ? 'left-4' : 'right-4'}
@@ -3033,3 +3218,4 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 };
 
 export default React.memo(FretboardInstance);
+

@@ -1188,10 +1188,14 @@ const handleReturnToContext = () => {
     }
 
     const applyToDiagram = (instance: FretboardState): FretboardState => {
-      const isHarmonyAction = pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression';
+      const isCycleProgression = pending.source === 'harmonic-cycle' && pending.action === 'progression';
+      const shouldResetFretboardViewport = pending.source === 'harmonic-cycle' || pending.source === 'study-module';
+      const isHarmonyAction = pending.action === 'field' || pending.action === 'triads' || (pending.action === 'progression' && !isCycleProgression);
       const isScaleAction = pending.action === 'scale' || pending.action === 'startPractice';
       const nextRoot = pending.root || instance.root;
       const nextScaleType = pending.scaleType || instance.scaleType;
+      const safeInstrumentType = instance.instrumentType || defaultInstrument || 'guitar-6';
+      const expectedStringCount = INSTRUMENT_PRESETS[safeInstrumentType]?.strings || 6;
       return {
         ...instance,
         id: instance.id || crypto.randomUUID(),
@@ -1213,9 +1217,17 @@ const handleReturnToContext = () => {
         chordDegree: pending.chordDegree ?? 0,
         inversion: pending.inversion ?? 0,
         voicingMode: pending.voicingMode || instance.voicingMode,
+        startFret: shouldResetFretboardViewport ? 0 : instance.startFret,
+        endFret: shouldResetFretboardViewport ? 15 : instance.endFret,
+        markers: shouldResetFretboardViewport ? [] : instance.markers,
+        lines: shouldResetFretboardViewport ? [] : instance.lines,
+        stringStatuses: shouldResetFretboardViewport
+          ? Array(expectedStringCount).fill('normal')
+          : instance.stringStatuses,
         layers: {
           ...instance.layers,
-          showScale: isScaleAction,
+          showScale: isCycleProgression ? false : (isScaleAction || isHarmonyAction),
+          showAllNotes: false,
           showTonic: true,
         },
       };
@@ -1257,7 +1269,7 @@ const handleReturnToContext = () => {
       'visual'
     );
 
-    const eventName = (targetTab === 'tools' || targetTab === 'chords')
+    const eventName = (targetTab === 'tools')
       ? 'ga-open-diagram-panel'
       : 'ga-open-quick-tab';
 
@@ -1265,7 +1277,7 @@ const handleReturnToContext = () => {
       window.dispatchEvent(new CustomEvent(eventName, { 
         detail: { 
           tab: targetTab, 
-          tool: eventName === 'ga-open-diagram-panel' 
+          tool: (eventName === 'ga-open-diagram-panel' && targetTab === 'tools')
             ? (pending.tool || 'exercises') 
             : undefined 
         } 
