@@ -1289,6 +1289,28 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setCagedFollowIndex(prev => Math.min(prev, Math.max(0, cagedFollowPositions.length - 1)));
     setCagedFollowStatus('playing');
   };
+  const shouldUseHarmonyFollow = state.harmonyMode !== 'OFF';
+  const startHarmonyPlay = () => {
+    if (shouldUseHarmonyFollow) {
+      startCycleFollow();
+      return;
+    }
+    startCagedFollow();
+  };
+  const pauseHarmonyPlay = () => {
+    if (shouldUseHarmonyFollow) {
+      pauseCycleFollow();
+      return;
+    }
+    pauseCagedFollow();
+  };
+  const stopHarmonyPlay = () => {
+    if (shouldUseHarmonyFollow) {
+      stopCycleFollow();
+      return;
+    }
+    stopCagedFollow();
+  };
   const pauseCagedFollow = () => {
     setCagedFollowStatus(prev => prev === 'playing' ? 'paused' : prev);
   };
@@ -2175,9 +2197,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           ))}
           <button onClick={() => shiftCagedShape(-1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`} aria-label={lang === 'pt' ? 'Shape CAGED anterior' : 'Previous CAGED shape'}>-</button>
           <button onClick={() => shiftCagedShape(1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`} aria-label={lang === 'pt' ? 'Próximo shape CAGED' : 'Next CAGED shape'}>+</button>
-          <button onClick={startCagedFollow} className={transportButtonClass} aria-label="Play CAGED">{'\u25B6'}</button>
-          <button onClick={pauseCagedFollow} className={transportButtonClass} aria-label="Pause CAGED">{'\u23F8'}</button>
-          <button onClick={stopCagedFollow} className={transportButtonClass} aria-label="Stop CAGED">{'\u25A0'}</button>
+          <button onClick={startHarmonyPlay} className={transportButtonClass} aria-label={shouldUseHarmonyFollow ? 'Play Harmony' : 'Play CAGED'}>{'\u25B6'}</button>
+          <button onClick={pauseHarmonyPlay} className={transportButtonClass} aria-label={shouldUseHarmonyFollow ? 'Pause Harmony' : 'Pause CAGED'}>{'\u23F8'}</button>
+          <button onClick={stopHarmonyPlay} className={transportButtonClass} aria-label={shouldUseHarmonyFollow ? 'Stop Harmony' : 'Stop CAGED'}>{'\u25A0'}</button>
         </div>
       );
     }

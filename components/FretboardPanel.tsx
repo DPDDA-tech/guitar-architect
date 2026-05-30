@@ -1786,6 +1786,7 @@ const handleReturnToContext = () => {
         chordDegree: normalizedDegree,
         inversion: pending.inversion ?? 0,
         voicingMode: pending.voicingMode || instance.voicingMode,
+        cagedShape: isHarmonyAction ? 'OFF' : instance.cagedShape,
         startFret: shouldFocusFirstRegion ? 0 : shouldResetFretboardViewport ? 0 : instance.startFret,
         endFret: shouldFocusFirstRegion ? 4 : shouldResetFretboardViewport ? 15 : instance.endFret,
         markers: shouldApplyChordVisualState ? chordVisualState!.markers : (shouldResetFretboardViewport ? [] : instance.markers),
