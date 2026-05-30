@@ -379,6 +379,37 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const [cagedFollowStatus, setCagedFollowStatus] = useState<CagedFollowStatus>('idle');
   const [cagedFollowIndex, setCagedFollowIndex] = useState(0);
   const cagedFollowTimerRef = useRef<number | null>(null);
+  const lastMusicalContextRef = useRef<{
+    root: string;
+    scaleType: string;
+    harmonyMode: string;
+    chordDegree: number;
+    title: string;
+    subtitle: string;
+    notes: string;
+  } | null>(null);
+
+  const resetFollowModes = useCallback(() => {
+    if (scaleFollowTimerRef.current) {
+      window.clearTimeout(scaleFollowTimerRef.current);
+      scaleFollowTimerRef.current = null;
+    }
+    if (cycleFollowTimerRef.current) {
+      window.clearInterval(cycleFollowTimerRef.current);
+      cycleFollowTimerRef.current = null;
+    }
+    if (cagedFollowTimerRef.current) {
+      window.clearTimeout(cagedFollowTimerRef.current);
+      cagedFollowTimerRef.current = null;
+    }
+    setScaleFollowMode('off');
+    setScaleFollowStatus('idle');
+    setScaleFollowIndex(0);
+    setCagedFollowStatus('idle');
+    setCagedFollowIndex(0);
+    setCycleFollowStatus('idle');
+    cycleDegreeRef.current = 0;
+  }, []);
 
   useEffect(() => {
     const closePanels = () => setIsControlPanelOpen(false);
@@ -403,26 +434,6 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       setOpenQuickTab(detail.tab);
       setIsControlPanelOpen(false);
     };
-    const resetFollowModes = () => {
-      if (scaleFollowTimerRef.current) {
-        window.clearTimeout(scaleFollowTimerRef.current);
-        scaleFollowTimerRef.current = null;
-      }
-      if (cycleFollowTimerRef.current) {
-        window.clearInterval(cycleFollowTimerRef.current);
-        cycleFollowTimerRef.current = null;
-      }
-      if (cagedFollowTimerRef.current) {
-        window.clearTimeout(cagedFollowTimerRef.current);
-        cagedFollowTimerRef.current = null;
-      }
-      setScaleFollowMode('off');
-      setScaleFollowStatus('idle');
-      setScaleFollowIndex(0);
-      setCagedFollowStatus('idle');
-      setCagedFollowIndex(0);
-      setCycleFollowStatus('idle');
-    };
     window.addEventListener('ga-close-diagram-panels', closePanels);
     window.addEventListener('ga-open-diagram-panel', openPanel);
     window.addEventListener('ga-open-quick-tab', openQuickTabPanel);
@@ -433,7 +444,41 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       window.removeEventListener('ga-open-quick-tab', openQuickTabPanel);
       window.removeEventListener('ga-reset-follow-modes', resetFollowModes);
     };
-  }, [activeControlTab, isControlPanelOpen, preferredPracticeTool]);
+  }, [activeControlTab, isControlPanelOpen, preferredPracticeTool, resetFollowModes]);
+
+  useEffect(() => {
+    const nextContext = {
+      root: state.root,
+      scaleType: state.scaleType,
+      harmonyMode: state.harmonyMode,
+      chordDegree: state.chordDegree ?? 0,
+      title: state.title || '',
+      subtitle: state.subtitle || '',
+      notes: state.notes || '',
+    };
+    const prevContext = lastMusicalContextRef.current;
+    lastMusicalContextRef.current = nextContext;
+    if (!prevContext) return;
+    const changed = prevContext.root !== nextContext.root
+      || prevContext.scaleType !== nextContext.scaleType
+      || prevContext.harmonyMode !== nextContext.harmonyMode
+      || prevContext.chordDegree !== nextContext.chordDegree
+      || prevContext.title !== nextContext.title
+      || prevContext.subtitle !== nextContext.subtitle
+      || prevContext.notes !== nextContext.notes;
+    if (!changed) return;
+
+    const onlyChordDegreeChanged = prevContext.root === nextContext.root
+      && prevContext.scaleType === nextContext.scaleType
+      && prevContext.harmonyMode === nextContext.harmonyMode
+      && prevContext.title === nextContext.title
+      && prevContext.subtitle === nextContext.subtitle
+      && prevContext.notes === nextContext.notes
+      && prevContext.chordDegree !== nextContext.chordDegree;
+
+    if (onlyChordDegreeChanged && cycleFollowStatus === 'playing') return;
+    resetFollowModes();
+  }, [cycleFollowStatus, resetFollowModes, state.chordDegree, state.harmonyMode, state.notes, state.root, state.scaleType, state.subtitle, state.title]);
   useEffect(() => {
     latestStateRef.current = state;
     cycleDegreeRef.current = state.chordDegree ?? 0;
@@ -536,7 +581,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     if (scaleFollowMode === 'region') {
       return {
         startFret: activeScaleRegion.startFret,
-        endFret: Math.min(state.endFret, activeScaleRegion.endFret),
+        endFret: activeScaleRegion.endFret,
         label: lang === 'pt'
           ? `Região ${activeScaleRegion.number} - Forma ${activeScaleRegion.shape}`
           : `Region ${activeScaleRegion.number} - ${activeScaleRegion.shape} shape`,
@@ -558,7 +603,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     const positions: Array<{ string: number; fret: number; note: string }> = [];
     const start = followAlongRegion?.startFret ?? state.startFret;
     const end = followAlongRegion?.endFret ?? state.endFret;
-    const clampedEnd = Math.min(state.endFret, end);
+    const clampedEnd = Math.min(24, Math.max(Math.max(0, start), end));
 
     const focusedString = followAlongRegion && 'stringIndex' in followAlongRegion ? followAlongRegion.stringIndex : undefined;
     currentTuning.forEach((_, string) => {
@@ -573,7 +618,20 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       return positions.sort((a, b) => a.fret - b.fret);
     }
 
-    return positions.sort((a, b) => b.string - a.string || a.fret - b.fret);
+    const ordered = positions.sort((a, b) => b.string - a.string || a.fret - b.fret);
+    // Avoid redundant same-note hops that mimic 3NPS in contextual scale playback.
+    return ordered.filter((position, index, list) => {
+      const nextOnHigherString = list.find(candidate =>
+        candidate.string === position.string - 1
+        && candidate.note === position.note
+        && candidate.fret <= position.fret + 1
+      );
+      if (!nextOnHigherString) return true;
+      const prev = list[index - 1];
+      // Preserve candidate when it is the only note reached so far on this string transition.
+      if (!prev) return true;
+      return prev.string !== position.string;
+    });
   }, [currentTuning, followAlongRegion, scaleFollowMode, scaleNoteSet, state.endFret, state.startFret]);
 
   const activeFollowNote = scaleFollowStatus !== 'idle'
@@ -1132,6 +1190,19 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   }, [getCycleRegionRange, recordAction, resolveCycleChordByDegree]);
   const startCycleFollow = useCallback(() => {
     clearCycleFollowTimer();
+    if (scaleFollowTimerRef.current) {
+      window.clearTimeout(scaleFollowTimerRef.current);
+      scaleFollowTimerRef.current = null;
+    }
+    if (cagedFollowTimerRef.current) {
+      window.clearTimeout(cagedFollowTimerRef.current);
+      cagedFollowTimerRef.current = null;
+    }
+    setScaleFollowMode('off');
+    setScaleFollowStatus('idle');
+    setScaleFollowIndex(0);
+    setCagedFollowStatus('idle');
+    setCagedFollowIndex(0);
     setCycleFollowStatus('playing');
     cycleFollowTimerRef.current = window.setInterval(() => {
       moveCycleDegree(1);
@@ -1161,6 +1232,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const startScaleFollow = () => {
     if (scaleFollowMode === 'off') setScaleFollowMode('region');
     if (scaleFollowSequence.length === 0) return;
+    clearCycleFollowTimer();
+    setCycleFollowStatus('idle');
     setCagedFollowStatus('idle');
     setCagedFollowIndex(0);
     setScaleFollowIndex(prev => Math.min(prev, Math.max(0, scaleFollowSequence.length - 1)));
@@ -1178,10 +1251,18 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setScaleFollowIndex(0);
   };
   const shiftScaleRegion = (direction: -1 | 1) => {
+    const nextRegionIndex = Math.min(CAGED_SCALE_REGIONS.length - 1, Math.max(0, scaleRegionIndex + direction));
+    const nextRegion = CAGED_SCALE_REGIONS[nextRegionIndex] || CAGED_SCALE_REGIONS[0];
     setScaleFollowMode('region');
     setScaleFollowStatus('idle');
     setScaleFollowIndex(0);
-    setScaleRegionIndex(prev => Math.min(CAGED_SCALE_REGIONS.length - 1, Math.max(0, prev + direction)));
+    setScaleRegionIndex(nextRegionIndex);
+    recordAction({
+      ...state,
+      startFret: nextRegion.startFret,
+      endFret: Math.max(nextRegion.startFret + 1, nextRegion.endFret),
+      layers: { ...state.layers, showScale: true, showTonic: true },
+    });
   };
   const changeScaleFollowString = (stringIndex: number) => {
     setScaleFollowStringIndex(Math.min(Math.max(0, stringIndex), Math.max(0, currentTuning.length - 1)));
@@ -1198,8 +1279,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const startCagedFollow = () => {
     ensureCagedShape();
     if (cagedFollowPositions.length === 0) return;
+    clearCycleFollowTimer();
+    setCycleFollowStatus('idle');
     setScaleFollowStatus('idle');
     setScaleFollowIndex(0);
+    setScaleFollowMode('off');
     setCagedFollowIndex(prev => Math.min(prev, Math.max(0, cagedFollowPositions.length - 1)));
     setCagedFollowStatus('playing');
   };
