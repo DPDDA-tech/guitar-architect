@@ -7,6 +7,8 @@ import { AppState, ThemeMode } from '../types';
 import { recordAchievementEvent } from '../utils/achievementEvents';
 import QuickToolsModal from './QuickToolsModal';
 import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
+import { sendFretboardIntent } from '../utils/sendFretboardIntent';
+import type { FretboardIntent, FretboardIntentAction, FretboardIntentTab } from '../types/fretboardIntent';
 
 const SunIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -21,7 +23,6 @@ const MoonIcon = () => (
   </svg>
 );
 
-const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const COMPLETED_LEARN_MODULES_KEY = 'ga_completed_learn_modules';
 
@@ -109,12 +110,26 @@ const PanelSurface = ({
   </section>
 );
 
+const mapLegacyActionToIntentAction = (action: unknown): FretboardIntentAction => {
+  if (action === 'scale') return 'showScale';
+  if (action === 'field') return 'showHarmonyField';
+  if (action === 'triads') return 'showTriads';
+  if (action === 'progression') return 'showProgression';
+  if (action === 'openTool') return 'openTool';
+  if (action === 'startPractice') return 'startPractice';
+  return 'showScale';
+};
+
+const mapLegacyTabToTargetTab = (value: unknown): FretboardIntentTab | undefined => {
+  if (value === 'visual' || value === 'scale' || value === 'harmony' || value === 'tools' || value === 'chords') return value;
+  return undefined;
+};
+
 const executeLearnAction = (action: LearnAction, module?: LearnModule, openQuickTool?: (tool: 'tuner' | 'metronome') => void) => {
   const payload = {
     ...(typeof action.payload === 'object' && action.payload ? action.payload : {}),
     moduleTitle: module?.title,
     moduleLabel: action.label,
-    createdAt: new Date().toISOString(),
   };
   const payloadRecord = payload as Record<string, unknown>;
 
@@ -127,8 +142,14 @@ const executeLearnAction = (action: LearnAction, module?: LearnModule, openQuick
         openQuickTool?.(payloadRecord.tool);
         break;
       }
-      window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify(payload));
-      navigateTo('/studio');
+      sendFretboardIntent({
+        ...(payloadRecord as Omit<FretboardIntent, 'version' | 'createdAt'>),
+        source: 'learn',
+        action: mapLegacyActionToIntentAction(payloadRecord.action),
+        root: typeof payloadRecord.root === 'string' ? payloadRecord.root : 'C',
+        scaleType: typeof payloadRecord.scaleType === 'string' ? payloadRecord.scaleType : 'Major (Ionian)',
+        targetTab: mapLegacyTabToTargetTab(payloadRecord.quickTab ?? payloadRecord.tab),
+      });
       break;
     case 'pendingFretboardAction':
     case 'startPractice':
@@ -151,8 +172,14 @@ const executeLearnAction = (action: LearnAction, module?: LearnModule, openQuick
         source: 'learn',
         moduleId: module?.id,
       }));
-      window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify(payload));
-      navigateTo('/studio');
+      sendFretboardIntent({
+        ...(payloadRecord as Omit<FretboardIntent, 'version' | 'createdAt'>),
+        source: 'learn',
+        action: mapLegacyActionToIntentAction(payloadRecord.action),
+        root: typeof payloadRecord.root === 'string' ? payloadRecord.root : 'C',
+        scaleType: typeof payloadRecord.scaleType === 'string' ? payloadRecord.scaleType : 'Major (Ionian)',
+        targetTab: mapLegacyTabToTargetTab(payloadRecord.quickTab ?? payloadRecord.tab),
+      });
       break;
     case 'navigate':
       navigateTo(action.href || '/');
