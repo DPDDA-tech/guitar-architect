@@ -1786,37 +1786,33 @@ const handleReturnToContext = () => {
       };
     };
 
+    let appliedInstanceId: string | null = null;
     setInstances(prev => {
-      const base = activeInstanceIndex >= 0 ? prev[activeInstanceIndex] : prev[0];
-      const created = applyToDiagram({
-        ...(base || DEFAULT_FRETBOARD(lang, defaultInstrument)),
-        id: crypto.randomUUID(),
-      });
-      if (prev.length >= 24) {
-        const canOverwrite = window.confirm(
-          lang === 'pt'
-            ? 'Você atingiu o limite de 24 diagramas. Posso substituir o último diagrama para abrir esta tarefa?'
-            : 'You reached the 24 diagram limit. Can I replace the last diagram to open this task?',
-        );
-        if (!canOverwrite) {
-          window.alert(lang === 'pt' ? 'Não foi possível abrir a tarefa sem substituir um diagrama.' : 'The task could not be opened without replacing a diagram.');
-          return prev;
-        }
-        setActiveInstanceId(created.id);
-        shouldScrollToNewDiagramRef.current = true;
-        return prev.map((instance, index) => index === prev.length - 1 ? created : instance);
-      }
-
       if (prev.length === 0) {
-        setActiveInstanceId(created.id);
+        const created = applyToDiagram({
+          ...DEFAULT_FRETBOARD(lang, defaultInstrument),
+          id: crypto.randomUUID(),
+        });
+        appliedInstanceId = created.id;
         shouldScrollToNewDiagramRef.current = true;
         return [created];
       }
 
-      setActiveInstanceId(created.id);
-      shouldScrollToNewDiagramRef.current = true;
-      return [...prev, created];
+      const preferredIndex = activeInstanceId
+        ? prev.findIndex(instance => instance.id === activeInstanceId)
+        : -1;
+      const targetIndex = preferredIndex >= 0
+        ? preferredIndex
+        : (activeInstanceIndex >= 0 && activeInstanceIndex < prev.length ? activeInstanceIndex : 0);
+      const target = prev[targetIndex] || prev[0];
+      const updated = applyToDiagram(target);
+      appliedInstanceId = updated.id;
+      shouldScrollToNewDiagramRef.current = false;
+      return prev.map((instance, index) => (index === targetIndex ? updated : instance));
     });
+    if (appliedInstanceId) {
+      setActiveInstanceId(appliedInstanceId);
+    }
 
     const targetTab = pending.quickTab || pending.tab || (
       (pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression' || pending.harmonyMode) ? 'harmony' :
@@ -1825,15 +1821,14 @@ const handleReturnToContext = () => {
       'visual'
     );
     const normalizedTargetTab = pending.action === 'progression' ? 'chords' : targetTab;
-    const eventName = (normalizedTargetTab === 'tools')
-      ? 'ga-open-diagram-panel'
-      : 'ga-open-quick-tab';
+    const eventName = 'ga-open-diagram-panel';
 
     window.setTimeout(() => {
+      window.dispatchEvent(new Event('ga-reset-follow-modes'));
       window.dispatchEvent(new CustomEvent(eventName, { 
         detail: { 
           tab: normalizedTargetTab, 
-          tool: (eventName === 'ga-open-diagram-panel' && normalizedTargetTab === 'tools')
+          tool: (normalizedTargetTab === 'tools')
             ? (pending.tool || 'exercises') 
             : undefined 
         } 
@@ -1841,7 +1836,7 @@ const handleReturnToContext = () => {
     }, 160);
 
     setSaveStatus('saving');
-  }, [activeInstanceIndex, defaultInstrument, dismissedCoachKey, dismissedExecutionFeedbackKey, dismissedGuidedPracticeKey, executionFeedbackKey, executionFeedbackStepIndex, guidedPracticeKey, guidedPracticeStepIndex, lang]);
+  }, [activeInstanceId, activeInstanceIndex, defaultInstrument, dismissedCoachKey, dismissedExecutionFeedbackKey, dismissedGuidedPracticeKey, executionFeedbackKey, executionFeedbackStepIndex, guidedPracticeKey, guidedPracticeStepIndex, instances.length, lang]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;

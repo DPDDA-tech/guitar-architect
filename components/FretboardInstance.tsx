@@ -403,13 +403,35 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       setOpenQuickTab(detail.tab);
       setIsControlPanelOpen(false);
     };
+    const resetFollowModes = () => {
+      if (scaleFollowTimerRef.current) {
+        window.clearTimeout(scaleFollowTimerRef.current);
+        scaleFollowTimerRef.current = null;
+      }
+      if (cycleFollowTimerRef.current) {
+        window.clearInterval(cycleFollowTimerRef.current);
+        cycleFollowTimerRef.current = null;
+      }
+      if (cagedFollowTimerRef.current) {
+        window.clearTimeout(cagedFollowTimerRef.current);
+        cagedFollowTimerRef.current = null;
+      }
+      setScaleFollowMode('off');
+      setScaleFollowStatus('idle');
+      setScaleFollowIndex(0);
+      setCagedFollowStatus('idle');
+      setCagedFollowIndex(0);
+      setCycleFollowStatus('idle');
+    };
     window.addEventListener('ga-close-diagram-panels', closePanels);
     window.addEventListener('ga-open-diagram-panel', openPanel);
     window.addEventListener('ga-open-quick-tab', openQuickTabPanel);
+    window.addEventListener('ga-reset-follow-modes', resetFollowModes);
     return () => {
       window.removeEventListener('ga-close-diagram-panels', closePanels);
       window.removeEventListener('ga-open-diagram-panel', openPanel);
       window.removeEventListener('ga-open-quick-tab', openQuickTabPanel);
+      window.removeEventListener('ga-reset-follow-modes', resetFollowModes);
     };
   }, [activeControlTab, isControlPanelOpen, preferredPracticeTool]);
   useEffect(() => {
