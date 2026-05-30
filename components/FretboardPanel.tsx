@@ -40,6 +40,7 @@ import { getMyAdminRole, type AdminRole } from '../utils/adminRoles';
 import { FretboardInstructionCard, type FretboardInstruction } from './FretboardInstructionCard';
 import type { FretboardIntent } from '../types/fretboardIntent';
 import { FretboardContextCoach, type FretboardContextCoachData } from './FretboardContextCoach';
+import { FretboardExecutionFeedback, type FretboardExecutionFeedbackData } from './FretboardExecutionFeedback';
 
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
@@ -146,6 +147,84 @@ const isEquivalentInstructionAndCoach = (instruction: FretboardInstruction | nul
   const instructionText = `${instruction.title || ''} ${instruction.description || ''}`.trim().toLowerCase();
   const coachText = `${coach.title || ''} ${coach.message || ''}`.trim().toLowerCase();
   return instructionText.length > 0 && instructionText === coachText;
+};
+
+const buildExecutionFeedback = (pending: PendingFretboardAction, lang: Lang): FretboardExecutionFeedbackData | null => {
+  const isPt = lang === 'pt';
+  const root = pending.displayRoot || pending.root || 'C';
+  const scaleType = pending.scaleType || (isPt ? 'escala atual' : 'current scale');
+  const progressionChords = pending.chords?.filter((chord): chord is string => typeof chord === 'string' && chord.trim().length > 0) || [];
+  const hasProgressionSequence = pending.action === 'progression' && progressionChords.length > 1;
+  const defaultTitle = `${root} - ${scaleType}`;
+
+  if (pending.action === 'startPractice') {
+    return {
+      title: pending.moduleTitle || (isPt ? 'Prática guiada' : 'Guided practice'),
+      status: isPt ? 'Toque lentamente e mantenha a precisão antes de acelerar.' : 'Play slowly and prioritize precision before speed.',
+      steps: [
+        isPt ? 'Observe as tônicas' : 'Observe tonics',
+        isPt ? 'Toque com andamento confortável' : 'Play at a comfortable tempo',
+        isPt ? 'Refaça com mais fluidez' : 'Repeat with more fluency',
+      ],
+      currentStep: 0,
+      focusLabel: isPt ? 'Foco: precisão' : 'Focus: precision',
+    };
+  }
+
+  if (pending.action === 'scale') {
+    return {
+      title: defaultTitle,
+      status: isPt ? 'Observe as tônicas e percorra a região visível sem pressa.' : 'Observe tonics and move through the visible region without rushing.',
+      steps: [
+        isPt ? 'Observe as tônicas' : 'Observe tonics',
+        isPt ? 'Suba e desça a escala' : 'Ascend and descend the scale',
+      ],
+      currentStep: 0,
+      focusLabel: isPt ? 'Foco: região atual' : 'Focus: current region',
+    };
+  }
+
+  if (pending.action === 'field' || pending.action === 'triads') {
+    return {
+      title: isPt ? 'Campo harmônico' : 'Harmonic field',
+      status: isPt ? 'Compare os graus e repare no papel de cada acorde dentro da tonalidade.' : 'Compare the degrees and notice each chord role inside the key.',
+      steps: [
+        isPt ? 'Compare os graus' : 'Compare degrees',
+        isPt ? 'Toque os acordes base' : 'Play the base chords',
+      ],
+      currentStep: 0,
+      focusLabel: isPt ? 'Foco: comparação de graus' : 'Focus: degree comparison',
+    };
+  }
+
+  if (pending.action === 'progression') {
+    const steps = hasProgressionSequence
+      ? progressionChords.map((chord, index) => isPt ? `Toque o acorde ${index + 1}: ${chord}` : `Play chord ${index + 1}: ${chord}`)
+      : [isPt ? 'Toque os acordes na ordem proposta' : 'Play the chords in the proposed order'];
+    return {
+      title: pending.progression || (isPt ? 'Progressão' : 'Progression'),
+      status: isPt ? 'Avance para o próximo acorde e observe a sensação de movimento.' : 'Move to the next chord and notice the motion feel.',
+      steps,
+      currentStep: 0,
+      focusLabel: hasProgressionSequence ? (isPt ? `Foco: ${progressionChords[0]}` : `Focus: ${progressionChords[0]}`) : (isPt ? 'Foco: condução harmônica' : 'Focus: harmonic movement'),
+    };
+  }
+
+  return null;
+};
+
+const buildExecutionFeedbackKey = (pending: PendingFretboardAction) => {
+  return [
+    pending.source,
+    pending.action,
+    pending.root || '',
+    pending.displayRoot || '',
+    pending.scaleType || '',
+    pending.progression || '',
+    pending.moduleTitle || '',
+    pending.moduleLabel || '',
+    pending.chords?.join('|') || '',
+  ].join('|');
 };
 
 const LEGACY_ACTION_BY_INTENT: Record<string, PendingFretboardAction['action']> = {
@@ -302,6 +381,10 @@ const FretboardPanel: React.FC = () => {
   const [activeInstruction, setInstruction] = useState<FretboardInstruction | null>(null);
   const [activeContextCoach, setActiveContextCoach] = useState<FretboardContextCoachData | null>(null);
   const [dismissedCoachKey, setDismissedCoachKey] = useState('');
+  const [activeExecutionFeedback, setActiveExecutionFeedback] = useState<FretboardExecutionFeedbackData | null>(null);
+  const [executionFeedbackKey, setExecutionFeedbackKey] = useState('');
+  const [executionFeedbackStepIndex, setExecutionFeedbackStepIndex] = useState(0);
+  const [dismissedExecutionFeedbackKey, setDismissedExecutionFeedbackKey] = useState('');
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
@@ -1354,6 +1437,22 @@ const handleReturnToContext = () => {
       setActiveContextCoach(nextCoach);
     }
 
+    const nextFeedback = buildExecutionFeedback(pending, lang);
+    const nextFeedbackKey = buildExecutionFeedbackKey(pending);
+    const isRelevantFeedbackAction = ['scale', 'field', 'triads', 'progression', 'startPractice'].includes(pending.action);
+    if (!nextFeedback || !isRelevantFeedbackAction || nextFeedbackKey === dismissedExecutionFeedbackKey) {
+      setActiveExecutionFeedback(null);
+      setExecutionFeedbackKey('');
+      setExecutionFeedbackStepIndex(0);
+    } else {
+      setExecutionFeedbackKey(nextFeedbackKey);
+      setExecutionFeedbackStepIndex(prev => (nextFeedbackKey === executionFeedbackKey ? prev : 0));
+      setActiveExecutionFeedback({
+        ...nextFeedback,
+        currentStep: nextFeedbackKey === executionFeedbackKey ? executionFeedbackStepIndex : 0,
+      });
+    }
+
     const applyToDiagram = (instance: FretboardState): FretboardState => {
       const isCycleProgression = pending.source === 'harmonic-cycle' && pending.action === 'progression';
       const shouldResetFretboardViewport = pending.source === 'harmonic-cycle' || pending.source === 'study-module';
@@ -1457,7 +1556,7 @@ const handleReturnToContext = () => {
     }, 160);
 
     setSaveStatus('saving');
-  }, [activeInstanceIndex, defaultInstrument, lang]);
+  }, [activeInstanceIndex, defaultInstrument, dismissedCoachKey, dismissedExecutionFeedbackKey, executionFeedbackKey, executionFeedbackStepIndex, lang]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -2235,6 +2334,34 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             onClose={() => {
               setDismissedCoachKey(buildContextCoachKey(activeContextCoach));
               setActiveContextCoach(null);
+            }}
+          />
+        ) : null}
+        {!activeInstruction && activeExecutionFeedback ? (
+          <FretboardExecutionFeedback
+            data={{
+              ...activeExecutionFeedback,
+              currentStep: executionFeedbackStepIndex,
+              focusLabel: activeExecutionFeedback.steps[executionFeedbackStepIndex]
+                ? (lang === 'pt'
+                  ? `Foco: ${activeExecutionFeedback.steps[executionFeedbackStepIndex]}`
+                  : `Focus: ${activeExecutionFeedback.steps[executionFeedbackStepIndex]}`)
+                : activeExecutionFeedback.focusLabel,
+            }}
+            isLight={isLight}
+            lang={lang}
+            isCoachVisible={Boolean(activeContextCoach)}
+            onNextStep={activeExecutionFeedback.steps.length > 1 ? () => {
+              setExecutionFeedbackStepIndex(prev => {
+                const next = (prev + 1) % activeExecutionFeedback.steps.length;
+                return next;
+              });
+            } : undefined}
+            onClose={() => {
+              setDismissedExecutionFeedbackKey(executionFeedbackKey);
+              setActiveExecutionFeedback(null);
+              setExecutionFeedbackKey('');
+              setExecutionFeedbackStepIndex(0);
             }}
           />
         ) : null}
