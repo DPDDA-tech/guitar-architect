@@ -1253,14 +1253,16 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const shiftScaleRegion = (direction: -1 | 1) => {
     const nextRegionIndex = Math.min(CAGED_SCALE_REGIONS.length - 1, Math.max(0, scaleRegionIndex + direction));
     const nextRegion = CAGED_SCALE_REGIONS[nextRegionIndex] || CAGED_SCALE_REGIONS[0];
+    const nextStartFret = Math.max(0, nextRegion.startFret - 1);
+    const nextEndFret = Math.min(24, Math.max(nextStartFret + 1, nextRegion.endFret + 1));
     setScaleFollowMode('region');
     setScaleFollowStatus('idle');
     setScaleFollowIndex(0);
     setScaleRegionIndex(nextRegionIndex);
     recordAction({
       ...state,
-      startFret: nextRegion.startFret,
-      endFret: Math.max(nextRegion.startFret + 1, nextRegion.endFret),
+      startFret: nextStartFret,
+      endFret: nextEndFret,
       layers: { ...state.layers, showScale: true, showTonic: true },
     });
   };
