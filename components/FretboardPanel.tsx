@@ -42,9 +42,12 @@ import type { FretboardIntent } from '../types/fretboardIntent';
 import { FretboardContextCoach, type FretboardContextCoachData } from './FretboardContextCoach';
 import { FretboardExecutionFeedback, type FretboardExecutionFeedbackData } from './FretboardExecutionFeedback';
 import { FretboardGuidedPractice, type FretboardGuidedPracticeData } from './FretboardGuidedPractice';
+import { FretboardOnboardingOverlay, type FretboardOnboardingTip } from './FretboardOnboardingOverlay';
 
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
+const FRETBOARD_ONBOARDING_DISMISSED_KEY = 'ga_fretboard_onboarding_dismissed';
+const FRETBOARD_ONBOARDING_SEEN_KEY = 'ga_fretboard_onboarding_seen';
 const LOCAL_MIGRATION_DEADLINE_PT = '17/06/2026';
 const LOCAL_MIGRATION_DEADLINE_EN = 'June 17, 2026';
 
@@ -336,6 +339,41 @@ const buildGuidedPracticeKey = (pending: PendingFretboardAction) => {
   ].join('|');
 };
 
+const buildOnboardingTip = (
+  lang: Lang,
+  context: {
+    hasReturnContext: boolean;
+    hasGuidedPractice: boolean;
+    hasContextualAction: boolean;
+  },
+): FretboardOnboardingTip => {
+  if (context.hasGuidedPractice) {
+    return {
+      id: 'guided-practice',
+      title: lang === 'pt' ? 'Prática guiada ativa' : 'Guided practice active',
+      message: lang === 'pt'
+        ? 'Use Próximo para avançar passo a passo. Você pode reiniciar ou fechar quando quiser.'
+        : 'Use Next to move step by step. You can restart or close anytime.',
+    };
+  }
+  if (context.hasContextualAction || context.hasReturnContext) {
+    return {
+      id: 'contextual-return',
+      title: lang === 'pt' ? 'Ação contextual carregada' : 'Contextual action loaded',
+      message: lang === 'pt'
+        ? 'Este fretboard foi aberto a partir de Learn/Practice/Studio e já mostra um contexto musical pronto para estudo.'
+        : 'This fretboard came from Learn/Practice/Studio and already shows a musical context ready for study.',
+    };
+  }
+  return {
+    id: 'first-visit',
+    title: lang === 'pt' ? 'Como ler este fretboard' : 'How to read this fretboard',
+    message: lang === 'pt'
+      ? 'Observe notas, casas e cordas no braço. Use atalhos para escala, harmonia e ferramentas; marcadores coloridos destacam focos musicais.'
+      : 'Observe notes, frets and strings on the neck. Use shortcuts for scale, harmony and tools; color markers highlight musical focus.',
+  };
+};
+
 const LEGACY_ACTION_BY_INTENT: Record<string, PendingFretboardAction['action']> = {
   showScale: 'scale',
   showHarmonyField: 'field',
@@ -507,6 +545,7 @@ const FretboardPanel: React.FC = () => {
   const [guidedPracticeKey, setGuidedPracticeKey] = useState('');
   const [guidedPracticeStepIndex, setGuidedPracticeStepIndex] = useState(0);
   const [dismissedGuidedPracticeKey, setDismissedGuidedPracticeKey] = useState('');
+  const [activeOnboardingTip, setActiveOnboardingTip] = useState<FretboardOnboardingTip | null>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
@@ -1455,6 +1494,33 @@ const handleReturnToContext = () => {
       shouldScrollToNewDiagramRef.current = false;
     }
   }, [activeInstanceId, instances]);
+
+  useEffect(() => {
+    if (!initialized.current || typeof window === 'undefined') return;
+    if (window.localStorage.getItem(FRETBOARD_ONBOARDING_DISMISSED_KEY) === '1') {
+      setActiveOnboardingTip(null);
+      return;
+    }
+
+    const hasSeen = window.localStorage.getItem(FRETBOARD_ONBOARDING_SEEN_KEY) === '1';
+    const hasGuidedPractice = Boolean(activeGuidedPractice);
+    const hasReturnContext = Boolean(returnContext);
+    const hasContextualAction = Boolean(activeInstruction || activeContextCoach || activeExecutionFeedback || activeGuidedPractice);
+    const shouldShow = !hasSeen || hasGuidedPractice || hasReturnContext || hasContextualAction;
+
+    if (!shouldShow) {
+      setActiveOnboardingTip(null);
+      return;
+    }
+
+    const tip = buildOnboardingTip(lang, {
+      hasReturnContext,
+      hasGuidedPractice,
+      hasContextualAction,
+    });
+    setActiveOnboardingTip(tip);
+    window.localStorage.setItem(FRETBOARD_ONBOARDING_SEEN_KEY, '1');
+  }, [activeContextCoach, activeExecutionFeedback, activeGuidedPractice, activeInstruction, lang, returnContext]);
   const openModulePage = useCallback((path: string) => {
     saveConfig({
       version: "1.8.7",
@@ -2527,6 +2593,20 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
               setActiveExecutionFeedback(null);
               setExecutionFeedbackKey('');
               setExecutionFeedbackStepIndex(0);
+            }}
+          />
+        ) : null}
+        {activeOnboardingTip ? (
+          <FretboardOnboardingOverlay
+            tip={activeOnboardingTip}
+            isLight={isLight}
+            lang={lang}
+            onAcknowledge={() => setActiveOnboardingTip(null)}
+            onDismissForever={() => {
+              if (typeof window !== 'undefined') {
+                window.localStorage.setItem(FRETBOARD_ONBOARDING_DISMISSED_KEY, '1');
+              }
+              setActiveOnboardingTip(null);
             }}
           />
         ) : null}
