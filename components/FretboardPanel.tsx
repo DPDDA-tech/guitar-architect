@@ -103,12 +103,12 @@ const buildContextCoach = (pending: PendingFretboardAction, lang: Lang): Fretboa
     };
   }
 
-  if (pending.source === 'harmonic-cycle' || pending.action === 'scale') {
+  if (pending.action === 'progression') {
     return {
-      title: `${root} - ${scaleType}`,
+      title: pending.progression || (isPt ? 'Progressão' : 'Progression'),
       message: isPt
-        ? 'Observe primeiro as tônicas destacadas. Toque a escala lentamente, subindo e descendo na região visível.'
-        : 'Start with highlighted tonics. Play the scale slowly ascending and descending in the visible region.',
+        ? 'Toque os acordes na ordem indicada e observe a sensação de tensão e resolução entre eles.'
+        : 'Play chords in order and notice tension and resolution between them.',
       source: pending.source,
     };
   }
@@ -123,12 +123,12 @@ const buildContextCoach = (pending: PendingFretboardAction, lang: Lang): Fretboa
     };
   }
 
-  if (pending.action === 'progression') {
+  if (pending.source === 'harmonic-cycle' || pending.action === 'scale') {
     return {
-      title: pending.progression || (isPt ? 'Progressão' : 'Progression'),
+      title: `${root} - ${scaleType}`,
       message: isPt
-        ? 'Toque os acordes na ordem indicada e observe a sensação de tensão e resolução entre eles.'
-        : 'Play chords in order and notice tension and resolution between them.',
+        ? 'Observe primeiro as tônicas destacadas. Toque a escala lentamente, subindo e descendo na região visível.'
+        : 'Start with highlighted tonics. Play the scale slowly ascending and descending in the visible region.',
       source: pending.source,
     };
   }
@@ -246,7 +246,6 @@ const buildGuidedPractice = (pending: PendingFretboardAction, lang: Lang): Fretb
     pending.action === 'startPractice'
     || Boolean(pending.practiceMode)
     || Boolean(pending.practiceExerciseId)
-    || hasSequence
     || pending.action === 'progression';
 
   if (!shouldGuide) return null;

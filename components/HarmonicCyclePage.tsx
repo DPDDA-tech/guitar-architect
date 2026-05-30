@@ -286,6 +286,14 @@ const HarmonicCyclePage: React.FC = () => {
   const applyToFretboard = (action: FretboardAction, chordDegreeOverride?: number) => {
     const activeDegree = typeof chordDegreeOverride === 'number' ? chordDegreeOverride : safeSelectedChordDegree;
     const activeChord = resultingChords[activeDegree];
+    const isScaleAction = action === 'showScale';
+    const isHarmonyFieldAction = action === 'showHarmonyField';
+    const isTriadsAction = action === 'showTriads';
+    const isProgressionAction = action === 'showProgression';
+    const progressionChordList = selectedProgression
+      ? progressionChords.map(item => item.chord)
+      : resultingChords.map(item => item.chord);
+
     if (action === 'showScale') {
       recordAchievementEvent({ type: 'exploration', key: 'apply_scale' });
     }
@@ -295,17 +303,22 @@ const HarmonicCyclePage: React.FC = () => {
     sendFretboardIntent({
       source: 'harmonic-cycle',
       action: action as FretboardIntentAction,
-      targetTab: action === 'showScale' ? 'scale' : action === 'showProgression' ? 'chords' : undefined,
+      targetTab: isScaleAction ? 'scale' : (isHarmonyFieldAction || isTriadsAction || isProgressionAction) ? 'harmony' : undefined,
       root: info.root,
       displayRoot: info.displayRoot,
       scaleType: getModeScaleType(mode),
-      progression: selectedProgression,
-      chords: action === 'showHarmonyField'
-        ? info.harmonicField.map(item => item.chord)
-        : resultingChords.map(item => item.chord),
-      harmonyMode: action === 'showHarmonyField' ? 'TETRADS' : action === 'showTriads' ? 'TRIADS' : 'OFF',
-      chordDegree: action === 'showProgression' || action === 'showHarmonyField' || action === 'showTriads' ? activeDegree : 0,
-      instruction: action === 'showProgression'
+      progression: isProgressionAction ? selectedProgression : undefined,
+      chords: isScaleAction
+        ? undefined
+        : isHarmonyFieldAction
+          ? info.harmonicField.map(item => item.chord)
+          : isTriadsAction
+            ? info.harmonicField.map(item => item.chord)
+            : progressionChordList,
+      harmonyMode: isHarmonyFieldAction ? 'TETRADS' : isTriadsAction ? 'TRIADS' : isProgressionAction ? 'TETRADS' : 'OFF',
+      chordDegree: (isProgressionAction || isHarmonyFieldAction || isTriadsAction) ? activeDegree : 0,
+      focusFirstRegion: isScaleAction,
+      instruction: isProgressionAction
         ? {
             source: 'exercise',
             persistent: true,
@@ -317,7 +330,7 @@ const HarmonicCyclePage: React.FC = () => {
               ? 'Use troca de região para repetir o mesmo grau em diferentes áreas do braço.'
               : 'Use region switching to repeat the same degree in different fretboard zones.',
           }
-        : action === 'showScale'
+        : isScaleAction
           ? {
               source: 'exercise',
               persistent: true,
@@ -674,7 +687,7 @@ const HarmonicCyclePage: React.FC = () => {
             {mode === 'minor' && selectedProgression.includes('V') && (
               <p className="mt-4 text-xs font-bold text-amber-200">{t.harmonicDominantHint}</p>
             )}
-            <button onClick={() => applyToFretboard(info.supportsHarmonicField ? 'showProgression' : 'showScale', safeSelectedChordDegree)} className={`${isLight ? 'border border-blue-400/30 bg-[linear-gradient(180deg,#4f8df3,#2563eb)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_12px_24px_rgba(37,99,235,0.22)] hover:bg-[linear-gradient(180deg,#5b96f5,#2f6fe8)]' : 'border border-blue-400/22 bg-[linear-gradient(180deg,#2e6af0,#1d4ed8)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_14px_28px_rgba(15,23,42,0.32)] hover:bg-[linear-gradient(180deg,#3775f4,#2563eb)]'} mt-4 w-full rounded-xl px-4 py-3 text-[10px] font-black uppercase text-white transition`}>
+            <button onClick={() => applyToFretboard(info.supportsHarmonicField ? 'showHarmonyField' : 'showScale', safeSelectedChordDegree)} className={`${isLight ? 'border border-blue-400/30 bg-[linear-gradient(180deg,#4f8df3,#2563eb)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_12px_24px_rgba(37,99,235,0.22)] hover:bg-[linear-gradient(180deg,#5b96f5,#2f6fe8)]' : 'border border-blue-400/22 bg-[linear-gradient(180deg,#2e6af0,#1d4ed8)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_14px_28px_rgba(15,23,42,0.32)] hover:bg-[linear-gradient(180deg,#3775f4,#2563eb)]'} mt-4 w-full rounded-xl px-4 py-3 text-[10px] font-black uppercase text-white transition`}>
               {t.showOnFretboard}
             </button>
             {info.supportsHarmonicField && (
@@ -682,7 +695,7 @@ const HarmonicCyclePage: React.FC = () => {
               onClick={() => {
                 const nextDegree = resultingChords.length > 0 ? (safeSelectedChordDegree + 1) % resultingChords.length : 0;
                 setSelectedChordDegree(nextDegree);
-                applyToFretboard('showProgression', nextDegree);
+                applyToFretboard('showHarmonyField', nextDegree);
               }}
               className={`mt-2.5 w-full rounded-xl border px-4 py-3 text-[10px] font-black uppercase transition hover:border-blue-500 ${isLight ? 'border-blue-200 bg-white/90 text-blue-700 hover:bg-white' : 'border-blue-900/60 bg-[#080b11] text-blue-100'}`}
             >
