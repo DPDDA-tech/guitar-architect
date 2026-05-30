@@ -5,11 +5,9 @@ import { AppState, ThemeMode } from '../types';
 import { GREEK_MODES, MODAL_BACKING_TRACKS, MODAL_PROGRESSIONS, GreekModeInfo } from '../data/greekModes';
 import { recordAchievementEvent } from '../utils/achievementEvents';
 import QuickToolsModal from './QuickToolsModal';
-import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
-
-const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
-
-const navigateTo = navigateToPath;
+import { returnToFretboard } from '../utils/fretboardNavigation';
+import { sendFretboardIntent } from '../utils/sendFretboardIntent';
+import type { FretboardIntent, FretboardIntentAction } from '../types/fretboardIntent';
 
 const getInitialConfig = (): AppState | null => {
   try {
@@ -38,16 +36,15 @@ const MoonIcon = () => (
   </svg>
 );
 
-const makePayload = (mode: GreekModeInfo, action: 'scale' | 'triads' | 'field' | 'progression' | 'startPractice', extra: Record<string, unknown> = {}) => ({
-  source: 'study-module',
+const makePayload = (mode: GreekModeInfo, action: FretboardIntentAction, extra: Record<string, unknown> = {}): Omit<FretboardIntent, 'version' | 'createdAt'> => ({
+  source: 'greek-modes',
   action,
-  quickTab: action === 'scale' ? 'scale' : undefined,
+  targetTab: action === 'showScale' ? 'scale' : undefined,
   root: mode.root,
   displayRoot: mode.root,
   scaleType: mode.scaleType,
   moduleTitle: 'Modos Gregos',
   moduleLabel: mode.name,
-  createdAt: new Date().toISOString(),
   ...extra,
 });
 
@@ -258,10 +255,10 @@ const GreekModesPage: React.FC = () => {
     persistConfigPatch({ lang: nextLang });
   };
 
-  const sendToFretboard = (mode: GreekModeInfo, action: 'scale' | 'triads' | 'field' | 'progression' | 'startPractice', extra: Record<string, unknown> = {}) => {
+  const sendToFretboard = (mode: GreekModeInfo, action: FretboardIntentAction, extra: Record<string, unknown> = {}) => {
     recordAchievementEvent({ type: 'module_completion', moduleId: 'greek-modes' });
-    if (action === 'scale' || action === 'startPractice') recordAchievementEvent({ type: 'exploration', key: 'apply_scale' });
-    const scaleInstruction = action === 'scale'
+    if (action === 'showScale' || action === 'startPractice') recordAchievementEvent({ type: 'exploration', key: 'apply_scale' });
+    const scaleInstruction = action === 'showScale'
       ? {
           source: 'exercise',
           persistent: true,
@@ -275,11 +272,10 @@ const GreekModesPage: React.FC = () => {
         }
       : undefined;
 
-    window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify(makePayload(mode, action, {
-      ...(action === 'scale' ? { focusFirstRegion: true, instruction: scaleInstruction } : {}),
+    sendFretboardIntent(makePayload(mode, action, {
+      ...(action === 'showScale' ? { focusFirstRegion: true, instruction: scaleInstruction } : {}),
       ...extra,
-    })));
-    navigateTo('/studio');
+    }));
   };
 
   const openHeaderTool = (tool: 'tuner' | 'metronome') => {
@@ -355,8 +351,8 @@ const GreekModesPage: React.FC = () => {
                 <p>{lang === 'pt' ? 'Uso' : 'Use'}: {modeCopy.usage}</p>
               </div>
               <div className="mt-4 grid gap-2">
-                <button onClick={() => sendToFretboard(mode, 'scale')} className="rounded-xl bg-blue-600 px-3 py-2 text-[9px] font-black uppercase text-white">{copy.applyFretboard}</button>
-                <button onClick={() => sendToFretboard(mode, 'triads', { harmonyMode: 'TETRADS' })} className={`rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showSevenths}</button>
+                <button onClick={() => sendToFretboard(mode, 'showScale')} className="rounded-xl bg-blue-600 px-3 py-2 text-[9px] font-black uppercase text-white">{copy.applyFretboard}</button>
+                <button onClick={() => sendToFretboard(mode, 'showTriads', { harmonyMode: 'TETRADS' })} className={`rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showSevenths}</button>
                 <button onClick={() => sendToFretboard(mode, 'startPractice', { tool: 'exercises', practiceMode: 'modalCharacter', characteristicInterval: mode.characteristicInterval, bpm: 76 })} className={`rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.hearCharacter}</button>
               </div>
             </article>
@@ -397,9 +393,9 @@ const GreekModesPage: React.FC = () => {
               {copy.cagedBody}
             </p>
             <div className="mt-5 grid gap-2 sm:grid-cols-2">
-              <button onClick={() => sendToFretboard(activeMode, 'scale', { cagedShape: activeMode.cagedShape, showCharacteristic: true })} className="rounded-xl bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white">{copy.applyModeCaged}</button>
-              <button onClick={() => sendToFretboard(activeMode, 'triads', { harmonyMode: 'TRIADS' })} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showTriads}</button>
-              <button onClick={() => sendToFretboard(activeMode, 'field', { harmonyMode: 'TETRADS' })} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showTetrads}</button>
+              <button onClick={() => sendToFretboard(activeMode, 'showScale', { cagedShape: activeMode.cagedShape, showCharacteristic: true })} className="rounded-xl bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white">{copy.applyModeCaged}</button>
+              <button onClick={() => sendToFretboard(activeMode, 'showTriads', { harmonyMode: 'TRIADS' })} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showTriads}</button>
+              <button onClick={() => sendToFretboard(activeMode, 'showHarmonyField', { harmonyMode: 'TETRADS' })} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showTetrads}</button>
               <button onClick={() => sendToFretboard(activeMode, 'startPractice', { tool: 'exercises', practiceMode: 'modalTargets' })} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showTargets}</button>
             </div>
           </PanelSurface>
@@ -427,7 +423,7 @@ const GreekModesPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-          <button onClick={() => sendToFretboard(activeMode, 'scale', { compareMode: 'ionian-vs-active', showAlteredIntervals: true })} className="mt-4 rounded-xl bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white">{copy.compareFretboard}</button>
+          <button onClick={() => sendToFretboard(activeMode, 'showScale', { compareMode: 'ionian-vs-active', showAlteredIntervals: true })} className="mt-4 rounded-xl bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white">{copy.compareFretboard}</button>
         </PanelSurface>
 
         <div className="grid gap-6 xl:grid-cols-3">
@@ -445,7 +441,7 @@ const GreekModesPage: React.FC = () => {
                 const mode = GREEK_MODES.find(item => item.id === progression.modeId) || activeMode;
                 const progressionCopy = lang === 'pt' ? progression : { ...progression, ...progressionTranslations[progression.id] };
                 return (
-                  <button key={progression.id} onClick={() => sendToFretboard(mode, 'progression', { progression: progression.title, chords: progression.chords })} className={`rounded-xl border p-4 text-left ${isLight ? 'border-[#d2deeb] bg-white' : 'border-blue-950/60 bg-[#050914]'}`}>
+                  <button key={progression.id} onClick={() => sendToFretboard(mode, 'showProgression', { progression: progression.title, chords: progression.chords })} className={`rounded-xl border p-4 text-left ${isLight ? 'border-[#d2deeb] bg-white' : 'border-blue-950/60 bg-[#050914]'}`}>
                     <h3 className="font-black">{progressionCopy.title}</h3>
                     <p className={`mt-1 text-sm font-semibold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{progressionCopy.description}</p>
                   </button>

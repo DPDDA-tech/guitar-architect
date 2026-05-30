@@ -38,6 +38,7 @@ import { PinnedProfileBadges } from './PinnedProfileBadges';
 import { isAdminEmail } from '../utils/adminAccess';
 import { getMyAdminRole, type AdminRole } from '../utils/adminRoles';
 import { FretboardInstructionCard, type FretboardInstruction } from './FretboardInstructionCard';
+import type { FretboardIntent } from '../types/fretboardIntent';
 
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
@@ -77,6 +78,63 @@ interface PendingFretboardAction {
   practiceExerciseId?: string;
   focusFirstRegion?: boolean;
 }
+
+const LEGACY_ACTION_BY_INTENT: Record<string, PendingFretboardAction['action']> = {
+  showScale: 'scale',
+  showHarmonyField: 'field',
+  showTriads: 'triads',
+  showProgression: 'progression',
+  openTool: 'openTool',
+  startPractice: 'startPractice',
+  scale: 'scale',
+  field: 'field',
+  triads: 'triads',
+  progression: 'progression',
+};
+
+const isFretboardIntent = (value: unknown): value is FretboardIntent => {
+  if (!value || typeof value !== 'object') return false;
+  const intent = value as Record<string, unknown>;
+  return intent.version === 1
+    && typeof intent.source === 'string'
+    && typeof intent.action === 'string'
+    && typeof intent.root === 'string'
+    && typeof intent.scaleType === 'string';
+};
+
+const normalizeFretboardIntentToPending = (intent: FretboardIntent): PendingFretboardAction => {
+  const progressionName = typeof intent.progression === 'string'
+    ? intent.progression
+    : intent.progression?.name;
+  const progressionChords = typeof intent.progression === 'object' && intent.progression !== null
+    ? intent.progression.chords
+    : undefined;
+  const focusFirstRegion = intent.region?.focusFirstRegion ?? intent.focusFirstRegion;
+  const quickTab = intent.targetTab;
+  const pending: PendingFretboardAction & { quickTab?: string } = {
+    source: intent.source === 'harmonic-cycle' ? 'harmonic-cycle' : 'study-module',
+    action: LEGACY_ACTION_BY_INTENT[intent.action] || 'scale',
+    root: intent.root,
+    displayRoot: intent.displayRoot,
+    scaleType: intent.scaleType,
+    progression: progressionName,
+    chords: intent.chords || progressionChords,
+    moduleTitle: intent.moduleTitle,
+    moduleLabel: intent.moduleLabel,
+    tool: intent.tool,
+    bpm: intent.bpm,
+    instruction: intent.instruction as FretboardInstruction | undefined,
+    harmonyMode: intent.harmonyMode === 'OFF' ? undefined : intent.harmonyMode,
+    chordQuality: intent.chordQuality as FretboardState['chordQuality'] | undefined,
+    chordDegree: intent.chordDegree,
+    inversion: intent.inversion,
+    voicingMode: intent.voicingMode as FretboardState['voicingMode'] | undefined,
+    practiceExerciseId: intent.practiceExerciseId,
+    focusFirstRegion: Boolean(focusFirstRegion),
+    quickTab,
+  };
+  return pending;
+};
 
 const LogoIcon = ({ brand, variant = 'default' }: { brand: BrandAssets; variant?: 'default' | 'large' | 'footer' }) => {
   const isLarge = variant === 'large';
@@ -1172,7 +1230,10 @@ const handleReturnToContext = () => {
 
     let pending: PendingFretboardAction | null = null;
     try {
-      pending = JSON.parse(rawAction) as PendingFretboardAction;
+      const parsed = JSON.parse(rawAction) as unknown;
+      pending = isFretboardIntent(parsed)
+        ? normalizeFretboardIntentToPending(parsed)
+        : parsed as PendingFretboardAction;
     } catch {
       window.localStorage.removeItem(PENDING_FRETBOARD_ACTION_KEY);
       return;

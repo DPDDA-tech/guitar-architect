@@ -17,8 +17,8 @@ import {
 import { recordAchievementEvent } from '../utils/achievementEvents';
 import TriadTrainer from './TriadTrainer';
 import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
-
-const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
+import { sendFretboardIntent } from '../utils/sendFretboardIntent';
+import type { FretboardIntent } from '../types/fretboardIntent';
 
 const SunIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -50,7 +50,7 @@ type TriadTrainerLegacyAction = {
   payload?: Record<string, unknown>;
 };
 
-const normalizeTriadTrainerAction = (action: TriadTrainerLegacyAction) => {
+const normalizeTriadTrainerAction = (action: TriadTrainerLegacyAction): Omit<FretboardIntent, 'version' | 'createdAt'> => {
   const payload = action?.payload ?? {};
   const root = typeof payload.root === 'string' ? payload.root : 'C';
   const quality = typeof payload.quality === 'string' ? payload.quality : 'major';
@@ -66,7 +66,7 @@ const normalizeTriadTrainerAction = (action: TriadTrainerLegacyAction) => {
 
   if (action?.type === 'triad-trainer-sequence') {
     return {
-      source: 'study-module' as const,
+      source: 'triad-trainer' as const,
       action: 'startPractice' as const,
       root,
       displayRoot: root,
@@ -82,8 +82,8 @@ const normalizeTriadTrainerAction = (action: TriadTrainerLegacyAction) => {
   }
 
   return {
-    source: 'study-module' as const,
-    action: 'triads' as const,
+    source: 'triad-trainer' as const,
+    action: 'showTriads' as const,
     root,
     displayRoot: root,
     scaleType: safeScaleType,
@@ -180,11 +180,10 @@ const TriadsTetradsPage: React.FC<{ openTrainer?: boolean }> = ({ openTrainer = 
   const executeAction = (action: TriadsTetradsAction) => {
     recordAchievementEvent({ type: 'module_completion', moduleId: 'triads-tetrads' });
     recordAchievementEvent({ type: 'exercise_completion', exerciseId: 'triads-on-neck' });
-    window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify({
-      ...action.payload,
-      createdAt: new Date().toISOString(),
-    }));
-    navigateTo('/studio');
+    sendFretboardIntent({
+      ...(action.payload as Omit<FretboardIntent, 'version' | 'createdAt'>),
+      source: 'triads-tetrads',
+    });
   };
 
   return (
@@ -232,10 +231,7 @@ const TriadsTetradsPage: React.FC<{ openTrainer?: boolean }> = ({ openTrainer = 
             tuning={['E', 'B', 'G', 'D', 'A', 'E']}
             onAction={(action: TriadTrainerLegacyAction) => {
               const normalized = normalizeTriadTrainerAction(action);
-              window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify({
-                ...normalized,
-                createdAt: new Date().toISOString(),
-              }));
+              sendFretboardIntent(normalized);
             }} 
           />
         )}
