@@ -39,6 +39,7 @@ import { isAdminEmail } from '../utils/adminAccess';
 import { getMyAdminRole, type AdminRole } from '../utils/adminRoles';
 import { FretboardInstructionCard, type FretboardInstruction } from './FretboardInstructionCard';
 import type { FretboardIntent } from '../types/fretboardIntent';
+import { FretboardContextCoach, type FretboardContextCoachData } from './FretboardContextCoach';
 
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
@@ -78,6 +79,62 @@ interface PendingFretboardAction {
   practiceExerciseId?: string;
   focusFirstRegion?: boolean;
 }
+
+const buildContextCoach = (pending: PendingFretboardAction, lang: Lang): FretboardContextCoachData | null => {
+  const isPt = lang === 'pt';
+  const root = pending.displayRoot || pending.root || 'C';
+  const scaleType = pending.scaleType || (isPt ? 'escala atual' : 'current scale');
+
+  if (pending.instruction?.description) {
+    return {
+      title: pending.instruction.title || (isPt ? 'Próximo passo' : 'Next step'),
+      message: pending.instruction.description,
+      source: pending.source,
+    };
+  }
+
+  if (pending.source === 'harmonic-cycle' || pending.action === 'scale') {
+    return {
+      title: `${root} - ${scaleType}`,
+      message: isPt
+        ? 'Observe primeiro as tônicas destacadas. Toque a escala lentamente, subindo e descendo na região visível.'
+        : 'Start with highlighted tonics. Play the scale slowly ascending and descending in the visible region.',
+      source: pending.source,
+    };
+  }
+
+  if (pending.action === 'field' || pending.action === 'triads') {
+    return {
+      title: isPt ? 'Campo harmônico' : 'Harmonic field',
+      message: isPt
+        ? 'Compare os graus e note como os acordes nascem da mesma tonalidade antes de acelerar o estudo.'
+        : 'Compare degrees and notice how chords come from the same key before increasing speed.',
+      source: pending.source,
+    };
+  }
+
+  if (pending.action === 'progression') {
+    return {
+      title: pending.progression || (isPt ? 'Progressão' : 'Progression'),
+      message: isPt
+        ? 'Toque os acordes na ordem indicada e observe a sensação de tensão e resolução entre eles.'
+        : 'Play chords in order and notice tension and resolution between them.',
+      source: pending.source,
+    };
+  }
+
+  if (pending.source === 'study-module' && pending.tool === 'exercises') {
+    return {
+      title: pending.moduleTitle || (isPt ? 'Prática guiada' : 'Guided practice'),
+      message: isPt
+        ? 'Siga o exercício com calma. Priorize precisão antes de velocidade.'
+        : 'Follow the exercise calmly. Prioritize accuracy before speed.',
+      source: pending.source,
+    };
+  }
+
+  return null;
+};
 
 const LEGACY_ACTION_BY_INTENT: Record<string, PendingFretboardAction['action']> = {
   showScale: 'scale',
@@ -231,6 +288,7 @@ const FretboardPanel: React.FC = () => {
   const [defaultInstrument, setDefaultInstrument] = useState<InstrumentType>('guitar-6');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [activeInstruction, setInstruction] = useState<FretboardInstruction | null>(null);
+  const [activeContextCoach, setActiveContextCoach] = useState<FretboardContextCoachData | null>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
@@ -1273,6 +1331,8 @@ const handleReturnToContext = () => {
         instructionTimeoutRef.current = window.setTimeout(() => setInstruction(null), pending.instruction.durationMs);
       }
     }
+    const nextCoach = buildContextCoach(pending, lang);
+    setActiveContextCoach(nextCoach);
 
     const applyToDiagram = (instance: FretboardState): FretboardState => {
       const isCycleProgression = pending.source === 'harmonic-cycle' && pending.action === 'progression';
@@ -2139,12 +2199,20 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         {activeInstruction && (
           <FretboardInstructionCard 
             instruction={activeInstruction} 
-            isLight={isLight} 
-            lang={lang} 
+            isLight={isLight}
+            lang={lang}
             onClose={() => {
               clearInstructionTimeout();
               setInstruction(null);
-            }} 
+            }}
+          />
+        )}
+        {activeContextCoach && (
+          <FretboardContextCoach
+            context={activeContextCoach}
+            isLight={isLight}
+            lang={lang}
+            onClose={() => setActiveContextCoach(null)}
           />
         )}
 
