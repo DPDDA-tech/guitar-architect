@@ -3111,9 +3111,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               </div>
             )}
             <FretboardSVG state={state} onEvent={handleEvent} theme={theme} isActive={false} selectedColor={markerColor} selectedShape={markerShape} editorMode={editorMode} isExport={isExporting} feedbackNote={activeFollowNote || noteClickFeedback} />
-            <div className="pointer-events-none absolute right-3 top-3 z-20 rounded-md border border-amber-400/60 bg-amber-500/10 px-2 py-1 font-mono text-[10px] font-black uppercase tracking-[0.08em] text-amber-300">
-              DEBUG SF:{state.startFret} EF:{state.endFret}
-            </div>
+            {import.meta.env.DEV ? (
+              <div className="pointer-events-none absolute right-3 top-3 z-20 rounded-md border border-amber-400/60 bg-amber-500/10 px-2 py-1 font-mono text-[10px] font-black uppercase tracking-[0.08em] text-amber-300">
+                DEBUG SF:{state.startFret} EF:{state.endFret}
+              </div>
+            ) : null}
           </div>
 
          {!isExporting && (
