@@ -16,9 +16,9 @@ import {
   VOICING_CATEGORIES,
 } from '../data/chordsData';
 import { recordAchievementEvent } from '../utils/achievementEvents';
-import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
-
-const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
+import { returnToFretboard } from '../utils/fretboardNavigation';
+import { sendFretboardIntent } from '../utils/sendFretboardIntent';
+import type { FretboardIntent, FretboardIntentAction, FretboardIntentTab } from '../types/fretboardIntent';
 
 const SunIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -33,8 +33,6 @@ const MoonIcon = () => (
   </svg>
 );
 
-const navigateTo = navigateToPath;
-
 const getInitialConfig = (): AppState | null => {
   try {
     return loadConfig();
@@ -48,6 +46,21 @@ const PanelSurface = ({ children, isLight, className = '' }: { children: React.R
     {children}
   </section>
 );
+
+const mapLegacyActionToIntentAction = (action: unknown): FretboardIntentAction => {
+  if (action === 'scale') return 'showScale';
+  if (action === 'field') return 'showHarmonyField';
+  if (action === 'triads') return 'showTriads';
+  if (action === 'progression') return 'showProgression';
+  if (action === 'openTool') return 'openTool';
+  if (action === 'startPractice') return 'startPractice';
+  return 'showScale';
+};
+
+const mapLegacyTabToTargetTab = (value: unknown): FretboardIntentTab | undefined => {
+  if (value === 'visual' || value === 'scale' || value === 'harmony' || value === 'tools' || value === 'chords') return value;
+  return undefined;
+};
 
 const ChordsPage: React.FC = () => {
   const [lang, setLang] = useState<Lang>(() => getInitialConfig()?.lang || 'pt');
@@ -90,13 +103,17 @@ const ChordsPage: React.FC = () => {
 
   const executePayload = (payload: Record<string, unknown>, label?: string) => {
     recordAchievementEvent({ type: 'module_completion', moduleId: 'chords' });
-    window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify({
-      ...payload,
+    const payloadRecord = payload as Record<string, unknown>;
+    sendFretboardIntent({
+      ...(payloadRecord as Omit<FretboardIntent, 'version' | 'createdAt'>),
+      source: 'chords',
+      action: mapLegacyActionToIntentAction(payloadRecord.action),
+      root: typeof payloadRecord.root === 'string' ? payloadRecord.root : 'C',
+      scaleType: typeof payloadRecord.scaleType === 'string' ? payloadRecord.scaleType : 'Major (Ionian)',
+      targetTab: mapLegacyTabToTargetTab(payloadRecord.quickTab ?? payloadRecord.tab),
       moduleTitle: CHORDS_COPY.title[lang],
       moduleLabel: label,
-      createdAt: new Date().toISOString(),
-    }));
-    navigateTo('/studio');
+    });
   };
 
   return (
