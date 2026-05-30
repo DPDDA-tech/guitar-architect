@@ -74,6 +74,7 @@ interface PendingFretboardAction {
   inversion?: number;
   voicingMode?: FretboardState['voicingMode'];
   practiceExerciseId?: string;
+  focusFirstRegion?: boolean;
 }
 
 const LogoIcon = ({ brand, variant = 'default' }: { brand: BrandAssets; variant?: 'default' | 'large' | 'footer' }) => {
@@ -187,6 +188,7 @@ const FretboardPanel: React.FC = () => {
   const [showMyInstruments, setShowMyInstruments] = useState(false);
   const instructionTimeoutRef = useRef<number | null>(null);
   const instrumentsSyncTimeoutRef = useRef<number | null>(null);
+  const shouldScrollToNewDiagramRef = useRef(false);
   const [showTips, setShowTips] = useState(true);
   const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
 
@@ -1095,6 +1097,15 @@ const handleReturnToContext = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!activeInstanceId || !shouldScrollToNewDiagramRef.current) return;
+    const target = document.getElementById(`diagram-${activeInstanceId}`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      shouldScrollToNewDiagramRef.current = false;
+    }
+  }, [activeInstanceId, instances]);
   const openModulePage = useCallback((path: string) => {
     saveConfig({
       version: "1.8.7",
@@ -1192,6 +1203,8 @@ const handleReturnToContext = () => {
       const shouldResetFretboardViewport = pending.source === 'harmonic-cycle' || pending.source === 'study-module';
       const isHarmonyAction = pending.action === 'field' || pending.action === 'triads' || (pending.action === 'progression' && !isCycleProgression);
       const isScaleAction = pending.action === 'scale' || pending.action === 'startPractice';
+      const isCycleScaleAction = pending.source === 'harmonic-cycle' && pending.action === 'scale';
+      const shouldFocusFirstRegion = Boolean(pending.focusFirstRegion) || isCycleScaleAction;
       const nextRoot = pending.root || instance.root;
       const nextScaleType = pending.scaleType || instance.scaleType;
       const safeInstrumentType = instance.instrumentType || defaultInstrument || 'guitar-6';
@@ -1217,8 +1230,8 @@ const handleReturnToContext = () => {
         chordDegree: pending.chordDegree ?? 0,
         inversion: pending.inversion ?? 0,
         voicingMode: pending.voicingMode || instance.voicingMode,
-        startFret: shouldResetFretboardViewport ? 0 : instance.startFret,
-        endFret: shouldResetFretboardViewport ? 15 : instance.endFret,
+        startFret: shouldFocusFirstRegion ? 0 : shouldResetFretboardViewport ? 0 : instance.startFret,
+        endFret: shouldFocusFirstRegion ? 4 : shouldResetFretboardViewport ? 15 : instance.endFret,
         markers: shouldResetFretboardViewport ? [] : instance.markers,
         lines: shouldResetFretboardViewport ? [] : instance.lines,
         stringStatuses: shouldResetFretboardViewport
@@ -1250,15 +1263,18 @@ const handleReturnToContext = () => {
           return prev;
         }
         setActiveInstanceId(created.id);
+        shouldScrollToNewDiagramRef.current = true;
         return prev.map((instance, index) => index === prev.length - 1 ? created : instance);
       }
 
       if (prev.length === 0) {
         setActiveInstanceId(created.id);
+        shouldScrollToNewDiagramRef.current = true;
         return [created];
       }
 
       setActiveInstanceId(created.id);
+      shouldScrollToNewDiagramRef.current = true;
       return [...prev, created];
     });
 
@@ -2107,7 +2123,9 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           </div>
         ) : (
           instances.map((inst, idx) => (
-            <FretboardInstance key={inst.id} state={inst} updateState={(s) => updateInstance(inst.id, s)} onRemove={() => setInstances(prev => prev.filter(i => i.id !== inst.id))} onMove={(dir) => { const newList = [...instances]; const tIdx = dir === 'up' ? idx - 1 : idx + 1; if (tIdx >= 0 && tIdx < newList.length) { [newList[idx], newList[tIdx]] = [newList[tIdx], newList[idx]]; setInstances(newList); setActiveInstanceId(newList[tIdx].id); } }} onAdd={addInstance} isFirst={idx === 0} isLast={idx === instances.length - 1} diagramNumber={idx + 1} theme={theme} lang={lang} isActive={(activeInstanceId || instances[0]?.id) === inst.id} onActivate={() => setActiveInstanceId(inst.id)} isExporting={isExporting} globalTranspose={globalTranspose} onGlobalTranspose={handleGlobalTranspose} showTips={showTips} onToggleTips={() => setShowTips(prev => !prev)} />
+            <div key={inst.id} id={`diagram-${inst.id}`}>
+              <FretboardInstance state={inst} updateState={(s) => updateInstance(inst.id, s)} onRemove={() => setInstances(prev => prev.filter(i => i.id !== inst.id))} onMove={(dir) => { const newList = [...instances]; const tIdx = dir === 'up' ? idx - 1 : idx + 1; if (tIdx >= 0 && tIdx < newList.length) { [newList[idx], newList[tIdx]] = [newList[tIdx], newList[idx]]; setInstances(newList); setActiveInstanceId(newList[tIdx].id); } }} onAdd={addInstance} isFirst={idx === 0} isLast={idx === instances.length - 1} diagramNumber={idx + 1} theme={theme} lang={lang} isActive={(activeInstanceId || instances[0]?.id) === inst.id} onActivate={() => setActiveInstanceId(inst.id)} isExporting={isExporting} globalTranspose={globalTranspose} onGlobalTranspose={handleGlobalTranspose} showTips={showTips} onToggleTips={() => setShowTips(prev => !prev)} />
+            </div>
           ))
         )}
       </div>

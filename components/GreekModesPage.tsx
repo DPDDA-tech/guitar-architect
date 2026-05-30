@@ -43,6 +43,7 @@ const MoonIcon = () => (
 const makePayload = (mode: GreekModeInfo, action: 'scale' | 'triads' | 'field' | 'progression' | 'startPractice', extra: Record<string, unknown> = {}) => ({
   source: 'study-module',
   action,
+  quickTab: action === 'scale' ? 'scale' : undefined,
   root: mode.root,
   displayRoot: mode.root,
   scaleType: mode.scaleType,
@@ -262,7 +263,24 @@ const GreekModesPage: React.FC = () => {
   const sendToFretboard = (mode: GreekModeInfo, action: 'scale' | 'triads' | 'field' | 'progression' | 'startPractice', extra: Record<string, unknown> = {}) => {
     recordAchievementEvent({ type: 'module_completion', moduleId: 'greek-modes' });
     if (action === 'scale' || action === 'startPractice') recordAchievementEvent({ type: 'exploration', key: 'apply_scale' });
-    window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify(makePayload(mode, action, extra)));
+    const scaleInstruction = action === 'scale'
+      ? {
+          source: 'exercise',
+          persistent: true,
+          title: lang === 'pt' ? `Escala alvo: ${mode.root} ${getModeCopy(mode, lang).name}` : `Target scale: ${mode.root} ${getModeCopy(mode, lang).name}`,
+          description: lang === 'pt'
+            ? 'Mapa inicial carregado na primeira região. Toque subindo e descendo para fixar o desenho.'
+            : 'Initial map loaded in the first region. Play ascending and descending to lock the shape.',
+          hint: lang === 'pt'
+            ? 'Use Região - e Região + para navegar entre áreas do braço mantendo a mesma escala.'
+            : 'Use Region - and Region + to move across fretboard areas with the same scale.',
+        }
+      : undefined;
+
+    window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify(makePayload(mode, action, {
+      ...(action === 'scale' ? { focusFirstRegion: true, instruction: scaleInstruction } : {}),
+      ...extra,
+    })));
     navigateTo('/studio');
   };
 
