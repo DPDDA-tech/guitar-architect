@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import FretboardInstance from './FretboardInstance';
-import { FretboardState, ThemeMode, Project, InstrumentType } from '../types';
+import { FretboardState, ThemeMode, Project, InstrumentType, Marker, Line, StringStatus } from '../types';
 import { translations, Lang } from '../i18n';
-import { transposeNote, INSTRUMENT_PRESETS } from '../music/musicTheory';
+import { transposeNote, INSTRUMENT_PRESETS, TUNINGS_PRESETS } from '../music/musicTheory';
 import { 
   saveConfig, 
   loadConfig, 
@@ -43,6 +43,7 @@ import { FretboardContextCoach, type FretboardContextCoachData } from './Fretboa
 import { FretboardExecutionFeedback, type FretboardExecutionFeedbackData } from './FretboardExecutionFeedback';
 import { FretboardGuidedPractice, type FretboardGuidedPracticeData } from './FretboardGuidedPractice';
 import { FretboardOnboardingOverlay, type FretboardOnboardingTip } from './FretboardOnboardingOverlay';
+import { generateChordVoicings, type ChordType } from '../music/chordLibrary';
 
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
@@ -88,7 +89,79 @@ interface PendingFretboardAction {
   shape?: string;
   shapeSequence?: string[];
   horizontalConnection?: boolean;
+  quickTab?: string;
+  tab?: string;
 }
+
+const parseChordForFretboard = (symbol: string): { root: string; type: ChordType } | null => {
+  const normalized = symbol.trim();
+  const match = normalized.match(/^([A-G](?:#|b)?)(.*)$/);
+  if (!match) return null;
+  const root = match[1];
+  const quality = (match[2] || '').trim().toLowerCase();
+  if (quality.startsWith('dim') || quality.includes('°') || quality.includes('º')) return { root, type: 'm7b5' };
+  if (quality.startsWith('m') && !quality.startsWith('maj')) return { root, type: 'minor' };
+  if (quality.includes('7')) return { root, type: '7' };
+  return { root, type: 'major' };
+};
+
+const resolveInstanceTuning = (instance: FretboardState): string[] => {
+  const instrument = INSTRUMENT_PRESETS[instance.instrumentType || 'guitar-6'];
+  if (instance.tuning === 'Custom' && instance.customTuning?.length) {
+    return instance.customTuning.slice(0, instrument.strings);
+  }
+  if (instance.tuning && TUNINGS_PRESETS[instance.tuning]) {
+    const preset = TUNINGS_PRESETS[instance.tuning];
+    const merged = [...instrument.defaultTuning];
+    for (let i = 0; i < Math.min(preset.length, merged.length); i += 1) {
+      merged[i] = preset[i] as any;
+    }
+    return merged.slice(0, instrument.strings);
+  }
+  return instrument.defaultTuning.slice(0, instrument.strings);
+};
+
+const buildChordVisualState = (
+  instance: FretboardState,
+  chordSymbol: string,
+): { root: string; markers: Marker[]; lines: Line[]; stringStatuses: StringStatus[] } | null => {
+  const parsed = parseChordForFretboard(chordSymbol);
+  if (!parsed) return null;
+  const tuning = resolveInstanceTuning(instance);
+  const voicings = generateChordVoicings(parsed.root, parsed.type, tuning, {
+    maxFretSpan: 5,
+    maxFret: Math.max(12, instance.endFret || 12),
+    preferOpenChords: true,
+    preferRootInBass: true,
+  });
+  if (!voicings.length) return null;
+  const selected = voicings[0];
+  const markers: Marker[] = selected.positions.map((position, index) => ({
+    id: crypto.randomUUID(),
+    string: position.string,
+    fret: position.fret,
+    shape: index === 0 ? 'circle' : 'square',
+    color: index === 0 ? '#ef4444' : '#2563eb',
+    finger: position.finger || '1',
+  }));
+  const stringStatuses: StringStatus[] = Array(tuning.length).fill('muted');
+  selected.positions.forEach((position) => {
+    stringStatuses[position.string] = position.fret === 0 ? 'open' : 'normal';
+  });
+  const lines: Line[] = selected.barre ? [{
+    id: crypto.randomUUID(),
+    start: { string: selected.barre.fromString, fret: selected.barre.fret },
+    end: { string: selected.barre.toString, fret: selected.barre.fret },
+    color: '#0f172a',
+    width: 11,
+  }] : [];
+  return {
+    root: selected.root,
+    markers,
+    lines,
+    stringStatuses,
+  };
+};
 
 const buildContextCoach = (pending: PendingFretboardAction, lang: Lang): FretboardContextCoachData | null => {
   const isPt = lang === 'pt';
@@ -1658,16 +1731,22 @@ const handleReturnToContext = () => {
     }
 
     const applyToDiagram = (instance: FretboardState): FretboardState => {
-      const isCycleProgression = pending.source === 'harmonic-cycle' && pending.action === 'progression';
       const shouldResetFretboardViewport = pending.source === 'harmonic-cycle' || pending.source === 'study-module';
-      const isHarmonyAction = pending.action === 'field' || pending.action === 'triads' || (pending.action === 'progression' && !isCycleProgression);
-      const isScaleAction = pending.action === 'scale' || pending.action === 'startPractice';
+      const isHarmonyAction = pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression';
+      const isScaleAction = pending.action === 'scale' || (pending.action === 'startPractice' && !pending.chords?.length);
       const isCycleScaleAction = pending.source === 'harmonic-cycle' && pending.action === 'scale';
       const shouldFocusFirstRegion = Boolean(pending.focusFirstRegion) || isCycleScaleAction;
       const nextRoot = pending.root || instance.root;
       const nextScaleType = pending.scaleType || instance.scaleType;
       const safeInstrumentType = instance.instrumentType || defaultInstrument || 'guitar-6';
       const expectedStringCount = INSTRUMENT_PRESETS[safeInstrumentType]?.strings || 6;
+      const hasChords = Array.isArray(pending.chords) && pending.chords.length > 0;
+      const normalizedDegree = hasChords
+        ? ((pending.chordDegree ?? 0) % pending.chords!.length + pending.chords!.length) % pending.chords!.length
+        : 0;
+      const initialChordSymbol = hasChords ? pending.chords![normalizedDegree] : null;
+      const chordVisualState = initialChordSymbol ? buildChordVisualState(instance, initialChordSymbol) : null;
+      const shouldApplyChordVisualState = (pending.action === 'progression' || pending.action === 'field' || pending.action === 'triads') && Boolean(chordVisualState);
       return {
         ...instance,
         id: instance.id || crypto.randomUUID(),
@@ -1684,21 +1763,23 @@ const handleReturnToContext = () => {
           : instance.notes,
         root: nextRoot,
         scaleType: nextScaleType,
-        harmonyMode: pending.harmonyMode || (pending.action === 'field' || pending.action === 'progression' ? 'TETRADS' : isHarmonyAction ? 'TRIADS' : 'OFF'),
+        harmonyMode: pending.harmonyMode || (pending.action === 'field' || pending.action === 'progression' ? 'TETRADS' : pending.action === 'triads' ? 'TRIADS' : 'OFF'),
         chordQuality: pending.chordQuality || 'DIATONIC',
-        chordDegree: pending.chordDegree ?? 0,
+        chordDegree: normalizedDegree,
         inversion: pending.inversion ?? 0,
         voicingMode: pending.voicingMode || instance.voicingMode,
         startFret: shouldFocusFirstRegion ? 0 : shouldResetFretboardViewport ? 0 : instance.startFret,
         endFret: shouldFocusFirstRegion ? 4 : shouldResetFretboardViewport ? 15 : instance.endFret,
-        markers: shouldResetFretboardViewport ? [] : instance.markers,
-        lines: shouldResetFretboardViewport ? [] : instance.lines,
+        markers: shouldApplyChordVisualState ? chordVisualState!.markers : (shouldResetFretboardViewport ? [] : instance.markers),
+        lines: shouldApplyChordVisualState ? chordVisualState!.lines : (shouldResetFretboardViewport ? [] : instance.lines),
         stringStatuses: shouldResetFretboardViewport
-          ? Array(expectedStringCount).fill('normal')
+          ? (shouldApplyChordVisualState
+            ? chordVisualState!.stringStatuses
+            : Array(expectedStringCount).fill('normal'))
           : instance.stringStatuses,
         layers: {
           ...instance.layers,
-          showScale: isCycleProgression ? false : (isScaleAction || isHarmonyAction),
+          showScale: isScaleAction || isHarmonyAction,
           showAllNotes: false,
           showTonic: true,
         },
@@ -1737,22 +1818,22 @@ const handleReturnToContext = () => {
       return [...prev, created];
     });
 
-    const targetTab = (pending as any).quickTab || (pending as any).tab || (
+    const targetTab = pending.quickTab || pending.tab || (
       (pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression' || pending.harmonyMode) ? 'harmony' :
       pending.action === 'scale' ? 'scale' :
       (pending.action === 'startPractice' || pending.tool) ? 'tools' :
       'visual'
     );
-
-    const eventName = (targetTab === 'tools')
+    const normalizedTargetTab = pending.action === 'progression' ? 'chords' : targetTab;
+    const eventName = (normalizedTargetTab === 'tools')
       ? 'ga-open-diagram-panel'
       : 'ga-open-quick-tab';
 
     window.setTimeout(() => {
       window.dispatchEvent(new CustomEvent(eventName, { 
         detail: { 
-          tab: targetTab, 
-          tool: (eventName === 'ga-open-diagram-panel' && targetTab === 'tools')
+          tab: normalizedTargetTab, 
+          tool: (eventName === 'ga-open-diagram-panel' && normalizedTargetTab === 'tools')
             ? (pending.tool || 'exercises') 
             : undefined 
         } 
