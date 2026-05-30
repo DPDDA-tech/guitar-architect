@@ -105,6 +105,8 @@ const TriadTrainer: React.FC<TriadTrainerProps> = ({ isLight, lang, tuning, onAc
         sequence,
         bpm,
         soundEnabled,
+        root,
+        quality,
       }
     });
     window.history.pushState(null, '', '/studio');
@@ -122,6 +124,8 @@ const TriadTrainer: React.FC<TriadTrainerProps> = ({ isLight, lang, tuning, onAc
         harmonyMode: 'OFF',
         labelMode: 'fingering',
         soundEnabled,
+        root,
+        quality,
       }
     });
     window.history.pushState(null, '', '/studio');

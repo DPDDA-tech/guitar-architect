@@ -45,6 +45,59 @@ const getInitialConfig = (): AppState | null => {
   }
 };
 
+type TriadTrainerLegacyAction = {
+  type?: string;
+  action?: string;
+  source?: string;
+  payload?: Record<string, unknown>;
+};
+
+const normalizeTriadTrainerAction = (action: TriadTrainerLegacyAction) => {
+  const payload = action?.payload ?? {};
+  const root = typeof payload.root === 'string' ? payload.root : 'C';
+  const quality = typeof payload.quality === 'string' ? payload.quality : 'major';
+  const sequence = Array.isArray(payload.sequence) ? payload.sequence : [];
+  const safeScaleType = quality === 'minor' ? 'Minor (Aeolian)' : 'Major (Ionian)';
+  const moduleLabel = quality ? `Tríade ${quality}` : 'Triad Trainer';
+  const instruction = {
+    title: 'Escala alvo',
+    description: `${root} ${moduleLabel}`,
+    tip: 'Ajuste região com REGIÃO + e REGIÃO - para explorar o mesmo shape em outras áreas do braço.',
+    persistent: true,
+  };
+
+  if (action?.type === 'triad-trainer-sequence') {
+    return {
+      source: 'study-module' as const,
+      action: 'startPractice' as const,
+      root,
+      displayRoot: root,
+      scaleType: safeScaleType,
+      harmonyMode: 'TRIADS' as const,
+      tool: 'exercises' as const,
+      moduleTitle: 'Triad Trainer',
+      moduleLabel: sequence.length > 0 ? `${sequence.length} shapes na sequência` : moduleLabel,
+      bpm: typeof payload.bpm === 'number' ? payload.bpm : 80,
+      focusFirstRegion: true,
+      instruction,
+    };
+  }
+
+  return {
+    source: 'study-module' as const,
+    action: 'triads' as const,
+    root,
+    displayRoot: root,
+    scaleType: safeScaleType,
+    harmonyMode: 'TRIADS' as const,
+    moduleTitle: 'Triad Trainer',
+    moduleLabel,
+    chordQuality: 'DIATONIC' as const,
+    focusFirstRegion: true,
+    instruction,
+  };
+};
+
 const PanelSurface = ({
   children,
   isLight,
@@ -179,7 +232,13 @@ const TriadsTetradsPage: React.FC<{ openTrainer?: boolean }> = ({ openTrainer = 
             isLight={isLight} 
             lang={lang} 
             tuning={['E', 'B', 'G', 'D', 'A', 'E']}
-            onAction={(action: any) => window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify(action))} 
+            onAction={(action: TriadTrainerLegacyAction) => {
+              const normalized = normalizeTriadTrainerAction(action);
+              window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify({
+                ...normalized,
+                createdAt: new Date().toISOString(),
+              }));
+            }} 
           />
         )}
         
