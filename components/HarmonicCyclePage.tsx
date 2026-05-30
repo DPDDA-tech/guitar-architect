@@ -174,18 +174,18 @@ const RELATIVE_MINOR_LABELS: Record<string, string> = {
 };
 
 const MODE_OPTIONS: Array<{ value: HarmonicCycleMode; labelPt: string; labelEn: string }> = [
-  { value: 'major', labelPt: 'Maior (JÃ´nio)', labelEn: 'Major (Ionian)' },
+  { value: 'major', labelPt: 'Maior (Jônio)', labelEn: 'Major (Ionian)' },
   { value: 'minor', labelPt: 'Menor Natural', labelEn: 'Natural Minor' },
-  { value: 'harmonic-minor', labelPt: 'Menor HarmÃ´nica', labelEn: 'Harmonic Minor' },
-  { value: 'melodic-minor', labelPt: 'Menor MelÃ³dica', labelEn: 'Melodic Minor' },
-  { value: 'pentatonic-major', labelPt: 'PentatÃ´nica Maior', labelEn: 'Pentatonic Major' },
-  { value: 'pentatonic-minor', labelPt: 'PentatÃ´nica Menor', labelEn: 'Pentatonic Minor' },
+  { value: 'harmonic-minor', labelPt: 'Menor Harmônica', labelEn: 'Harmonic Minor' },
+  { value: 'melodic-minor', labelPt: 'Menor Melódica', labelEn: 'Melodic Minor' },
+  { value: 'pentatonic-major', labelPt: 'Pentatônica Maior', labelEn: 'Pentatonic Major' },
+  { value: 'pentatonic-minor', labelPt: 'Pentatônica Menor', labelEn: 'Pentatonic Minor' },
   { value: 'blues', labelPt: 'Blues', labelEn: 'Blues' },
-  { value: 'dorian', labelPt: 'DÃ³rico', labelEn: 'Dorian' },
-  { value: 'phrygian', labelPt: 'FrÃ­gio', labelEn: 'Phrygian' },
-  { value: 'lydian', labelPt: 'LÃ­dio', labelEn: 'Lydian' },
-  { value: 'mixolydian', labelPt: 'MixolÃ­dio', labelEn: 'Mixolydian' },
-  { value: 'locrian', labelPt: 'LÃ³crio', labelEn: 'Locrian' },
+  { value: 'dorian', labelPt: 'Dórico', labelEn: 'Dorian' },
+  { value: 'phrygian', labelPt: 'Frígio', labelEn: 'Phrygian' },
+  { value: 'lydian', labelPt: 'Lídio', labelEn: 'Lydian' },
+  { value: 'mixolydian', labelPt: 'Mixolídio', labelEn: 'Mixolydian' },
+  { value: 'locrian', labelPt: 'Lócrio', labelEn: 'Locrian' },
 ];
 
 const getSectorClass = (note: string, role: string, visualRole: TonalVisualRole, isLight: boolean, activeFamily = NOTE_COLOR_CLASS[getNoteColorFamily(note)] || NOTE_COLOR_CLASS.A) => {
@@ -216,7 +216,7 @@ const getSectorClass = (note: string, role: string, visualRole: TonalVisualRole,
   return isLight ? family.light : family.dark;
 };
 
-const baseNote = (chord: string) => normalizeNote(chord.replace(/m|Â°|Ã‚Â°/g, ''));
+const baseNote = (chord: string) => normalizeNote(chord.replace(/m|°/g, ''));
 
 const HarmonicCyclePage: React.FC = () => {
   const [lang, setLang] = useState<Lang>(() => getInitialConfig()?.lang || 'pt');
@@ -259,7 +259,7 @@ const HarmonicCyclePage: React.FC = () => {
   const highlightedRoots = new Set(progressionChords.map(item => baseNote(item.chord)));
   const roleByRoot = new Map(info.harmonicField.map(item => [normalizeNote(item.note), item.role]));
   const relativeRoot = mode === 'major'
-    ? normalizeNote(info.relative.replace(/m|Â°|Ã‚Â°/g, ''))
+    ? normalizeNote(info.relative.replace(/m|°/g, ''))
     : normalizeNote(info.relative);
   const activeFamily = NOTE_COLOR_CLASS[getNoteColorFamily(info.displayRoot)] || NOTE_COLOR_CLASS.A;
   const centerStrokeClass = isLight ? activeFamily.relativeRingLight : activeFamily.relativeRingDark;
@@ -686,7 +686,7 @@ const HarmonicCyclePage: React.FC = () => {
               }}
               className={`mt-2.5 w-full rounded-xl border px-4 py-3 text-[10px] font-black uppercase transition hover:border-blue-500 ${isLight ? 'border-blue-200 bg-white/90 text-blue-700 hover:bg-white' : 'border-blue-900/60 bg-[#080b11] text-blue-100'}`}
             >
-              {lang === 'pt' ? 'PrÃ³ximo acorde no braÃ§o' : 'Next chord on fretboard'}
+              {lang === 'pt' ? 'Próximo acorde no braço' : 'Next chord on fretboard'}
               </button>
             )}
           </div>

@@ -812,7 +812,7 @@ const handleMigrateLocalIdentity = async (sourceIdentity: string) => {
       : '';
     setMigrationMessage(
       lang === 'pt'
-        ? `NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­vel sincronizar agora.${errorMessage ? ` Detalhe: ${errorMessage}` : ' Tente novamente em instantes.'}`
+        ? `Não foi possível sincronizar agora.${errorMessage ? ` Detalhe: ${errorMessage}` : ' Tente novamente em instantes.'}`
         : `Could not sync right now.${errorMessage ? ` Detail: ${errorMessage}` : ' Try again shortly.'}`,
     );
     return;
@@ -1339,7 +1339,7 @@ const handleReturnToContext = () => {
 
   const clearAll = useCallback(() => {
     const confirmMsg = lang === 'pt' 
-      ? "LIMPAR PROJETO INTEIRO?\n\nIsso excluirÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ todos os diagramas." 
+      ? "LIMPAR PROJETO INTEIRO?\n\nIsso excluirá todos os diagramas."
       : "CLEAR ENTIRE PROJECT?\n\nThis will delete all diagrams.";
     
     if (window.confirm(confirmMsg)) {
@@ -1715,11 +1715,11 @@ const handleReturnToContext = () => {
       if (prev.length >= 24) {
         const canOverwrite = window.confirm(
           lang === 'pt'
-            ? 'VocÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âª atingiu o limite de 24 diagramas. Posso substituir o ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºltimo diagrama para abrir esta tarefa?'
+            ? 'Você atingiu o limite de 24 diagramas. Posso substituir o último diagrama para abrir esta tarefa?'
             : 'You reached the 24 diagram limit. Can I replace the last diagram to open this task?',
         );
         if (!canOverwrite) {
-          window.alert(lang === 'pt' ? 'NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o foi possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­vel abrir a tarefa sem substituir um diagrama.' : 'The task could not be opened without replacing a diagram.');
+          window.alert(lang === 'pt' ? 'Não foi possível abrir a tarefa sem substituir um diagrama.' : 'The task could not be opened without replacing a diagram.');
           return prev;
         }
         setActiveInstanceId(created.id);
@@ -2040,8 +2040,8 @@ const handleReturnToContext = () => {
 	              <button
 	                onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
 	                className={`flex h-10 min-w-10 items-center justify-center rounded-xl border px-2 text-[10px] font-black uppercase ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
-                aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para portuguÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªs'}
-                title={lang === 'pt' ? 'English' : 'PortuguÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªs'}
+                aria-label={lang === 'pt' ? 'Switch to English' : 'Mudar para português'}
+                title={lang === 'pt' ? 'English' : 'Português'}
 	              >
 	                {lang === 'pt' ? 'EN' : 'PORT'}
 	              </button>
@@ -2804,7 +2804,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  </p>
                  <p className={`mt-2 text-[11px] font-bold leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
                    {lang === 'pt'
-                     ? 'Encontramos identidades locais neste navegador. Voce pode mesclar esses projetos na sua conta sincronizada.'
+                     ? 'Encontramos identidades locais neste navegador. Você pode mesclar esses projetos na sua conta sincronizada.'
                      : 'Local identities were found in this browser. You can merge those projects into your synced account.'}
                  </p>
                  <div className="mt-3 grid max-h-56 gap-2 overflow-y-auto pr-1">
@@ -2849,7 +2849,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  className={`w-full p-4 rounded-2xl font-bold outline-none border transition-all text-center text-sm md:text-base placeholder:text-zinc-400 placeholder:font-normal placeholder:opacity-50 ${isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-900 focus:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:border-blue-500'}`} 
                />
                {!user && (
-                 <p className="absolute -bottom-5 left-0 w-full text-center text-[9px] font-black uppercase text-zinc-400 tracking-tighter opacity-40">Apenas sugestÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o. Digite o que desejar.</p>
+                 <p className="absolute -bottom-5 left-0 w-full text-center text-[9px] font-black uppercase text-zinc-400 tracking-tighter opacity-40">Apenas sugestão. Digite o que desejar.</p>
                )}
               </div>
               )}
@@ -2891,7 +2891,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
            <div className={`w-full max-w-2xl rounded-[32px] p-6 md:p-8 border shadow-3xl ${isLight ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
               <div className="flex justify-between items-center mb-6">
                  <h2 className="text-xl font-black italic text-blue-500 uppercase tracking-tighter">{t.importTitle}</h2>
-                 <button onClick={() => setShowImportModal(false)} className="text-zinc-500 text-2xl hover:text-red-500 transition-colors">ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â</button>
+                 <button onClick={() => setShowImportModal(false)} className="text-zinc-500 text-2xl hover:text-red-500 transition-colors">×</button>
               </div>
               <textarea 
                  autoFocus 
