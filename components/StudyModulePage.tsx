@@ -3,17 +3,15 @@ import { translations, Lang } from '../i18n';
 import { loadConfig, saveConfig } from '../utils/persistence';
 import { AppState, ThemeMode } from '../types';
 import { recordAchievementEvent } from '../utils/achievementEvents';
-import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
+import { returnToFretboard } from '../utils/fretboardNavigation';
+import { sendFretboardIntent } from '../utils/sendFretboardIntent';
+import type { FretboardIntent } from '../types/fretboardIntent';
 
 type StudyModuleId = 'learn' | 'practice' | 'chords' | 'caged' | 'triads-tetrads' | 'greek-modes';
 
 interface StudyModulePageProps {
   moduleId: StudyModuleId;
 }
-
-const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
-
-const navigateTo = navigateToPath;
 
 const getInitialConfig = (): AppState | null => {
   try {
@@ -139,6 +137,22 @@ const StudyModulePage: React.FC<StudyModulePageProps> = ({ moduleId }) => {
 
   const focusLine = useMemo(() => cards.slice(0, 3).join(' • '), [cards]);
 
+  const mapLegacyActionToIntent = (
+    action: 'scale' | 'field' | 'triads' | 'progression'
+  ): FretboardIntent['action'] => {
+    if (action === 'scale') return 'showScale';
+    if (action === 'field') return 'showHarmonyField';
+    if (action === 'triads') return 'showTriads';
+    return 'showProgression';
+  };
+
+  const getTargetTabForAction = (action: FretboardIntent['action']): FretboardIntent['targetTab'] => {
+    if (action === 'showScale') return 'scale';
+    if (action === 'showHarmonyField' || action === 'showTriads' || action === 'showProgression') return 'harmony';
+    if (action === 'startPractice' || action === 'openTool') return 'tools';
+    return 'scale';
+  };
+
   const persistConfigPatch = (patch: Partial<AppState>) => {
     const current = loadConfig();
     if (!current) return;
@@ -162,9 +176,11 @@ const StudyModulePage: React.FC<StudyModulePageProps> = ({ moduleId }) => {
     if (content.action === 'scale') {
       recordAchievementEvent({ type: 'exploration', key: 'apply_scale' });
     }
-    window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify({
+    const mappedAction = mapLegacyActionToIntent(content.action);
+    sendFretboardIntent({
       source: 'study-module',
-      action: content.action,
+      action: mappedAction,
+      targetTab: getTargetTabForAction(mappedAction),
       root: content.root,
       displayRoot: content.root,
       scaleType: content.scaleType,
@@ -172,9 +188,7 @@ const StudyModulePage: React.FC<StudyModulePageProps> = ({ moduleId }) => {
       chords: moduleId === 'practice' ? ['Am', 'F', 'C', 'G'] : undefined,
       moduleTitle: title,
       moduleLabel: label,
-      createdAt: new Date().toISOString(),
-    }));
-    navigateTo('/studio');
+    });
   };
 
   return (

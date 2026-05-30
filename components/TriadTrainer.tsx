@@ -109,8 +109,6 @@ const TriadTrainer: React.FC<TriadTrainerProps> = ({ isLight, lang, tuning, onAc
         quality,
       }
     });
-    window.history.pushState(null, '', '/studio');
-    window.dispatchEvent(new Event('ga-route-change'));
   };
 
   const showCurrentShapeOnFretboard = () => {
@@ -128,8 +126,6 @@ const TriadTrainer: React.FC<TriadTrainerProps> = ({ isLight, lang, tuning, onAc
         quality,
       }
     });
-    window.history.pushState(null, '', '/studio');
-    window.dispatchEvent(new Event('ga-route-change'));
   };
 
   const toggleAutoplay = () => {

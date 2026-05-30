@@ -50,6 +50,13 @@ type TriadTrainerLegacyAction = {
   payload?: Record<string, unknown>;
 };
 
+const isIntentTab = (value: unknown): value is FretboardIntent['targetTab'] =>
+  value === 'visual'
+  || value === 'scale'
+  || value === 'harmony'
+  || value === 'tools'
+  || value === 'chords';
+
 const normalizeTriadTrainerAction = (action: TriadTrainerLegacyAction): Omit<FretboardIntent, 'version' | 'createdAt'> => {
   const payload = action?.payload ?? {};
   const root = typeof payload.root === 'string' ? payload.root : 'C';
@@ -68,6 +75,7 @@ const normalizeTriadTrainerAction = (action: TriadTrainerLegacyAction): Omit<Fre
     return {
       source: 'triad-trainer' as const,
       action: 'startPractice' as const,
+      targetTab: 'tools' as const,
       root,
       displayRoot: root,
       scaleType: safeScaleType,
@@ -84,6 +92,7 @@ const normalizeTriadTrainerAction = (action: TriadTrainerLegacyAction): Omit<Fre
   return {
     source: 'triad-trainer' as const,
     action: 'showTriads' as const,
+    targetTab: 'harmony' as const,
     root,
     displayRoot: root,
     scaleType: safeScaleType,
@@ -180,8 +189,20 @@ const TriadsTetradsPage: React.FC<{ openTrainer?: boolean }> = ({ openTrainer = 
   const executeAction = (action: TriadsTetradsAction) => {
     recordAchievementEvent({ type: 'module_completion', moduleId: 'triads-tetrads' });
     recordAchievementEvent({ type: 'exercise_completion', exerciseId: 'triads-on-neck' });
+    const payload = action.payload as Omit<FretboardIntent, 'version' | 'createdAt'>;
+    const targetTabFromPayload = isIntentTab(payload.targetTab) ? payload.targetTab : undefined;
+    const inferredTargetTab: FretboardIntent['targetTab'] | undefined = targetTabFromPayload ?? (
+      payload.action === 'showScale'
+        ? 'scale'
+        : payload.action === 'showHarmonyField' || payload.action === 'showTriads' || payload.action === 'showProgression'
+          ? 'harmony'
+          : payload.action === 'startPractice' || payload.action === 'openTool'
+            ? 'tools'
+            : undefined
+    );
     sendFretboardIntent({
-      ...(action.payload as Omit<FretboardIntent, 'version' | 'createdAt'>),
+      ...payload,
+      ...(inferredTargetTab ? { targetTab: inferredTargetTab } : {}),
       source: 'triads-tetrads',
     });
   };
