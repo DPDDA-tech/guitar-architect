@@ -30,6 +30,26 @@ type UnifiedGrant = {
   grantedBy?: string | null;
 };
 
+const getFriendlyAdminRpcError = (rawMessage?: string) => {
+  const message = (rawMessage || '').toLowerCase();
+  if (message.includes('cannot downgrade the last super admin')) {
+    return 'Não é possível rebaixar o último Super Administrador do sistema.';
+  }
+  if (message.includes('cannot revoke the last super admin')) {
+    return 'Não é possível revogar o último Super Administrador do sistema.';
+  }
+  if (message.includes('forbidden')) {
+    return 'Você não possui permissão para executar esta ação administrativa.';
+  }
+  if (message.includes('target user not found')) {
+    return 'Usuário não encontrado para o e-mail informado.';
+  }
+  if (message.includes('invalid role')) {
+    return 'Perfil administrativo inválido.';
+  }
+  return 'Não foi possível concluir a ação administrativa. Tente novamente.';
+};
+
 const navigateHome = () => {
   window.history.pushState(null, '', '/studio');
   window.dispatchEvent(new CustomEvent('ga-route-change'));
@@ -200,7 +220,7 @@ const AdminRewardsPage: React.FC = () => {
     if (!confirm(`Conceder perfil ${adminTargetRole} para ${adminTargetEmail.trim()}?`)) return;
     const { error } = await grantAdminRoleByEmail(adminTargetEmail, adminTargetRole);
     if (error) {
-      alert(`Falha ao conceder permissão: ${error.message}`);
+      alert(getFriendlyAdminRpcError(error.message));
       return;
     }
     setAdminTargetEmail('');
@@ -213,7 +233,7 @@ const AdminRewardsPage: React.FC = () => {
     if (!confirm(`Alterar ${row.email} para ${nextRole}?`)) return;
     const { error } = await changeAdminRole(row.user_id, nextRole);
     if (error) {
-      alert(`Falha ao alterar permissão: ${error.message}`);
+      alert(getFriendlyAdminRpcError(error.message));
       return;
     }
     await refreshAdminRows();
@@ -224,7 +244,7 @@ const AdminRewardsPage: React.FC = () => {
     if (!confirm(`Revogar permissão administrativa de ${row.email}?`)) return;
     const { error } = await revokeAdminRole(row.user_id);
     if (error) {
-      alert(`Falha ao revogar permissão: ${error.message}`);
+      alert(getFriendlyAdminRpcError(error.message));
       return;
     }
     await refreshAdminRows();
