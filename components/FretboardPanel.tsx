@@ -36,6 +36,7 @@ import { canUseDisplayName, getDisplayNameError, getSupabaseDisplayName } from '
 import { listInstruments, replaceInstruments } from '../utils/instrumentRegistry';
 import { PinnedProfileBadges } from './PinnedProfileBadges';
 import { isAdminEmail } from '../utils/adminAccess';
+import { getMyAdminRole, type AdminRole } from '../utils/adminRoles';
 import { FretboardInstructionCard, type FretboardInstruction } from './FretboardInstructionCard';
 
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
@@ -205,6 +206,7 @@ const FretboardPanel: React.FC = () => {
   const [authPassword, setAuthPassword] = useState('');
   const [authStatus, setAuthStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [authMessage, setAuthMessage] = useState('');
+  const [adminRole, setAdminRole] = useState<AdminRole | null>(null);
   const [localUserOptions, setLocalUserOptions] = useState<string[]>([]);
   const [migrationStatus, setMigrationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [migrationMessage, setMigrationMessage] = useState('');
@@ -1099,6 +1101,19 @@ const handleReturnToContext = () => {
   }, []);
 
   useEffect(() => {
+    const hydrateAdminRole = async () => {
+      if (!authUser?.email) {
+        setAdminRole(null);
+        return;
+      }
+      const roleFromDb = await getMyAdminRole();
+      const fallbackRole = isAdminEmail(authUser.email) ? 'SUPER_ADMIN' as AdminRole : null;
+      setAdminRole(roleFromDb || fallbackRole);
+    };
+    void hydrateAdminRole();
+  }, [authUser?.email]);
+
+  useEffect(() => {
     if (!activeInstanceId || !shouldScrollToNewDiagramRef.current) return;
     const target = document.getElementById(`diagram-${activeInstanceId}`);
     if (target) {
@@ -1676,7 +1691,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         {!isGuestMode && <PinnedProfileBadges isLight={isLight} />}
 
         <div className="flex items-center gap-2">
-          {authUser && isAdminEmail(authUser.email) && (
+          {authUser && (adminRole === 'ADMIN' || adminRole === 'SUPER_ADMIN') && (
             <a
               href="/admin/rewards"
               className={`text-[8px] md:text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tight transition-all border ${isLight ? 'border-zinc-200 text-zinc-400 hover:border-blue-400 hover:text-blue-600' : 'border-zinc-700 text-zinc-500 hover:border-blue-500 hover:text-blue-400'}`}

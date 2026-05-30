@@ -11,6 +11,15 @@ import {
   grantRewardToAllUsers
 } from '../utils/supabaseRewardGrants';
 import { getRegisteredUserCount } from '../utils/supabaseAdminUsers';
+import {
+  type AdminRole,
+  type ActiveAdminRecord,
+  changeAdminRole,
+  getMyAdminRole,
+  grantAdminRoleByEmail,
+  listActiveAdministrators,
+  revokeAdminRole,
+} from '../utils/adminRoles';
 
 type UnifiedGrant = {
   email: string;
@@ -30,6 +39,11 @@ const AdminRewardsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [adminRole, setAdminRole] = useState<AdminRole | null>(null);
+  const [adminRoleLoading, setAdminRoleLoading] = useState(true);
+  const [adminRows, setAdminRows] = useState<ActiveAdminRecord[]>([]);
+  const [adminTargetEmail, setAdminTargetEmail] = useState('');
+  const [adminTargetRole, setAdminTargetRole] = useState<AdminRole>('ADMIN');
 
   const [registeredUserCount, setRegisteredUserCount] = useState<number | null>(null);
 
@@ -44,6 +58,7 @@ const AdminRewardsPage: React.FC = () => {
   const [filterRewardId, setFilterRewardId] = useState('');
 
   const catalog = useMemo(() => getAdminRewardCatalog(), []);
+  const canManageAdmins = adminRole === 'SUPER_ADMIN';
 
   const filteredGrants = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -91,21 +106,37 @@ const AdminRewardsPage: React.FC = () => {
     setRegisteredUserCount(count);
   };
 
+  const refreshAdminRows = async () => {
+    if (!canManageAdmins) return;
+    const rows = await listActiveAdministrators();
+    setAdminRows(rows);
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data } = await supabase.auth.getUser();
       const email = data.user?.email || null;
       setCurrentUserEmail(email);
-      const authorized = isAdminEmail(email);
+      const roleFromDb = await getMyAdminRole();
+      const fallbackRole = isAdminEmail(email) ? 'SUPER_ADMIN' as AdminRole : null;
+      const resolvedRole = roleFromDb || fallbackRole;
+      const authorized = Boolean(resolvedRole);
+
+      setAdminRole(resolvedRole);
       setIsAuthorized(authorized);
       if (authorized) {
         refreshGrants();
         refreshUserCount();
       }
+      setAdminRoleLoading(false);
       setLoading(false);
     };
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    void refreshAdminRows();
+  }, [canManageAdmins]);
 
   const handleGrant = async () => {
     if (!selectedRewardId) {
@@ -160,6 +191,45 @@ const AdminRewardsPage: React.FC = () => {
     refreshGrants();
   };
 
+  const handleGrantAdmin = async () => {
+    if (!canManageAdmins) return;
+    if (!adminTargetEmail.trim()) {
+      alert('Informe um e-mail válido.');
+      return;
+    }
+    if (!confirm(`Conceder perfil ${adminTargetRole} para ${adminTargetEmail.trim()}?`)) return;
+    const { error } = await grantAdminRoleByEmail(adminTargetEmail, adminTargetRole);
+    if (error) {
+      alert(`Falha ao conceder permissão: ${error.message}`);
+      return;
+    }
+    setAdminTargetEmail('');
+    await refreshAdminRows();
+  };
+
+  const handlePromoteOrDemote = async (row: ActiveAdminRecord) => {
+    if (!canManageAdmins) return;
+    const nextRole: AdminRole = row.role === 'SUPER_ADMIN' ? 'ADMIN' : 'SUPER_ADMIN';
+    if (!confirm(`Alterar ${row.email} para ${nextRole}?`)) return;
+    const { error } = await changeAdminRole(row.user_id, nextRole);
+    if (error) {
+      alert(`Falha ao alterar permissão: ${error.message}`);
+      return;
+    }
+    await refreshAdminRows();
+  };
+
+  const handleRevokeAdmin = async (row: ActiveAdminRecord) => {
+    if (!canManageAdmins) return;
+    if (!confirm(`Revogar permissão administrativa de ${row.email}?`)) return;
+    const { error } = await revokeAdminRole(row.user_id);
+    if (error) {
+      alert(`Falha ao revogar permissão: ${error.message}`);
+      return;
+    }
+    await refreshAdminRows();
+  };
+
   const handleLogout = async () => {
     try {
       console.log('[Admin Auth Trace] handleLogout iniciado');
@@ -175,7 +245,7 @@ const AdminRewardsPage: React.FC = () => {
     }
   };
 
-  if (loading) return (
+  if (loading || adminRoleLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-400 font-black uppercase tracking-widest">
       Verificando Credenciais...
     </div>
@@ -401,6 +471,67 @@ const AdminRewardsPage: React.FC = () => {
             </div>
           </section>
         </div>
+
+        {canManageAdmins && (
+          <section className="mt-10 rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-xl">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-xl font-black uppercase tracking-tight">Administradores</h2>
+              <button onClick={refreshAdminRows} className="text-blue-500 text-[10px] font-black uppercase tracking-widest hover:underline">Atualizar</button>
+            </div>
+
+            <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
+              <input
+                type="email"
+                value={adminTargetEmail}
+                onChange={e => setAdminTargetEmail(e.target.value)}
+                placeholder="email@dominio.com"
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-bold outline-none transition-colors focus:border-blue-500"
+              />
+              <select
+                value={adminTargetRole}
+                onChange={e => setAdminTargetRole(e.target.value as AdminRole)}
+                className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-[10px] font-black uppercase outline-none focus:border-blue-500"
+              >
+                <option value="ADMIN">ADMIN</option>
+                <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+              </select>
+              <button onClick={handleGrantAdmin} className="rounded-xl bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white hover:bg-blue-500">
+                Conceder Permissão
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              {adminRows.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-zinc-800 p-6 text-center text-xs font-black uppercase text-zinc-500">
+                  Nenhum administrador ativo encontrado.
+                </div>
+              ) : adminRows.map(row => (
+                <div key={row.user_id} className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="text-sm font-black text-blue-400">{row.full_name || '-'}</p>
+                      <p className="text-xs font-bold text-zinc-300">{row.email}</p>
+                      <div className="mt-2 flex flex-wrap gap-3 text-[10px] font-bold uppercase text-zinc-500">
+                        <span>Tipo: {row.role}</span>
+                        <span>Concedido em: {new Date(row.granted_at).toLocaleString()}</span>
+                        <span>Concedido por: {row.granted_by_email || '-'}</span>
+                        <span>Status: {row.status}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button onClick={() => handlePromoteOrDemote(row)} className="rounded-xl border border-blue-900/60 bg-[#080b11] px-3 py-2 text-[9px] font-black uppercase text-blue-100 hover:border-blue-500">
+                        {row.role === 'SUPER_ADMIN' ? 'Rebaixar para ADMIN' : 'Promover para SUPER_ADMIN'}
+                      </button>
+                      <button onClick={() => handleRevokeAdmin(row)} className="rounded-xl border border-red-900/50 bg-red-950/20 px-3 py-2 text-[9px] font-black uppercase text-red-400 hover:bg-red-950/40">
+                        Revogar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );
