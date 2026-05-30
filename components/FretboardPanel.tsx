@@ -136,6 +136,18 @@ const buildContextCoach = (pending: PendingFretboardAction, lang: Lang): Fretboa
   return null;
 };
 
+const buildContextCoachKey = (context: FretboardContextCoachData | null) => {
+  if (!context) return '';
+  return `${context.source || 'unknown'}|${context.title}|${context.message}`;
+};
+
+const isEquivalentInstructionAndCoach = (instruction: FretboardInstruction | null, coach: FretboardContextCoachData | null) => {
+  if (!instruction || !coach) return false;
+  const instructionText = `${instruction.title || ''} ${instruction.description || ''}`.trim().toLowerCase();
+  const coachText = `${coach.title || ''} ${coach.message || ''}`.trim().toLowerCase();
+  return instructionText.length > 0 && instructionText === coachText;
+};
+
 const LEGACY_ACTION_BY_INTENT: Record<string, PendingFretboardAction['action']> = {
   showScale: 'scale',
   showHarmonyField: 'field',
@@ -289,6 +301,7 @@ const FretboardPanel: React.FC = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [activeInstruction, setInstruction] = useState<FretboardInstruction | null>(null);
   const [activeContextCoach, setActiveContextCoach] = useState<FretboardContextCoachData | null>(null);
+  const [dismissedCoachKey, setDismissedCoachKey] = useState('');
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
@@ -1332,7 +1345,14 @@ const handleReturnToContext = () => {
       }
     }
     const nextCoach = buildContextCoach(pending, lang);
-    setActiveContextCoach(nextCoach);
+    const nextCoachKey = buildContextCoachKey(nextCoach);
+    const hasExplicitInstruction = Boolean(pending.instruction?.description);
+    const duplicatesInstruction = isEquivalentInstructionAndCoach(pending.instruction || null, nextCoach);
+    if (!nextCoach || hasExplicitInstruction || duplicatesInstruction || (nextCoachKey && nextCoachKey === dismissedCoachKey)) {
+      setActiveContextCoach(null);
+    } else {
+      setActiveContextCoach(nextCoach);
+    }
 
     const applyToDiagram = (instance: FretboardState): FretboardState => {
       const isCycleProgression = pending.source === 'harmonic-cycle' && pending.action === 'progression';
@@ -2196,9 +2216,9 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           </div>
         )}
 
-        {activeInstruction && (
-          <FretboardInstructionCard 
-            instruction={activeInstruction} 
+        {activeInstruction ? (
+          <FretboardInstructionCard
+            instruction={activeInstruction}
             isLight={isLight}
             lang={lang}
             onClose={() => {
@@ -2206,15 +2226,18 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
               setInstruction(null);
             }}
           />
-        )}
-        {activeContextCoach && (
+        ) : null}
+        {!activeInstruction && activeContextCoach ? (
           <FretboardContextCoach
             context={activeContextCoach}
             isLight={isLight}
             lang={lang}
-            onClose={() => setActiveContextCoach(null)}
+            onClose={() => {
+              setDismissedCoachKey(buildContextCoachKey(activeContextCoach));
+              setActiveContextCoach(null);
+            }}
           />
-        )}
+        ) : null}
 
         {!isExporting && (!authUser || localUserOptions.length > 0) && (
           <div className={`rounded-[24px] border p-4 md:p-5 shadow-xl ${isLight ? 'border-blue-100 bg-white/92 text-zinc-800' : 'border-blue-900/50 bg-[#07111f]/92 text-zinc-100'}`}>
