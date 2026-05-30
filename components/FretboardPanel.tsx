@@ -65,7 +65,7 @@ const themeMatchesInstrument = (theme: ThemeCollectionItem, instrumentType: Inst
 };
 
 interface PendingFretboardAction {
-  source: 'harmonic-cycle' | 'study-module';
+  source: string;
   action: 'scale' | 'field' | 'triads' | 'progression' | 'openTool' | 'startPractice';
   root?: string;
   displayRoot?: string;
@@ -92,6 +92,21 @@ interface PendingFretboardAction {
   quickTab?: string;
   tab?: string;
 }
+
+const EXTERNAL_PEDAGOGICAL_SOURCES = new Set([
+  'harmonic-cycle',
+  'learn',
+  'practice',
+  'chords',
+  'caged',
+  'greek-modes',
+  'triads-tetrads',
+  'triad-trainer',
+  'study-module-legacy',
+  'study-module',
+]);
+
+const isExternalPedagogicalSource = (source: string | undefined) => Boolean(source && EXTERNAL_PEDAGOGICAL_SOURCES.has(source));
 
 const parseChordForFretboard = (symbol: string): { root: string; type: ChordType } | null => {
   const normalized = symbol.trim();
@@ -509,6 +524,9 @@ const normalizeFretboardIntentToPending = (intent: FretboardIntent): PendingFret
     horizontalConnection: Boolean(intent.caged?.horizontalConnection),
     quickTab,
   };
+  if (intent.source && intent.source !== 'harmonic-cycle' && intent.source !== 'study-module') {
+    (pending as PendingFretboardAction & { source: string }).source = intent.source;
+  }
   return pending;
 };
 
@@ -1653,7 +1671,7 @@ const handleReturnToContext = () => {
       return;
     }
 
-    if (!pending || (pending.source !== 'harmonic-cycle' && pending.source !== 'study-module')) {
+    if (!pending || !isExternalPedagogicalSource(pending.source)) {
       window.localStorage.removeItem(PENDING_FRETBOARD_ACTION_KEY);
       return;
     }
@@ -1814,21 +1832,23 @@ const handleReturnToContext = () => {
       setActiveInstanceId(appliedInstanceId);
     }
 
-    const targetTab = pending.quickTab || pending.tab || (
-      (pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression' || pending.harmonyMode) ? 'harmony' :
-      pending.action === 'scale' ? 'scale' :
-      (pending.action === 'startPractice' || pending.tool) ? 'tools' :
-      'visual'
-    );
-    const normalizedTargetTab = pending.action === 'progression' ? 'chords' : targetTab;
-    const eventName = 'ga-open-diagram-panel';
+    const normalizedTargetTab = pending.action === 'scale'
+      ? 'scale'
+      : (pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression' || pending.harmonyMode)
+        ? 'harmony'
+        : (pending.action === 'startPractice' || pending.action === 'openTool' || pending.tool)
+          ? 'tools'
+          : (pending.quickTab || pending.tab || 'visual');
+    const eventName = isExternalPedagogicalSource(pending.source)
+      ? 'ga-open-quick-tab'
+      : (normalizedTargetTab === 'tools' ? 'ga-open-diagram-panel' : 'ga-open-quick-tab');
 
     window.setTimeout(() => {
       window.dispatchEvent(new Event('ga-reset-follow-modes'));
       window.dispatchEvent(new CustomEvent(eventName, { 
         detail: { 
           tab: normalizedTargetTab, 
-          tool: (normalizedTargetTab === 'tools')
+          tool: (eventName === 'ga-open-diagram-panel' && normalizedTargetTab === 'tools')
             ? (pending.tool || 'exercises') 
             : undefined 
         } 
