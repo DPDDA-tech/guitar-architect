@@ -41,6 +41,7 @@ import { FretboardInstructionCard, type FretboardInstruction } from './Fretboard
 import type { FretboardIntent } from '../types/fretboardIntent';
 import { FretboardContextCoach, type FretboardContextCoachData } from './FretboardContextCoach';
 import { FretboardExecutionFeedback, type FretboardExecutionFeedbackData } from './FretboardExecutionFeedback';
+import { FretboardGuidedPractice, type FretboardGuidedPracticeData } from './FretboardGuidedPractice';
 
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
@@ -79,6 +80,11 @@ interface PendingFretboardAction {
   voicingMode?: FretboardState['voicingMode'];
   practiceExerciseId?: string;
   focusFirstRegion?: boolean;
+  practiceMode?: string;
+  cagedAction?: string;
+  shape?: string;
+  shapeSequence?: string[];
+  horizontalConnection?: boolean;
 }
 
 const buildContextCoach = (pending: PendingFretboardAction, lang: Lang): FretboardContextCoachData | null => {
@@ -227,6 +233,109 @@ const buildExecutionFeedbackKey = (pending: PendingFretboardAction) => {
   ].join('|');
 };
 
+const buildGuidedPractice = (pending: PendingFretboardAction, lang: Lang): FretboardGuidedPracticeData | null => {
+  const isPt = lang === 'pt';
+  const root = pending.displayRoot || pending.root || 'C';
+  const scaleType = pending.scaleType || (isPt ? 'escala atual' : 'current scale');
+  const chords = pending.chords?.filter((chord): chord is string => typeof chord === 'string' && chord.trim().length > 0) || [];
+  const hasSequence = chords.length > 1;
+  const shouldGuide =
+    pending.action === 'startPractice'
+    || Boolean(pending.practiceMode)
+    || Boolean(pending.practiceExerciseId)
+    || hasSequence
+    || pending.action === 'progression';
+
+  if (!shouldGuide) return null;
+
+  if (pending.action === 'progression' || hasSequence) {
+    const progressionSteps = hasSequence
+      ? chords.map((chord, idx) => isPt ? `Toque o acorde ${idx + 1}: ${chord}.` : `Play chord ${idx + 1}: ${chord}.`)
+      : [
+          isPt ? 'Toque o primeiro acorde.' : 'Play the first chord.',
+          isPt ? 'Avance para o segundo acorde.' : 'Move to the second chord.',
+          isPt ? 'Complete a sequência.' : 'Complete the sequence.',
+          isPt ? 'Repita mantendo ritmo constante.' : 'Repeat keeping a steady rhythm.',
+        ];
+    return {
+      title: pending.progression || (isPt ? 'Progressão guiada' : 'Guided progression'),
+      objective: isPt ? 'Conduzir os acordes com ritmo consistente e transições limpas.' : 'Move through chords with consistent rhythm and clean transitions.',
+      steps: progressionSteps,
+      currentStep: 0,
+    };
+  }
+
+  if (pending.source === 'study-module' && (pending.cagedAction || pending.shape || (pending.shapeSequence && pending.shapeSequence.length > 0))) {
+    return {
+      title: isPt ? 'Prática CAGED guiada' : 'Guided CAGED practice',
+      objective: isPt ? 'Fixar a forma ativa e conectar regiões com clareza.' : 'Lock the active shape and connect regions clearly.',
+      steps: [
+        isPt ? 'Localize a forma ativa.' : 'Locate the active shape.',
+        isPt ? 'Encontre a tônica.' : 'Find the tonic.',
+        isPt ? 'Toque o shape lentamente.' : 'Play the shape slowly.',
+        isPt ? 'Conecte com a próxima região.' : 'Connect to the next region.',
+      ],
+      currentStep: 0,
+    };
+  }
+
+  if (pending.action === 'scale') {
+    return {
+      title: `${root} - ${scaleType}`,
+      objective: isPt ? 'Memorizar desenho e tônicas com precisão.' : 'Memorize shape and tonics with precision.',
+      steps: [
+        isPt ? 'Localize as tônicas.' : 'Locate the tonics.',
+        isPt ? 'Toque a escala subindo lentamente.' : 'Play the scale ascending slowly.',
+        isPt ? 'Toque descendo.' : 'Play descending.',
+        isPt ? 'Repita focando precisão.' : 'Repeat focusing on precision.',
+      ],
+      currentStep: 0,
+    };
+  }
+
+  if (pending.action === 'triads' || pending.action === 'field') {
+    return {
+      title: isPt ? 'Graus guiados' : 'Guided degrees',
+      objective: isPt ? 'Entender o papel dos graus antes de acelerar.' : 'Understand degree roles before increasing speed.',
+      steps: [
+        isPt ? 'Compare os graus disponíveis.' : 'Compare available degrees.',
+        isPt ? 'Toque os acordes base do campo.' : 'Play the base field chords.',
+        isPt ? 'Repita focando transições limpas.' : 'Repeat focusing on clean transitions.',
+      ],
+      currentStep: 0,
+    };
+  }
+
+  return {
+    title: pending.moduleTitle || (isPt ? 'Prática guiada' : 'Guided practice'),
+    objective: isPt ? 'Executar com precisão antes de aumentar a velocidade.' : 'Execute with precision before increasing speed.',
+    steps: [
+      isPt ? 'Prepare a mão esquerda.' : 'Prepare your fretting hand.',
+      isPt ? 'Toque lentamente.' : 'Play slowly.',
+      isPt ? 'Repita com metrônomo se desejar.' : 'Repeat with metronome if desired.',
+      isPt ? 'Aumente velocidade somente com precisão.' : 'Increase speed only with precision.',
+    ],
+    currentStep: 0,
+  };
+};
+
+const buildGuidedPracticeKey = (pending: PendingFretboardAction) => {
+  return [
+    pending.source,
+    pending.action,
+    pending.root || '',
+    pending.displayRoot || '',
+    pending.scaleType || '',
+    pending.progression || '',
+    pending.practiceMode || '',
+    pending.practiceExerciseId || '',
+    pending.cagedAction || '',
+    pending.shape || '',
+    pending.shapeSequence?.join('|') || '',
+    pending.chords?.join('|') || '',
+  ].join('|');
+};
+
 const LEGACY_ACTION_BY_INTENT: Record<string, PendingFretboardAction['action']> = {
   showScale: 'scale',
   showHarmonyField: 'field',
@@ -279,6 +388,15 @@ const normalizeFretboardIntentToPending = (intent: FretboardIntent): PendingFret
     voicingMode: intent.voicingMode as FretboardState['voicingMode'] | undefined,
     practiceExerciseId: intent.practiceExerciseId,
     focusFirstRegion: Boolean(focusFirstRegion),
+    practiceMode: typeof intent.extras?.practiceMode === 'string'
+      ? intent.extras.practiceMode
+      : (typeof intent.practiceMode === 'string' ? intent.practiceMode : undefined),
+    cagedAction: typeof intent.caged?.cagedAction === 'string' ? intent.caged.cagedAction : undefined,
+    shape: typeof intent.caged?.shape === 'string' ? intent.caged.shape : undefined,
+    shapeSequence: Array.isArray(intent.caged?.shapeSequence)
+      ? intent.caged.shapeSequence.filter((item): item is string => typeof item === 'string')
+      : undefined,
+    horizontalConnection: Boolean(intent.caged?.horizontalConnection),
     quickTab,
   };
   return pending;
@@ -385,6 +503,10 @@ const FretboardPanel: React.FC = () => {
   const [executionFeedbackKey, setExecutionFeedbackKey] = useState('');
   const [executionFeedbackStepIndex, setExecutionFeedbackStepIndex] = useState(0);
   const [dismissedExecutionFeedbackKey, setDismissedExecutionFeedbackKey] = useState('');
+  const [activeGuidedPractice, setActiveGuidedPractice] = useState<FretboardGuidedPracticeData | null>(null);
+  const [guidedPracticeKey, setGuidedPracticeKey] = useState('');
+  const [guidedPracticeStepIndex, setGuidedPracticeStepIndex] = useState(0);
+  const [dismissedGuidedPracticeKey, setDismissedGuidedPracticeKey] = useState('');
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
@@ -1439,8 +1561,25 @@ const handleReturnToContext = () => {
 
     const nextFeedback = buildExecutionFeedback(pending, lang);
     const nextFeedbackKey = buildExecutionFeedbackKey(pending);
+    const nextGuidedPractice = buildGuidedPractice(pending, lang);
+    const nextGuidedPracticeKey = buildGuidedPracticeKey(pending);
+    const shouldUseGuidedPractice = Boolean(nextGuidedPractice && nextGuidedPractice.steps.length > 0 && nextGuidedPracticeKey !== dismissedGuidedPracticeKey);
+    if (shouldUseGuidedPractice && nextGuidedPractice) {
+      const nextStepIndex = nextGuidedPracticeKey === guidedPracticeKey ? guidedPracticeStepIndex : 0;
+      setGuidedPracticeKey(nextGuidedPracticeKey);
+      setGuidedPracticeStepIndex(nextStepIndex);
+      setActiveGuidedPractice({
+        ...nextGuidedPractice,
+        currentStep: nextStepIndex,
+      });
+    } else {
+      setActiveGuidedPractice(null);
+      setGuidedPracticeKey('');
+      setGuidedPracticeStepIndex(0);
+    }
     const isRelevantFeedbackAction = ['scale', 'field', 'triads', 'progression', 'startPractice'].includes(pending.action);
-    if (!nextFeedback || !isRelevantFeedbackAction || nextFeedbackKey === dismissedExecutionFeedbackKey) {
+    const shouldSuppressExecutionFeedback = shouldUseGuidedPractice && pending.action === 'startPractice';
+    if (!nextFeedback || !isRelevantFeedbackAction || nextFeedbackKey === dismissedExecutionFeedbackKey || shouldSuppressExecutionFeedback) {
       setActiveExecutionFeedback(null);
       setExecutionFeedbackKey('');
       setExecutionFeedbackStepIndex(0);
@@ -1556,7 +1695,7 @@ const handleReturnToContext = () => {
     }, 160);
 
     setSaveStatus('saving');
-  }, [activeInstanceIndex, defaultInstrument, dismissedCoachKey, dismissedExecutionFeedbackKey, executionFeedbackKey, executionFeedbackStepIndex, lang]);
+  }, [activeInstanceIndex, defaultInstrument, dismissedCoachKey, dismissedExecutionFeedbackKey, dismissedGuidedPracticeKey, executionFeedbackKey, executionFeedbackStepIndex, guidedPracticeKey, guidedPracticeStepIndex, lang]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -2337,7 +2476,33 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             }}
           />
         ) : null}
-        {!activeInstruction && activeExecutionFeedback ? (
+        {!activeInstruction && activeGuidedPractice ? (
+          <FretboardGuidedPractice
+            data={{
+              ...activeGuidedPractice,
+              currentStep: guidedPracticeStepIndex,
+            }}
+            isLight={isLight}
+            lang={lang}
+            isCoachVisible={Boolean(activeContextCoach)}
+            onNext={() => {
+              setGuidedPracticeStepIndex(prev => {
+                const total = Math.max(1, activeGuidedPractice.steps.length);
+                return Math.min(prev + 1, total - 1);
+              });
+            }}
+            onRestart={() => {
+              setGuidedPracticeStepIndex(0);
+            }}
+            onClose={() => {
+              setDismissedGuidedPracticeKey(guidedPracticeKey);
+              setActiveGuidedPractice(null);
+              setGuidedPracticeKey('');
+              setGuidedPracticeStepIndex(0);
+            }}
+          />
+        ) : null}
+        {!activeInstruction && activeExecutionFeedback && !(activeGuidedPractice && (activeGuidedPractice.steps.length > 0)) ? (
           <FretboardExecutionFeedback
             data={{
               ...activeExecutionFeedback,
