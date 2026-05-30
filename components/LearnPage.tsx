@@ -6,6 +6,7 @@ import { loadConfig, saveConfig } from '../utils/persistence';
 import { AppState, ThemeMode } from '../types';
 import { recordAchievementEvent } from '../utils/achievementEvents';
 import QuickToolsModal from './QuickToolsModal';
+import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
 
 const SunIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -24,10 +25,7 @@ const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const COMPLETED_LEARN_MODULES_KEY = 'ga_completed_learn_modules';
 
-const navigateTo = (path: string) => {
-  window.history.pushState(null, '', path);
-  window.dispatchEvent(new Event('ga-route-change'));
-};
+const navigateTo = navigateToPath;
 
 const getInitialConfig = (): AppState | null => {
   try {
@@ -252,7 +250,7 @@ const LearnPage: React.FC = () => {
             <button onClick={() => openHeaderTool('tuner')} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>
               {lang === 'pt' ? 'Afinador' : 'Tuner'}
             </button>
-            <button onClick={() => navigateTo('/studio')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
+            <button onClick={returnToFretboard} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
               {t.backToFretboard}
             </button>
           </div>

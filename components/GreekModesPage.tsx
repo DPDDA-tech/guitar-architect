@@ -5,13 +5,11 @@ import { AppState, ThemeMode } from '../types';
 import { GREEK_MODES, MODAL_BACKING_TRACKS, MODAL_PROGRESSIONS, GreekModeInfo } from '../data/greekModes';
 import { recordAchievementEvent } from '../utils/achievementEvents';
 import QuickToolsModal from './QuickToolsModal';
+import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
 
 const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
 
-const navigateTo = (path: string) => {
-  window.history.pushState(null, '', path);
-  window.dispatchEvent(new Event('ga-route-change'));
-};
+const navigateTo = navigateToPath;
 
 const getInitialConfig = (): AppState | null => {
   try {
@@ -314,7 +312,7 @@ const GreekModesPage: React.FC = () => {
             <button onClick={toggleLang} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>{lang === 'pt' ? 'EN' : 'PORT'}</button>
             <button onClick={() => openHeaderTool('metronome')} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>{copy.metronome}</button>
             <button onClick={() => openHeaderTool('tuner')} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-zinc-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>{copy.tuner}</button>
-            <button onClick={() => navigateTo('/studio')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">{t.backToFretboard}</button>
+            <button onClick={returnToFretboard} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">{t.backToFretboard}</button>
           </div>
         </div>
       </header>

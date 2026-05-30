@@ -16,6 +16,7 @@ import {
 } from '../data/triadsTetradsData';
 import { recordAchievementEvent } from '../utils/achievementEvents';
 import TriadTrainer from './TriadTrainer';
+import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
 
 const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
 
@@ -32,10 +33,7 @@ const MoonIcon = () => (
   </svg>
 );
 
-const navigateTo = (path: string) => {
-  window.history.pushState(null, '', path);
-  window.dispatchEvent(new Event('ga-route-change'));
-};
+const navigateTo = navigateToPath;
 
 const getInitialConfig = (): AppState | null => {
   try {
@@ -219,7 +217,7 @@ const TriadsTetradsPage: React.FC<{ openTrainer?: boolean }> = ({ openTrainer = 
             >
               {showTrainer ? (lang === 'pt' ? 'Fechar Trainer' : 'Close Trainer') : (lang === 'pt' ? 'Triad Trainer 🎯' : 'Triad Trainer 🎯')}
             </button>
-            <button onClick={() => navigateTo('/studio')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
+            <button onClick={returnToFretboard} className="rounded-xl border border-blue-500/50 bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
               {t.backToFretboard}
             </button>
           </div>
