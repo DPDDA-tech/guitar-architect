@@ -59,7 +59,15 @@ export interface FretboardIntent {
   instruction?: FretboardIntentInstruction;
   focusFirstRegion?: boolean;
   region?: { focusFirstRegion?: boolean; startFret?: number; endFret?: number };
+  caged?: {
+    cagedAction?: string;
+    shape?: string;
+    shapeSequence?: string[];
+    overlays?: string[];
+    fullNeck?: boolean;
+    horizontalConnection?: boolean;
+    [key: string]: unknown;
+  };
   extras?: Record<string, unknown>;
   [key: string]: unknown;
 }
-

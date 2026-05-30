@@ -13,6 +13,8 @@ import { loadConfig, saveConfig } from '../utils/persistence';
 import { AppState, ThemeMode } from '../types';
 import { recordAchievementEvent } from '../utils/achievementEvents';
 import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
+import { sendFretboardIntent } from '../utils/sendFretboardIntent';
+import type { FretboardIntent, FretboardIntentAction, FretboardIntentTab } from '../types/fretboardIntent';
 
 const SunIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -26,8 +28,6 @@ const MoonIcon = () => (
     <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
   </svg>
 );
-
-const PENDING_ACTION_KEY = 'ga_pending_fretboard_action';
 
 const navigateTo = navigateToPath;
 
@@ -366,6 +366,21 @@ const isOverlayPayload = (payload: unknown): payload is { overlay: CagedOverlay 
   return typeof payload === 'object' && payload !== null && 'overlay' in payload;
 };
 
+const mapLegacyActionToIntentAction = (action: unknown): FretboardIntentAction => {
+  if (action === 'scale') return 'showScale';
+  if (action === 'field') return 'showHarmonyField';
+  if (action === 'triads') return 'showTriads';
+  if (action === 'progression') return 'showProgression';
+  if (action === 'openTool') return 'openTool';
+  if (action === 'startPractice') return 'startPractice';
+  return 'showScale';
+};
+
+const mapLegacyTabToTargetTab = (value: unknown): FretboardIntentTab | undefined => {
+  if (value === 'visual' || value === 'scale' || value === 'harmony' || value === 'tools' || value === 'chords') return value;
+  return undefined;
+};
+
 const PanelSurface = ({
   children,
   isLight,
@@ -448,12 +463,31 @@ const CagedPage: React.FC = () => {
       moduleTitle: module.title,
       moduleLabel: action.label,
       activeCagedOverlays: activeOverlays,
-      createdAt: new Date().toISOString(),
+    };
+    const payloadRecord = payload as Record<string, unknown>;
+
+    const cagedBlock: NonNullable<FretboardIntent['caged']> = {
+      cagedAction: typeof payloadRecord.cagedAction === 'string' ? payloadRecord.cagedAction : undefined,
+      shape: typeof payloadRecord.shape === 'string' ? payloadRecord.shape : undefined,
+      shapeSequence: Array.isArray(payloadRecord.shapeSequence) ? payloadRecord.shapeSequence as string[] : undefined,
+      overlays: Array.isArray(payloadRecord.overlays) ? payloadRecord.overlays as string[] : undefined,
+      fullNeck: Boolean(payloadRecord.fullNeck),
+      horizontalConnection: Boolean(payloadRecord.horizontalConnection || payloadRecord.regionConnection),
     };
 
     recordAchievementEvent({ type: 'module_completion', moduleId: 'caged' });
-    window.localStorage.setItem(PENDING_ACTION_KEY, JSON.stringify(payload));
-    navigateTo('/studio');
+    sendFretboardIntent({
+      ...(payloadRecord as Omit<FretboardIntent, 'version' | 'createdAt'>),
+      source: 'caged',
+      action: mapLegacyActionToIntentAction(payloadRecord.action),
+      root: typeof payloadRecord.root === 'string' ? payloadRecord.root : 'C',
+      scaleType: typeof payloadRecord.scaleType === 'string' ? payloadRecord.scaleType : 'Major (Ionian)',
+      targetTab: mapLegacyTabToTargetTab(payloadRecord.quickTab ?? payloadRecord.tab),
+      caged: cagedBlock,
+      extras: {
+        activeCagedOverlays: activeOverlays,
+      },
+    });
   };
 
   return (
