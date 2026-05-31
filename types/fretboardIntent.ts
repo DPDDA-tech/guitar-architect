@@ -25,6 +25,7 @@ export type FretboardIntentAction =
 export type FretboardIntentTool = 'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes';
 export type FretboardIntentTab = 'visual' | 'scale' | 'harmony' | 'tools' | 'chords';
 export type FretboardIntentHarmonyMode = 'OFF' | 'TRIADS' | 'TETRADS';
+export type FretboardIntentActiveEngine = 'scale' | 'caged' | 'harmony' | 'triadTetrad' | 'trainer' | 'off';
 
 export interface FretboardIntentInstruction {
   title?: string;
@@ -51,6 +52,7 @@ export interface FretboardIntent {
   progression?: string | { name?: string; chords?: string[] };
   chords?: string[];
   harmonyMode?: FretboardIntentHarmonyMode;
+  activeEngine?: FretboardIntentActiveEngine;
   chordQuality?: string;
   chordDegree?: number;
   inversion?: number;

@@ -99,6 +99,8 @@ interface PendingFretboardAction {
     positions: Array<{ string: number; fret: number; note?: string; interval?: string }>;
     [key: string]: unknown;
   };
+  activeEngine?: FretboardState['activeEngine'];
+  isContextualViewport?: boolean;
 }
 
 const EXTERNAL_PEDAGOGICAL_SOURCES = new Set([
@@ -116,15 +118,27 @@ const EXTERNAL_PEDAGOGICAL_SOURCES = new Set([
 
 const isExternalPedagogicalSource = (source: string | undefined) => Boolean(source && EXTERNAL_PEDAGOGICAL_SOURCES.has(source));
 
-const parseChordForFretboard = (symbol: string): { root: string; type: ChordType } | null => {
+const parseChordForFretboard = (
+  symbol: string,
+  harmonyMode?: PendingFretboardAction['harmonyMode']
+): { root: string; type: ChordType } | null => {
   const normalized = symbol.trim();
   const match = normalized.match(/^([A-G](?:#|b)?)(.*)$/);
   if (!match) return null;
   const root = match[1];
   const quality = (match[2] || '').trim().toLowerCase();
-  if (quality.startsWith('dim') || quality.includes('°') || quality.includes('º')) return { root, type: 'm7b5' };
+  const isTriadMode = harmonyMode === 'TRIADS';
+  if (quality.includes('mmaj7')) return { root, type: isTriadMode ? 'minor' : 'mMaj7' };
+  if (quality.includes('maj7')) return { root, type: isTriadMode ? 'major' : 'maj7' };
+  if (quality.includes('m7b5')) return { root, type: isTriadMode ? 'diminished' : 'm7b5' };
+  if (quality.includes('dim7')) return { root, type: isTriadMode ? 'diminished' : 'dim7' };
+  if (quality.includes('7')) {
+    if (quality.startsWith('m') && !quality.startsWith('maj')) return { root, type: isTriadMode ? 'minor' : 'm7' };
+    return { root, type: isTriadMode ? 'major' : '7' };
+  }
+  if (quality.startsWith('dim') || quality.includes('°') || quality.includes('º')) return { root, type: 'diminished' };
+  if (quality.includes('+') || quality.includes('aug')) return { root, type: 'augmented' };
   if (quality.startsWith('m') && !quality.startsWith('maj')) return { root, type: 'minor' };
-  if (quality.includes('7')) return { root, type: '7' };
   return { root, type: 'major' };
 };
 
@@ -147,8 +161,9 @@ const resolveInstanceTuning = (instance: FretboardState): string[] => {
 const buildChordVisualState = (
   instance: FretboardState,
   chordSymbol: string,
+  harmonyMode?: PendingFretboardAction['harmonyMode'],
 ): { root: string; markers: Marker[]; lines: Line[]; stringStatuses: StringStatus[] } | null => {
-  const parsed = parseChordForFretboard(chordSymbol);
+  const parsed = parseChordForFretboard(chordSymbol, harmonyMode);
   if (!parsed) return null;
   const tuning = resolveInstanceTuning(instance);
   const voicings = generateChordVoicings(parsed.root, parsed.type, tuning, {
@@ -500,6 +515,16 @@ const normalizeFretboardIntentToPending = (intent: FretboardIntent): PendingFret
     ? intent.progression.chords
     : undefined;
   const focusFirstRegion = intent.region?.focusFirstRegion ?? intent.focusFirstRegion;
+  const activeEngineFromIntent = intent.activeEngine;
+  const inferredActiveEngine: PendingFretboardAction['activeEngine'] =
+    activeEngineFromIntent
+    || (intent.action === 'showScale' || intent.action === 'scale'
+      ? 'scale'
+      : (intent.action === 'showTriads' || intent.action === 'triads' || intent.harmonyMode === 'TRIADS' || intent.harmonyMode === 'TETRADS'
+        ? (Array.isArray(intent.extras?.triadTrainerSequence) ? 'trainer' : 'triadTetrad')
+        : (intent.action === 'showHarmonyField' || intent.action === 'showProgression' || intent.action === 'field' || intent.action === 'progression'
+          ? 'harmony'
+          : ((intent.caged?.cagedAction || intent.caged?.shape || intent.caged?.shapeSequence?.length) ? 'caged' : 'off'))));
   const quickTab = intent.targetTab;
   const pending: PendingFretboardAction & { quickTab?: string } = {
     source: intent.source === 'harmonic-cycle' ? 'harmonic-cycle' : 'study-module',
@@ -534,6 +559,8 @@ const normalizeFretboardIntentToPending = (intent: FretboardIntent): PendingFret
       ? intent.extras.triadTrainerSequence as PendingFretboardAction['triadTrainerSequence']
       : undefined,
     triadTrainerCurrentShape: intent.extras?.triadTrainerCurrentShape as PendingFretboardAction['triadTrainerCurrentShape'] | undefined,
+    activeEngine: inferredActiveEngine,
+    isContextualViewport: Boolean(intent.focusFirstRegion || intent.region?.focusFirstRegion),
     quickTab,
   };
   if (intent.source && intent.source !== 'harmonic-cycle' && intent.source !== 'study-module') {
@@ -610,6 +637,9 @@ const DEFAULT_FRETBOARD = (lang: Lang, instrumentType: InstrumentType = 'guitar-
     chordDegree: 0,
     inversion: 0,
     colorMode: "SINGLE",
+    activeEngine: 'off',
+    lastUpdateSource: 'system',
+    isContextualViewport: false,
     layers: { 
       showInlays: true, 
       showAllNotes: false, 
@@ -705,7 +735,7 @@ const FretboardPanel: React.FC = () => {
 const switchUserSession = (newUserId: string, displayName: string) => {
 
   // ============================
-  // 1ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£ SALVA SESSÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢O ATUAL
+  // 1) SALVA SESSÃO ATUAL
   // ============================
 
   if (user && initialized.current) {
@@ -734,7 +764,7 @@ const switchUserSession = (newUserId: string, displayName: string) => {
     }
 
   // ============================
-  // 2ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£ LIMPA WORKSPACE (CRÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂTICO)
+  // 2) LIMPA WORKSPACE (CRÍTICO)
   // ============================
 
   setInstances([]);
@@ -742,26 +772,26 @@ const switchUserSession = (newUserId: string, displayName: string) => {
   setProjectId(crypto.randomUUID());
   setGlobalTranspose(0);
 
-  // RESET DE IDENTIDADE (CRÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂTICO)
-  // Limpa logos, instruÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âµes, contextos de retorno e estados transitÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³rios
+  // RESET DE IDENTIDADE (CRÍTICO)
+  // Limpa logos, instruções, contextos de retorno e estados transitórios
   setUserLogo(undefined);
   setInstruction(null);
   setReturnContext(null);
 
-  // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â forÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§a novo ciclo de boot
+  // Força novo ciclo de boot
   initialized.current = false;
 
   // ============================
-  // 3ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£ DEFINE NOVO USUÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂRIO
+  // 3) DEFINE NOVO USUÁRIO
   // ============================
 
   setUser(displayName);
 
   // ============================
-  // 4ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£ BOOT NOVA SESSÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢O
+  // 4) BOOT NOVA SESSÃO
   // ============================
 
-  // Carrega configuraÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o especÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­fica do usuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡rio (UUID-scoped)
+  // Carrega configuração específica do usuário (UUID-scoped)
   const userSpecificConfig = loadConfig(newUserId);
   if (userSpecificConfig) {
     setTheme(userSpecificConfig.theme || 'light');
@@ -800,7 +830,7 @@ const switchUserSession = (newUserId: string, displayName: string) => {
 
   } else {
 
-    // usuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡rio novo ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ workspace limpo
+    // usuário novo — workspace limpo
     setInstances([
         DEFAULT_FRETBOARD(userSpecificConfig?.lang || lang, userSpecificConfig?.defaultInstrument || 'guitar-6')
     ]);
@@ -943,7 +973,7 @@ const handleMigrateLocalIdentity = async (sourceIdentity: string) => {
   };
 
   useEffect(() => {
-    // Manter o idioma acessÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­vel globalmente para o SVG
+    // Manter o idioma acessível globalmente para o SVG
     (window as any).ga_lang = lang;
   }, [lang]);
 
@@ -1239,7 +1269,7 @@ const handleLogout = async () => {
       console.error('[Auth Trace] signOut retornou erro:', error);
       return;
     }
-    console.log('[Auth Trace] signOut concluÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­do com sucesso');
+    console.log('[Auth Trace] signOut concluído com sucesso');
   } else {
     console.log('[Auth Trace] handleLogout sem authUser ativo.');
   }
@@ -1761,11 +1791,19 @@ const handleReturnToContext = () => {
     }
 
     const applyToDiagram = (instance: FretboardState): FretboardState => {
-      const shouldResetFretboardViewport = pending.source === 'harmonic-cycle' || pending.source === 'study-module';
+      const shouldResetFretboardViewport = Boolean(pending.isContextualViewport);
       const isHarmonyAction = pending.action === 'field' || pending.action === 'triads' || pending.action === 'progression';
       const isScaleAction = pending.action === 'scale' || (pending.action === 'startPractice' && !pending.chords?.length);
       const isCycleScaleAction = pending.source === 'harmonic-cycle' && pending.action === 'scale';
       const shouldFocusFirstRegion = Boolean(pending.focusFirstRegion) || isCycleScaleAction;
+      const resolvedEngine: FretboardState['activeEngine'] = pending.activeEngine
+        || (pending.action === 'scale'
+          ? 'scale'
+          : (pending.action === 'triads' || pending.harmonyMode === 'TRIADS' || pending.harmonyMode === 'TETRADS'
+            ? (pending.triadTrainerSequence || pending.triadTrainerCurrentShape ? 'trainer' : 'triadTetrad')
+            : (pending.action === 'field' || pending.action === 'progression'
+              ? 'harmony'
+              : ((pending.cagedAction || pending.shape || (pending.shapeSequence && pending.shapeSequence.length > 0)) ? 'caged' : 'off'))));
       const nextRoot = pending.root || instance.root;
       const nextScaleType = pending.scaleType || instance.scaleType;
       const safeInstrumentType = instance.instrumentType || defaultInstrument || 'guitar-6';
@@ -1776,7 +1814,7 @@ const handleReturnToContext = () => {
         ? ((pending.chordDegree ?? 0) % pendingChords.length + pendingChords.length) % pendingChords.length
         : 0;
       const initialChordSymbol = hasChords ? pendingChords[normalizedDegree] : null;
-      const chordVisualState = initialChordSymbol ? buildChordVisualState(instance, initialChordSymbol) : null;
+      const chordVisualState = initialChordSymbol ? buildChordVisualState(instance, initialChordSymbol, pending.harmonyMode) : null;
       const shouldApplyChordVisualState = (pending.action === 'progression' || pending.action === 'field' || pending.action === 'triads') && Boolean(chordVisualState);
       const isTriadOrTetradContext = (pending.action === 'triads' || pending.harmonyMode === 'TRIADS' || pending.harmonyMode === 'TETRADS')
         && Array.isArray(pending.chords)
@@ -1809,11 +1847,14 @@ const handleReturnToContext = () => {
         chordDegree: normalizedDegree,
         inversion: pending.inversion ?? 0,
         voicingMode: pending.voicingMode || instance.voicingMode,
-        cagedShape: isHarmonyAction ? 'OFF' : instance.cagedShape,
+        activeEngine: resolvedEngine,
+        lastUpdateSource: 'intent',
+        isContextualViewport: Boolean(pending.isContextualViewport),
+        cagedShape: (isHarmonyAction && resolvedEngine !== 'caged') ? 'OFF' : instance.cagedShape,
         triadTrainerSequence: pending.triadTrainerSequence || instance.triadTrainerSequence,
         triadTrainerCurrentShape: pending.triadTrainerCurrentShape || instance.triadTrainerCurrentShape,
-        startFret: shouldFocusFirstRegion ? 0 : shouldResetFretboardViewport ? 0 : instance.startFret,
-        endFret: shouldFocusFirstRegion ? 4 : shouldResetFretboardViewport ? 15 : instance.endFret,
+        startFret: shouldFocusFirstRegion ? 0 : (shouldResetFretboardViewport ? 0 : instance.startFret),
+        endFret: shouldFocusFirstRegion ? 4 : (shouldResetFretboardViewport ? 15 : instance.endFret),
         markers: shouldApplyChordVisualState ? chordVisualState!.markers : (shouldResetFretboardViewport ? [] : instance.markers),
         lines: shouldApplyChordVisualState ? chordVisualState!.lines : (shouldResetFretboardViewport ? [] : instance.lines),
         stringStatuses: shouldResetFretboardViewport
@@ -2382,7 +2423,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                >
                  T
                </button>
-               {/* LOAD / SAVE ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â SEPARADOS */}
+               {/* LOAD / SAVE — SEPARADOS */}
                 <a href="/legal/help.html" target="_blank" rel="noreferrer" className={`p-2 text-xs text-center ${headerButtonBaseClass} ${headerButtonThemeClass}`} title={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'} aria-label={lang === 'pt' ? 'Ajuda e perguntas frequentes' : 'Help and FAQ'}>
                  ?
                </a>
@@ -2422,10 +2463,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 </div>
 
 
-               {/* EXPORTAÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢O */}
+               {/* EXPORTAÇÃO */}
 <div className="flex flex-col items-center md:items-start leading-none">
 
-  {/* TÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂTULO */}
+  {/* TÍTULO */}
   <span className={`
     text-[8px] md:text-[8px]
     font-black uppercase tracking-wider
@@ -2435,7 +2476,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
     {lang === 'pt' ? 'Exportação' : 'Export'}
   </span>
 
-  {/* BOTÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ES */}
+  {/* BOTÕES */}
   <div className="flex flex-col gap-1">
     <button
       onClick={handleExportPNG}
@@ -2493,7 +2534,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 </div>
 
 
-{/* GLOBAL TRANSPOSE ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â HEADER */}
+{/* GLOBAL TRANSPOSE — HEADER */}
 <div className="hidden flex-col items-center leading-none select-none">
 
   {/* LABEL */}
@@ -2544,7 +2585,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       onClick={() => handleGlobalTranspose(-1)}
       className="w-7 h-7 flex items-center justify-center font-black text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
     >
-      ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¹ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢
+      ‹ 
     </button>
 
   </div>

@@ -20,6 +20,8 @@ export type TuningKey = 'Standard' | 'Drop D' | 'Drop C' | 'Open D' | 'Open G' |
 export type StringStatus = 'normal' | 'open' | 'mute';
 export type InstrumentType = 'guitar-6' | 'guitar-7' | 'guitar-8' | 'bass-4' | 'bass-5';
 export type ColorMode = 'SINGLE' | 'MULTI';
+export type ActiveEngine = 'scale' | 'caged' | 'harmony' | 'triadTetrad' | 'trainer' | 'off';
+export type UpdateSource = 'user' | 'engine' | 'intent' | 'system';
 
 export interface Marker {
   id: string;
@@ -72,6 +74,9 @@ export interface FretboardState {
     stringIndex?: number;
     label?: string;
   };
+  activeEngine?: ActiveEngine;
+  lastUpdateSource?: UpdateSource;
+  isContextualViewport?: boolean;
   triadTrainerSequence?: Array<{
     root?: string;
     quality?: string;

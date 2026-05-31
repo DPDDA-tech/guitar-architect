@@ -480,6 +480,7 @@ const CagedPage: React.FC = () => {
       ...(payloadRecord as Omit<FretboardIntent, 'version' | 'createdAt'>),
       source: 'caged',
       action: mapLegacyActionToIntentAction(payloadRecord.action),
+      activeEngine: 'caged',
       root: typeof payloadRecord.root === 'string' ? payloadRecord.root : 'C',
       scaleType: typeof payloadRecord.scaleType === 'string' ? payloadRecord.scaleType : 'Major (Ionian)',
       targetTab: mapLegacyTabToTargetTab(payloadRecord.quickTab ?? payloadRecord.tab),

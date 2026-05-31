@@ -186,7 +186,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         setMusicTip(tip);
       }
     }).catch(() => {
-      // fallback jÃ¡ tratado na utilitÃ¡ria
+      // fallback já tratado na utilitária
     });
 
     return () => {
@@ -194,11 +194,18 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     };
   }, [lang]);
 
-  const recordAction = useCallback((newState: FretboardState) => {
+  const recordAction = useCallback((newState: FretboardState, source: FretboardState['lastUpdateSource'] = 'user') => {
     historyRef.current.push({...state});
     if (historyRef.current.length > 30) historyRef.current.shift();
     futureRef.current = [];
-    updateState(newState);
+    updateState({
+      ...newState,
+      activeEngine: newState.activeEngine ?? state.activeEngine ?? 'off',
+      lastUpdateSource: source,
+      isContextualViewport: typeof newState.isContextualViewport === 'boolean'
+        ? newState.isContextualViewport
+        : Boolean(state.isContextualViewport),
+    });
   }, [state, updateState]);
 
   const undo = () => {
@@ -218,7 +225,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
 
   const clearContent = () => {
-    if (window.confirm(t.clearDiagram + "?")) {
+    const prompt = `${String(t.clearDiagram)}?`;
+    if (window.confirm(prompt)) {
       recordAction({ 
         ...state, 
         markers: [], 
@@ -233,7 +241,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     if (state.markers.length === 0 && state.lines.length === 0) return;
 
     const label = lang === 'pt'
-      ? 'Limpar apenas marcadores e linhas da ediÃ§Ã£o?'
+      ? 'Limpar apenas marcadores e linhas da edição?'
       : 'Clear only editor markers and lines?';
 
     if (window.confirm(label)) {
@@ -473,6 +481,40 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setTriadTetradFollowStatus('idle');
     setTriadTetradFollowIndex(0);
   }, []);
+  const resetOtherEngines = useCallback((activeEngine: NonNullable<FretboardState['activeEngine']>) => {
+    if (activeEngine !== 'scale') {
+      if (scaleFollowTimerRef.current) {
+        window.clearTimeout(scaleFollowTimerRef.current);
+        scaleFollowTimerRef.current = null;
+      }
+      setScaleFollowStatus('idle');
+      setScaleFollowIndex(0);
+      setScaleFollowMode('off');
+    }
+    if (activeEngine !== 'harmony') {
+      if (cycleFollowTimerRef.current) {
+        window.clearInterval(cycleFollowTimerRef.current);
+        cycleFollowTimerRef.current = null;
+      }
+      setCycleFollowStatus('idle');
+    }
+    if (activeEngine !== 'caged') {
+      if (cagedFollowTimerRef.current) {
+        window.clearTimeout(cagedFollowTimerRef.current);
+        cagedFollowTimerRef.current = null;
+      }
+      setCagedFollowStatus('idle');
+      setCagedFollowIndex(0);
+    }
+    if (activeEngine !== 'triadTetrad' && activeEngine !== 'trainer') {
+      if (triadTetradFollowTimerRef.current) {
+        window.clearTimeout(triadTetradFollowTimerRef.current);
+        triadTetradFollowTimerRef.current = null;
+      }
+      setTriadTetradFollowStatus('idle');
+      setTriadTetradFollowIndex(0);
+    }
+  }, []);
 
   useEffect(() => {
     const closePanels = () => setIsControlPanelOpen(false);
@@ -539,9 +581,22 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       && prevContext.notes === nextContext.notes
       && prevContext.chordDegree !== nextContext.chordDegree;
 
+    if (state.lastUpdateSource === 'engine') {
+      const activeEngine = state.activeEngine;
+      const isActiveEnginePlaying = activeEngine === 'scale'
+        ? scaleFollowStatus === 'playing'
+        : activeEngine === 'caged'
+          ? cagedFollowStatus === 'playing'
+          : activeEngine === 'harmony'
+            ? cycleFollowStatus === 'playing'
+            : activeEngine === 'triadTetrad' || activeEngine === 'trainer'
+              ? triadTetradFollowStatus === 'playing'
+              : false;
+      if (isActiveEnginePlaying) return;
+    }
     if (onlyChordDegreeChanged && (cycleFollowStatus === 'playing' || triadTetradFollowStatus === 'playing')) return;
     resetFollowModes();
-  }, [cycleFollowStatus, resetFollowModes, state.chordDegree, state.harmonyMode, state.notes, state.root, state.scaleType, state.subtitle, state.title, triadTetradFollowStatus]);
+  }, [cagedFollowStatus, cycleFollowStatus, resetFollowModes, scaleFollowStatus, state.activeEngine, state.chordDegree, state.harmonyMode, state.lastUpdateSource, state.notes, state.root, state.scaleType, state.subtitle, state.title, triadTetradFollowStatus]);
   useEffect(() => {
     latestStateRef.current = state;
     cycleDegreeRef.current = state.chordDegree ?? 0;
@@ -605,9 +660,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
   const scaleNoteSet = useMemo(() => new Set(getScaleNotes(state.root, state.scaleType)), [state.root, state.scaleType]);
   const activeScaleRegion = CAGED_SCALE_REGIONS[scaleRegionIndex] || CAGED_SCALE_REGIONS[0];
-  const cagedFollowShape = state.cagedShape && state.cagedShape !== 'OFF' ? state.cagedShape : 'E';
-  const cagedFollowPositions = useMemo(() => {
-    const basePositions = getCagedPositions(state.root, cagedFollowShape, currentTuning);
+  const getCagedPositionsForShape = useCallback((shape: CagedShape) => {
+    const basePositions = getCagedPositions(state.root, shape, currentTuning);
     const viewportCenter = (state.startFret + state.endFret) / 2;
     const inViewport = basePositions
       .flatMap(position => [0, 12, 24].map(offset => ({
@@ -635,7 +689,19 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     });
     return Array.from(closestByStringAndNote.values())
       .sort((a, b) => b.string - a.string || a.fret - b.fret);
-  }, [cagedFollowShape, currentTuning, state.endFret, state.root, state.startFret]);
+  }, [currentTuning, state.endFret, state.root, state.startFret]);
+  const cagedFollowShapeSequence = useMemo(() => (
+    CAGED_SHAPE_SEQUENCE.filter(shape => getCagedPositionsForShape(shape).length > 0)
+  ), [getCagedPositionsForShape]);
+  const cagedFollowShape = useMemo(() => {
+    if (cagedFollowStatus === 'playing' || cagedFollowStatus === 'paused') {
+      return cagedFollowShapeSequence[cagedFollowIndex] || cagedFollowShapeSequence[0] || 'E';
+    }
+    return state.cagedShape && state.cagedShape !== 'OFF' ? state.cagedShape : 'E';
+  }, [cagedFollowIndex, cagedFollowShapeSequence, cagedFollowStatus, state.cagedShape]);
+  const cagedFollowPositions = useMemo(() => (
+    getCagedPositionsForShape(cagedFollowShape)
+  ), [cagedFollowShape, getCagedPositionsForShape]);
   const cagedRegionBounds = useMemo(() => {
     if (cagedFollowPositions.length === 0 || cagedFollowStatus === 'idle') return null;
     const frets = cagedFollowPositions.map(position => position.fret);
@@ -771,6 +837,14 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       }
     };
   }, [scaleFollowIndex, scaleFollowSequence.length, scaleFollowStatus]);
+  useEffect(() => {
+    if (!soundEnabled) return;
+    if (scaleFollowStatus !== 'playing') return;
+    const note = scaleFollowSequence[Math.min(scaleFollowIndex, Math.max(0, scaleFollowSequence.length - 1))];
+    if (!note) return;
+    const frequency = getFrequencyForPosition(state.instrumentType, currentTuning, note.string, note.fret);
+    playSingleNote(frequency).catch(() => undefined);
+  }, [currentTuning, scaleFollowIndex, scaleFollowSequence, scaleFollowStatus, soundEnabled, state.instrumentType]);
 
   useEffect(() => {
     setScaleFollowStatus('idle');
@@ -779,7 +853,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
   useEffect(() => {
     if (cagedFollowStatus !== 'playing') return;
-    if (cagedFollowPositions.length === 0) {
+    if (cagedFollowShapeSequence.length === 0) {
       setCagedFollowStatus('idle');
       setCagedFollowIndex(0);
       return;
@@ -787,11 +861,24 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
     cagedFollowTimerRef.current = window.setTimeout(() => {
       setCagedFollowIndex(prev => {
-        if (prev >= cagedFollowPositions.length - 1) {
+        if (prev >= cagedFollowShapeSequence.length - 1) {
           setCagedFollowStatus('idle');
           return 0;
         }
-        return prev + 1;
+        const next = prev + 1;
+        const nextShape = cagedFollowShapeSequence[next];
+        if (nextShape) {
+          const currentState = latestStateRef.current;
+          // Maintain CAGED isolation: keep activeEngine and harmonyMode locked per step.
+          recordAction({
+            ...currentState,
+            cagedShape: nextShape,
+            activeEngine: 'caged',
+            harmonyMode: 'OFF',
+            layers: { ...currentState.layers, showTonic: true },
+          }, 'engine');
+        }
+        return next;
       });
     }, 720);
 
@@ -801,12 +888,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         cagedFollowTimerRef.current = null;
       }
     };
-  }, [cagedFollowIndex, cagedFollowPositions.length, cagedFollowStatus]);
+  }, [cagedFollowIndex, cagedFollowShapeSequence, cagedFollowStatus, recordAction]);
 
   useEffect(() => {
     setCagedFollowStatus('idle');
     setCagedFollowIndex(0);
-  }, [state.root, state.cagedShape, state.startFret, state.endFret]);
+  }, [state.root, state.startFret, state.endFret]);
 
   useEffect(() => {
     setSelectedChordVoicingIndex(0);
@@ -882,7 +969,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       id: 'welcome',
       title: lang === 'pt' ? 'Bem-vindo' : 'Welcome',
       body: lang === 'pt'
-        ? 'Vamos comeÃ§ar a aprender a usar o Guitar Architect? Em poucos passos voce vai entender o fluxo principal.'
+        ? 'Vamos começar a aprender a usar o Guitar Architect? Em poucos passos voce vai entender o fluxo principal.'
         : 'Ready to learn Guitar Architect? In a few steps you will see the main workflow.'
     },
     {
@@ -922,15 +1009,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       target: '[data-tour="quick-scale"]',
       title: lang === 'pt' ? 'Escolha a escala' : 'Choose the scale',
       body: lang === 'pt'
-        ? 'Ative Escala e depois ajuste tÃ´nica e tipo de escala na aba Escala.'
+        ? 'Ative Escala e depois ajuste tônica e tipo de escala na aba Escala.'
         : 'Turn Scale on, then adjust tonic and scale type in the Scale tab.'
     },
     {
       id: 'tonic',
       target: '[data-tour="quick-tonic"]',
-      title: lang === 'pt' ? 'Destaque a tÃ´nica' : 'Highlight the tonic',
+      title: lang === 'pt' ? 'Destaque a tônica' : 'Highlight the tonic',
       body: lang === 'pt'
-        ? 'A tÃ´nica ajuda o aluno a enxergar o centro tonal antes de estudar shapes e frases.'
+        ? 'A tônica ajuda o aluno a enxergar o centro tonal antes de estudar shapes e frases.'
         : 'The tonic helps the student see the tonal center before studying shapes and phrases.'
     },
     {
@@ -1106,6 +1193,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       setOpenQuickTab(null);
       return;
     }
+    if (state.activeEngine && state.activeEngine !== 'off') {
+      recordAction({ ...state, activeEngine: 'off' });
+    }
     setActiveControlTab(tab);
     setOpenQuickTab(tab);
   };
@@ -1126,9 +1216,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const harmonicFallbackChordLabels = useMemo(() => (
     buildDiatonicChordLabels(state.root, state.scaleType, state.harmonyMode)
   ), [state.harmonyMode, state.root, state.scaleType]);
+  const shouldPrioritizeDiatonicHarmonyLabels = state.harmonyMode === 'TRIADS' || state.harmonyMode === 'TETRADS';
   const effectiveCycleChordLabels = useMemo(() => (
-    cycleChordLabels.length > 0 ? cycleChordLabels : harmonicFallbackChordLabels
-  ), [cycleChordLabels, harmonicFallbackChordLabels]);
+    shouldPrioritizeDiatonicHarmonyLabels
+      ? harmonicFallbackChordLabels
+      : (cycleChordLabels.length > 0 ? cycleChordLabels : harmonicFallbackChordLabels)
+  ), [cycleChordLabels, harmonicFallbackChordLabels, shouldPrioritizeDiatonicHarmonyLabels]);
   const trainerSequence = useMemo(() => (
     Array.isArray(state.triadTrainerSequence)
       ? state.triadTrainerSequence.filter(step => Array.isArray(step?.positions) && step.positions.length > 0)
@@ -1145,15 +1238,76 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     if (!match) return null;
     const root = match[1];
     const quality = (match[2] || '').trim().toLowerCase();
-    if (quality.startsWith('dim') || quality.includes('°') || quality.includes('º')) {
-      // In tonal context this degree is usually half-diminished (m7b5), which is more playable in study flow.
-      return { root, type: 'm7b5' };
+    const isTriadMode = state.harmonyMode === 'TRIADS';
+    if (quality.includes('mmaj7')) return { root, type: 'mMaj7' };
+    if (quality.includes('maj7')) return { root, type: 'maj7' };
+    if (quality.includes('m7b5')) return { root, type: 'm7b5' };
+    if (quality.includes('dim7')) return { root, type: 'dim7' };
+    if (quality.includes('7')) {
+      if (quality.startsWith('m') && !quality.startsWith('maj')) return { root, type: 'm7' };
+      return { root, type: '7' };
     }
+    if (quality.startsWith('dim') || quality.includes('°') || quality.includes('º')) {
+      return { root, type: isTriadMode ? 'diminished' : 'm7b5' };
+    }
+    if (quality.includes('+') || quality.includes('aug')) return { root, type: 'augmented' };
     if (quality.startsWith('m') && !quality.startsWith('maj')) {
       return { root, type: 'minor' };
     }
     return { root, type: 'major' };
-  }, []);
+  }, [state.harmonyMode]);
+  const resolveTriadTetradChordByDegree = useCallback((degreeIndex: number): null | {
+    root: string;
+    type: ChordType;
+    expectedNoteCount: 3 | 4;
+  } => {
+    const harmonyMode = state.harmonyMode;
+    if (harmonyMode !== 'TRIADS' && harmonyMode !== 'TETRADS') return null;
+    const scaleNotes = getScaleNotes(state.root, state.scaleType);
+    if (scaleNotes.length < 7) return null;
+
+    const normalizedDegree = ((degreeIndex % 7) + 7) % 7;
+    const chordRoot = scaleNotes[normalizedDegree];
+    const third = scaleNotes[(normalizedDegree + 2) % scaleNotes.length];
+    const fifth = scaleNotes[(normalizedDegree + 4) % scaleNotes.length];
+    const thirdDistance = semitoneDistance(chordRoot, third);
+    const fifthDistance = semitoneDistance(chordRoot, fifth);
+
+    if (harmonyMode === 'TRIADS') {
+      if (thirdDistance === 3 && fifthDistance === 6) {
+        return { root: chordRoot, type: 'diminished', expectedNoteCount: 3 };
+      }
+      if (thirdDistance === 4 && fifthDistance === 8) {
+        return { root: chordRoot, type: 'augmented', expectedNoteCount: 3 };
+      }
+      if (thirdDistance === 3 && fifthDistance === 7) {
+        return { root: chordRoot, type: 'minor', expectedNoteCount: 3 };
+      }
+      return { root: chordRoot, type: 'major', expectedNoteCount: 3 };
+    }
+
+    const seventh = scaleNotes[(normalizedDegree + 6) % scaleNotes.length];
+    const seventhDistance = semitoneDistance(chordRoot, seventh);
+    if (thirdDistance === 3 && fifthDistance === 6 && seventhDistance === 10) {
+      return { root: chordRoot, type: 'm7b5', expectedNoteCount: 4 };
+    }
+    if (thirdDistance === 3 && fifthDistance === 7 && seventhDistance === 10) {
+      return { root: chordRoot, type: 'm7', expectedNoteCount: 4 };
+    }
+    if (thirdDistance === 4 && fifthDistance === 7 && seventhDistance === 10) {
+      return { root: chordRoot, type: '7', expectedNoteCount: 4 };
+    }
+    if (thirdDistance === 4 && fifthDistance === 7 && seventhDistance === 11) {
+      return { root: chordRoot, type: 'maj7', expectedNoteCount: 4 };
+    }
+    if (thirdDistance === 3 && fifthDistance === 6 && seventhDistance === 9) {
+      return { root: chordRoot, type: 'dim7', expectedNoteCount: 4 };
+    }
+    if (thirdDistance === 3 && fifthDistance === 7 && seventhDistance === 11) {
+      return { root: chordRoot, type: 'mMaj7', expectedNoteCount: 4 };
+    }
+    return { root: chordRoot, type: '7', expectedNoteCount: 4 };
+  }, [state.harmonyMode, state.root, state.scaleType]);
   const resolveCycleChordByDegree = useCallback((degreeIndex: number, fretRange?: { startFret: number; endFret: number }): null | {
     root: string;
     markers: Marker[];
@@ -1161,11 +1315,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     stringStatuses: StringStatus[];
     frequencies: number[];
   } => {
+    const degreeResolved = resolveTriadTetradChordByDegree(degreeIndex);
     const symbol = effectiveCycleChordLabels[degreeIndex];
-    if (!symbol) return null;
-    const parsed = parseCycleChord(symbol);
+    const parsed = degreeResolved || (symbol ? parseCycleChord(symbol) : null);
     if (!parsed) return null;
-    const isLeadingDiminished = /°|º|dim/i.test(symbol);
+    const isLeadingDiminished = parsed.type === 'diminished' || parsed.type === 'm7b5' || parsed.type === 'dim7' || /°|º|dim/i.test(symbol || '');
     const voicings = generateChordVoicings(parsed.root, parsed.type, currentTuning, {
       maxFretSpan: 5,
       maxFret: 15,
@@ -1187,7 +1341,24 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           return b.score - a.score;
         })[0] || voicings[0])
       : (inRegion[0] || voicings[0]);
-    const markers: Marker[] = selected.positions.map((position, index) => ({
+    const expectedCount = degreeResolved?.expectedNoteCount;
+    const selectedPositions = (() => {
+      if (!expectedCount) return selected.positions;
+      const desiredIntervals = getChordFormula(parsed.type).intervalNames.slice(0, expectedCount);
+      const picked: typeof selected.positions = [];
+      desiredIntervals.forEach((interval) => {
+        const found = selected.positions.find((position) => position.interval === interval && !picked.includes(position));
+        if (found) picked.push(found);
+      });
+      if (picked.length < expectedCount) {
+        selected.positions.forEach((position) => {
+          if (picked.length >= expectedCount) return;
+          if (!picked.includes(position)) picked.push(position);
+        });
+      }
+      return picked.slice(0, expectedCount);
+    })();
+    const markers: Marker[] = selectedPositions.map((position, index) => ({
       id: crypto.randomUUID(),
       string: position.string,
       fret: position.fret,
@@ -1196,22 +1367,22 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       finger: position.finger || '1'
     }));
     const stringStatuses: StringStatus[] = Array(currentTuning.length).fill('muted');
-    selected.positions.forEach(position => {
+    selectedPositions.forEach(position => {
       stringStatuses[position.string] = 'normal';
     });
-    selected.positions.forEach(position => {
+    selectedPositions.forEach(position => {
       if (position.fret === 0 && position.string >= 0 && position.string < stringStatuses.length) {
         stringStatuses[position.string] = 'open';
       }
     });
-    const lines: Line[] = selected.barre ? [{
+    const lines: Line[] = selected.barre && selectedPositions.length === selected.positions.length ? [{
       id: crypto.randomUUID(),
       start: { string: selected.barre.fromString, fret: selected.barre.fret },
       end: { string: selected.barre.toString, fret: selected.barre.fret },
       color: isLight ? '#0f172a' : '#f8fafc',
       width: 11
     }] : [];
-    const frequencies = selected.positions.map((position) => (
+    const frequencies = selectedPositions.map((position) => (
       getFrequencyForPosition(state.instrumentType, currentTuning, position.string, position.fret)
     ));
     return {
@@ -1221,7 +1392,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       stringStatuses,
       frequencies
     };
-  }, [currentTuning, effectiveCycleChordLabels, isLight, parseCycleChord, state.instrumentType]);
+  }, [currentTuning, effectiveCycleChordLabels, isLight, parseCycleChord, resolveTriadTetradChordByDegree, state.instrumentType]);
   const cycleLength = Math.max(1, effectiveCycleChordLabels.length || 7);
   const getCycleRegionRange = useCallback(() => {
     const region = CAGED_SCALE_REGIONS[cycleRegionIndexRef.current] || CAGED_SCALE_REGIONS[0];
@@ -1254,6 +1425,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       stringStatuses: nextChord?.stringStatuses || currentState.stringStatuses,
       harmonyMode: currentState.harmonyMode,
       chordDegree: normalized,
+      cagedShape: 'OFF',
       labelMode: nextChord ? 'note' : currentState.labelMode,
       layers: {
         ...currentState.layers,
@@ -1261,7 +1433,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         showAllNotes: false,
         showTonic: true,
       },
-    });
+    }, 'engine');
     if (nextChord?.frequencies?.length) {
       playChord(nextChord.frequencies).catch(() => undefined);
     }
@@ -1284,28 +1456,21 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       markers: nextChord?.markers || currentState.markers,
       lines: nextChord?.lines || currentState.lines,
       stringStatuses: nextChord?.stringStatuses || currentState.stringStatuses,
-    });
+    }, 'engine');
   }, [getCycleRegionRange, recordAction, resolveCycleChordByDegree]);
   const startCycleFollow = useCallback(() => {
-    clearCycleFollowTimer();
-    if (scaleFollowTimerRef.current) {
-      window.clearTimeout(scaleFollowTimerRef.current);
-      scaleFollowTimerRef.current = null;
-    }
-    if (cagedFollowTimerRef.current) {
-      window.clearTimeout(cagedFollowTimerRef.current);
-      cagedFollowTimerRef.current = null;
-    }
+    resetOtherEngines('harmony');
     setScaleFollowMode('off');
     setScaleFollowStatus('idle');
     setScaleFollowIndex(0);
     setCagedFollowStatus('idle');
     setCagedFollowIndex(0);
+    cycleDegreeRef.current = 0;
     setCycleFollowStatus('playing');
     cycleFollowTimerRef.current = window.setInterval(() => {
       moveCycleDegree(1);
     }, 1500);
-  }, [clearCycleFollowTimer, moveCycleDegree]);
+  }, [moveCycleDegree, resetOtherEngines]);
 
   const buildTriadTetradFollowSequence = useCallback(() => {
     if (trainerSequence.length > 1) {
@@ -1349,31 +1514,19 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       harmonyMode: currentState.harmonyMode === 'OFF' ? 'TRIADS' : currentState.harmonyMode,
       layers: { ...currentState.layers, showScale: false, showAllNotes: false, showTonic: true },
       cagedShape: 'OFF',
-    });
+    }, 'engine');
   }, [applyCycleDegree, currentTuning.length, recordAction, trainerCurrentShape, trainerSequence]);
 
   const startTriadTetradFollow = useCallback(() => {
-    clearCycleFollowTimer();
-    if (scaleFollowTimerRef.current) {
-      window.clearTimeout(scaleFollowTimerRef.current);
-      scaleFollowTimerRef.current = null;
-    }
-    if (cagedFollowTimerRef.current) {
-      window.clearTimeout(cagedFollowTimerRef.current);
-      cagedFollowTimerRef.current = null;
-    }
-    if (triadTetradFollowTimerRef.current) {
-      window.clearTimeout(triadTetradFollowTimerRef.current);
-      triadTetradFollowTimerRef.current = null;
-    }
+    const sequence = buildTriadTetradFollowSequence();
+    const nextEngine = sequence.mode === 'triadTrainerSequence' || sequence.mode === 'triadSingle' ? 'trainer' : 'triadTetrad';
+    resetOtherEngines(nextEngine);
     setScaleFollowMode('off');
     setScaleFollowStatus('idle');
     setScaleFollowIndex(0);
     setCagedFollowStatus('idle');
     setCagedFollowIndex(0);
     setCycleFollowStatus('idle');
-
-    const sequence = buildTriadTetradFollowSequence();
     setTriadTetradFollowMode(sequence.mode);
     setTriadTetradFollowStatus('playing');
     setTriadTetradFollowIndex(0);
@@ -1382,7 +1535,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       return;
     }
     applyTriadTetradStep(sequence.steps[0], sequence.mode);
-  }, [applyTriadTetradStep, buildTriadTetradFollowSequence, clearCycleFollowTimer]);
+  }, [applyTriadTetradStep, buildTriadTetradFollowSequence, resetOtherEngines]);
 
   const pauseTriadTetradFollow = useCallback(() => {
     if (triadTetradFollowTimerRef.current) {
@@ -1450,7 +1603,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const startScaleFollow = () => {
     if (scaleFollowMode === 'off') setScaleFollowMode('region');
     if (scaleFollowSequence.length === 0) return;
-    clearCycleFollowTimer();
+    resetOtherEngines('scale');
     setCycleFollowStatus('idle');
     setCagedFollowStatus('idle');
     setCagedFollowIndex(0);
@@ -1470,17 +1623,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
   const shiftScaleRegion = (direction: -1 | 1) => {
     const nextRegionIndex = Math.min(CAGED_SCALE_REGIONS.length - 1, Math.max(0, scaleRegionIndex + direction));
-    const nextRegion = CAGED_SCALE_REGIONS[nextRegionIndex] || CAGED_SCALE_REGIONS[0];
-    const nextStartFret = Math.max(0, nextRegion.startFret - 1);
-    const nextEndFret = Math.min(24, Math.max(nextStartFret + 1, nextRegion.endFret + 1));
     setScaleFollowMode('region');
     setScaleFollowStatus('idle');
     setScaleFollowIndex(0);
     setScaleRegionIndex(nextRegionIndex);
+    // Clear isContextualViewport so the viewport no longer tracks the region automatically.
+    // The highlight moves via followAlongRegion; the fretboard viewport stays put.
     recordAction({
       ...state,
-      startFret: nextStartFret,
-      endFret: nextEndFret,
+      isContextualViewport: false,
       layers: { ...state.layers, showScale: true, showTonic: true },
     });
   };
@@ -1493,71 +1644,39 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
   const ensureCagedShape = () => {
     if (state.cagedShape && state.cagedShape !== 'OFF') return state.cagedShape;
-    recordAction({ ...state, cagedShape: 'E', layers: { ...state.layers, showTonic: true } });
+    recordAction({ ...state, cagedShape: 'E', activeEngine: 'caged', harmonyMode: 'OFF', layers: { ...state.layers, showTonic: true } });
     return 'E';
   };
   const startCagedFollow = () => {
-    ensureCagedShape();
-    if (cagedFollowPositions.length === 0) return;
-    clearCycleFollowTimer();
-    setCycleFollowStatus('idle');
+    if (cagedFollowShapeSequence.length === 0) return;
+    resetOtherEngines('caged');
+    setScaleFollowMode('off');
     setScaleFollowStatus('idle');
     setScaleFollowIndex(0);
-    setScaleFollowMode('off');
-    setCagedFollowIndex(prev => Math.min(prev, Math.max(0, cagedFollowPositions.length - 1)));
+    // Determine starting shape without calling ensureCagedShape (avoids a stale recordAction without activeEngine).
+    const currentShape = (state.cagedShape && state.cagedShape !== 'OFF')
+      ? state.cagedShape
+      : (cagedFollowShapeSequence[0] || 'E');
+    const currentIndex = cagedFollowShapeSequence.indexOf(currentShape as CagedShape);
+    const startIndex = currentIndex >= 0 ? currentIndex : 0;
+    const startShape = cagedFollowShapeSequence[startIndex] || cagedFollowShapeSequence[0] || 'E';
+    // Single definitive recordAction: lock activeEngine, clear harmonyMode and markers
+    // to prevent harmony-cycle contamination during CAGED follow.
+    recordAction({
+      ...state,
+      cagedShape: startShape as CagedShape,
+      activeEngine: 'caged',
+      harmonyMode: 'OFF',
+      markers: [],
+      lines: [],
+      layers: { ...state.layers, showTonic: true },
+    });
+    setCagedFollowIndex(startIndex);
     setCagedFollowStatus('playing');
   };
   const isTriadTetradHarmony = state.harmonyMode === 'TRIADS' || state.harmonyMode === 'TETRADS';
   const isCagedExplicitlyActive = Boolean(state.cagedShape && state.cagedShape !== 'OFF');
   const shouldUseHarmonyFollow = state.harmonyMode !== 'OFF';
-  const startHarmonyPlay = () => {
-    if (isTriadTetradHarmony) {
-      if (state.cagedShape && state.cagedShape !== 'OFF') {
-        recordAction({ ...state, cagedShape: 'OFF' });
-      }
-      setScaleFollowMode('off');
-      setScaleFollowStatus('idle');
-      setScaleFollowIndex(0);
-      startTriadTetradFollow();
-      return;
-    }
-    if (isCagedExplicitlyActive) {
-      startCagedFollow();
-      return;
-    }
-    if (shouldUseHarmonyFollow) {
-      startCycleFollow();
-      return;
-    }
-  };
-  const pauseHarmonyPlay = () => {
-    if (isTriadTetradHarmony) {
-      pauseTriadTetradFollow();
-      return;
-    }
-    if (isCagedExplicitlyActive) {
-      pauseCagedFollow();
-      return;
-    }
-    if (shouldUseHarmonyFollow) {
-      pauseCycleFollow();
-      return;
-    }
-  };
-  const stopHarmonyPlay = () => {
-    if (isTriadTetradHarmony) {
-      stopTriadTetradFollow();
-      return;
-    }
-    if (isCagedExplicitlyActive) {
-      stopCagedFollow();
-      return;
-    }
-    if (shouldUseHarmonyFollow) {
-      stopCycleFollow();
-      return;
-    }
-  };
   const pauseCagedFollow = () => {
     setCagedFollowStatus(prev => prev === 'playing' ? 'paused' : prev);
   };
@@ -1576,6 +1695,70 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     stopCagedFollow();
     recordAction({ ...state, cagedShape: nextShape, layers: { ...state.layers, showTonic: true } });
   };
+  const getActiveEngine = useCallback((): NonNullable<FretboardState['activeEngine']> => {
+    // state.activeEngine is the authoritative signal when explicitly set by an intent or engine
+    // start. It encodes the unambiguous intent: 'caged' from CagedPage stays 'caged' even when
+    // activeControlTab='harmony' and harmonyMode='TRIADS'. activeControlTab is only used as
+    // a fallback when state.activeEngine is 'off' (cleared by a manual tab switch).
+    if (state.activeEngine && state.activeEngine !== 'off') {
+      return state.activeEngine;
+    }
+
+    // Fallback: state.activeEngine === 'off' — infer from UI context.
+    if (state.harmonyMode === 'TRIADS' || state.harmonyMode === 'TETRADS') {
+      return trainerSequence.length > 0 || Boolean(trainerCurrentShape) ? 'trainer' : 'triadTetrad';
+    }
+    if (state.cagedShape && state.cagedShape !== 'OFF') return 'caged';
+    if (activeControlTab === 'scale' || openQuickTab === 'scale') return 'scale';
+    if (activeControlTab === 'harmony' || activeControlTab === 'chords') return 'harmony';
+    return 'off';
+  }, [activeControlTab, openQuickTab, state.activeEngine, state.cagedShape, state.harmonyMode, trainerCurrentShape, trainerSequence.length]);
+  const startActiveEngine = useCallback(() => {
+    const engine = getActiveEngine();
+    if (state.activeEngine !== engine) {
+      recordAction({ ...state, activeEngine: engine });
+    }
+    switch (engine) {
+      case 'scale':
+        startScaleFollow();
+        return;
+      case 'caged':
+        startCagedFollow();
+        return;
+      case 'harmony':
+        startCycleFollow();
+        return;
+      case 'triadTetrad':
+      case 'trainer':
+        if (state.cagedShape && state.cagedShape !== 'OFF') {
+          recordAction({ ...state, cagedShape: 'OFF', activeEngine: engine });
+        }
+        setScaleFollowMode('off');
+        setScaleFollowStatus('idle');
+        setScaleFollowIndex(0);
+        startTriadTetradFollow();
+        return;
+      default:
+        return;
+    }
+  }, [getActiveEngine, recordAction, startCagedFollow, startCycleFollow, startScaleFollow, startTriadTetradFollow, state]);
+  const pauseActiveEngine = useCallback(() => {
+    // Pause whichever engine is actually playing — not the UI-inferred one.
+    if (scaleFollowStatus === 'playing') { pauseScaleFollow(); return; }
+    if (cagedFollowStatus === 'playing') { pauseCagedFollow(); return; }
+    if (cycleFollowStatus === 'playing') { pauseCycleFollow(); return; }
+    if (triadTetradFollowStatus === 'playing') { pauseTriadTetradFollow(); return; }
+  }, [cagedFollowStatus, cycleFollowStatus, pauseCagedFollow, pauseCycleFollow, pauseScaleFollow, pauseTriadTetradFollow, scaleFollowStatus, triadTetradFollowStatus]);
+  const stopActiveEngine = useCallback(() => {
+    // Stop all engines — only one should be active, but stopping all is safe and avoids stale-engine bugs.
+    stopScaleFollow();
+    stopCagedFollow();
+    stopCycleFollow();
+    stopTriadTetradFollow();
+    if (state.activeEngine !== 'off') {
+      recordAction({ ...state, activeEngine: 'off' });
+    }
+  }, [recordAction, state, stopCagedFollow, stopCycleFollow, stopScaleFollow, stopTriadTetradFollow]);
   const cycleScaleLabelMode = (mode: 'note' | 'interval') => {
     const isSameMode = state.labelMode === mode;
     const isScaleOnly = isSameMode && state.layers.showScale && !state.layers.showAllNotes;
@@ -1642,8 +1825,11 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   };
   const handleScaleLayerShortcut = (layer: 'showScale' | 'showTonic') => {
     const isLayerActive = state.layers[layer];
-
-    recordAction({...state, layers: {...state.layers, [layer]: !isLayerActive}});
+    recordAction({
+      ...state,
+      activeEngine: 'off',
+      layers: { ...state.layers, [layer]: !isLayerActive },
+    });
     setActiveControlTab('scale');
     setOpenQuickTab('scale');
     setScaleShortcutCloseTarget(layer);
@@ -1754,18 +1940,24 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       return;
     }
     if (tab === 'chords') setChordLibraryMode('find');
-    if (tab === 'scale' && !state.layers.showScale) {
+    const needsClearEngine = Boolean(state.activeEngine && state.activeEngine !== 'off');
+    const needsScaleLayers = tab === 'scale' && !state.layers.showScale;
+    if (needsClearEngine || needsScaleLayers) {
       recordAction({
         ...state,
-        layers: {
-          ...state.layers,
-          showScale: true,
-          showTonic: true
-        }
+        ...(needsClearEngine ? { activeEngine: 'off' } : {}),
+        ...(needsScaleLayers ? { layers: { ...state.layers, showScale: true, showTonic: true } } : {}),
       });
     }
     setActiveControlTab(tab);
     setOpenQuickTab(tab);
+    setIsControlPanelOpen(true);
+  };
+  const handlePanelTabSwitch = (tabId: string) => {
+    if (state.activeEngine && state.activeEngine !== 'off') {
+      recordAction({ ...state, activeEngine: 'off' });
+    }
+    setActiveControlTab(tabId);
     setIsControlPanelOpen(true);
   };
   useEffect(() => () => clearCycleFollowTimer(), [clearCycleFollowTimer]);
@@ -1810,7 +2002,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       actionLabel: lang === 'pt' ? 'Mostrar C aberto' : 'Show open C',
       action: { type: 'chord', root: 'C', symbol: 'C', chordType: 'major' },
       steps: lang === 'pt'
-        ? ['Aplique o acorde.', 'OuÃ§a o som inteiro.', 'Toque corda por corda.', 'Troque para G ou Am na aba Praticar.']
+        ? ['Aplique o acorde.', 'Ouça o som inteiro.', 'Toque corda por corda.', 'Troque para G ou Am na aba Praticar.']
         : ['Apply the chord.', 'Hear the full sound.', 'Play string by string.', 'Move to G or Am in Practice.']
     },
     {
@@ -2360,9 +2552,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
         <button onClick={() => activateScaleFollowMode('connections')} className={scaleActionButton(scaleFollowMode === 'connections')}>
           {lang === 'pt' ? 'Conexões' : 'Connections'}
         </button>
-        <button onClick={startScaleFollow} className={transportButtonClass} aria-label="Play">{'\u25B6'}</button>
-        <button onClick={pauseScaleFollow} className={transportButtonClass} aria-label="Pause">{'\u23F8'}</button>
-        <button onClick={stopScaleFollow} className={transportButtonClass} aria-label="Stop">{'\u25A0'}</button>
+        <button onClick={startActiveEngine} className={transportButtonClass} aria-label="Play">{'\u25B6'}</button>
+        <button onClick={pauseActiveEngine} className={transportButtonClass} aria-label="Pause">{'\u23F8'}</button>
+        <button onClick={stopActiveEngine} className={transportButtonClass} aria-label="Stop">{'\u25A0'}</button>
       </div>
     );
   };
@@ -2402,7 +2594,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             {SCALES.map(s => <option key={s.name} value={s.name}>{lang === 'pt' ? (t.scales as any)[s.name] || s.name : s.name}</option>)}
           </select>
           <button onClick={() => recordAction({...state, layers: {...state.layers, showTonic: !state.layers.showTonic}})} className={`${controlButtonBase} px-3 ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>
-            {lang === 'pt' ? 'Nota tÃ´nica' : 'Tonic'}
+            {lang === 'pt' ? 'Nota tônica' : 'Tonic'}
           </button>
           <button onClick={() => recordAction({...state, layers: {...state.layers, showScale: !state.layers.showScale}})} className={`${controlButtonBase} px-3 ${state.layers.showScale ? activeButtonClass : inactiveButtonClass}`}>
             {lang === 'pt' ? 'Notas' : 'Notes'}
@@ -2430,6 +2622,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <button onClick={() => recordAction({ ...state, layers: { ...state.layers, showTonic: !state.layers.showTonic } })} className={`${controlButtonBase} px-3 ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>
             {lang === 'pt' ? 'Tônica' : 'Tonic'}
           </button>
+          <button onClick={() => setLabelModeSmart('note')} className={`${controlButtonBase} px-3 ${state.labelMode === 'note' ? activeButtonClass : inactiveButtonClass}`}>
+            {lang === 'pt' ? 'Notas' : 'Notes'}
+          </button>
+          <button onClick={() => setLabelModeSmart('interval')} className={`${controlButtonBase} px-3 ${state.labelMode === 'interval' ? activeButtonClass : inactiveButtonClass}`}>
+            {lang === 'pt' ? 'Intervalos' : 'Intervals'}
+          </button>
           {['OFF', 'TRIADS', 'TETRADS'].map(m => (
             <button key={m} onClick={() => recordAction({...state, harmonyMode: m as any})} className={`${controlButtonBase} px-3 ${state.harmonyMode === m ? activeButtonClass : inactiveButtonClass}`}>{m}</button>
           ))}
@@ -2444,9 +2642,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           ))}
           <button onClick={() => shiftCagedShape(-1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`} aria-label={lang === 'pt' ? 'Shape CAGED anterior' : 'Previous CAGED shape'}>-</button>
           <button onClick={() => shiftCagedShape(1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`} aria-label={lang === 'pt' ? 'Próximo shape CAGED' : 'Next CAGED shape'}>+</button>
-          <button onClick={startHarmonyPlay} className={transportButtonClass} aria-label={shouldUseHarmonyFollow ? 'Play Harmony' : 'Play CAGED'}>{'\u25B6'}</button>
-          <button onClick={pauseHarmonyPlay} className={transportButtonClass} aria-label={shouldUseHarmonyFollow ? 'Pause Harmony' : 'Pause CAGED'}>{'\u23F8'}</button>
-          <button onClick={stopHarmonyPlay} className={transportButtonClass} aria-label={shouldUseHarmonyFollow ? 'Stop Harmony' : 'Stop CAGED'}>{'\u25A0'}</button>
+          <button onClick={startActiveEngine} className={transportButtonClass} aria-label={shouldUseHarmonyFollow ? 'Play Harmony' : 'Play CAGED'}>{'\u25B6'}</button>
+          <button onClick={pauseActiveEngine} className={transportButtonClass} aria-label={shouldUseHarmonyFollow ? 'Pause Harmony' : 'Pause CAGED'}>{'\u23F8'}</button>
+          <button onClick={stopActiveEngine} className={transportButtonClass} aria-label={shouldUseHarmonyFollow ? 'Stop Harmony' : 'Stop CAGED'}>{'\u25A0'}</button>
         </div>
       );
     }
@@ -2461,6 +2659,12 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <button onClick={() => recordAction({ ...state, layers: { ...state.layers, showTonic: !state.layers.showTonic } })} className={`${controlButtonBase} px-3 ${state.layers.showTonic ? activeButtonClass : inactiveButtonClass}`}>
             {lang === 'pt' ? 'Tônica' : 'Tonic'}
           </button>
+          <button onClick={() => setLabelModeSmart('note')} className={`${controlButtonBase} px-3 ${state.labelMode === 'note' ? activeButtonClass : inactiveButtonClass}`}>
+            {lang === 'pt' ? 'Notas' : 'Notes'}
+          </button>
+          <button onClick={() => setLabelModeSmart('interval')} className={`${controlButtonBase} px-3 ${state.labelMode === 'interval' ? activeButtonClass : inactiveButtonClass}`}>
+            {lang === 'pt' ? 'Intervalos' : 'Intervals'}
+          </button>
           <select value={state.chordDegree} onChange={e => recordAction({ ...state, chordDegree: Number(e.target.value) })} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-[10px] font-black text-zinc-900">
             {DEGREE_NAMES.slice(0, cycleLength).map((d, i) => <option key={d} value={i}>{d}</option>)}
           </select>
@@ -2468,9 +2672,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
           <button onClick={() => moveCycleDegree(1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`}>{lang === 'pt' ? 'Acorde +' : 'Chord +'}</button>
           <button onClick={() => shiftCycleRegion(-1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`}>{lang === 'pt' ? 'Região -' : 'Region -'}</button>
           <button onClick={() => shiftCycleRegion(1)} className={`${controlButtonBase} px-3 ${inactiveButtonClass}`}>{lang === 'pt' ? 'Região +' : 'Region +'}</button>
-          <button onClick={startCycleFollow} className={transportButtonClass} aria-label="Play Cycle">{'\u25B6'}</button>
-          <button onClick={pauseCycleFollow} className={transportButtonClass} aria-label="Pause Cycle">{'\u23F8'}</button>
-          <button onClick={stopCycleFollow} className={transportButtonClass} aria-label="Stop Cycle">{'\u25A0'}</button>
+          <button onClick={startActiveEngine} className={transportButtonClass} aria-label="Play Cycle">{'\u25B6'}</button>
+          <button onClick={pauseActiveEngine} className={transportButtonClass} aria-label="Pause Cycle">{'\u23F8'}</button>
+          <button onClick={stopActiveEngine} className={transportButtonClass} aria-label="Stop Cycle">{'\u25A0'}</button>
         </div>
       );
     }
@@ -3334,10 +3538,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
               <button
                 key={tab.id}
                 data-tour={tab.id === 'learn' ? 'quick-learn' : tab.id === 'visual' ? 'quick-layers' : tab.id === 'tools' ? 'quick-practice' : `quick-${tab.id}`}
-                onClick={() => {
-                  setActiveControlTab(tab.id);
-                  setIsControlPanelOpen(true);
-                }}
+                onClick={() => handlePanelTabSwitch(tab.id)}
                 className={`py-2 rounded-lg text-[8px] font-black uppercase transition-all ${activeControlTab === tab.id ? 'bg-blue-600 text-white shadow-sm' : isLight ? 'bg-white text-zinc-500 hover:text-blue-600' : 'bg-zinc-900 text-zinc-400 hover:text-blue-400'}`}
               >
                 {tab.label}
