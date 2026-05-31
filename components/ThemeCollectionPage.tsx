@@ -209,6 +209,22 @@ const ThemeCollectionPage: React.FC = () => {
     ...collectionState,
     unlockedThemeIds: Array.from(new Set([...collectionState.unlockedThemeIds, ...achievementUnlockedThemeIds])),
   }), [achievementUnlockedThemeIds, collectionState]);
+
+  useEffect(() => {
+    const hasNew = achievementUnlockedThemeIds.some(
+      id => !collectionState.unlockedThemeIds.includes(id)
+    );
+    if (!hasNew) return;
+    const merged = {
+      ...collectionState,
+      unlockedThemeIds: Array.from(new Set([
+        ...collectionState.unlockedThemeIds,
+        ...achievementUnlockedThemeIds,
+      ])),
+    };
+    saveThemeCollectionState(merged, currentUserId);
+    setCollectionState(merged);
+  }, [achievementUnlockedThemeIds, collectionState, currentUserId]);
   const items = useMemo(() => THEME_REGISTRY.map(item => getThemeWithState(item, effectiveCollectionState)), [effectiveCollectionState]);
   const workRewards = useMemo(() => {
     const itemMap = new Map<string, WorkCollectionItem>();

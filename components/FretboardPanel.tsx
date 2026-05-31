@@ -1521,7 +1521,7 @@ const handleReturnToContext = () => {
         ? 'text-blue-600'
         : 'bg-gradient-to-r from-blue-200 via-blue-500 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(37,99,235,0.18)]';
   const brandAssets = getBrandAssets(primaryInstrument);
-  const themeCollectionState = loadThemeCollectionState();
+  const themeCollectionState = loadThemeCollectionState(authUser?.id ?? null);
   const activeCollectionTheme = THEME_REGISTRY.find(item =>
     item.id === themeCollectionState.activeThemeId &&
     (item.unlocked || themeCollectionState.unlockedThemeIds.includes(item.id)) &&

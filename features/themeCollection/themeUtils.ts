@@ -16,7 +16,18 @@ export const loadThemeCollectionState = (userId?: string | null): ThemeCollectio
   const scopedData = window.localStorage.getItem(key);
 
   if (scopedData) {
-    try { return JSON.parse(scopedData); } catch { return fallback; }
+    try {
+      const parsed = JSON.parse(scopedData) as Partial<ThemeCollectionState>;
+      const knownIds = new Set(THEME_REGISTRY.map(item => item.id));
+      const unlockedThemeIds = Array.from(new Set([
+        ...fallback.unlockedThemeIds,
+        ...(parsed.unlockedThemeIds || []).filter(id => knownIds.has(id)),
+      ]));
+      const activeThemeId = parsed.activeThemeId && unlockedThemeIds.includes(parsed.activeThemeId)
+        ? parsed.activeThemeId
+        : fallback.activeThemeId;
+      return { activeThemeId, unlockedThemeIds };
+    } catch { return fallback; }
   }
 
   // MIGRATION
