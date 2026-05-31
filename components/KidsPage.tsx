@@ -214,6 +214,30 @@ const KidsPage: React.FC = () => {
               ),
             },
             {
+              title: lang === 'pt' ? 'Custom Shop' : 'Custom Shop',
+              subtitle: lang === 'pt' ? 'Monte a guitarra dos seus sonhos!' : 'Build your dream guitar!',
+              path: '/kids/custom-shop',
+              visual: (
+                <svg viewBox="0 0 320 88" className="h-20 w-full" fill="none">
+                  <rect x="100" y="10" width="50" height="68" rx="10" fill="#a78bfa" opacity="0.9" />
+                  <rect x="120" y="5" width="10" height="15" rx="3" fill="#7c3aed" />
+                  <rect x="105" y="22" width="40" height="6" rx="3" fill="#fbbf24" opacity="0.9" />
+                  <rect x="105" y="32" width="40" height="6" rx="3" fill="#fbbf24" opacity="0.6" />
+                  <circle cx="125" cy="55" r="9" fill="#f472b6" />
+                  <circle cx="125" cy="55" r="5" fill="#1e1b4b" />
+                  <circle cx="200" cy="28" r="14" fill="#34d399" />
+                  <circle cx="200" cy="28" r="8" fill="#059669" />
+                  <circle cx="200" cy="28" r="3" fill="#ecfdf5" />
+                  <circle cx="240" cy="52" r="11" fill="#f97316" />
+                  <circle cx="240" cy="52" r="6" fill="#c2410c" />
+                  <circle cx="70" cy="44" r="10" fill="#60a5fa" />
+                  <circle cx="70" cy="44" r="5" fill="#1d4ed8" />
+                  <path d="M155 28 Q180 18 200 28" stroke="#a7f3d0" strokeWidth="2" strokeDasharray="4 3" />
+                  <path d="M155 55 Q178 70 200 55" stroke="#fde68a" strokeWidth="2" strokeDasharray="4 3" />
+                </svg>
+              ),
+            },
+            {
               title: copy.games,
               subtitle: copy.gamesSubtitle,
               path: '/kids/games',

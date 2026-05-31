@@ -29,6 +29,7 @@ import KidsCableGamePage from './components/KidsCableGamePage';
 import KidsBuildBandPage from './components/KidsBuildBandPage';
 import KidsSoundLengthsPage from './components/KidsSoundLengthsPage';
 import KidsLightHuntPage from './components/KidsLightHuntPage';
+import KidsCustomShopPage from './components/KidsCustomShopPage';
 import TeensPage from './components/TeensPage';
 import TeenRiffChallengesPage from './components/TeenRiffChallengesPage';
 import TeenRhythmLabPage from './components/TeenRhythmLabPage';
@@ -169,6 +170,7 @@ const App: React.FC = () => {
       case '/kids/build-band': return <KidsBuildBandPage />;
       case '/kids/sound-lengths': return <KidsSoundLengthsPage />;
       case '/kids/light-hunt': return <KidsLightHuntPage />;
+      case '/kids/custom-shop': return <KidsCustomShopPage />;
       case '/teens': return <TeensPage />;
       case '/teens/garage': return <TeensGarageHubPage />;
       case '/teens/garage/evh-frankenstein-tribute': return <TeensGarageEvhPage />;

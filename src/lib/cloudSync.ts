@@ -18,6 +18,11 @@ import {
 } from '../../features/themeCollection/themeUtils';
 import { THEME_REGISTRY } from '../../features/themeCollection/themeRegistry';
 import { getRewardById } from '../../utils/achievementUtils';
+import {
+  type KidsCustomGuitar,
+  loadKidsCustomGuitars,
+  saveKidsCustomGuitars,
+} from '../../utils/kidsCustomGuitarStorage';
 import { listInstruments, saveInstrument } from '../../utils/instrumentRegistry';
 import { loadUserProfile, saveUserProfile } from './userProfile';
 import { supabase } from './supabase';
@@ -38,6 +43,7 @@ export interface UserCloudSnapshot {
     progress: AchievementProgressState;
     selectedRewardBadgeId: string | null;
   };
+  kidsCustomGuitars?: KidsCustomGuitar[];
   syncedAt: string;
 }
 
@@ -191,6 +197,17 @@ const mergeThemeCollection = (
   return { activeThemeId, unlockedThemeIds };
 };
 
+const mergeKidsCustomGuitars = (
+  local: KidsCustomGuitar[] | undefined,
+  remote: KidsCustomGuitar[] | undefined,
+): KidsCustomGuitar[] => {
+  const byId = new Map<string, KidsCustomGuitar>();
+  [...(remote ?? []), ...(local ?? [])].forEach(g => byId.set(g.id, g));
+  return Array.from(byId.values()).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+};
+
 const mergeSnapshots = (
   local: UserCloudSnapshot,
   remote: UserCloudSnapshot,
@@ -224,6 +241,7 @@ const mergeSnapshots = (
       progress: mergeProgress(local.achievements.progress, remote.achievements.progress),
       selectedRewardBadgeId,
     },
+    kidsCustomGuitars: mergeKidsCustomGuitars(local.kidsCustomGuitars, remote.kidsCustomGuitars),
     syncedAt: new Date().toISOString(),
   };
 };
@@ -256,6 +274,7 @@ export const buildLocalCloudSnapshot = async (identity: string): Promise<UserClo
     projects: getLibrary(identity),
     instruments: mergeInstruments(scopedInstruments, legacyInstruments),
     themeCollection: loadThemeCollectionState(),
+    kidsCustomGuitars: loadKidsCustomGuitars(identity),
     achievements: {
       unlockedAchievementIds: unique([
         ...scopedAchievementIds,
@@ -284,6 +303,7 @@ export const applyCloudSnapshotLocally = async (snapshot: UserCloudSnapshot, ide
 
   saveUserProfile(snapshot.profile);
   saveThemeCollectionState(snapshot.themeCollection);
+  saveKidsCustomGuitars(snapshot.kidsCustomGuitars ?? [], identity);
   snapshot.achievements.unlockedAchievementIds.forEach(id => unlockAchievement(id, identity));
   mergeAchievementProgressState(snapshot.achievements.progress, identity);
   setSelectedRewardBadgeId(snapshot.achievements.selectedRewardBadgeId, identity);
