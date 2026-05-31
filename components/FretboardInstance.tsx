@@ -46,6 +46,8 @@ type LearningLevel = 'beginner' | 'intermediate' | 'advanced';
 type ScaleFollowMode = 'off' | 'horizontal' | 'region' | 'connections';
 type ScaleFollowStatus = 'idle' | 'playing' | 'paused';
 type CagedFollowStatus = 'idle' | 'playing' | 'paused';
+type TriadTetradFollowStatus = 'idle' | 'playing' | 'paused';
+type TriadTetradFollowMode = 'harmonyDegrees' | 'triadTrainerSequence' | 'triadSingle';
 type GuidedStudyAction =
   | { type: 'scale'; root: string; scaleType: string }
   | { type: 'chord'; root: string; symbol: string; chordType: ChordType }
@@ -78,6 +80,57 @@ const CAGED_SCALE_REGIONS = [
 ] as const;
 
 const CAGED_SHAPE_SEQUENCE: CagedShape[] = ['C', 'A', 'G', 'E', 'D'];
+
+const modulo = (value: number, size: number) => ((value % size) + size) % size;
+
+const semitoneDistance = (from: string, to: string) => {
+  const fromIdx = CHROMATIC_SCALE.indexOf(from);
+  const toIdx = CHROMATIC_SCALE.indexOf(to);
+  if (fromIdx < 0 || toIdx < 0) return 0;
+  return modulo(toIdx - fromIdx, 12);
+};
+
+const buildDiatonicTriadSymbol = (root: string, third: string, fifth: string) => {
+  const thirdDistance = semitoneDistance(root, third);
+  const fifthDistance = semitoneDistance(root, fifth);
+  if (thirdDistance === 3 && fifthDistance === 6) return `${root}°`;
+  if (thirdDistance === 4 && fifthDistance === 8) return `${root}+`;
+  if (thirdDistance === 3 && fifthDistance === 7) return `${root}m`;
+  return root;
+};
+
+const buildDiatonicTetradSymbol = (root: string, third: string, fifth: string, seventh: string) => {
+  const thirdDistance = semitoneDistance(root, third);
+  const fifthDistance = semitoneDistance(root, fifth);
+  const seventhDistance = semitoneDistance(root, seventh);
+  if (thirdDistance === 3 && fifthDistance === 6 && seventhDistance === 10) return `${root}m7b5`;
+  if (thirdDistance === 3 && fifthDistance === 7 && seventhDistance === 10) return `${root}m7`;
+  if (thirdDistance === 4 && fifthDistance === 7 && seventhDistance === 10) return `${root}7`;
+  if (thirdDistance === 4 && fifthDistance === 7 && seventhDistance === 11) return `${root}maj7`;
+  if (thirdDistance === 3 && fifthDistance === 6 && seventhDistance === 9) return `${root}dim7`;
+  if (thirdDistance === 3 && fifthDistance === 7 && seventhDistance === 11) return `${root}mMaj7`;
+  return `${buildDiatonicTriadSymbol(root, third, fifth)}7`;
+};
+
+const buildDiatonicChordLabels = (root: string, scaleType: string, harmonyMode: FretboardState['harmonyMode']) => {
+  if (harmonyMode === 'OFF') return [];
+  const scaleNotes = getScaleNotes(root, scaleType);
+  if (scaleNotes.length < 5) return [];
+  const degreeCount = Math.min(7, scaleNotes.length);
+  const labels: string[] = [];
+  for (let degree = 0; degree < degreeCount; degree += 1) {
+    const chordRoot = scaleNotes[degree];
+    const third = scaleNotes[(degree + 2) % scaleNotes.length];
+    const fifth = scaleNotes[(degree + 4) % scaleNotes.length];
+    if (harmonyMode === 'TRIADS') {
+      labels.push(buildDiatonicTriadSymbol(chordRoot, third, fifth));
+      continue;
+    }
+    const seventh = scaleNotes[(degree + 6) % scaleNotes.length];
+    labels.push(buildDiatonicTetradSymbol(chordRoot, third, fifth, seventh));
+  }
+  return labels;
+};
 
 
 const FretboardInstance: React.FC<FretboardInstanceProps> = ({ 
@@ -379,6 +432,10 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const [cagedFollowStatus, setCagedFollowStatus] = useState<CagedFollowStatus>('idle');
   const [cagedFollowIndex, setCagedFollowIndex] = useState(0);
   const cagedFollowTimerRef = useRef<number | null>(null);
+  const [triadTetradFollowStatus, setTriadTetradFollowStatus] = useState<TriadTetradFollowStatus>('idle');
+  const [triadTetradFollowIndex, setTriadTetradFollowIndex] = useState(0);
+  const [triadTetradFollowMode, setTriadTetradFollowMode] = useState<TriadTetradFollowMode>('harmonyDegrees');
+  const triadTetradFollowTimerRef = useRef<number | null>(null);
   const lastMusicalContextRef = useRef<{
     root: string;
     scaleType: string;
@@ -402,6 +459,10 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       window.clearTimeout(cagedFollowTimerRef.current);
       cagedFollowTimerRef.current = null;
     }
+    if (triadTetradFollowTimerRef.current) {
+      window.clearTimeout(triadTetradFollowTimerRef.current);
+      triadTetradFollowTimerRef.current = null;
+    }
     setScaleFollowMode('off');
     setScaleFollowStatus('idle');
     setScaleFollowIndex(0);
@@ -409,6 +470,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setCagedFollowIndex(0);
     setCycleFollowStatus('idle');
     cycleDegreeRef.current = 0;
+    setTriadTetradFollowStatus('idle');
+    setTriadTetradFollowIndex(0);
   }, []);
 
   useEffect(() => {
@@ -476,9 +539,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       && prevContext.notes === nextContext.notes
       && prevContext.chordDegree !== nextContext.chordDegree;
 
-    if (onlyChordDegreeChanged && cycleFollowStatus === 'playing') return;
+    if (onlyChordDegreeChanged && (cycleFollowStatus === 'playing' || triadTetradFollowStatus === 'playing')) return;
     resetFollowModes();
-  }, [cycleFollowStatus, resetFollowModes, state.chordDegree, state.harmonyMode, state.notes, state.root, state.scaleType, state.subtitle, state.title]);
+  }, [cycleFollowStatus, resetFollowModes, state.chordDegree, state.harmonyMode, state.notes, state.root, state.scaleType, state.subtitle, state.title, triadTetradFollowStatus]);
   useEffect(() => {
     latestStateRef.current = state;
     cycleDegreeRef.current = state.chordDegree ?? 0;
@@ -545,7 +608,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const cagedFollowShape = state.cagedShape && state.cagedShape !== 'OFF' ? state.cagedShape : 'E';
   const cagedFollowPositions = useMemo(() => {
     const basePositions = getCagedPositions(state.root, cagedFollowShape, currentTuning);
-    return basePositions
+    const viewportCenter = (state.startFret + state.endFret) / 2;
+    const inViewport = basePositions
       .flatMap(position => [0, 12, 24].map(offset => ({
         string: position.string,
         fret: position.fret + offset,
@@ -554,7 +618,22 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       .map(position => ({
         ...position,
         note: getNoteAt(position.string, position.fret, currentTuning),
-      }))
+      }));
+    const closestByStringAndNote = new Map<string, (typeof inViewport)[number]>();
+    inViewport.forEach(position => {
+      const key = `${position.string}:${position.note}`;
+      const current = closestByStringAndNote.get(key);
+      if (!current) {
+        closestByStringAndNote.set(key, position);
+        return;
+      }
+      const currentDistance = Math.abs(current.fret - viewportCenter);
+      const nextDistance = Math.abs(position.fret - viewportCenter);
+      if (nextDistance < currentDistance || (nextDistance === currentDistance && position.fret < current.fret)) {
+        closestByStringAndNote.set(key, position);
+      }
+    });
+    return Array.from(closestByStringAndNote.values())
       .sort((a, b) => b.string - a.string || a.fret - b.fret);
   }, [cagedFollowShape, currentTuning, state.endFret, state.root, state.startFret]);
   const cagedRegionBounds = useMemo(() => {
@@ -1044,6 +1123,22 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       .filter(Boolean) || [];
     return parts;
   }, [state.notes, state.subtitle]);
+  const harmonicFallbackChordLabels = useMemo(() => (
+    buildDiatonicChordLabels(state.root, state.scaleType, state.harmonyMode)
+  ), [state.harmonyMode, state.root, state.scaleType]);
+  const effectiveCycleChordLabels = useMemo(() => (
+    cycleChordLabels.length > 0 ? cycleChordLabels : harmonicFallbackChordLabels
+  ), [cycleChordLabels, harmonicFallbackChordLabels]);
+  const trainerSequence = useMemo(() => (
+    Array.isArray(state.triadTrainerSequence)
+      ? state.triadTrainerSequence.filter(step => Array.isArray(step?.positions) && step.positions.length > 0)
+      : []
+  ), [state.triadTrainerSequence]);
+  const trainerCurrentShape = useMemo(() => (
+    state.triadTrainerCurrentShape && Array.isArray(state.triadTrainerCurrentShape.positions) && state.triadTrainerCurrentShape.positions.length > 0
+      ? state.triadTrainerCurrentShape
+      : null
+  ), [state.triadTrainerCurrentShape]);
   const parseCycleChord = useCallback((symbol: string): { root: string; type: ChordType } | null => {
     const normalized = symbol.trim();
     const match = normalized.match(/^([A-G](?:#|b)?)(.*)$/);
@@ -1066,7 +1161,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     stringStatuses: StringStatus[];
     frequencies: number[];
   } => {
-    const symbol = cycleChordLabels[degreeIndex];
+    const symbol = effectiveCycleChordLabels[degreeIndex];
     if (!symbol) return null;
     const parsed = parseCycleChord(symbol);
     if (!parsed) return null;
@@ -1126,8 +1221,8 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       stringStatuses,
       frequencies
     };
-  }, [currentTuning, cycleChordLabels, isLight, parseCycleChord, state.instrumentType]);
-  const cycleLength = Math.max(1, cycleChordLabels.length || 7);
+  }, [currentTuning, effectiveCycleChordLabels, isLight, parseCycleChord, state.instrumentType]);
+  const cycleLength = Math.max(1, effectiveCycleChordLabels.length || 7);
   const getCycleRegionRange = useCallback(() => {
     const region = CAGED_SCALE_REGIONS[cycleRegionIndexRef.current] || CAGED_SCALE_REGIONS[0];
     return {
@@ -1144,17 +1239,20 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
   const applyCycleDegree = useCallback((nextDegree: number) => {
     const currentState = latestStateRef.current;
     const normalized = ((nextDegree % cycleLength) + cycleLength) % cycleLength;
-    const nextChord = resolveCycleChordByDegree(normalized, getCycleRegionRange());
+    const nextChord = resolveCycleChordByDegree(normalized, {
+      startFret: currentState.startFret,
+      endFret: currentState.endFret,
+    });
     cycleDegreeRef.current = normalized;
     recordAction({
       ...currentState,
-      startFret: 0,
-      endFret: Math.max(12, currentState.endFret),
-      root: nextChord?.root || currentState.root,
+      startFret: currentState.startFret,
+      endFret: currentState.endFret,
+      root: currentState.root,
       markers: nextChord?.markers || currentState.markers,
       lines: nextChord?.lines || currentState.lines,
       stringStatuses: nextChord?.stringStatuses || currentState.stringStatuses,
-      harmonyMode: 'OFF',
+      harmonyMode: currentState.harmonyMode,
       chordDegree: normalized,
       labelMode: nextChord ? 'note' : currentState.labelMode,
       layers: {
@@ -1180,9 +1278,9 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     const nextChord = resolveCycleChordByDegree(cycleDegreeRef.current, nextFretRange);
     recordAction({
       ...currentState,
-      startFret: 0,
-      endFret: Math.max(12, currentState.endFret),
-      root: nextChord?.root || currentState.root,
+      startFret: nextFretRange.startFret,
+      endFret: nextFretRange.endFret,
+      root: currentState.root,
       markers: nextChord?.markers || currentState.markers,
       lines: nextChord?.lines || currentState.lines,
       stringStatuses: nextChord?.stringStatuses || currentState.stringStatuses,
@@ -1208,6 +1306,126 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       moveCycleDegree(1);
     }, 1500);
   }, [clearCycleFollowTimer, moveCycleDegree]);
+
+  const buildTriadTetradFollowSequence = useCallback(() => {
+    if (trainerSequence.length > 1) {
+      return { mode: 'triadTrainerSequence' as const, steps: trainerSequence.map((_, index) => index) };
+    }
+    if (trainerCurrentShape) {
+      return { mode: 'triadSingle' as const, steps: [0] };
+    }
+    return { mode: 'harmonyDegrees' as const, steps: Array.from({ length: cycleLength }).map((_, index) => index) };
+  }, [cycleLength, trainerCurrentShape, trainerSequence]);
+
+  const applyTriadTetradStep = useCallback((stepIndex: number, mode: TriadTetradFollowMode) => {
+    if (mode === 'harmonyDegrees') {
+      applyCycleDegree(stepIndex);
+      return;
+    }
+    const shape = mode === 'triadTrainerSequence'
+      ? trainerSequence[stepIndex]
+      : trainerCurrentShape;
+    if (!shape || !Array.isArray(shape.positions) || shape.positions.length === 0) return;
+    const currentState = latestStateRef.current;
+    const markers: Marker[] = shape.positions
+      .filter((position: any) => typeof position.string === 'number' && typeof position.fret === 'number')
+      .map((position: any, index: number) => ({
+        id: crypto.randomUUID(),
+        string: position.string,
+        fret: position.fret,
+        shape: index === 0 ? 'circle' : 'square',
+        color: index === 0 ? '#ef4444' : '#2563eb',
+        finger: '1',
+      }));
+    const stringStatuses: StringStatus[] = Array(currentTuning.length).fill('muted');
+    markers.forEach(marker => {
+      stringStatuses[marker.string] = marker.fret === 0 ? 'open' : 'normal';
+    });
+    recordAction({
+      ...currentState,
+      markers,
+      lines: [],
+      stringStatuses,
+      harmonyMode: currentState.harmonyMode === 'OFF' ? 'TRIADS' : currentState.harmonyMode,
+      layers: { ...currentState.layers, showScale: false, showAllNotes: false, showTonic: true },
+      cagedShape: 'OFF',
+    });
+  }, [applyCycleDegree, currentTuning.length, recordAction, trainerCurrentShape, trainerSequence]);
+
+  const startTriadTetradFollow = useCallback(() => {
+    clearCycleFollowTimer();
+    if (scaleFollowTimerRef.current) {
+      window.clearTimeout(scaleFollowTimerRef.current);
+      scaleFollowTimerRef.current = null;
+    }
+    if (cagedFollowTimerRef.current) {
+      window.clearTimeout(cagedFollowTimerRef.current);
+      cagedFollowTimerRef.current = null;
+    }
+    if (triadTetradFollowTimerRef.current) {
+      window.clearTimeout(triadTetradFollowTimerRef.current);
+      triadTetradFollowTimerRef.current = null;
+    }
+    setScaleFollowMode('off');
+    setScaleFollowStatus('idle');
+    setScaleFollowIndex(0);
+    setCagedFollowStatus('idle');
+    setCagedFollowIndex(0);
+    setCycleFollowStatus('idle');
+
+    const sequence = buildTriadTetradFollowSequence();
+    setTriadTetradFollowMode(sequence.mode);
+    setTriadTetradFollowStatus('playing');
+    setTriadTetradFollowIndex(0);
+    if (sequence.steps.length === 0) {
+      setTriadTetradFollowStatus('idle');
+      return;
+    }
+    applyTriadTetradStep(sequence.steps[0], sequence.mode);
+  }, [applyTriadTetradStep, buildTriadTetradFollowSequence, clearCycleFollowTimer]);
+
+  const pauseTriadTetradFollow = useCallback(() => {
+    if (triadTetradFollowTimerRef.current) {
+      window.clearTimeout(triadTetradFollowTimerRef.current);
+      triadTetradFollowTimerRef.current = null;
+    }
+    setTriadTetradFollowStatus('paused');
+  }, []);
+
+  const stopTriadTetradFollow = useCallback(() => {
+    if (triadTetradFollowTimerRef.current) {
+      window.clearTimeout(triadTetradFollowTimerRef.current);
+      triadTetradFollowTimerRef.current = null;
+    }
+    setTriadTetradFollowStatus('idle');
+    setTriadTetradFollowIndex(0);
+  }, []);
+
+  useEffect(() => {
+    if (triadTetradFollowStatus !== 'playing') return;
+    const sequence = buildTriadTetradFollowSequence();
+    if (sequence.steps.length <= 1 || sequence.mode === 'triadSingle') {
+      return;
+    }
+    triadTetradFollowTimerRef.current = window.setTimeout(() => {
+      setTriadTetradFollowIndex(prev => {
+        const next = prev + 1;
+        if (next >= sequence.steps.length) {
+          setTriadTetradFollowStatus('idle');
+          return 0;
+        }
+        applyTriadTetradStep(sequence.steps[next], sequence.mode);
+        return next;
+      });
+    }, 1200);
+
+    return () => {
+      if (triadTetradFollowTimerRef.current) {
+        window.clearTimeout(triadTetradFollowTimerRef.current);
+        triadTetradFollowTimerRef.current = null;
+      }
+    };
+  }, [applyTriadTetradStep, buildTriadTetradFollowSequence, triadTetradFollowIndex, triadTetradFollowStatus]);
   const pauseCycleFollow = useCallback(() => {
     clearCycleFollowTimer();
     setCycleFollowStatus('paused');
@@ -1289,27 +1507,56 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setCagedFollowIndex(prev => Math.min(prev, Math.max(0, cagedFollowPositions.length - 1)));
     setCagedFollowStatus('playing');
   };
+  const isTriadTetradHarmony = state.harmonyMode === 'TRIADS' || state.harmonyMode === 'TETRADS';
+  const isCagedExplicitlyActive = Boolean(state.cagedShape && state.cagedShape !== 'OFF');
   const shouldUseHarmonyFollow = state.harmonyMode !== 'OFF';
   const startHarmonyPlay = () => {
+    if (isTriadTetradHarmony) {
+      if (state.cagedShape && state.cagedShape !== 'OFF') {
+        recordAction({ ...state, cagedShape: 'OFF' });
+      }
+      setScaleFollowMode('off');
+      setScaleFollowStatus('idle');
+      setScaleFollowIndex(0);
+      startTriadTetradFollow();
+      return;
+    }
+    if (isCagedExplicitlyActive) {
+      startCagedFollow();
+      return;
+    }
     if (shouldUseHarmonyFollow) {
       startCycleFollow();
       return;
     }
-    startCagedFollow();
   };
   const pauseHarmonyPlay = () => {
+    if (isTriadTetradHarmony) {
+      pauseTriadTetradFollow();
+      return;
+    }
+    if (isCagedExplicitlyActive) {
+      pauseCagedFollow();
+      return;
+    }
     if (shouldUseHarmonyFollow) {
       pauseCycleFollow();
       return;
     }
-    pauseCagedFollow();
   };
   const stopHarmonyPlay = () => {
+    if (isTriadTetradHarmony) {
+      stopTriadTetradFollow();
+      return;
+    }
+    if (isCagedExplicitlyActive) {
+      stopCagedFollow();
+      return;
+    }
     if (shouldUseHarmonyFollow) {
       stopCycleFollow();
       return;
     }
-    stopCagedFollow();
   };
   const pauseCagedFollow = () => {
     setCagedFollowStatus(prev => prev === 'playing' ? 'paused' : prev);

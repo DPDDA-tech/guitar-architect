@@ -72,6 +72,22 @@ export interface FretboardState {
     stringIndex?: number;
     label?: string;
   };
+  triadTrainerSequence?: Array<{
+    root?: string;
+    quality?: string;
+    inversion?: string;
+    stringSet?: number[];
+    notes?: string[];
+    positions: Array<{ string: number; fret: number; interval?: string; note?: string }>;
+  }>;
+  triadTrainerCurrentShape?: {
+    root?: string;
+    quality?: string;
+    inversion?: string;
+    stringSet?: number[];
+    notes?: string[];
+    positions: Array<{ string: number; fret: number; interval?: string; note?: string }>;
+  };
   markers: Marker[];
   lines: Line[];
 }

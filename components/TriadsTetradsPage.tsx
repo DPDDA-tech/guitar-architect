@@ -84,7 +84,9 @@ const normalizeTriadTrainerAction = (action: TriadTrainerLegacyAction): Omit<Fre
       moduleTitle: 'Triad Trainer',
       moduleLabel: sequence.length > 0 ? `${sequence.length} shapes na sequência` : moduleLabel,
       bpm: typeof payload.bpm === 'number' ? payload.bpm : 80,
-      focusFirstRegion: true,
+      extras: {
+        triadTrainerSequence: sequence,
+      },
       instruction,
     };
   }
@@ -100,7 +102,9 @@ const normalizeTriadTrainerAction = (action: TriadTrainerLegacyAction): Omit<Fre
     moduleTitle: 'Triad Trainer',
     moduleLabel,
     chordQuality: 'DIATONIC' as const,
-    focusFirstRegion: true,
+    extras: {
+      triadTrainerCurrentShape: action?.type === 'showTriadShape' ? payload : undefined,
+    },
     instruction,
   };
 };

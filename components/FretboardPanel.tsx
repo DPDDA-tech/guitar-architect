@@ -91,6 +91,14 @@ interface PendingFretboardAction {
   horizontalConnection?: boolean;
   quickTab?: string;
   tab?: string;
+  triadTrainerSequence?: Array<{
+    positions: Array<{ string: number; fret: number; note?: string; interval?: string }>;
+    [key: string]: unknown;
+  }>;
+  triadTrainerCurrentShape?: {
+    positions: Array<{ string: number; fret: number; note?: string; interval?: string }>;
+    [key: string]: unknown;
+  };
 }
 
 const EXTERNAL_PEDAGOGICAL_SOURCES = new Set([
@@ -522,6 +530,10 @@ const normalizeFretboardIntentToPending = (intent: FretboardIntent): PendingFret
       ? intent.caged.shapeSequence.filter((item): item is string => typeof item === 'string')
       : undefined,
     horizontalConnection: Boolean(intent.caged?.horizontalConnection),
+    triadTrainerSequence: Array.isArray(intent.extras?.triadTrainerSequence)
+      ? intent.extras.triadTrainerSequence as PendingFretboardAction['triadTrainerSequence']
+      : undefined,
+    triadTrainerCurrentShape: intent.extras?.triadTrainerCurrentShape as PendingFretboardAction['triadTrainerCurrentShape'] | undefined,
     quickTab,
   };
   if (intent.source && intent.source !== 'harmonic-cycle' && intent.source !== 'study-module') {
@@ -1758,24 +1770,35 @@ const handleReturnToContext = () => {
       const nextScaleType = pending.scaleType || instance.scaleType;
       const safeInstrumentType = instance.instrumentType || defaultInstrument || 'guitar-6';
       const expectedStringCount = INSTRUMENT_PRESETS[safeInstrumentType]?.strings || 6;
-      const hasChords = Array.isArray(pending.chords) && pending.chords.length > 0;
+      const pendingChords: string[] = Array.isArray(pending.chords) ? pending.chords : [];
+      const hasChords = pendingChords.length > 0;
       const normalizedDegree = hasChords
-        ? ((pending.chordDegree ?? 0) % pending.chords!.length + pending.chords!.length) % pending.chords!.length
+        ? ((pending.chordDegree ?? 0) % pendingChords.length + pendingChords.length) % pendingChords.length
         : 0;
-      const initialChordSymbol = hasChords ? pending.chords![normalizedDegree] : null;
+      const initialChordSymbol = hasChords ? pendingChords[normalizedDegree] : null;
       const chordVisualState = initialChordSymbol ? buildChordVisualState(instance, initialChordSymbol) : null;
       const shouldApplyChordVisualState = (pending.action === 'progression' || pending.action === 'field' || pending.action === 'triads') && Boolean(chordVisualState);
+      const isTriadOrTetradContext = (pending.action === 'triads' || pending.harmonyMode === 'TRIADS' || pending.harmonyMode === 'TETRADS')
+        && Array.isArray(pending.chords)
+        && pending.chords.length > 1;
+      const triadChordSequence = isTriadOrTetradContext ? pendingChords.join(' - ') : null;
       return {
         ...instance,
         id: instance.id || crypto.randomUUID(),
         title: pending.action === 'progression' && pending.progression
           ? `${pending.displayRoot || nextRoot} - ${pending.progression}`
           : `${pending.displayRoot || nextRoot} - ${nextScaleType}`,
-        subtitle: pending.chords?.length ? pending.chords.join(' - ') : nextScaleType,
+        subtitle: triadChordSequence
+          ? triadChordSequence
+          : pending.chords?.length
+            ? pending.chords.join(' - ')
+            : nextScaleType,
         notes: pending.action === 'progression' && pending.chords?.length
           ? `${pending.progression}: ${pending.chords.join(' - ')}`
           : pending.action === 'field' && pending.chords?.length
             ? `${pending.displayRoot || nextRoot}: ${pending.chords.join(' - ')}`
+          : triadChordSequence
+            ? `${pending.displayRoot || nextRoot}: ${triadChordSequence}`
           : pending.moduleTitle
             ? `${pending.moduleTitle}: ${pending.moduleLabel || nextScaleType}`
           : instance.notes,
@@ -1787,6 +1810,8 @@ const handleReturnToContext = () => {
         inversion: pending.inversion ?? 0,
         voicingMode: pending.voicingMode || instance.voicingMode,
         cagedShape: isHarmonyAction ? 'OFF' : instance.cagedShape,
+        triadTrainerSequence: pending.triadTrainerSequence || instance.triadTrainerSequence,
+        triadTrainerCurrentShape: pending.triadTrainerCurrentShape || instance.triadTrainerCurrentShape,
         startFret: shouldFocusFirstRegion ? 0 : shouldResetFretboardViewport ? 0 : instance.startFret,
         endFret: shouldFocusFirstRegion ? 4 : shouldResetFretboardViewport ? 15 : instance.endFret,
         markers: shouldApplyChordVisualState ? chordVisualState!.markers : (shouldResetFretboardViewport ? [] : instance.markers),
@@ -1798,7 +1823,7 @@ const handleReturnToContext = () => {
           : instance.stringStatuses,
         layers: {
           ...instance.layers,
-          showScale: isScaleAction || isHarmonyAction,
+          showScale: isScaleAction,
           showAllNotes: false,
           showTonic: true,
         },

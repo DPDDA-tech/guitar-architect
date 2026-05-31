@@ -293,6 +293,8 @@ const HarmonicCyclePage: React.FC = () => {
     const progressionChordList = selectedProgression
       ? progressionChords.map(item => item.chord)
       : resultingChords.map(item => item.chord);
+    const harmonicFieldChordList = info.harmonicField.map(item => item.chord);
+    const harmonicFieldProgressionLabel = harmonicFieldChordList.join(' - ');
 
     if (action === 'showScale') {
       recordAchievementEvent({ type: 'exploration', key: 'apply_scale' });
@@ -307,17 +309,31 @@ const HarmonicCyclePage: React.FC = () => {
       root: info.root,
       displayRoot: info.displayRoot,
       scaleType: getModeScaleType(mode),
-      progression: isProgressionAction ? selectedProgression : undefined,
+      progression: isProgressionAction
+        ? (selectedProgression || progressionChordList.join(' - '))
+        : (isHarmonyFieldAction || isTriadsAction)
+          ? harmonicFieldProgressionLabel
+          : undefined,
       chords: isScaleAction
         ? undefined
         : isHarmonyFieldAction
-          ? info.harmonicField.map(item => item.chord)
+          ? harmonicFieldChordList
           : isTriadsAction
-            ? info.harmonicField.map(item => item.chord)
+            ? harmonicFieldChordList
             : progressionChordList,
       harmonyMode: isHarmonyFieldAction ? 'TETRADS' : isTriadsAction ? 'TRIADS' : isProgressionAction ? 'TETRADS' : 'OFF',
       chordDegree: (isProgressionAction || isHarmonyFieldAction || isTriadsAction) ? activeDegree : 0,
       focusFirstRegion: isScaleAction,
+      moduleTitle: isHarmonyFieldAction
+        ? (lang === 'pt' ? 'Campo harmônico' : 'Harmonic field')
+        : isTriadsAction
+          ? (lang === 'pt' ? 'Tríades / Tétrades' : 'Triads / Tetrads')
+          : isProgressionAction
+            ? (lang === 'pt' ? 'Progressão harmônica' : 'Harmonic progression')
+            : undefined,
+      moduleLabel: (isHarmonyFieldAction || isTriadsAction || isProgressionAction)
+        ? harmonicFieldProgressionLabel
+        : undefined,
       instruction: isProgressionAction
         ? {
             source: 'exercise',
