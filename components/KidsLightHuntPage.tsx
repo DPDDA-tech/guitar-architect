@@ -113,14 +113,6 @@ const KidsLightHuntPage: React.FC = () => {
 
   const isLight = theme === 'light';
 
-  const gridStyle = useMemo(
-    () => ({
-      backgroundImage: `linear-gradient(${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px)`,
-      backgroundSize: '24px 24px',
-    }),
-    [isLight],
-  );
-
   const selectedPath = PATH_PRESETS.find((preset) => preset.id === selectedPathId) ?? PATH_PRESETS[0];
   const selectedTempo = TEMPO_PRESETS.find((preset) => preset.id === tempoId) ?? TEMPO_PRESETS[1];
   const activePathNotes = useCustomPath ? (customPath.length > 0 ? customPath : selectedPath.notes) : selectedPath.notes;
@@ -298,8 +290,6 @@ const KidsLightHuntPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
-      <div className="absolute inset-0 pointer-events-none opacity-45" style={gridStyle} />
-
       <main className="relative mx-auto max-w-5xl">
         <header className="mb-6 md:mb-8 text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-500">Guitar Architect Kids</p>

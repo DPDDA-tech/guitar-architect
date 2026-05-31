@@ -1,4 +1,4 @@
-Ôªøimport React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { getKidsTheme } from '../utils/ecosystemPreferences';
 
 const navigateTo = (path: string) => {
@@ -8,20 +8,20 @@ const navigateTo = (path: string) => {
 
 const games = [
   {
-    title: 'Jogo da Mem√≥ria',
-    description: 'Encontre pares de instrumentos e treine sua mem√≥ria musical.',
+    title: 'Jogo da MemÛria',
+    description: 'Encontre pares de instrumentos e treine sua memÛria musical.',
     available: true,
     path: '/kids/games/memory',
   },
   {
-    title: 'Qual √© o Instrumento?',
+    title: 'Qual È o Instrumento?',
     description: 'Descubra o instrumento certo a partir de pistas visuais.',
     available: true,
     path: '/kids/games/identify',
   },
   {
     title: 'Ligue os Cabos',
-    description: 'Ligue cada instrumento a descri√ß√£o correta e complete os pares.',
+    description: 'Ligue cada instrumento a descriÁ„o correta e complete os pares.',
     available: true,
     path: '/kids/games/cables',
   },
@@ -37,21 +37,16 @@ const KidsGamesPage: React.FC = () => {
   const [theme] = useState(() => getKidsTheme());
   const isLight = theme === 'light';
 
-  const gridStyle = useMemo(() => ({
-    backgroundImage: `linear-gradient(${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px)`,
-    backgroundSize: '24px 24px',
-  }), [isLight]);
 
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
-      <div className="absolute inset-0 pointer-events-none opacity-45" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
         <header className="mb-8 text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-amber-500">Guitar Architect Kids</p>
           <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Jogos Musicais</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Brinque, descubra instrumentos e treine sua mem√≥ria musical.
+            Brinque, descubra instrumentos e treine sua memÛria musical.
           </p>
         </header>
 
@@ -60,7 +55,7 @@ const KidsGamesPage: React.FC = () => {
             <div key={game.title} className={`rounded-3xl border p-5 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
               <p className="text-sm font-black uppercase tracking-tight">{game.title}</p>
               <p className={`mt-2 text-xs font-bold leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>{game.description}</p>
-              <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-amber-500">{game.available ? 'DISPON√çVEL' : 'Em breve'}</p>
+              <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-amber-500">{game.available ? 'DISPONÕVEL' : 'Em breve'}</p>
               {game.available ? (
                 <button
                   onClick={() => navigateTo(game.path)}
@@ -91,5 +86,6 @@ const KidsGamesPage: React.FC = () => {
 };
 
 export default KidsGamesPage;
+
 
 

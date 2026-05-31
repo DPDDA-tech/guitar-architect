@@ -285,8 +285,8 @@ const TeenBlueprintReadingPage: React.FC = () => {
   const beatsPerBar = timeSignature === '3/4' ? 3 : timeSignature === '6/8' ? 6 : 4;
 
   const gridStyle = {
-    backgroundImage: `linear-gradient(${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px)`,
-    backgroundSize: '30px 30px',
+    backgroundImage: `linear-gradient(${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px)`,
+    backgroundSize: '100% 30px',
   };
 
   const getAudioCtx = async () => {

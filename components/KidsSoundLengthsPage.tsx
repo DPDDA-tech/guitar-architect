@@ -1,4 +1,4 @@
-Ôªøimport React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { getKidsTheme } from '../utils/ecosystemPreferences';
 import { rhythmChallenges, rhythmExamples, type RhythmType } from '../data/kidsRhythmData';
 
@@ -40,10 +40,6 @@ const KidsSoundLengthsPage: React.FC = () => {
   const isLight = theme === 'light';
   const currentChallenge = rhythmChallenges[challengeIndex];
 
-  const gridStyle = useMemo(() => ({
-    backgroundImage: `linear-gradient(${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px)`,
-    backgroundSize: '24px 24px',
-  }), [isLight]);
 
   const getAudioCtx = () => {
     const AudioCtx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -79,7 +75,7 @@ const KidsSoundLengthsPage: React.FC = () => {
       makeBeep(440, now + 0.22, 0.16);
     }
     if (type === 'silence') {
-      // sil√™ncio intencional
+      // silÍncio intencional
     }
   };
 
@@ -145,10 +141,10 @@ const KidsSoundLengthsPage: React.FC = () => {
   };
 
   const motivational = [
-    'Boa! Voc√™ tem ouvido de explorador!',
-    'Incr√≠vel! Mais uma fase!',
+    'Boa! VocÍ tem ouvido de explorador!',
+    'IncrÌvel! Mais uma fase!',
     'Perfeito! Continue assim!',
-    'Muito bem! Voc√™ est√° voando!',
+    'Muito bem! VocÍ est· voando!',
   ];
 
   const handleLoopClick = async (type: RhythmType) => {
@@ -172,7 +168,7 @@ const KidsSoundLengthsPage: React.FC = () => {
 
       if (targetRounds !== null && nextRound >= targetRounds) {
         setStars((prev) => prev + 1);
-        setFeedback('Miss√£o completa! Voc√™ brilhou no ritmo!');
+        setFeedback('Miss„o completa! VocÍ brilhou no ritmo!');
         setUserInput([]);
         return;
       }
@@ -197,13 +193,13 @@ const KidsSoundLengthsPage: React.FC = () => {
 
   const handleChallengeAnswer = (type: RhythmType) => {
     if (type === currentChallenge.answer) {
-      setChallengeFeedback('Boa! Voc√™ encontrou certinho.');
+      setChallengeFeedback('Boa! VocÍ encontrou certinho.');
       window.setTimeout(() => {
         setChallengeIndex((prev) => (prev + 1) % rhythmChallenges.length);
         setChallengeFeedback('');
       }, 900);
     } else {
-      setChallengeFeedback('Quase! Tente mais uma vez, voc√™ consegue.');
+      setChallengeFeedback('Quase! Tente mais uma vez, vocÍ consegue.');
     }
   };
 
@@ -246,14 +242,13 @@ const KidsSoundLengthsPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
-      <div className="absolute inset-0 pointer-events-none opacity-45" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
         <header className="mb-6 md:mb-8 text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-500">Guitar Architect Kids</p>
           <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">O Tamanho dos Sons</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Descubra sons r√°pidos, longos e pausas musicais.
+            Descubra sons r·pidos, longos e pausas musicais.
           </p>
         </header>
 
@@ -317,18 +312,18 @@ const KidsSoundLengthsPage: React.FC = () => {
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-4 text-xs font-black uppercase tracking-wider text-cyan-500">
-            <span>N√≠vel: {level}</span>
+            <span>NÌvel: {level}</span>
             <span>Fase: {round}{GAME_MODES[mode] ? `/${GAME_MODES[mode]}` : ''}</span>
-            <span>Estrelas: {'‚≠ê'.repeat(Math.min(stars, 10)) || '‚Äî'}</span>
+            <span>Estrelas: {'?'.repeat(Math.min(stars, 10)) || 'ó'}</span>
           </div>
 
           {sequence.length > 0 && (
             <p className={`mt-2 text-xs font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-              Caminho atual: {sequence.map((item) => rhythmExamples.find((e) => e.id === item)?.syllable).join(' ‚Üí ')}
+              Caminho atual: {sequence.map((item) => rhythmExamples.find((e) => e.id === item)?.syllable).join(' ? ')}
             </p>
           )}
 
-          <div className={`mt-3 rounded-xl border px-3 py-3 text-sm font-black ${feedback.startsWith('Miss√£o') || feedback.startsWith('Boa') || feedback.startsWith('Incr√≠vel') || feedback.startsWith('Perfeito') || feedback.startsWith('Muito bem') ? (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200') : (isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200')}`}>
+          <div className={`mt-3 rounded-xl border px-3 py-3 text-sm font-black ${feedback.startsWith('Miss„o') || feedback.startsWith('Boa') || feedback.startsWith('IncrÌvel') || feedback.startsWith('Perfeito') || feedback.startsWith('Muito bem') ? (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200') : (isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200')}`}>
             {feedback}
           </div>
 
@@ -379,7 +374,7 @@ const KidsSoundLengthsPage: React.FC = () => {
 
           <div className={`mt-3 min-h-[60px] rounded-xl border px-3 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-950/70'}`}>
             {customSequence.length === 0 ? (
-              <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Seu trecho aparecer√° aqui.</p>
+              <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Seu trecho aparecer· aqui.</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {customSequence.map((item, index) => (
@@ -407,7 +402,7 @@ const KidsSoundLengthsPage: React.FC = () => {
               disabled={customSequence.length === 0 || isPlayingCustom}
               className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
             >
-              Apagar √∫ltima
+              Apagar ˙ltima
             </button>
             <button
               onClick={clearCustom}
@@ -430,3 +425,4 @@ const KidsSoundLengthsPage: React.FC = () => {
 };
 
 export default KidsSoundLengthsPage;
+

@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { getKidsTheme } from '../utils/ecosystemPreferences';
 
 type NoteId = 'DO' | 'RE' | 'MI' | 'FA' | 'SOL' | 'LA' | 'SI';
@@ -133,10 +133,6 @@ const KidsNoteFriendsPage: React.FC = () => {
 
   const isLight = theme === 'light';
 
-  const gridStyle = useMemo(() => ({
-    backgroundImage: `linear-gradient(${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px)`,
-    backgroundSize: '24px 24px',
-  }), [isLight]);
 
   const selectedRelationship = noteRelationships.find(r => r.id === selectedRelationshipId) ?? noteRelationships[0];
   const currentChallenge = challenges[challengeIndex];
@@ -181,7 +177,6 @@ const KidsNoteFriendsPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
-      <div className="absolute inset-0 pointer-events-none opacity-45" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
         <header className="mb-6 md:mb-8 text-center">
@@ -315,4 +310,5 @@ const KidsNoteFriendsPage: React.FC = () => {
 };
 
 export default KidsNoteFriendsPage;
+
 

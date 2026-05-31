@@ -1,4 +1,4 @@
-ï»¿import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { getKidsTheme } from '../utils/ecosystemPreferences';
 
 type CableInstrument = {
@@ -10,11 +10,11 @@ type CableInstrument = {
 
 const INSTRUMENTS_POOL: CableInstrument[] = [
   { id: 'contrabaixo', label: 'Contrabaixo', image: '/kids/workshop/contrabaixo.webp', description: 'Faz os sons graves da banda.' },
-  { id: 'violao', label: 'Violao', image: '/kids/workshop/violao.webp', description: 'Acompanha mÃºsicas e canÃ§Ãµes.' },
+  { id: 'violao', label: 'Violao', image: '/kids/workshop/violao.webp', description: 'Acompanha músicas e canções.' },
   { id: 'banjo', label: 'Banjo', image: '/kids/workshop/banjo.webp', description: 'Tem som brilhante e divertido.' },
   { id: 'flyingv', label: 'Flying V', image: '/kids/workshop/flyingv.webp', description: 'Tem visual radical do rock.' },
-  { id: 'classic-s', label: 'Classic S', image: '/kids/workshop/classic-s.webp', description: 'E versÃ¡til e aparece em muitos estilos.' },
-  { id: 'semi-acustica', label: 'Semi-acÃºstica', image: '/kids/workshop/semi-acustica.webp', description: 'Tem som cheio e combina com jazz e blues.' },
+  { id: 'classic-s', label: 'Classic S', image: '/kids/workshop/classic-s.webp', description: 'E versátil e aparece em muitos estilos.' },
+  { id: 'semi-acustica', label: 'Semi-acústica', image: '/kids/workshop/semi-acustica.webp', description: 'Tem som cheio e combina com jazz e blues.' },
 ];
 
 const navigateTo = (path: string) => {
@@ -47,10 +47,6 @@ const KidsCableGamePage: React.FC = () => {
 
   const isLight = theme === 'light';
 
-  const gridStyle = useMemo(() => ({
-    backgroundImage: `linear-gradient(${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px)`,
-    backgroundSize: '24px 24px',
-  }), [isLight]);
 
   const usedDescriptionIds = Object.values(matches);
 
@@ -68,29 +64,28 @@ const KidsCableGamePage: React.FC = () => {
     if (descriptionId === selectedInstrumentId) {
       const nextMatches = { ...matches, [selectedInstrumentId]: descriptionId };
       setMatches(nextMatches);
-      setFeedback('Boa conexÃ£o! Cabo ligado.');
+      setFeedback('Boa conexão! Cabo ligado.');
       setSelectedInstrumentId(null);
 
       if (Object.keys(nextMatches).length === roundData.selected.length) {
         setGameCompleted(true);
-        setFeedback('VocÃª ligou todos os cabos!');
+        setFeedback('Você ligou todos os cabos!');
       }
     } else {
-      setFeedback('Quase! Tente ligar em outra descriÃ§Ã£o.');
+      setFeedback('Quase! Tente ligar em outra descrição.');
       setSelectedInstrumentId(null);
     }
   };
 
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
-      <div className="absolute inset-0 pointer-events-none opacity-45" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
         <header className="mb-6 text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-amber-500">Guitar Architect Kids</p>
           <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Ligue os Cabos</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Ligue cada instrumento Ã  descriÃ§Ã£o correta.
+            Ligue cada instrumento à descrição correta.
           </p>
         </header>
 
@@ -124,7 +119,7 @@ const KidsCableGamePage: React.FC = () => {
             </div>
 
             <div>
-              <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-amber-500">DescriÃ§Ãµes</p>
+              <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-amber-500">Descrições</p>
               <div className="space-y-3">
                 {roundData.descriptions.map((desc) => {
                   const isUsed = usedDescriptionIds.includes(desc.id);
@@ -168,5 +163,6 @@ const KidsCableGamePage: React.FC = () => {
 };
 
 export default KidsCableGamePage;
+
 
 

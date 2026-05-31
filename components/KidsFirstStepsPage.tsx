@@ -1,4 +1,4 @@
-ï»¿import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { getKidsTheme } from '../utils/ecosystemPreferences';
 
 type FirstStepsModelKey =
@@ -24,8 +24,8 @@ const MODEL_OPTIONS: Array<{ key: FirstStepsModelKey; label: string }> = [
 
 const PART_OPTIONS: Array<{ key: PartKey; label: string }> = [
   { key: 'body', label: 'Corpo' },
-  { key: 'neck', label: 'BraÃ§o' },
-  { key: 'head', label: 'MÃ£o' },
+  { key: 'neck', label: 'Braço' },
+  { key: 'head', label: 'Mão' },
   { key: 'detail', label: 'Detalhe' },
 ];
 
@@ -55,10 +55,6 @@ const KidsFirstStepsPage: React.FC = () => {
 
   const isLight = theme === 'light';
 
-  const gridStyle = useMemo(() => ({
-    backgroundImage: `linear-gradient(${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px)`,
-    backgroundSize: '24px 24px',
-  }), [isLight]);
 
   const applyColor = (color: string) => {
     setColors(prev => ({ ...prev, [selectedPart]: color }));
@@ -147,7 +143,6 @@ const KidsFirstStepsPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
-      <div className="absolute inset-0 pointer-events-none opacity-45" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
         <header className="mb-6 md:mb-8 text-center">
@@ -229,5 +224,6 @@ const KidsFirstStepsPage: React.FC = () => {
 };
 
 export default KidsFirstStepsPage;
+
 
 

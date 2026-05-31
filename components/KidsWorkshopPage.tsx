@@ -1,4 +1,4 @@
-Ôªøimport React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { getKidsTheme } from '../utils/ecosystemPreferences';
 
 type WorkshopModelKey =
@@ -67,12 +67,12 @@ const partInfo: Record<PartKey, { title: string; text: string }> = {
     text: 'E a parte principal. Define formato, peso e muito da personalidade visual do instrumento.',
   },
   neck: {
-    title: 'Bra√ßo',
-    text: 'E onde ficam os trastes e as notas. Aqui a M√£o desliza para tocar grave, M√©dio e agudo.',
+    title: 'BraÁo',
+    text: 'E onde ficam os trastes e as notas. Aqui a M„o desliza para tocar grave, MÈdio e agudo.',
   },
   headstock: {
-    title: 'M√£o da guitarra (headstock)',
-    text: 'Tamb√©m chamada de headstock. E onde ficam as tarraxas usadas para afinar.',
+    title: 'M„o da guitarra (headstock)',
+    text: 'TambÈm chamada de headstock. E onde ficam as tarraxas usadas para afinar.',
   },
   details: {
     title: 'Captadores ou detalhes',
@@ -83,21 +83,21 @@ const partInfo: Record<PartKey, { title: string; text: string }> = {
 const instrumentInfo: Record<WorkshopModelKey, InstrumentInfo> = {
   classicS: {
     title: 'Classic S',
-    summary: 'Guitarra vers√°til usada em rock, pop, blues e funk.',
+    summary: 'Guitarra vers·til usada em rock, pop, blues e funk.',
     sound: 'Som brilhante, limpo e muito flexivel.',
     styles: ['Rock', 'Pop', 'Blues', 'Funk'],
     curiosity: 'E um dos formatos de guitarra mais reconhecidos no mundo.',
   },
   singleCut: {
     title: 'Single Cut',
-    summary: 'Modelo cl√°ssico com visual elegante e pegada forte.',
+    summary: 'Modelo cl·ssico com visual elegante e pegada forte.',
     sound: 'Som encorpado e cheio, muito bom para riffs.',
     styles: ['Rock', 'Blues', 'Jazz'],
     curiosity: 'Tem corte unico no corpo, por isso o nome Single Cut.',
   },
   modern: {
     title: 'Modern',
-    summary: 'Modelo pensado para conforto e vers√°tilidade.',
+    summary: 'Modelo pensado para conforto e vers·tilidade.',
     sound: 'Equilibrado, funcionando bem em varios timbres.',
     styles: ['Pop', 'Rock', 'Indie'],
     curiosity: 'Muitos modelos modernos misturam ideias de varios formatos antigos.',
@@ -112,44 +112,44 @@ const instrumentInfo: Record<WorkshopModelKey, InstrumentInfo> = {
   flyingV: {
     title: 'Flying V',
     summary: 'Modelo famoso pelo desenho em V e atitude de palco.',
-    sound: 'Direto e agressivo, √≥timo para bases e solos fortes.',
+    sound: 'Direto e agressivo, Ûtimo para bases e solos fortes.',
     styles: ['Rock', 'Metal'],
-    curiosity: 'Virou s√≠mbolo de shows energ√©ticos e visuais futuristas.',
+    curiosity: 'Virou sÌmbolo de shows energÈticos e visuais futuristas.',
   },
   superstrat: {
     title: 'Superstrat',
-    summary: 'Versao moderna para tocar r√°pido e com conforto.',
-    sound: 'vers√°til, indo de limpo a distor√ß√µes intensas.',
+    summary: 'Versao moderna para tocar r·pido e com conforto.',
+    sound: 'vers·til, indo de limpo a distorÁıes intensas.',
     styles: ['Rock', 'Metal', 'Fusion'],
-    curiosity: 'Ficou muito popular com guitarristas de t√©cnica avancada.',
+    curiosity: 'Ficou muito popular com guitarristas de tÈcnica avancada.',
   },
   semiAcustica: {
     title: 'Semi Acustica',
-    summary: 'Mistura caracteristicas de guitarra el√©trica e violao.',
+    summary: 'Mistura caracteristicas de guitarra elÈtrica e violao.',
     sound: 'Quente e ressonante, com toque aveludado.',
     styles: ['Jazz', 'Blues', 'Pop'],
-    curiosity: 'Tem corpo com c√¢maras que ajudam na resson√¢ncia.',
+    curiosity: 'Tem corpo com c‚maras que ajudam na resson‚ncia.',
   },
   contrabaixo: {
     title: 'Contrabaixo',
     summary: 'Instrumento que segura os graves e a base da banda.',
     sound: 'Grave e profundo, conectando ritmo e harmonia.',
     styles: ['Pop', 'Rock', 'Funk', 'Gospel'],
-    curiosity: 'Sem o baixo, a m√∫sica perde muito do peso e da sustenta√ß√£o.',
+    curiosity: 'Sem o baixo, a m˙sica perde muito do peso e da sustentaÁ„o.',
   },
   violao: {
     title: 'Violao Kids',
-    summary: 'Instrumento popular para acompanhar voz e can√ß√µes.',
-    sound: 'Natural e acolhedor, com boa din√¢mica.',
+    summary: 'Instrumento popular para acompanhar voz e canÁıes.',
+    sound: 'Natural e acolhedor, com boa din‚mica.',
     styles: ['Pop', 'Folk', 'MPB'],
-    curiosity: 'Muitas pessoas aprendem suas primeiras m√∫sicas no violao.',
+    curiosity: 'Muitas pessoas aprendem suas primeiras m˙sicas no violao.',
   },
   banjo: {
     title: 'Banjo Kids',
     summary: 'Instrumento tradicional de som brilhante e divertido.',
-    sound: 'Estalado, r√°pido e cheio de personalidade.',
+    sound: 'Estalado, r·pido e cheio de personalidade.',
     styles: ['Folk', 'Country'],
-    curiosity: 'Seu timbre e F√°cil de reconhecer logo nos primeiros acordes.',
+    curiosity: 'Seu timbre e F·cil de reconhecer logo nos primeiros acordes.',
   },
 };
 
@@ -218,8 +218,8 @@ const partHotspots: Record<WorkshopModelKey, Record<PartKey, Hotspot>> = {
 
 const PART_OPTIONS: Array<{ key: PartKey; label: string }> = [
   { key: 'body', label: 'Corpo' },
-  { key: 'neck', label: 'Bra√ßo' },
-  { key: 'headstock', label: 'M√£o / Headstock' },
+  { key: 'neck', label: 'BraÁo' },
+  { key: 'headstock', label: 'M„o / Headstock' },
   { key: 'details', label: 'Captadores / Detalhes' },
 ];
 
@@ -235,10 +235,6 @@ const KidsWorkshopPage: React.FC = () => {
 
   const isLight = theme === 'light';
 
-  const gridStyle = useMemo(() => ({
-    backgroundImage: `linear-gradient(${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#d1d5db' : '#1f2937'} 1px, transparent 1px)`,
-    backgroundSize: '24px 24px',
-  }), [isLight]);
 
   const selectedModelOption = MODEL_OPTIONS.find(option => option.key === selectedModel) ?? MODEL_OPTIONS[0];
   const selectedInstrument = instrumentInfo[selectedModel];
@@ -246,7 +242,6 @@ const KidsWorkshopPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
-      <div className="absolute inset-0 pointer-events-none opacity-45" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
         <header className="mb-6 md:mb-8 text-center">
@@ -338,5 +333,6 @@ const KidsWorkshopPage: React.FC = () => {
 };
 
 export default KidsWorkshopPage;
+
 
 

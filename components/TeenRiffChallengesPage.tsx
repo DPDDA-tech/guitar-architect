@@ -74,8 +74,8 @@ const TeenRiffChallengesPage: React.FC = () => {
   const progressText = `${Math.min(userNotes.length, selectedRiff.notes.length)}/${selectedRiff.notes.length}`;
 
   const gridStyle = {
-    backgroundImage: `linear-gradient(${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px)`,
-    backgroundSize: '30px 30px',
+    backgroundImage: `linear-gradient(${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px)`,
+    backgroundSize: '100% 30px',
   };
 
   const getAudioCtx = async () => {
