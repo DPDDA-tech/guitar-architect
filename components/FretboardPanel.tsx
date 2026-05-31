@@ -77,7 +77,7 @@ interface PendingFretboardAction {
   tool?: 'tuner' | 'metronome' | 'intervals' | 'exercises' | 'changes';
   bpm?: number;
   instruction?: FretboardInstruction;
-  harmonyMode?: 'TRIADS' | 'TETRADS';
+  harmonyMode?: 'TRIADS' | 'TETRADS' | 'OFF';
   chordQuality?: FretboardState['chordQuality'];
   chordDegree?: number;
   inversion?: number;
@@ -539,7 +539,7 @@ const normalizeFretboardIntentToPending = (intent: FretboardIntent): PendingFret
     tool: intent.tool,
     bpm: intent.bpm,
     instruction: intent.instruction as FretboardInstruction | undefined,
-    harmonyMode: intent.harmonyMode === 'OFF' ? undefined : intent.harmonyMode,
+    harmonyMode: intent.harmonyMode,
     chordQuality: intent.chordQuality as FretboardState['chordQuality'] | undefined,
     chordDegree: intent.chordDegree,
     inversion: intent.inversion,
