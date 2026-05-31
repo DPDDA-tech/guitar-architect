@@ -102,7 +102,7 @@ export const CAGED_MODULES: CagedModule[] = [
       },
     ],
     actions: [
-      { id: 'show-caged-shapes', label: 'Mostrar shapes CAGED', type: 'pendingFretboardAction', payload: fretboardAction('triads', 'C', 'Major (Ionian)', { cagedMode: true, cagedAction: 'SHOW_CAGED_SHAPE', shape: 'E', overlays: ['shape', 'tonic'] }) },
+      { id: 'show-caged-shapes', label: 'Mostrar shapes CAGED', type: 'pendingFretboardAction', payload: fretboardAction('scale', 'C', 'Major (Ionian)', { cagedMode: true, cagedAction: 'SHOW_CAGED_SHAPE', shape: 'E', overlays: ['shape', 'tonic'] }) },
       { id: 'show-regions', label: 'Mostrar regiões', type: 'toggleOverlay', payload: overlayAction('shape') },
       { id: 'highlight-tonics', label: 'Destacar tônicas', type: 'toggleOverlay', payload: overlayAction('tonic') },
     ],
