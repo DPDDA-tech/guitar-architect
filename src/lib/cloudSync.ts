@@ -302,7 +302,7 @@ export const applyCloudSnapshotLocally = async (snapshot: UserCloudSnapshot, ide
   }
 
   saveUserProfile(snapshot.profile);
-  saveThemeCollectionState(snapshot.themeCollection);
+  saveThemeCollectionState(snapshot.themeCollection, identity);
   saveKidsCustomGuitars(snapshot.kidsCustomGuitars ?? [], identity);
   snapshot.achievements.unlockedAchievementIds.forEach(id => unlockAchievement(id, identity));
   mergeAchievementProgressState(snapshot.achievements.progress, identity);
