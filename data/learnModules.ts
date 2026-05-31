@@ -371,8 +371,8 @@ export const LEARN_MODULES: LearnModule[] = [
     ],
     actions: [
       { id: 'open-caged', label: 'Abrir CAGED', type: 'navigate', href: '/caged' },
-      { id: 'show-caged-shapes', label: 'Mostrar shapes CAGED', type: 'pendingFretboardAction', payload: fretboardAction('scale', 'C', 'Major (Ionian)') },
-      { id: 'connect-major-caged', label: 'Conectar escala maior ao CAGED', type: 'pendingFretboardAction', payload: fretboardAction('scale', 'C', 'Major (Ionian)') },
+      { id: 'show-caged-shapes', label: 'Mostrar shapes CAGED', type: 'pendingFretboardAction', payload: fretboardAction('scale', 'C', 'Major (Ionian)', { activeEngine: 'caged', caged: { cagedAction: 'SHOW_CAGED_SHAPE' } }) },
+      { id: 'connect-major-caged', label: 'Conectar escala maior ao CAGED', type: 'pendingFretboardAction', payload: fretboardAction('scale', 'C', 'Major (Ionian)', { activeEngine: 'caged', caged: { cagedAction: 'SHOW_CAGED_SHAPE' } }) },
     ],
     relatedTools: [
       { id: 'tool-caged', label: 'CAGED', description: 'Sistema de shapes conectados.', type: 'navigate', href: '/caged' },

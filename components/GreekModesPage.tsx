@@ -352,7 +352,7 @@ const GreekModesPage: React.FC = () => {
               </div>
               <div className="mt-4 grid gap-2">
                 <button onClick={() => sendToFretboard(mode, 'showScale')} className="rounded-xl bg-blue-600 px-3 py-2 text-[9px] font-black uppercase text-white">{copy.applyFretboard}</button>
-                <button onClick={() => sendToFretboard(mode, 'showTriads', { harmonyMode: 'TETRADS' })} className={`rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showSevenths}</button>
+                <button onClick={() => sendToFretboard(mode, 'showHarmonyField', { harmonyMode: 'TETRADS' })} className={`rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showSevenths}</button>
                 <button onClick={() => sendToFretboard(mode, 'startPractice', { tool: 'exercises', practiceMode: 'modalCharacter', characteristicInterval: mode.characteristicInterval, bpm: 76 })} className={`rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.hearCharacter}</button>
               </div>
             </article>
@@ -393,7 +393,7 @@ const GreekModesPage: React.FC = () => {
               {copy.cagedBody}
             </p>
             <div className="mt-5 grid gap-2 sm:grid-cols-2">
-              <button onClick={() => sendToFretboard(activeMode, 'showScale', { cagedShape: activeMode.cagedShape, showCharacteristic: true })} className="rounded-xl bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white">{copy.applyModeCaged}</button>
+              <button onClick={() => sendToFretboard(activeMode, 'showScale', { caged: { shape: activeMode.cagedShape }, showCharacteristic: true })} className="rounded-xl bg-blue-600 px-4 py-3 text-[10px] font-black uppercase text-white">{copy.applyModeCaged}</button>
               <button onClick={() => sendToFretboard(activeMode, 'showTriads', { harmonyMode: 'TRIADS' })} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showTriads}</button>
               <button onClick={() => sendToFretboard(activeMode, 'showHarmonyField', { harmonyMode: 'TETRADS' })} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showTetrads}</button>
               <button onClick={() => sendToFretboard(activeMode, 'startPractice', { tool: 'exercises', practiceMode: 'modalTargets' })} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 text-blue-700' : 'border-blue-900/60 text-blue-200'}`}>{copy.showTargets}</button>
