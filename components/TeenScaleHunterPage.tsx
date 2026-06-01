@@ -40,19 +40,19 @@ const REGION_FRETS = new Set([1, 2, 3, 4, 5]);
 
 const PATHS: PathPattern[] = [
   {
-    id: 'path-a',
-    title: 'Caminho A',
+    id: 'am-pentatonic',
+    title: 'Am Pentatônica',
+    sequence: ['s3f2', 's4f1', 's4f3', 's4f5', 's5f3', 's5f5', 's4f5', 's4f3'],
+  },
+  {
+    id: 'c-major',
+    title: 'C Maior',
     sequence: ['s4f1', 's4f3', 's4f5', 's5f1', 's5f3', 's5f5', 's3f4', 's4f1'],
   },
   {
-    id: 'path-b',
-    title: 'Caminho B',
-    sequence: ['s5f5', 's5f3', 's5f1', 's4f5', 's4f3', 's4f1', 's3f4', 's4f1'],
-  },
-  {
-    id: 'path-c',
-    title: 'Caminho C',
-    sequence: ['s4f1', 's5f1', 's4f3', 's5f3', 's4f5', 's5f5', 's3f4', 's4f1'],
+    id: 'am-natural',
+    title: 'Am Natural',
+    sequence: ['s3f2', 's3f4', 's4f1', 's4f3', 's4f5', 's5f1', 's5f3', 's5f5'],
   },
 ];
 
