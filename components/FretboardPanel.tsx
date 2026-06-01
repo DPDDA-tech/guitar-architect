@@ -114,6 +114,11 @@ const EXTERNAL_PEDAGOGICAL_SOURCES = new Set([
   'triad-trainer',
   'study-module-legacy',
   'study-module',
+  'teens-riff',
+  'teens-scale',
+  'teens-chord',
+  'teens-rhythm',
+  'teens-blueprint',
 ]);
 
 const isExternalPedagogicalSource = (source: string | undefined) => Boolean(source && EXTERNAL_PEDAGOGICAL_SOURCES.has(source));

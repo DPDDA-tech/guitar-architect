@@ -8,6 +8,11 @@ export type FretboardIntentSource =
   | 'greek-modes'
   | 'harmonic-cycle'
   | 'study-module'
+  | 'teens-riff'
+  | 'teens-scale'
+  | 'teens-chord'
+  | 'teens-rhythm'
+  | 'teens-blueprint'
   | 'legacy';
 
 export type FretboardIntentAction =

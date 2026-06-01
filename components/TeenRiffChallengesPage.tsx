@@ -2,6 +2,7 @@
 import { getTeensTheme } from '../utils/ecosystemPreferences';
 import { teenRiffChallenges, type TeenRiffChallenge, type TeenRiffDifficulty, type TeenRiffNote } from '../data/teenRiffData';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
+import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -375,7 +376,18 @@ const TeenRiffChallengesPage: React.FC = () => {
             Voltar ao Teens
           </button>
           <button
-            onClick={() => navigateTo('/studio')}
+            onClick={() => sendFretboardIntent({
+              source: 'teens-riff',
+              action: 'showScale',
+              root: 'C',
+              scaleType: 'Major (Ionian)',
+              focusFirstRegion: true,
+              instruction: {
+                title: 'Do Riff à Escala',
+                description: 'As notas que você tocou fazem parte desta escala. Explore as regiões do braço.',
+                persistent: true,
+              },
+            })}
             className="rounded-xl border border-cyan-500 bg-cyan-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-cyan-500"
           >
             Ir para Studio

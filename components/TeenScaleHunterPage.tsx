@@ -1,6 +1,7 @@
 ﻿import React, { useMemo, useRef, useState } from 'react';
 import { getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
+import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -372,7 +373,18 @@ const TeenScaleHunterPage: React.FC = () => {
             Voltar ao Teens
           </button>
           <button
-            onClick={() => navigateTo('/studio')}
+            onClick={() => sendFretboardIntent({
+              source: 'teens-scale',
+              action: 'showScale',
+              root: 'C',
+              scaleType: 'Major (Ionian)',
+              focusFirstRegion: true,
+              instruction: {
+                title: 'Do Caçador ao Braço Completo',
+                description: 'Você treinou uma região. Agora veja a escala completa no braço.',
+                persistent: true,
+              },
+            })}
             className="rounded-xl border border-cyan-500 bg-cyan-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-cyan-500"
           >
             Ir para Studio

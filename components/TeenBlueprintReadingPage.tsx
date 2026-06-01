@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
+import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -669,7 +670,18 @@ const TeenBlueprintReadingPage: React.FC = () => {
             Voltar ao Teens
           </button>
           <button
-            onClick={() => navigateTo('/studio')}
+            onClick={() => sendFretboardIntent({
+              source: 'teens-blueprint',
+              action: 'showScale',
+              root: 'C',
+              scaleType: 'Major (Ionian)',
+              focusFirstRegion: true,
+              instruction: {
+                title: 'Da Pauta ao Braço',
+                description: 'As notas que você leu na pauta estão aqui no braço. Encontre-as por região.',
+                persistent: true,
+              },
+            })}
             className="rounded-xl border border-cyan-500 bg-cyan-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-cyan-500"
           >
             Ir para Studio

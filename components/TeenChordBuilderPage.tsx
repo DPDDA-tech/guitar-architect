@@ -1,6 +1,7 @@
 ﻿import React, { useMemo, useRef, useState } from 'react';
 import { getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
+import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import { teenChordChallenges, teenChordStacks, type TeenChordNote } from '../data/teenChordData';
 
 const navigateTo = (path: string) => {
@@ -357,7 +358,18 @@ const TeenChordBuilderPage: React.FC = () => {
             Voltar ao Teens
           </button>
           <button
-            onClick={() => navigateTo('/studio')}
+            onClick={() => sendFretboardIntent({
+              source: 'teens-chord',
+              action: 'field',
+              root: 'C',
+              scaleType: 'Major (Ionian)',
+              harmonyMode: 'TRIADS',
+              instruction: {
+                title: 'Do Bloco ao Campo Harmônico',
+                description: 'As tríades que você montou fazem parte deste campo harmônico. Explore os graus.',
+                persistent: true,
+              },
+            })}
             className="rounded-xl border border-cyan-500 bg-cyan-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-cyan-500"
           >
             Ir para Studio
