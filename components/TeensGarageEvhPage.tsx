@@ -47,7 +47,7 @@ const images: ImageItem[] = [
 
 const badges: string[] = ['DIY', 'Intermediário', '8–20 horas', 'Custom Paint'];
 const microBadges: string[] = ['Paint Layer I', 'Frankie Builder', 'DIY Spirit'];
-const progressLabels: string[] = ['Referência', 'Materiais', 'Base preta', 'Branco', 'Vermelho', 'Resultado', 'Detalhes', 'Relic', 'Montagem', 'Espírito'];
+const progressLabels: string[] = ['Referência', 'Materiais', 'Base preta', 'Branco', 'Vermelho', 'Detalhes', 'Relic', 'Montagem', 'Resultado', 'Espírito'];
 
 interface ImageCardProps {
   item: ImageItem;
@@ -154,18 +154,7 @@ const TeensGarageEvhPage: React.FC = () => {
     },
     {
       id: 'sec-6',
-      title: 'Seção 6 — Resultado final esperado',
-      summary: 'Payoff visual após a progressão completa da pintura.',
-      content: (
-        <div className="space-y-4">
-          {renderParagraph(isLight, 'A réplica final deve evidenciar o contraste entre vermelho, branco e preto, com linhas irregulares, camadas sobrepostas, marcas de uso e aparência experimental. A frente concentra a identidade visual mais reconhecível; o verso ajuda a entender a continuidade do padrão e a lógica da pintura no corpo inteiro.')}
-          <div className="grid gap-3 md:grid-cols-2"><ImageCard item={images[2]} onOpen={setActiveImage} /><ImageCard item={images[3]} onOpen={setActiveImage} /></div>
-        </div>
-      ),
-    },
-    {
-      id: 'sec-7',
-      title: 'Seção 7 — Detalhes icônicos',
+      title: 'Seção 6 — Detalhes icônicos',
       summary: 'Elementos que reforçam o caráter Frankenstein.',
       content: (
         <div className="space-y-6">
@@ -235,8 +224,8 @@ const TeensGarageEvhPage: React.FC = () => {
       ),
     },
     {
-      id: 'sec-8',
-      title: 'Seção 8 — Relic e acabamento',
+      id: 'sec-7',
+      title: 'Seção 7 — Relic e acabamento',
       summary: 'Desgaste consciente para evitar caricatura.',
       content: (
         <div className="space-y-4">
@@ -246,10 +235,21 @@ const TeensGarageEvhPage: React.FC = () => {
       ),
     },
     {
-      id: 'sec-9',
-      title: 'Seção 9 — Montagem final',
+      id: 'sec-8',
+      title: 'Seção 8 — Montagem final',
       summary: 'Instalação funcional e estética direta ao ponto.',
       content: renderParagraph(isLight, 'Após a pintura e a cura da tinta, instale ponte, captador, elétrica, braço e demais componentes. Para uma estética próxima da Frankenstein, muitos builders utilizam configuração simples, com humbucker principal, escudo parcial, knob único e hardware com aparência funcional, não luxuosa.'),
+    },
+    {
+      id: 'sec-9',
+      title: 'Seção 9 — Resultado final esperado',
+      summary: 'Payoff visual após a progressão completa da pintura.',
+      content: (
+        <div className="space-y-4">
+          {renderParagraph(isLight, 'A réplica final deve evidenciar o contraste entre vermelho, branco e preto, com linhas irregulares, camadas sobrepostas, marcas de uso e aparência experimental. A frente concentra a identidade visual mais reconhecível; o verso ajuda a entender a continuidade do padrão e a lógica da pintura no corpo inteiro.')}
+          <div className="grid gap-3 md:grid-cols-2"><ImageCard item={images[2]} onOpen={setActiveImage} /><ImageCard item={images[3]} onOpen={setActiveImage} /></div>
+        </div>
+      ),
     },
     {
       id: 'sec-10',
