@@ -27,13 +27,13 @@ type NoteLetterChallenge = {
 };
 
 const NOTES: Array<{ id: NoteId; color: string; glow: string; curiosity: string; colorName: string }> = [
-  { id: 'DO', color: 'bg-red-500', glow: 'shadow-red-500/35', curiosity: 'A nota DO abre muitas músicas infantis.', colorName: 'vermelha' },
+  { id: 'DO',  color: 'bg-red-500',    glow: 'shadow-red-500/35',    curiosity: 'A nota DO abre muitas mÃºsicas infantis.',  colorName: 'vermelha' },
   { id: 'RE', color: 'bg-orange-500', glow: 'shadow-orange-500/35', curiosity: 'A nota RE ajuda a melodia a caminhar.', colorName: 'laranja' },
   { id: 'MI', color: 'bg-yellow-400', glow: 'shadow-yellow-400/35', curiosity: 'A nota MI aparece em varias cancoes alegres.', colorName: 'amarela' },
-  { id: 'FA', color: 'bg-green-500', glow: 'shadow-green-500/35', curiosity: 'A nota FA traz um brilho especial para a música.', colorName: 'verde' },
-  { id: 'SOL', color: 'bg-blue-500', glow: 'shadow-blue-500/35', curiosity: 'A nota SOL é fácil de reconhecer em músicas divertidas.', colorName: 'azul' },
-  { id: 'LA', color: 'bg-violet-500', glow: 'shadow-violet-500/35', curiosity: 'A nota LA esta em muitas melodias conhecidas.', colorName: 'roxa' },
-  { id: 'SI', color: 'bg-pink-500', glow: 'shadow-pink-500/35', curiosity: 'A nota SI prepara o retorno para o DO.', colorName: 'rosa' },
+  { id: 'FA',  color: 'bg-green-500',  glow: 'shadow-green-500/35',  curiosity: 'A nota FA traz um brilho especial para a mÃºsica.',  colorName: 'verde' },
+  { id: 'SOL', color: 'bg-blue-500',   glow: 'shadow-blue-500/35',   curiosity: 'A nota SOL Ã© fÃ¡cil de lembrar por ser o nome de uma estrela.', colorName: 'azul' },
+  { id: 'LA',  color: 'bg-violet-500', glow: 'shadow-violet-500/35', curiosity: 'A nota LA estÃ¡ em muitas melodias conhecidas.', colorName: 'roxa' },
+  { id: 'SI',  color: 'bg-pink-500',   glow: 'shadow-pink-500/35',   curiosity: 'A nota SI prepara o retorno para o DO.', colorName: 'rosa' },
 ];
 
 const CHALLENGES: Challenge[] = [
@@ -191,7 +191,7 @@ const KidsNotesPage: React.FC = () => {
   const [memoryUserInput, setMemoryUserInput] = useState<NoteId[]>([]);
   const [memoryIsPlaying, setMemoryIsPlaying] = useState(false);
   const [memoryLevel, setMemoryLevel] = useState(0);
-  const [memoryFeedback, setMemoryFeedback] = useState('Clique em Começar para seguir as notas.');
+  const [memoryFeedback, setMemoryFeedback] = useState('Clique em ComeÃ§ar para seguir as notas.');
   const [memoryPlayingIndex, setMemoryPlayingIndex] = useState<number | null>(null);
   const [letterChallenge, setLetterChallenge] = useState<NoteLetterChallenge | null>(null);
   const [letterFeedback, setLetterFeedback] = useState('');
@@ -369,8 +369,8 @@ const KidsNotesPage: React.FC = () => {
 
     setMelodyFeedback(
       isEqual
-        ? 'Você encontrou o caminho da música!'
-        : 'Ouça de novo e compare com o modelo.'
+        ? 'VocÃª encontrou o caminho da mÃºsica!'
+        : 'OuÃ§a de novo e compare com o modelo.'
     );
   };
 
@@ -420,7 +420,7 @@ const KidsNotesPage: React.FC = () => {
     setMemorySequence(first);
     setMemoryUserInput([]);
     setMemoryLevel(1);
-    setMemoryFeedback('Olhe e escute o caminho da música.');
+      setMemoryFeedback('Olhe e escute o caminho da mÃºsica.');
     await playMemorySequence(first);
   };
 
@@ -437,7 +437,7 @@ const KidsNotesPage: React.FC = () => {
     setMemoryIsPlaying(false);
     setMemoryLevel(0);
     setMemoryPlayingIndex(null);
-    setMemoryFeedback('Reiniciado! Clique em Começar para um novo caminho.');
+      setMemoryFeedback('Reiniciado! Clique em ComeÃ§ar para um novo caminho.');
   };
 
   const handleMemoryNoteClick = async (note: NoteId) => {
@@ -468,9 +468,9 @@ const KidsNotesPage: React.FC = () => {
   const handleLetterAnswer = (option: string) => {
     if (!letterChallenge) return;
     if (option === letterChallenge.correctLetter) {
-      setLetterFeedback('Boa! Você encontrou a letra da nota.');
+      setLetterFeedback('Boa! VocÃª encontrou a letra da nota.');
     } else {
-      setLetterFeedback(`Quase! A letra da nota ${letterChallenge.note} é ${letterChallenge.correctLetter}.`);
+      setLetterFeedback(`Quase! A letra da nota ${letterChallenge.note} Ã© ${letterChallenge.correctLetter}. Tente de novo!`);
     }
 
     window.setTimeout(() => {
@@ -487,7 +487,7 @@ const KidsNotesPage: React.FC = () => {
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-500">Guitar Architect Kids</p>
           <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Conhecendo as Notas</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            As músicas usam notas musicais. Vamos descobrir?
+            As mÃºsicas usam notas musicais. Vamos descobrir?
           </p>
         </header>
 
@@ -553,9 +553,9 @@ const KidsNotesPage: React.FC = () => {
         </section>
 
         <section className={`mt-5 rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">Monte sua música</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">Monte sua mÃºsica</p>
           <p className={`mt-2 text-sm font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Invente sua sequência de notas e aperte play para ouvir.
+              Invente sua sequÃªncia de notas e aperte play para ouvir.
           </p>
 
           <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-7">
@@ -578,7 +578,7 @@ const KidsNotesPage: React.FC = () => {
 
           <div className={`mt-3 min-h-[58px] rounded-xl border px-3 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-950/70'}`}>
             {noteSequence.length === 0 ? (
-              <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Sua sequência aparecerá aqui.</p>
+              <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Sua sequÃªncia:</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {noteSequence.map((note, index) => (
@@ -619,13 +619,13 @@ const KidsNotesPage: React.FC = () => {
         </section>
 
         <section className={`mt-5 rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">Copie a música</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">Copie a mÃºsica</p>
           <p className={`mt-2 text-sm font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Toque o modelo, monte sua versão e ouça para comparar.
+              Toque o modelo, monte sua versÃ£o e ouÃ§a para comparar.
           </p>
 
           <div className="mt-3">
-            <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em]">Caminho da música</label>
+                <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em]">Caminho da mÃºsica</label>
             <select
               value={selectedMelodyId}
               onChange={(e) => handleMelodyChange(e.target.value)}
@@ -669,7 +669,7 @@ const KidsNotesPage: React.FC = () => {
             </div>
 
             <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-950/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Monte sua versão</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Monte sua versÃ£o</p>
               <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-7">
                 {NOTES.map((note) => (
                   <button
@@ -690,7 +690,7 @@ const KidsNotesPage: React.FC = () => {
 
               <div className={`mt-3 min-h-[58px] rounded-xl border px-3 py-3 ${isLight ? 'border-slate-200 bg-white' : 'border-zinc-700 bg-zinc-900'}`}>
                 {userMelodySequence.length === 0 ? (
-                  <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Sua versão aparecerá aqui.</p>
+                  <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Sua versÃ£o:</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {userMelodySequence.map((note, index) => (
@@ -715,7 +715,7 @@ const KidsNotesPage: React.FC = () => {
                   disabled={userMelodySequence.length === 0 || isPlayingUserVersion}
                   className="rounded-xl border border-emerald-500 bg-emerald-600 px-4 py-2 text-xs font-black uppercase text-white hover:bg-emerald-500 disabled:opacity-50"
                 >
-                  {isPlayingUserVersion ? 'Tocando versão...' : 'Play sua versão'}
+              {isPlayingUserVersion ? 'Tocando versÃ£o...' : 'Play sua versÃ£o'}
                 </button>
                 <button
                   onClick={removeLastMelodyNote}
@@ -743,13 +743,13 @@ const KidsNotesPage: React.FC = () => {
         </section>
 
         <section className={`mt-5 rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">Qual é a letra da nota?</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">Qual Ãª a letra?</p>
           <p className={`mt-2 text-sm font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Alguns músicos usam letras para chamar as notas.
+              Alguns mÃºsicos usam letras para chamar as notas.
           </p>
 
           <div className={`mt-3 rounded-xl border px-3 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-950/70'}`}>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Mapa rápido</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Mapa rÃ¡pido</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {(['DO', 'RE', 'MI', 'FA', 'SOL', 'LA', 'SI'] as NoteId[]).map((note) => (
                 <span
@@ -803,15 +803,15 @@ const KidsNotesPage: React.FC = () => {
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <button onClick={() => void startMemoryGame()} disabled={memoryIsPlaying} className="rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-white hover:bg-cyan-500 disabled:opacity-50">
-              Começar
+                ComeÃ§ar
             </button>
             <button onClick={() => void replayMemorySequence()} disabled={memoryIsPlaying || memorySequence.length === 0} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
-              Repetir sequência
+                Repetir sequÃªncia
             </button>
             <button onClick={resetMemoryGame} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
               Reiniciar
             </button>
-            <span className="text-xs font-black uppercase tracking-wider text-cyan-500">Nível: {memoryLevel}</span>
+              <span className="text-xs font-black uppercase tracking-wider text-cyan-500">NÃ­vel: {memoryLevel}</span>
           </div>
 
           <div className={`mt-3 min-h-[52px] rounded-xl border px-3 py-3 text-sm font-black ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'}`}>
@@ -823,10 +823,12 @@ const KidsNotesPage: React.FC = () => {
               <button
                 key={`memory-${note.id}`}
                 onClick={() => void handleMemoryNoteClick(note.id)}
-                disabled={memoryIsPlaying || memorySequence.length === 0}
-                className={`rounded-2xl border p-3 text-center transition-all hover:-translate-y-0.5 hover:scale-[1.03] disabled:opacity-50 ${
-                  isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'
-                }`}
+                disabled={memorySequence.length === 0}
+                className={`rounded-2xl border p-3 text-center transition-all disabled:opacity-40 ${
+                  memoryIsPlaying
+                    ? 'pointer-events-none opacity-75'
+                    : 'hover:-translate-y-0.5 hover:scale-[1.03] active:scale-95'
+                } ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
               >
                 <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full text-white text-sm font-black shadow-lg ${
                   memoryIsPlaying && memoryPlayingIndex !== null && memorySequence[memoryPlayingIndex] === note.id

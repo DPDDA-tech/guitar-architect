@@ -20,12 +20,12 @@ type InstrumentQuestion = {
 
 const instruments: Instrument[] = [
   { id: 'classic-s', label: 'Classic S', image: '/kids/workshop/classic-s.webp', category: 'guitarra', curiosity: 'Esse modelo e muito usado no rock e no pop.' },
-  { id: 'single-cut', label: 'Single Cut', image: '/kids/workshop/single-cut.webp', category: 'guitarra', curiosity: 'Tem visual clássico e forte presença em riffs.' },
+  { id: 'single-cut',  label: 'Single Cut',  image: '/kids/workshop/single-cut.webp',  category: 'guitarra', curiosity: 'Tem visual clÃ¡ssico e forte presenÃ§a em riffs.' },
   { id: 'explorer', label: 'Explorer', image: '/kids/workshop/explorer.webp', category: 'guitarra', curiosity: 'Ficou famoso pelo formato ousado.' },
   { id: 'flyingv', label: 'Flying V', image: '/kids/workshop/flyingv.webp', category: 'guitarra', curiosity: 'Tem formato marcante e visual de palco.' },
-  { id: 'modern', label: 'Modern', image: '/kids/workshop/modern.webp', category: 'guitarra', curiosity: 'Modelo versátil para varios estilos.' },
-  { id: 'superstrat', label: 'Superstrat', image: '/kids/workshop/superstrat.webp', category: 'guitarra', curiosity: 'Muito usada por quem gosta de tocar rápido.' },
-  { id: 'semi-acustica', label: 'Semi-acústica', image: '/kids/workshop/semi-acustica.webp', category: 'acustico', curiosity: 'Mistura caracteristicas de elétrica e violao.' },
+  { id: 'modern',      label: 'Modern',      image: '/kids/workshop/modern.webp',      category: 'guitarra', curiosity: 'Modelo versÃ¡til para varios estilos.' },
+  { id: 'superstrat',  label: 'Superstrat',  image: '/kids/workshop/superstrat.webp',  category: 'guitarra', curiosity: 'Muito usada por quem gosta de tocar rÃ¡pido.' },
+  { id: 'semi-acustica', label: 'Semi-acÃºstica', image: '/kids/workshop/semi-acustica.webp', category: 'guitarra', curiosity: 'Mistura guitarra elÃ©trica e violÃ£o.' },
   { id: 'contrabaixo', label: 'Contrabaixo', image: '/kids/workshop/contrabaixo.webp', category: 'baixo', curiosity: 'O contrabaixo faz os sons graves da banda.' },
   { id: 'violao', label: 'Violao', image: '/kids/workshop/violao.webp', category: 'acustico', curiosity: 'Muito usado para acompanhar canto e acordes.' },
   { id: 'banjo', label: 'Banjo', image: '/kids/workshop/banjo.webp', category: 'acustico', curiosity: 'O banjo tem som brilhante e divertido.' },
@@ -120,7 +120,7 @@ const KidsIdentifyGamePage: React.FC = () => {
 
     if (option === currentQuestion.correct) {
       setScore(prev => prev + 1);
-      setFeedback('Boa! Você reconheceu o instrumento!');
+      setFeedback('Boa! Voc reconheceu o instrumento!');
     } else {
       setFeedback('Quase! Vamos tentar outro.');
     }
@@ -144,7 +144,7 @@ const KidsIdentifyGamePage: React.FC = () => {
       <main className="relative mx-auto max-w-6xl">
         <header className="mb-6 text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-amber-500">Guitar Architect Kids</p>
-          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Qual é o Instrumento?</h1>
+          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Qual  o Instrumento?</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
             Observe a imagem e escolha o instrumento certo.
           </p>
@@ -155,9 +155,9 @@ const KidsIdentifyGamePage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-black uppercase tracking-wider">Dificuldade</span>
               {([
-                { key: 'easy', label: 'Fácil' },
-                { key: 'medium', label: 'Médio' },
-                { key: 'hard', label: 'Difícil' },
+          { key: 'easy',   label: 'FÃ¡cil' },
+          { key: 'medium', label: 'MÃ©dio' },
+          { key: 'hard',   label: 'DifÃ­cil' },
               ] as Array<{ key: Difficulty; label: string }>).map((item) => (
                 <button
                   key={item.key}
@@ -233,7 +233,7 @@ const KidsIdentifyGamePage: React.FC = () => {
               disabled={selectedAnswer === null || gameFinished}
               className="rounded-xl border border-amber-500 bg-amber-500 px-4 py-2 text-xs font-black uppercase text-white disabled:opacity-50"
             >
-              Próximo
+              PrÃ³ximo
             </button>
             <button onClick={() => resetGame()} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
               Novo jogo
@@ -248,7 +248,7 @@ const KidsIdentifyGamePage: React.FC = () => {
 
           {gameFinished && (
             <div className={`mt-4 rounded-xl border px-3 py-3 text-sm font-black ${isLight ? 'border-blue-200 bg-blue-50 text-blue-800' : 'border-blue-500/30 bg-blue-500/10 text-blue-200'}`}>
-              Fim do jogo! Você acertou {score} de {maxRounds}.
+            Fim do jogo! Voc acertou {score} de {maxRounds}.
             </div>
           )}
         </section>

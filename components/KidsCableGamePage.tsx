@@ -10,11 +10,11 @@ type CableInstrument = {
 
 const INSTRUMENTS_POOL: CableInstrument[] = [
   { id: 'contrabaixo', label: 'Contrabaixo', image: '/kids/workshop/contrabaixo.webp', description: 'Faz os sons graves da banda.' },
-  { id: 'violao', label: 'Violao', image: '/kids/workshop/violao.webp', description: 'Acompanha músicas e canções.' },
+  { id: 'violao', label: 'ViolÃ£o', image: '/kids/workshop/violao.webp', description: 'Acompanha mÃºsicas e canÃ§Ãµes.' },
   { id: 'banjo', label: 'Banjo', image: '/kids/workshop/banjo.webp', description: 'Tem som brilhante e divertido.' },
   { id: 'flyingv', label: 'Flying V', image: '/kids/workshop/flyingv.webp', description: 'Tem visual radical do rock.' },
-  { id: 'classic-s', label: 'Classic S', image: '/kids/workshop/classic-s.webp', description: 'E versátil e aparece em muitos estilos.' },
-  { id: 'semi-acustica', label: 'Semi-acústica', image: '/kids/workshop/semi-acustica.webp', description: 'Tem som cheio e combina com jazz e blues.' },
+  { id: 'classic-s', label: 'Classic S', image: '/kids/workshop/classic-s.webp', description: 'Guitarra versÃ¡til para vÃ¡rios estilos.' },
+  { id: 'semi-acustica', label: 'Semi-acÃºstica', image: '/kids/workshop/semi-acustica.webp', description: 'Mistura guitarra elÃ©trica e violÃ£o.' },
 ];
 
 const navigateTo = (path: string) => {
@@ -64,15 +64,15 @@ const KidsCableGamePage: React.FC = () => {
     if (descriptionId === selectedInstrumentId) {
       const nextMatches = { ...matches, [selectedInstrumentId]: descriptionId };
       setMatches(nextMatches);
-      setFeedback('Boa conexão! Cabo ligado.');
+    setFeedback('Boa conexÃ£o! Cabo ligado.');
       setSelectedInstrumentId(null);
 
       if (Object.keys(nextMatches).length === roundData.selected.length) {
         setGameCompleted(true);
-        setFeedback('Você ligou todos os cabos!');
+    setFeedback('VocÃ‰ ligou todos os cabos!');
       }
     } else {
-      setFeedback('Quase! Tente ligar em outra descrição.');
+    setFeedback('Quase! Tente ligar em outra descriÃ§Ã£o.');
       setSelectedInstrumentId(null);
     }
   };
@@ -85,7 +85,7 @@ const KidsCableGamePage: React.FC = () => {
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-amber-500">Guitar Architect Kids</p>
           <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Ligue os Cabos</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Ligue cada instrumento à descrição correta.
+            Ligue cada instrumento Ã¡ descriÃ§Ã£o correta.
           </p>
         </header>
 
@@ -119,7 +119,7 @@ const KidsCableGamePage: React.FC = () => {
             </div>
 
             <div>
-              <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-amber-500">Descrições</p>
+              <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-amber-500">DescriÃ§Ãµes</p>
               <div className="space-y-3">
                 {roundData.descriptions.map((desc) => {
                   const isUsed = usedDescriptionIds.includes(desc.id);

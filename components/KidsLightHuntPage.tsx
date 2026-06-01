@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { getKidsTheme } from '../utils/ecosystemPreferences';
 import { LIGHT_GRID } from '../data/kidsLightHuntData';
 

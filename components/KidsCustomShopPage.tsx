@@ -19,21 +19,20 @@ const STANDARD_COLORS = ['black', 'blue', 'green', 'grey', 'pink', 'red', 'white
 interface GuitarModel {
   id: string;
   label: string;
-  emoji: string;
   colors: readonly string[];
 }
 
 const GUITAR_MODELS: GuitarModel[] = [
-  { id: 'classics',   label: 'Classic-S',     emoji: '🎸', colors: ['black','blue','green','gray','pink','red','white','yellow','dgil','evh','relic','srv'] },
-  { id: 'superstrat', label: 'Superstrat',    emoji: '⚡', colors: STANDARD_COLORS },
-  { id: 'modern',     label: 'Modern',        emoji: '🔷', colors: STANDARD_COLORS },
-  { id: 'explorer',   label: 'Explorer',      emoji: '✈️', colors: STANDARD_COLORS },
-  { id: 'flyingv',    label: 'Flying V',      emoji: '✌️', colors: STANDARD_COLORS },
-  { id: 'sinlgec',    label: 'Single Cut',    emoji: '🌙', colors: STANDARD_COLORS },
-  { id: 'semiac',     label: 'Semi Acústica', emoji: '🎷', colors: [...STANDARD_COLORS, 'sunburst'] },
-  { id: 'cbaixo',     label: 'Contrabaixo',   emoji: '🟫', colors: STANDARD_COLORS },
-  { id: 'violao',     label: 'Violão',        emoji: '🪕', colors: STANDARD_COLORS },
-  { id: 'banjo',      label: 'Banjo',         emoji: '🪘', colors: STANDARD_COLORS },
+  { id: 'classics',   label: 'Classic-S',     colors: ['black','blue','green','gray','pink','red','white','yellow','dgil','evh','relic','srv'] },
+  { id: 'superstrat', label: 'Superstrat',    colors: STANDARD_COLORS },
+  { id: 'modern',     label: 'Modern',        colors: STANDARD_COLORS },
+  { id: 'explorer',   label: 'Explorer',      colors: STANDARD_COLORS },
+  { id: 'flyingv',    label: 'Flying V',      colors: STANDARD_COLORS },
+  { id: 'sinlgec',    label: 'Single Cut',    colors: STANDARD_COLORS },
+  { id: 'semiac',     label: 'Semi Acústica', colors: [...STANDARD_COLORS, 'sunburst'] },
+  { id: 'cbaixo',     label: 'Contrabaixo',   colors: STANDARD_COLORS },
+  { id: 'violao',     label: 'Violão',        colors: STANDARD_COLORS },
+  { id: 'banjo',      label: 'Banjo',         colors: STANDARD_COLORS },
 ];
 
 const COLOR_LABELS: Record<string, string> = {
@@ -92,8 +91,8 @@ const KidsCustomShopPage: React.FC = () => {
   const cardRef = useRef<HTMLDivElement>(null);
 
   const copy = {
-    title:       isPt ? 'Custom Shop 🎸'                          : 'Custom Shop 🎸',
-    subtitle:    isPt ? 'Crie a guitarra dos seus sonhos!'        : 'Build your dream guitar!',
+    title:       isPt ? 'Custom Shop'                             : 'Custom Shop',
+    subtitle:    isPt ? 'Crie o instrumento dos seus sonhos!'     : 'Build your dream instrument!',
     stepModel:   isPt ? 'Escolha o modelo'                        : 'Pick a model',
     stepColor:   isPt ? 'Escolha a cor'                           : 'Pick a color',
     stepName:    isPt ? 'Dê um nome à sua guitarra'               : 'Name your guitar',
@@ -103,12 +102,12 @@ const KidsCustomShopPage: React.FC = () => {
     newGuitar:   isPt ? 'Criar outra guitarra 🎨'                 : 'Create another 🎨',
     back:        isPt ? '← Voltar'                                : '← Back',
     backKids:    isPt ? 'Voltar ao Kids'                          : 'Back to Kids',
-    savedTitle:  isPt ? 'Guitarra salva!'                         : 'Guitar saved!',
+    savedTitle:  isPt ? 'Instrumento salvo!'                      : 'Instrument saved!',
     garageFullMsg: isPt
       ? '🏠 Sua garagem está cheia! A guitarra mais antiga foi guardada no depósito.'
       : '🏠 Your garage is full! The oldest guitar was stored in the depot.',
     bannerGuest: isPt
-      ? '🎸 As guitarras criadas aqui ficam salvas neste dispositivo. Para guardar na conta e acessar de qualquer lugar, peça a um responsável para entrar com a conta dele.'
+      ? '🎸 Os instrumentos criados aqui ficam salvos neste dispositivo. Para guardar na conta e acessar de qualquer lugar, peça a um responsável para entrar com a conta dele.'
       : '🎸 Guitars created here are saved on this device. To keep them in an account, ask a guardian to sign in.',
     bannerLoggedIn: isPt
       ? '✅ Você está conectado. As guitarras criadas aqui serão salvas na sua conta.'
@@ -201,16 +200,13 @@ const KidsCustomShopPage: React.FC = () => {
             {copy.title}
           </h1>
           <p className="mt-2 text-base font-bold opacity-75">{copy.subtitle}</p>
-          <div className="mt-4 flex gap-3">
-            {step !== 'model' && step !== 'saved' && (
+          {step !== 'model' && step !== 'saved' && (
+            <div className="mt-4">
               <button onClick={() => setStep(step === 'color' ? 'model' : 'color')} className={btnSecondary}>
                 {copy.back}
               </button>
-            )}
-            <button onClick={() => navigateTo('/kids')} className={btnSecondary}>
-              {copy.backKids}
-            </button>
-          </div>
+            </div>
+          )}
         </header>
 
         {/* info banner for guardian */}
@@ -246,7 +242,6 @@ const KidsCustomShopPage: React.FC = () => {
                     className="h-24 w-full object-contain mb-3 drop-shadow-md group-hover:scale-105 transition-transform"
                     loading="lazy"
                   />
-                  <span className="text-2xl mb-1">{model.emoji}</span>
                   <span className="text-[13px] font-black uppercase tracking-wide">{model.label}</span>
                 </button>
               ))}
@@ -285,7 +280,7 @@ const KidsCustomShopPage: React.FC = () => {
                     title={COLOR_LABELS[color] ?? color}
                     onClick={() => setSelectedColor(color as string)}
                     style={isGradient ? { background: swatch } : { backgroundColor: swatch }}
-                    className={`w-10 h-10 rounded-full border-4 transition-all active:scale-90 ${isSelected ? 'border-emerald-400 scale-110 shadow-[0_0_12px_rgba(52,211,153,0.6)]' : 'border-transparent hover:scale-110 hover:border-emerald-300/60'}`}
+                    className={`w-10 h-10 rounded-full border-4 transition-all active:scale-90 ${isSelected ? 'border-emerald-400 scale-110 shadow-[0_0_12px_rgba(52,211,153,0.6)]' : color === 'white' && isLight ? 'border-gray-300 hover:scale-110 hover:border-emerald-300/60' : 'border-transparent hover:scale-110 hover:border-emerald-300/60'}`}
                   />
                 );
               })}
@@ -394,6 +389,15 @@ const KidsCustomShopPage: React.FC = () => {
             ))}
           </div>
         )}
+
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <button
+            onClick={() => navigateTo('/kids')}
+            className="rounded-xl border border-emerald-500 bg-emerald-600 px-8 py-4 text-xs font-black uppercase text-white shadow-lg shadow-emerald-900/20 transition-all hover:bg-emerald-500 active:scale-95"
+          >
+            {isPt ? 'Voltar ao Kids' : 'Back to Kids'}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -75,7 +75,7 @@ const KidsSoundLengthsPage: React.FC = () => {
       makeBeep(440, now + 0.22, 0.16);
     }
     if (type === 'silence') {
-      // silêncio intencional
+  // silÃ‰ncio intencional
     }
   };
 
@@ -141,10 +141,10 @@ const KidsSoundLengthsPage: React.FC = () => {
   };
 
   const motivational = [
-    'Boa! Você tem ouvido de explorador!',
-    'Incrível! Mais uma fase!',
+    'Boa! VocÃ‰ tem ouvido de explorador!',
+    'IncrÃ­vel! Mais uma fase!',
     'Perfeito! Continue assim!',
-    'Muito bem! Você está voando!',
+    'Muito bem! VocÃ‰ estÃ¡ voando!',
   ];
 
   const handleLoopClick = async (type: RhythmType) => {
@@ -168,7 +168,7 @@ const KidsSoundLengthsPage: React.FC = () => {
 
       if (targetRounds !== null && nextRound >= targetRounds) {
         setStars((prev) => prev + 1);
-        setFeedback('Missão completa! Você brilhou no ritmo!');
+    setFeedback('MissÃ£o completa! VocÃ‰ brilhou no ritmo!');
         setUserInput([]);
         return;
       }
@@ -193,13 +193,13 @@ const KidsSoundLengthsPage: React.FC = () => {
 
   const handleChallengeAnswer = (type: RhythmType) => {
     if (type === currentChallenge.answer) {
-      setChallengeFeedback('Boa! Você encontrou certinho.');
+      setChallengeFeedback('Boa! VocÃ‰ encontrou certinho.');
       window.setTimeout(() => {
         setChallengeIndex((prev) => (prev + 1) % rhythmChallenges.length);
         setChallengeFeedback('');
       }, 900);
     } else {
-      setChallengeFeedback('Quase! Tente mais uma vez, você consegue.');
+      setChallengeFeedback('Quase! Tente mais uma vez, vocÃ‰ consegue.');
     }
   };
 
@@ -248,7 +248,7 @@ const KidsSoundLengthsPage: React.FC = () => {
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-500">Guitar Architect Kids</p>
           <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">O Tamanho dos Sons</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Descubra sons rápidos, longos e pausas musicais.
+            Descubra sons rÃ¡pidos, longos e pausas musicais.
           </p>
         </header>
 
@@ -312,9 +312,9 @@ const KidsSoundLengthsPage: React.FC = () => {
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-4 text-xs font-black uppercase tracking-wider text-cyan-500">
-            <span>Nível: {level}</span>
+              <span>NÃ­vel: {level}</span>
             <span>Fase: {round}{GAME_MODES[mode] ? `/${GAME_MODES[mode]}` : ''}</span>
-            <span>Estrelas: {'?'.repeat(Math.min(stars, 10)) || '—'}</span>
+              <span>Estrelas: {'?'.repeat(Math.min(stars, 10)) || 'â˜…'}</span>
           </div>
 
           {sequence.length > 0 && (
@@ -323,7 +323,7 @@ const KidsSoundLengthsPage: React.FC = () => {
             </p>
           )}
 
-          <div className={`mt-3 rounded-xl border px-3 py-3 text-sm font-black ${feedback.startsWith('Missão') || feedback.startsWith('Boa') || feedback.startsWith('Incrível') || feedback.startsWith('Perfeito') || feedback.startsWith('Muito bem') ? (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200') : (isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200')}`}>
+          <div className={`mt-3 rounded-xl border px-3 py-3 text-sm font-black ${feedback.startsWith('MissÃ£o') || feedback.startsWith('Boa') || feedback.startsWith('IncrÃ­vel') || feedback.startsWith('Perfeito') || feedback.startsWith('Muito bem') ? (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200') : (isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200')}`}>
             {feedback}
           </div>
 
@@ -374,7 +374,7 @@ const KidsSoundLengthsPage: React.FC = () => {
 
           <div className={`mt-3 min-h-[60px] rounded-xl border px-3 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-950/70'}`}>
             {customSequence.length === 0 ? (
-              <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Seu trecho aparecerá aqui.</p>
+              <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Seu trecho aparecerÃ¡ aqui.</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {customSequence.map((item, index) => (
@@ -402,7 +402,7 @@ const KidsSoundLengthsPage: React.FC = () => {
               disabled={customSequence.length === 0 || isPlayingCustom}
               className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
             >
-              Apagar última
+              Apagar Ãºltima
             </button>
             <button
               onClick={clearCustom}

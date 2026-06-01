@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
 
 const navigateTo = (path: string) => {

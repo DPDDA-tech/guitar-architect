@@ -24,8 +24,8 @@ const MODEL_OPTIONS: Array<{ key: FirstStepsModelKey; label: string }> = [
 
 const PART_OPTIONS: Array<{ key: PartKey; label: string }> = [
   { key: 'body', label: 'Corpo' },
-  { key: 'neck', label: 'Braço' },
-  { key: 'head', label: 'Mão' },
+  { key: 'neck', label: 'BraÃ§o' },
+  { key: 'head', label: 'MÃ£o' },
   { key: 'detail', label: 'Detalhe' },
 ];
 

@@ -26,7 +26,7 @@ const INSTRUMENTS: Instrument[] = [
   { key: 'contrabaixo', label: 'Contrabaixo', image: '/kids/workshop/contrabaixo.webp' },
   { key: 'violao', label: 'Violao', image: '/kids/workshop/violao.webp' },
   { key: 'banjo', label: 'Banjo', image: '/kids/workshop/banjo.webp' },
-  { key: 'semiAcustica', label: 'Semi-acústica', image: '/kids/workshop/semi-acustica.webp' },
+  { key: 'semiAcustica', label: 'Semi-acÃºstica', image: '/kids/workshop/semi-acustica.webp' },
 ];
 
 const PAIRS_BY_DIFFICULTY: Record<Difficulty, number> = {
@@ -144,7 +144,7 @@ const KidsMemoryGamePage: React.FC = () => {
       <main className="relative mx-auto max-w-[1400px]">
         <header className="mb-6 text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-amber-500">Guitar Architect Kids</p>
-          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Jogo da Memória</h1>
+          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Jogo da MemÃ³ria</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
             Encontre os pares de instrumentos.
           </p>
@@ -155,9 +155,9 @@ const KidsMemoryGamePage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-black uppercase tracking-wider">Dificuldade</span>
               {([
-                { key: 'easy', label: 'Fácil' },
-                { key: 'medium', label: 'Médio' },
-                { key: 'hard', label: 'Difícil' },
+          { key: 'easy',   label: 'FÃ¡cil' },
+          { key: 'medium', label: 'MÃ©dio' },
+          { key: 'hard',   label: 'DifÃ­cil' },
               ] as Array<{ key: Difficulty; label: string }>).map((item) => (
                 <button
                   key={item.key}
@@ -174,7 +174,7 @@ const KidsMemoryGamePage: React.FC = () => {
 
           {gameCompleted && (
             <div className={`mb-4 rounded-xl border px-3 py-3 text-sm font-black ${isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'}`}>
-              Você encontrou todos os instrumentos!
+            VocÃ‰ encontrou todos os instrumentos!
             </div>
           )}
 
