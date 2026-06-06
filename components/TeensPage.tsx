@@ -142,6 +142,24 @@ const TeensPage: React.FC = () => {
       unlockXp: 120,
     },
     {
+      title: 'Batidas Populares',
+      subtitle: lang === 'pt' ? 'Aprenda levadas com setas tradicionais de cifra.' : 'Learn strumming patterns with classic arrow notation.',
+      visual: (
+        <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
+          <path d="M42 16V48" stroke="#f59e0b" strokeWidth="4" strokeLinecap="round" />
+          <path d="M32 38L42 50L52 38" stroke="#f59e0b" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M92 48V16" stroke="#fb7185" strokeWidth="4" strokeLinecap="round" />
+          <path d="M82 26L92 14L102 26" stroke="#fb7185" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M128 22C144 10 162 10 178 22" stroke="#22d3ee" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M128 42C144 54 162 54 178 42" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" />
+          <circle cx="196" cy="32" r="6" fill="#22d3ee" />
+        </svg>
+      ),
+      available: true,
+      path: '/teens/batidas-populares',
+      unlockXp: 160,
+    },
+    {
       title: 'Blueprint Reading',
       subtitle: lang === 'pt' ? 'Leia pauta + TAB como blueprint musical.' : 'Read staff + TAB as a music blueprint.',
       visual: (

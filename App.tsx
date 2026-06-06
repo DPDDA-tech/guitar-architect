@@ -34,6 +34,7 @@ import KidsCustomShopPage from './components/KidsCustomShopPage';
 import TeensPage from './components/TeensPage';
 import TeenRiffChallengesPage from './components/TeenRiffChallengesPage';
 import TeenRhythmLabPage from './components/TeenRhythmLabPage';
+import TeenBatidasPopularesPage from './components/TeenBatidasPopularesPage';
 import TeenScaleHunterPage from './components/TeenScaleHunterPage';
 import TeenChordBuilderPage from './components/TeenChordBuilderPage';
 import TeenBlueprintReadingPage from './components/TeenBlueprintReadingPage';
@@ -178,6 +179,7 @@ const App: React.FC = () => {
       case '/teens/garage/evh-frankenstein-tribute': return <TeensGarageEvhPage />;
       case '/teens/riff-challenges': return <TeenRiffChallengesPage />;
       case '/teens/rhythm-lab': return <TeenRhythmLabPage />;
+      case '/teens/batidas-populares': return <TeenBatidasPopularesPage />;
       case '/teens/scale-hunter': return <TeenScaleHunterPage />;
       case '/teens/chord-builder': return <TeenChordBuilderPage />;
       case '/teens/blueprint-reading': return <TeenBlueprintReadingPage />;
