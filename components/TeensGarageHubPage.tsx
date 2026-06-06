@@ -15,8 +15,8 @@ const TeensGarageHubPage: React.FC = () => {
 
   const copy = lang === 'pt'
     ? {
-        breadcrumb: 'GA Teens / Garage',
-        title: 'GARAGE',
+        breadcrumb: 'GA Teens / Garagem',
+        title: 'GARAGEM',
         subtitle: 'A oficina visual do GA Teens: builds icônicos, pintura custom e experimentos de identidade sonora.',
         body: 'Aqui você aprende como guitarras lendárias foram pensadas, pintadas, modificadas e transformadas em instrumentos únicos.',
         backTeens: 'Voltar ao Teens',
@@ -27,8 +27,8 @@ const TeensGarageHubPage: React.FC = () => {
         soon: 'Em breve',
       }
     : {
-        breadcrumb: 'GA Teens / Garage',
-        title: 'GARAGE',
+        breadcrumb: 'GA Teens / Garagem',
+        title: 'GARAGEM',
         subtitle: 'The GA Teens visual workshop: iconic builds, custom paint and sonic identity experiments.',
         body: 'Learn how legendary guitars were designed, painted, modified and transformed into one-of-a-kind instruments.',
         backTeens: 'Back to Teens',
@@ -104,7 +104,7 @@ const TeensGarageHubPage: React.FC = () => {
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400">{copy.soon}</p>
               <h3 className="mt-2 text-lg font-black">{title}</h3>
               <p className={`mt-3 text-sm leading-6 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                Builds em preparação para os próximos capítulos do Garage.
+                Builds em preparação para os próximos capítulos da Garagem.
               </p>
             </article>
           ))}

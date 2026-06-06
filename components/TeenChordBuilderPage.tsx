@@ -185,7 +185,7 @@ const TeenChordBuilderPage: React.FC = () => {
       <main className="relative mx-auto max-w-6xl">
         <header className="mb-8 text-center">
           <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-400">GA Teens</p>
-          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Chord Builder</h1>
+          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Construtor de Acordes</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
             Monte blocos harmônicos por sensação e prepare o caminho para tríades, tétrades e inversões.
           </p>

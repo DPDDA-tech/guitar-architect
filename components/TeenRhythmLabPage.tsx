@@ -859,7 +859,7 @@ const TeenRhythmLabPage: React.FC = () => {
       <main className="relative mx-auto max-w-7xl">
         <header className="mb-8 text-center">
           <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-400">GA Teens</p>
-          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Rhythm Lab</h1>
+          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Laboratório de Ritmo</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
             Sistema de aprendizado em 3 fases: OUVIR → ENTENDER → REPRODUZIR
           </p>

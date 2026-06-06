@@ -373,9 +373,9 @@ const TeenBlueprintReadingPage: React.FC = () => {
       <main className="relative mx-auto max-w-6xl">
         <header className="mb-8 text-center">
           <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-400">GA Teens</p>
-          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Blueprint Reading</h1>
+          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Leitura de Partitura + TAB</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Pauta como planta baixa: altura no eixo Y, tempo no eixo X, com apoio da TAB.
+            Partitura como mapa musical: altura no eixo Y, tempo no eixo X, com apoio da TAB.
           </p>
         </header>
 

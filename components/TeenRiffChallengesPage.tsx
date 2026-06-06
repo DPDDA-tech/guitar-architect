@@ -215,7 +215,7 @@ const TeenRiffChallengesPage: React.FC = () => {
       <main className="relative mx-auto max-w-6xl">
         <header className="mb-8 text-center">
           <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-400">GA Teens</p>
-          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Riff Challenges</h1>
+          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Desafios de Riff</h1>
           <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
             Ouça, memorize e reproduza riffs.
           </p>
@@ -399,4 +399,3 @@ const TeenRiffChallengesPage: React.FC = () => {
 };
 
 export default TeenRiffChallengesPage;
-

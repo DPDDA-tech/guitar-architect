@@ -288,11 +288,11 @@ const TeensGarageEvhPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,rgba(139,92,246,0.1),transparent_50%)]" />
 
       <div className="relative mx-auto max-w-6xl">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">GA Teens / Garage / EVH Frankenstein Tribute</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">GA Teens / Garagem / EVH Frankenstein Tribute</p>
 
         <div className="mt-4 flex flex-wrap gap-3">
           <button type="button" onClick={() => navigateTo('/teens/garage')} className={`rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/60 text-violet-200'}`}>
-            Voltar ao Garage
+            Voltar à Garagem
           </button>
         </div>
 
@@ -381,4 +381,3 @@ const TeensGarageEvhPage: React.FC = () => {
 };
 
 export default TeensGarageEvhPage;
-

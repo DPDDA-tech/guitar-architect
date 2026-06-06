@@ -13,16 +13,12 @@ export const TeensGarageSection: React.FC<TeensGarageSectionProps> = ({ isLight,
 
   const copy = lang === 'pt'
     ? {
-        title: 'GARAGE',
+        title: 'GARAGEM',
         subtitle: 'Monte, personalize e entenda guitarras icônicas sem precisar começar com equipamento caro.',
-        cta: 'ENTRAR NO GARAGE',
-        status: 'Disponível',
       }
     : {
-        title: 'GARAGE',
+        title: 'GARAGEM',
         subtitle: 'Build, customize and understand iconic guitars without starting with expensive gear.',
-        cta: 'ENTER GARAGE',
-        status: 'Available',
       };
 
   return (
@@ -44,12 +40,6 @@ export const TeensGarageSection: React.FC<TeensGarageSectionProps> = ({ isLight,
       </div>
       <h3 className="text-sm font-black uppercase tracking-[0.14em]">{copy.title}</h3>
       <p className="mt-2 text-[11px] font-bold opacity-70">{copy.subtitle}</p>
-      <p className="mt-3 text-[9px] font-black opacity-40 tracking-[0.2em] group-hover:text-violet-400 transition-colors uppercase">
-        {copy.status}
-      </p>
-      <span className="mt-3 rounded-xl border border-violet-400/50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-violet-300">
-        {copy.cta}
-      </span>
     </button>
   );
 };

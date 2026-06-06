@@ -2,6 +2,7 @@
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { TeensGarageSection } from './TeensGarageSection';
+import { TeensBasicCareSection } from './TeensBasicCareSection';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -17,40 +18,40 @@ type TeensModule = {
   unlockXp?: number;
 };
 
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
+  </svg>
+);
+
 const TeensPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => getTeensTheme());
   const [lang, setLang] = useState<'pt' | 'en'>(() => getTeensLang());
   const isLight = theme === 'light';
   const xp = getTeensXp();
   const rankProgress = getRankProgress(xp);
-  const visualRewards = [
-    { id: 'trail', label: 'Trail Glow', minXp: 120 },
-    { id: 'pulse', label: 'Pulse Frame', minXp: 320 },
-    { id: 'neon', label: 'Neon Aura', minXp: 620 },
-  ];
 
   const copy = lang === 'pt'
     ? {
         title: 'GA Teens',
-        subtitle: 'Desafios, riffs, treino guiado e evolução musical para a próxima geração de arquitetos do som.',
-        earlyAccess: 'Acesso antecipado',
+        subtitle: 'Descubra, pratique e evolua como um verdadeiro arquiteto do som.',
         ecosystem: 'Explorar Ecossistema',
         studio: 'Modo Profissional (Studio)',
         locked: 'Nível bloqueado',
-        theme: 'Tema',
-        light: 'Claro',
-        dark: 'Escuro',
       }
     : {
         title: 'GA Teens',
-        subtitle: 'Challenges, riffs, guided practice and musical growth for the next generation of sound architects.',
-        earlyAccess: 'Early access',
+        subtitle: 'Discover, practice and evolve like a true architect of sound.',
         ecosystem: 'Explore Ecosystem',
         studio: 'Professional Mode (Studio)',
         locked: 'Level locked',
-        theme: 'Theme',
-        light: 'Light',
-        dark: 'Dark',
       };
 
   const handleToggleTheme = () => {
@@ -76,7 +77,7 @@ const TeensPage: React.FC = () => {
 
   const modules: TeensModule[] = [
     {
-      title: 'Riff Challenges',
+      title: 'Desafios de Riff',
       subtitle: lang === 'pt' ? 'Ouça, memorize e reproduza riffs.' : 'Listen, memorize and reproduce riffs.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -89,7 +90,7 @@ const TeensPage: React.FC = () => {
       path: '/teens/riff-challenges',
     },
     {
-      title: 'Scale Hunter',
+      title: 'Caça às Escalas',
       subtitle: lang === 'pt' ? 'Caçe padrões por região no braço.' : 'Hunt regional fretboard patterns.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -107,7 +108,7 @@ const TeensPage: React.FC = () => {
       unlockXp: 220,
     },
     {
-      title: 'Chord Builder',
+      title: 'Construtor de Acordes',
       subtitle: lang === 'pt' ? 'Monte blocos harmônicos por sensação.' : 'Build harmonic blocks by feel.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -124,7 +125,7 @@ const TeensPage: React.FC = () => {
       unlockXp: 280,
     },
     {
-      title: 'Rhythm Lab',
+      title: 'Laboratório de Ritmo',
       subtitle: lang === 'pt' ? 'Treine pulsos e timing em loops curtos.' : 'Train pulses and timing with short loops.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -160,8 +161,8 @@ const TeensPage: React.FC = () => {
       unlockXp: 160,
     },
     {
-      title: 'Blueprint Reading',
-      subtitle: lang === 'pt' ? 'Leia pauta + TAB como blueprint musical.' : 'Read staff + TAB as a music blueprint.',
+      title: 'Leitura de Partitura + TAB',
+      subtitle: lang === 'pt' ? 'Leia partitura + TAB como um mapa musical.' : 'Read staff + TAB as a musical map.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
           <line x1="12" y1="18" x2="228" y2="18" stroke="#64748b" />
@@ -213,15 +214,28 @@ const TeensPage: React.FC = () => {
           </div>
 
           <div className="mt-6 flex w-full items-center justify-center">
-            <span className="px-5 py-2 rounded-full border border-violet-500/50 bg-violet-500/10 text-[10px] font-black uppercase tracking-[0.3em] text-violet-400 shadow-[0_0_15px_rgba(139,92,246,0.3)]">{copy.earlyAccess}</span>
             <div className="hidden md:flex absolute right-3 items-center gap-3">
-              <button onClick={handleToggleTheme} className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}>{copy.theme}: {isLight ? copy.light : copy.dark}</button>
+              <button
+                onClick={handleToggleTheme}
+                className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}
+                aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
+                title={isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
+              >
+                {isLight ? <MoonIcon /> : <SunIcon />}
+              </button>
               <button onClick={handleToggleLang} className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}>{lang.toUpperCase()}</button>
             </div>
           </div>
 
           <div className="mt-3 flex md:hidden gap-2">
-            <button onClick={handleToggleTheme} className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}>{copy.theme}: {isLight ? copy.light : copy.dark}</button>
+            <button
+              onClick={handleToggleTheme}
+              className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}
+              aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
+              title={isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
+            >
+              {isLight ? <MoonIcon /> : <SunIcon />}
+            </button>
             <button onClick={handleToggleLang} className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}>{lang.toUpperCase()}</button>
           </div>
         </header>
@@ -236,7 +250,6 @@ const TeensPage: React.FC = () => {
                 : cardTier === 'tier-trail'
                   ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-violet-400/30'
                   : '';
-            const challengeUnlocked = module.unlockXp ? xp >= module.unlockXp : true;
             return (
               <button
                 key={module.title}
@@ -250,43 +263,16 @@ const TeensPage: React.FC = () => {
                 <div className={`mb-3 w-full rounded-2xl border px-3 py-2 ${isLight ? 'border-violet-200 bg-violet-50/70' : 'border-violet-500/25 bg-violet-900/20'}`}>{module.visual}</div>
                 <h3 className="text-sm font-black uppercase tracking-[0.14em]">{module.title}</h3>
                 <p className="mt-2 text-[11px] font-bold opacity-70">{module.subtitle}</p>
-                {module.unlockXp && (
-                  <p className={`mt-2 text-[9px] font-black uppercase tracking-[0.2em] ${challengeUnlocked ? 'text-emerald-400' : 'text-zinc-400'}`}>
-                    {challengeUnlocked ? 'Visual liberado' : `${module.unlockXp - xp} XP p/ visual`}
+                {!module.available && (
+                  <p className="mt-3 text-[9px] font-black opacity-40 tracking-[0.2em] group-hover:text-violet-400 transition-colors uppercase">
+                    {copy.locked}
                   </p>
                 )}
-                <p className="mt-3 text-[9px] font-black opacity-40 tracking-[0.2em] group-hover:text-violet-400 transition-colors uppercase">
-                  {module.available ? (lang === 'pt' ? 'Disponível' : 'Available') : copy.locked}
-                </p>
               </button>
             );
           })}
           <TeensGarageSection isLight={isLight} lang={lang} />
-        </div>
-
-        <div className={`mb-10 rounded-2xl border px-4 py-4 ${isLight ? 'border-violet-200 bg-white/85' : 'border-violet-700/50 bg-zinc-950/55'}`}>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Desbloqueios Visuais</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {visualRewards.map((reward) => {
-              const unlocked = xp >= reward.minXp;
-              return (
-                <span
-                  key={reward.id}
-                  className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${
-                    unlocked
-                      ? isLight
-                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                        : 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300'
-                      : isLight
-                        ? 'border-slate-300 bg-slate-100 text-slate-500'
-                        : 'border-zinc-700 bg-zinc-900 text-zinc-400'
-                  }`}
-                >
-                  {reward.label} {unlocked ? '?' : `(${reward.minXp} XP)`}
-                </span>
-              );
-            })}
-          </div>
+          <TeensBasicCareSection isLight={isLight} lang={lang} />
         </div>
 
         <div className="flex flex-col items-center gap-6 mt-16">

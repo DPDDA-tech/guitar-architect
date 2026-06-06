@@ -6,6 +6,19 @@ const navigateTo = (path: string) => {
   window.dispatchEvent(new Event('ga-route-change'));
 };
 
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
+  </svg>
+);
+
 const KidsPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => getKidsTheme());
   const [lang, setLang] = useState<'pt' | 'en'>(() => getKidsLang());
@@ -28,9 +41,6 @@ const KidsPage: React.FC = () => {
         comingSoon: 'EM BREVE',
         backEcosystem: 'Voltar ao Ecossistema',
         backMain: 'Ir para Guitar Architect Principal',
-        theme: 'Tema',
-        light: 'Claro',
-        dark: 'Escuro',
       }
     : {
         subtitle: 'A playful space to discover instruments, colors, sounds, and first music notes in a fun way.',
@@ -47,9 +57,6 @@ const KidsPage: React.FC = () => {
         comingSoon: 'COMING SOON',
         backEcosystem: 'Back to Ecosystem',
         backMain: 'Go to Main Guitar Architect',
-        theme: 'Theme',
-        light: 'Light',
-        dark: 'Dark',
       };
 
   const handleToggleTheme = () => {
@@ -84,9 +91,11 @@ const KidsPage: React.FC = () => {
             <div className="hidden md:flex absolute right-3 items-center gap-3">
               <button
                 onClick={handleToggleTheme}
-                className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-emerald-300 bg-white text-emerald-700' : 'border-emerald-700 bg-emerald-950/70 text-emerald-200'}`}
+                className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'border-emerald-300 bg-white text-emerald-700' : 'border-emerald-700 bg-emerald-950/70 text-emerald-200'}`}
+                aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
+                title={isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
               >
-                {copy.theme}: {isLight ? copy.light : copy.dark}
+                {isLight ? <MoonIcon /> : <SunIcon />}
               </button>
               <button
                 onClick={handleToggleLang}
@@ -100,9 +109,11 @@ const KidsPage: React.FC = () => {
           <div className="mt-3 flex md:hidden gap-2">
             <button
               onClick={handleToggleTheme}
-              className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-emerald-300 bg-white text-emerald-700' : 'border-emerald-700 bg-emerald-950/70 text-emerald-200'}`}
+              className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'border-emerald-300 bg-white text-emerald-700' : 'border-emerald-700 bg-emerald-950/70 text-emerald-200'}`}
+              aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
+              title={isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
             >
-              {copy.theme}: {isLight ? copy.light : copy.dark}
+              {isLight ? <MoonIcon /> : <SunIcon />}
             </button>
             <button
               onClick={handleToggleLang}
@@ -304,4 +315,3 @@ const KidsPage: React.FC = () => {
 };
 
 export default KidsPage;
-
