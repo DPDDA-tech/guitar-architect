@@ -21,9 +21,15 @@ const games = [
   },
   {
     title: 'Ligue os Cabos',
-    description: 'Ligue cada instrumento Ã descrição correta e complete os pares.',
+    description: 'Ligue cada instrumento à descrição correta e complete os pares.',
     available: true,
     path: '/kids/games/cables',
+  },
+  {
+    title: 'Toque no Tempo',
+    description: 'Toque no ritmo das músicas e veja o personagem dançar!',
+    available: true,
+    path: '/kids/games/rhythm',
   },
   {
     title: 'Monte a Banda',

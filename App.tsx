@@ -26,6 +26,7 @@ import KidsGamesPage from './components/KidsGamesPage';
 import KidsMemoryGamePage from './components/KidsMemoryGamePage';
 import KidsIdentifyGamePage from './components/KidsIdentifyGamePage';
 import KidsCableGamePage from './components/KidsCableGamePage';
+import KidsRhythmGamePage from './components/KidsRhythmGamePage';
 import KidsBuildBandPage from './components/KidsBuildBandPage';
 import KidsSoundLengthsPage from './components/KidsSoundLengthsPage';
 import KidsLightHuntPage from './components/KidsLightHuntPage';
@@ -167,6 +168,7 @@ const App: React.FC = () => {
       case '/kids/games/memory': return <KidsMemoryGamePage />;
       case '/kids/games/identify': return <KidsIdentifyGamePage />;
       case '/kids/games/cables': return <KidsCableGamePage />;
+      case '/kids/games/rhythm': return <KidsRhythmGamePage />;
       case '/kids/build-band': return <KidsBuildBandPage />;
       case '/kids/sound-lengths': return <KidsSoundLengthsPage />;
       case '/kids/light-hunt': return <KidsLightHuntPage />;
