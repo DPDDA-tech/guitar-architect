@@ -295,7 +295,7 @@ const ThemeCollectionPage: React.FC = () => {
   const pageBackgroundStyle = isLight
     ? {
       backgroundColor: '#edf3f8',
-      backgroundImage: 'linear-gradient(rgba(156,163,175,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(156,163,175,0.03) 1px, transparent 1px)',
+      backgroundImage: 'linear-gradient(rgba(148,163,184,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.07) 1px, transparent 1px)',
       backgroundSize: '20px 20px',
     }
     : undefined;
