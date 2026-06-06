@@ -151,3 +151,56 @@ export const setSelectedRewardBadgeId = (rewardId: string | null, userId?: strin
   }
   return rewardId;
 };
+
+export const migrateAchievementStorageScope = (sourceUserId: string, targetUserId: string) => {
+  if (!sourceUserId || !targetUserId || sourceUserId === targetUserId) {
+    return {
+      unlockedAchievementIds: getUnlockedAchievementIds(targetUserId),
+      progress: getAchievementProgressState(targetUserId),
+    };
+  }
+
+  const sourceUnlocked = getUnlockedAchievementIds(sourceUserId);
+  const targetUnlocked = getUnlockedAchievementIds(targetUserId);
+  const mergedUnlocked = unique([...targetUnlocked, ...sourceUnlocked]);
+  writeJson(UNLOCKED_ACHIEVEMENTS_KEY, mergedUnlocked, targetUserId);
+
+  const sourceProgress = getAchievementProgressState(sourceUserId);
+  const targetProgress = getAchievementProgressState(targetUserId);
+  const mergedProgress: AchievementProgressState = {
+    ...sourceProgress,
+    ...targetProgress,
+    completedExerciseIds: unique([
+      ...(sourceProgress.completedExerciseIds ?? []),
+      ...(targetProgress.completedExerciseIds ?? []),
+    ]),
+    completedModuleIds: unique([
+      ...(sourceProgress.completedModuleIds ?? []),
+      ...(targetProgress.completedModuleIds ?? []),
+    ]),
+    appAnniversaryKeys: unique([
+      ...(sourceProgress.appAnniversaryKeys ?? []),
+      ...(targetProgress.appAnniversaryKeys ?? []),
+    ]),
+    exerciseCompletionCounts: mergeNumberRecords(sourceProgress.exerciseCompletionCounts, targetProgress.exerciseCompletionCounts),
+    exerciseBpmTargets: mergeNumberRecords(sourceProgress.exerciseBpmTargets, targetProgress.exerciseBpmTargets),
+    moduleCompletionCounts: mergeNumberRecords(sourceProgress.moduleCompletionCounts, targetProgress.moduleCompletionCounts),
+    explorationCounts: mergeNumberRecords(sourceProgress.explorationCounts, targetProgress.explorationCounts),
+    streakDays: Math.max(sourceProgress.streakDays ?? 0, targetProgress.streakDays ?? 0),
+    loyaltyDays: Math.max(sourceProgress.loyaltyDays ?? 0, targetProgress.loyaltyDays ?? 0),
+    firstSeenAt: sourceProgress.firstSeenAt ?? targetProgress.firstSeenAt,
+    lastSeenAt: targetProgress.lastSeenAt ?? sourceProgress.lastSeenAt,
+  };
+  writeJson(ACHIEVEMENT_PROGRESS_KEY, mergedProgress, targetUserId);
+
+  const targetBadge = getSelectedRewardBadgeId(targetUserId);
+  const sourceBadge = getSelectedRewardBadgeId(sourceUserId);
+  if (!targetBadge && sourceBadge) {
+    setSelectedRewardBadgeId(sourceBadge, targetUserId);
+  }
+
+  return {
+    unlockedAchievementIds: mergedUnlocked,
+    progress: mergedProgress,
+  };
+};

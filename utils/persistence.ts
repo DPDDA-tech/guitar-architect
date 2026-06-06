@@ -1,6 +1,12 @@
 import { AppState, Project } from '../types';
 import { InstrumentType } from '../types';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const isStableUserStorageId = (userId?: string | null) => (
+  userId === 'guest' || Boolean(userId && UUID_REGEX.test(userId))
+);
+
 /**
  * Gera uma chave de storage escopada por usuário (UUID) ou guest.
  */

@@ -11,6 +11,51 @@ interface ThemeLocalizedCopy {
   unlockRequirement?: string;
 }
 
+const PT_UNLOCK_REQUIREMENTS: Record<string, string> = {
+  'apprentice-yam': 'Faça login, explore o fretboard e aplique seu primeiro estudo.',
+  'apprentice-iba': 'Use as ferramentas de prática e complete exercícios iniciais.',
+  'apprentice-tag': 'Aplique acordes e salve diagramas iniciais.',
+  'apprentice-tele': 'Estude posições abertas e tríades básicas.',
+  'apprentice-bass-5c': 'Troque para baixo e use o metrônomo.',
+  'pedreiro-foundation': 'Complete três exercícios práticos.',
+  'pedreiro-12c': 'Aplique escalas e mapeie intervalos repetidamente.',
+  'pedreiro-dimdar': 'Estude tríades e tétrades diminutas.',
+  'pedreiro-fbh70': 'Complete seu primeiro exercício.',
+  'pedreiro-flv': 'Complete a base de palhetada alternada.',
+  'pedreiro-gib': 'Toque uma escala maior a 80 BPM.',
+  'pedreiro-hss': 'Repita exercícios técnicos com consistência.',
+  'pedreiro-prs': 'Mantenha uma sequência de prática de três dias.',
+  'pedreiro-ryric': 'Crie diagramas de prática com delay.',
+  'pedreiro-suh': 'Salve e revisite projetos de prática.',
+  'pedreiro-zawyl': 'Aplique escalas em múltiplos contextos.',
+  'contramestre-budguy': 'Complete estudos de CAGED.',
+  'contramestre-jmayer': 'Complete estudos de conexão de tríades.',
+  'contramestre-metall': 'Desbloqueie marcos suficientes do tier 2.',
+  'contramestre-ericlap': 'Explore progressões harmônicas.',
+  'contramestre-tedg': 'Explore o movimento harmônico com progressões.',
+  'contramestre-svai': 'Aplique modos gregos no fretboard.',
+  'contramestre-clif': 'Complete precisão rítmica de baixo.',
+  'contramestre-ged': 'Conecte padrões de baixo com harmonia.',
+  'contramestre-lemm': 'Complete estudos rítmicos de resistência.',
+  'mestre-bbking': 'Desbloqueie marcos harmônicos do tier 3.',
+  'mestre-beat': 'Salve diagramas de acordes abertos e voicings.',
+  'mestre-jimhendrix': 'Una técnica, harmonia e expressão.',
+  'mestre-kirhm': 'Complete desafios técnicos avançados.',
+  'mestre-srv': 'Explore progressões de resolução blues.',
+  'mestre-evh': 'Complete ciclos avançados de técnica e palhetada.',
+  'mestre-slash': 'Complete estudos de condução de vozes e sustain.',
+  'mestre-flea': 'Complete desafios de groove e ritmo.',
+  'mestre-jaco': 'Complete estudos melódicos de baixo.',
+  'mestre-paulm': 'Complete estudos de arranjo para baixo.',
+  'engenheiro-dgil': 'Complete o currículo central Architect.',
+  'engenheiro-keyric': 'Desbloqueie marcos avançados do tier 4.',
+  'engenheiro-angyo': 'Complete diagramas em nível de performance.',
+  'engenheiro-bmay': 'Complete estudos avançados de voicings.',
+  'arquiteto-ga6-jhdrix': 'Desbloqueie a conquista Guitar Hero Architect.',
+  'arquiteto-ga78-tabas': 'Desbloqueie a conquista Guitar Hero Architect.',
+  'arquiteto-gab45-jpast': 'Desbloqueie a conquista Guitar Hero Architect.',
+};
+
 const PT_THEME_COPY: Record<string, ThemeLocalizedCopy> = {
   'institutional-blue': {
     name: 'Azul Institucional',
@@ -155,7 +200,7 @@ export const getThemeCopy = (theme: ThemeCollectionItem, lang: Lang): ThemeLocal
     subtitle: categoryTitle,
     description: `Identidade visual da ${categoryTitle.toLowerCase()} para progresso, estudo e desbloqueios no Guitar Architect.`,
     inspiredBy: theme.inspiredBy,
-    unlockRequirement: theme.unlockRequirement ? 'Complete os critérios desta coleção para desbloquear.' : undefined,
+    unlockRequirement: PT_UNLOCK_REQUIREMENTS[theme.id] ?? theme.unlockRequirement,
   };
 };
 

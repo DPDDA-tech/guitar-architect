@@ -72,7 +72,10 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, isLight, lang, o
         </div>
         <p className={`mt-3 min-h-[48px] text-xs font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{copy.description}</p>
         {locked && copy.unlockRequirement && (
-          <p className="mt-3 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">{copy.unlockRequirement}</p>
+          <div className={`mt-3 rounded-xl border px-3 py-2 ${isLight ? 'border-blue-100 bg-blue-50/70' : 'border-blue-900/40 bg-blue-950/20'}`}>
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-blue-300">{lang === 'pt' ? 'Critério de desbloqueio' : 'Unlock criteria'}</p>
+            <p className={`mt-1 text-xs font-bold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>{copy.unlockRequirement}</p>
+          </div>
         )}
         <button
           onClick={() => onSelect(theme.id)}

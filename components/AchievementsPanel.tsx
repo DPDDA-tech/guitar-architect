@@ -3,6 +3,7 @@ import { ACHIEVEMENT_TIERS } from '../data/achievementTiers';
 import {
   calculateAchievementProgress,
   getAchievementById,
+  getAchievementCriteriaText,
   getOverallAchievementProgress,
   getRewardsForAchievement,
   getTotalAchievementXp,
@@ -54,13 +55,12 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
-  
+
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
         const { data } = await supabase.auth.getUser();
         setIsAdmin(isAdminEmail(data.user?.email));
-        // Get current user ID from local config for passing to functions
         const config = loadConfig();
         setCurrentUserId(config?.currentUser);
       } catch (error) {
@@ -70,7 +70,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
         setIsCheckingAdmin(false);
       }
     };
-    
+
     checkAdminStatus();
   }, []);
 
@@ -79,7 +79,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
     if (unlockedIds.includes(CORE_ACHIEVEMENT_ID)) return;
     setUnlockedIds(unlockAchievement(CORE_ACHIEVEMENT_ID, currentUserId));
   }, [currentUserId, isCheckingAdmin, unlockedIds]);
-  
+
   const visibleAchievements = useMemo(() => getVisibleAchievements(unlockedIds), [unlockedIds]);
   const unlockedRewards = useMemo(() => getUnlockedRewards(unlockedIds), [unlockedIds]);
   const totalXp = useMemo(() => getTotalAchievementXp(unlockedIds), [unlockedIds]);
@@ -90,7 +90,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
       console.warn('[GA] Admin permission required to unlock achievements');
       return;
     }
-    
+
     const achievement = getAchievementById(id);
     if (achievement?.asset.status !== 'ready') return;
     const next = isAchievementUnlocked(id, unlockedIds) ? lockAchievement(id, currentUserId) : unlockAchievement(id, currentUserId);
@@ -102,7 +102,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
       console.warn('[GA] Admin permission required to reset achievements');
       return;
     }
-    
+
     resetAchievements(currentUserId);
     resetAchievementProgress(currentUserId);
     setUnlockedIds([]);
@@ -130,8 +130,8 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
             {unlockedRewards.length} rewards
           </span>
           {isAdmin && (
-            <button 
-              onClick={reset} 
+            <button
+              onClick={reset}
               className={`rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50' : 'border-blue-900/55 bg-[#050914] text-slate-400 hover:bg-blue-950/40'}`}
             >
               Reset dev
@@ -153,24 +153,6 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
         })}
       </div>
 
-      <div className={`mt-5 rounded-xl border p-4 ${isLight ? 'border-[#d4dfeb] bg-[#f8fbff]' : 'border-blue-900/50 bg-[#050914]'}`}>
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-300">Novas trilhas de desbloqueio</p>
-        <div className="mt-3 grid gap-3 md:grid-cols-4">
-          {[
-            ['Lealdade', 'dias distintos usando o app', 'Selo revelado no desbloqueio'],
-            ['Vínculo', 'tempo desde o primeiro registro local', 'Selo revelado no desbloqueio'],
-            ['Aniversário', '24 de janeiro, apenas para contas criadas no ano do selo', 'Selo anual revelado no desbloqueio'],
-            ['Colecionador', 'cadastro do 1º, 3º, 5º, 8º e 10º instrumento', 'Selo de coleção revelado no desbloqueio'],
-          ].map(([title, description, revealLabel]) => (
-            <div key={title} className={`rounded-xl border p-3 ${isLight ? 'border-blue-100 bg-white' : 'border-blue-950/60 bg-[#070d18]'}`}>
-              <h3 className="text-sm font-black">{title}</h3>
-              <p className={`mt-1 text-xs font-semibold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{description}</p>
-              <p className="mt-2 text-[9px] font-black uppercase tracking-[0.14em] text-blue-300">{revealLabel}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {visibleAchievements.map(achievement => {
           const unlocked = isAchievementUnlocked(achievement.id, unlockedIds);
@@ -180,6 +162,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
           const achievementImage = unlocked && achievement.asset.path
             ? achievement.asset.path
             : '/tier0/tier0-ga6-oficial.webp';
+
           return (
             <article key={achievement.id} className={`rounded-xl border p-4 transition hover:-translate-y-0.5 ${unlocked ? isLight ? 'border-blue-300 bg-blue-50/80' : 'border-blue-700/70 bg-[#081426]' : isLight ? 'border-[#d2deeb] bg-white/90' : 'border-blue-900/60 bg-[#070d18]'}`}>
               <div className={`relative mb-4 flex h-28 items-center justify-center overflow-hidden rounded-xl border ${unlocked ? isLight ? 'border-blue-200 bg-blue-50' : 'border-blue-900/60 bg-blue-950/20' : isLight ? 'border-slate-200 bg-[radial-gradient(circle_at_50%_35%,#f8fbff_0%,#e8eef6_58%,#d9e3ee_100%)]' : 'border-slate-800 bg-[radial-gradient(circle_at_50%_35%,rgba(37,99,235,0.14),rgba(2,6,23,0.92)_62%,rgba(0,0,0,0.96)_100%)]'}`}>
@@ -193,7 +176,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
                 {!unlocked && (
                   <div className={`absolute inset-0 flex items-center justify-center ${isLight ? 'bg-white/12' : 'bg-black/14'}`}>
                     <span className={`rounded-full border px-3 py-1.5 text-[9px] font-black uppercase ${isLight ? 'border-slate-300/80 bg-white/70 text-slate-700 shadow-[0_10px_28px_rgba(71,85,105,0.18)]' : 'border-white/20 bg-black/50 text-white shadow-[0_0_22px_rgba(37,99,235,0.16)]'}`}>
-                      Locked
+                      Bloqueado
                     </span>
                   </div>
                 )}
@@ -201,7 +184,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className={`text-[9px] font-black uppercase tracking-[0.16em] ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>
-                    {unlocked ? 'Unlocked' : hiddenLocked ? 'Hidden' : 'Locked'} / {getTierDisplay(achievement.tier, 'pt')}
+                    {unlocked ? 'Desbloqueada' : hiddenLocked ? 'Oculta' : 'Bloqueada'} / {getTierDisplay(achievement.tier, 'pt')}
                   </p>
                   <h3 className="mt-2 text-lg font-black">{hiddenLocked ? 'Conquista secreta' : achievement.title}</h3>
                 </div>
@@ -212,6 +195,14 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
               <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                 {hiddenLocked ? 'Continue praticando para revelar esta conquista.' : achievement.description}
               </p>
+              {!hiddenLocked && (
+                <div className={`mt-3 rounded-lg border px-3 py-2 ${isLight ? 'border-blue-100 bg-blue-50/70' : 'border-blue-900/30 bg-blue-950/20'}`}>
+                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-blue-300">Critério</p>
+                  <p className={`mt-1 text-xs font-bold leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                    {getAchievementCriteriaText(achievement, 'pt')}
+                  </p>
+                </div>
+              )}
               {!hiddenLocked && (
                 <div className="mt-4">
                   <div className={`h-2 overflow-hidden rounded-full ${isLight ? 'bg-slate-200' : 'bg-slate-900'}`}>

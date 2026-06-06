@@ -10,6 +10,7 @@ import {
   loadConfig, 
   getLibrary, 
   saveProjectToLibrary,
+  isStableUserStorageId,
   listLocalUsers
 } from '../utils/persistence';
 import { buildProjectFileName, parseProjectFile, serializeProjectFile } from '../utils/projectFile';
@@ -25,6 +26,7 @@ import {
   getSelectedRewardBadgeId,
   getUnlockedAchievementIds,
   mergeAchievementProgressState,
+  migrateAchievementStorageScope,
   setSelectedRewardBadgeId,
   unlockAchievement,
 } from '../utils/achievementStorage';
@@ -1211,6 +1213,21 @@ useEffect(() => {
   };
 }, []);
 
+useEffect(() => {
+  if (!authUser?.id) return;
+
+  const config = loadConfig();
+  const scopedUserId = config?.currentUser;
+  if (!scopedUserId || isStableUserStorageId(scopedUserId)) return;
+
+  const healedConfig = loadConfig(scopedUserId) ?? config;
+  migrateAchievementStorageScope(scopedUserId, authUser.id);
+  saveConfig({
+    ...healedConfig,
+    currentUser: authUser.id,
+  }, authUser.id);
+}, [authUser?.id]);
+
 
 useEffect(() => {
   if (initialized.current && !isExporting) {
@@ -1581,7 +1598,7 @@ const handleReturnToContext = () => {
       activeProjectId: projectId,
       theme,
       lang,
-      currentUser: user,
+      currentUser: authUser?.id || 'guest',
       userLogo,
       defaultInstrument,
       showTips
@@ -1664,7 +1681,7 @@ const handleReturnToContext = () => {
       activeProjectId: projectId,
       theme,
       lang,
-      currentUser: user,
+      currentUser: authUser?.id || 'guest',
       userLogo,
       defaultInstrument,
       showTips
@@ -1955,7 +1972,15 @@ const handleReturnToContext = () => {
     : 'bg-zinc-800/90 border-zinc-600 text-zinc-100 hover:bg-zinc-700 hover:border-zinc-300 hover:shadow-[0_14px_28px_rgba(0,0,0,0.55)]';
   const menuSectionTitleClass = `mb-2 px-1 text-[9px] font-black uppercase tracking-[0.2em] ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`;
   const menuBtnClass = `w-full rounded-xl border px-3 py-2.5 text-[10px] font-black uppercase transition-all ${isLight ? 'border-zinc-200 text-zinc-700 hover:border-blue-500 hover:text-blue-600' : 'border-zinc-700 text-zinc-200 hover:border-blue-500 hover:text-blue-400'}`;
-  const ecosystemBtnClass = 'border-cyan-400/70 bg-gradient-to-r from-cyan-500/25 via-blue-500/20 to-violet-500/25 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.3)] hover:border-cyan-300 hover:text-white';
+  const ecosystemBtnClass = isLight
+    ? 'border-cyan-300 bg-gradient-to-r from-cyan-200/95 via-sky-100/92 to-indigo-200/78 text-sky-900 shadow-[0_10px_22px_rgba(34,211,238,0.16)] hover:border-cyan-400 hover:text-sky-950'
+    : 'border-cyan-400/70 bg-gradient-to-r from-cyan-500/25 via-blue-500/20 to-violet-500/25 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.3)] hover:border-cyan-300 hover:text-white';
+  const collectiblesBtnClass = isLight
+    ? 'border-rose-300 bg-gradient-to-r from-rose-150/95 via-rose-100/88 to-red-100/94 text-rose-800 shadow-[0_11px_24px_rgba(244,63,94,0.16)] hover:border-rose-400 hover:text-rose-900'
+    : 'border-rose-400/70 bg-gradient-to-r from-rose-500/24 via-red-500/18 to-amber-500/20 text-rose-50 shadow-[0_0_16px_rgba(244,63,94,0.28)] hover:border-rose-300 hover:text-white hover:shadow-[0_0_24px_rgba(244,63,94,0.38)]';
+  const instrumentsBtnClass = isLight
+    ? 'border-amber-300 bg-gradient-to-r from-amber-100/94 via-amber-50/86 to-yellow-100/92 text-amber-800 shadow-[0_10px_22px_rgba(245,158,11,0.14)] hover:border-amber-400 hover:text-amber-900'
+    : 'border-amber-400/70 bg-gradient-to-r from-amber-500/24 via-orange-500/18 to-yellow-500/20 text-amber-50 shadow-[0_0_16px_rgba(245,158,11,0.26)] hover:border-amber-300 hover:text-white hover:shadow-[0_0_24px_rgba(245,158,11,0.34)]';
 
   const renderMenuGroup = (id: string, title: string, content: React.ReactNode, isMobileMenu: boolean) => {
     if (!isMobileMenu) {
@@ -2065,10 +2090,10 @@ const handleReturnToContext = () => {
         'galleries',
         lang === 'pt' ? 'Galerias' : 'Galleries',
         <div className={isMobileMenu ? 'space-y-2' : 'grid grid-cols-2 gap-2'}>
-          <button onClick={openMyInstruments} className={menuBtnClass}>
+          <button onClick={openMyInstruments} className={`${menuBtnClass} ${instrumentsBtnClass}`}>
             {lang === 'pt' ? 'Instrumentos' : 'Instruments'}
           </button>
-          <button onClick={() => openModulePage('/theme-collection')} className={menuBtnClass}>
+          <button onClick={() => openModulePage('/theme-collection')} className={`${menuBtnClass} ${collectiblesBtnClass}`}>
             {lang === 'pt' ? 'Colecionáveis' : 'Collectibles'}
           </button>
         </div>,
@@ -2370,13 +2395,13 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                    </button>
                  </div>
                  <div className="grid grid-cols-3 gap-1.5">
-                    <button onClick={() => openModulePage('/ecosystem')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} border-cyan-300/70 bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-violet-500/25 text-cyan-50 shadow-[0_0_18px_rgba(34,211,238,0.35)] hover:shadow-[0_0_26px_rgba(34,211,238,0.45)]`}>
+                    <button onClick={() => openModulePage('/ecosystem')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${ecosystemBtnClass}`}>
                      {lang === 'pt' ? 'Ecossistema' : 'Ecosystem'}
                    </button>
-                    <button onClick={() => openModulePage('/theme-collection')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
+                    <button onClick={() => openModulePage('/theme-collection')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${collectiblesBtnClass}`}>
                      {lang === 'pt' ? 'Colecionáveis' : 'Collectibles'}
                    </button>
-                    <button onClick={openMyInstruments} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${headerButtonThemeClass}`}>
+                    <button onClick={openMyInstruments} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${instrumentsBtnClass}`}>
                      {lang === 'pt' ? 'Instrumentos' : 'Instruments'}
                    </button>
                  </div>
@@ -2485,34 +2510,36 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   <div className="flex flex-col gap-1">
     <button
       onClick={handleExportPNG}
-      className="
-        bg-emerald-600
+      className={`
         px-3 md:px-5 py-1.5 md:py-2
-        rounded-xl
+        rounded-xl border
         font-black
         text-[9px] md:text-[10px]
         text-white
-        shadow-md
         active:scale-90
-        transition-transform ai-glow
-      "
+        transition-all duration-200 ai-glow
+        ${isLight
+          ? 'border-emerald-300 bg-gradient-to-b from-emerald-500 to-emerald-600 shadow-[0_10px_20px_rgba(16,185,129,0.20),inset_0_1px_0_rgba(255,255,255,0.22)] hover:border-emerald-400 hover:shadow-[0_12px_24px_rgba(16,185,129,0.26),inset_0_1px_0_rgba(255,255,255,0.24)]'
+          : 'border-emerald-500/70 bg-gradient-to-b from-emerald-500 to-emerald-700 shadow-[0_10px_22px_rgba(16,185,129,0.22),inset_0_1px_0_rgba(255,255,255,0.16)] hover:border-emerald-300 hover:shadow-[0_12px_26px_rgba(16,185,129,0.30),inset_0_1px_0_rgba(255,255,255,0.18)]'}
+      `}
     >
       PNG
     </button>
 
     <button
       onClick={handleExportPDF}
-      className="
-        bg-red-600
+      className={`
         px-3 md:px-5 py-1.5 md:py-2
-        rounded-xl
+        rounded-xl border
         font-black
         text-[9px] md:text-[10px]
         text-white
-        shadow-md
         active:scale-90
-        transition-transform ai-glow
-      "
+        transition-all duration-200 ai-glow
+        ${isLight
+          ? 'border-red-300 bg-gradient-to-b from-red-500 to-red-600 shadow-[0_10px_20px_rgba(239,68,68,0.20),inset_0_1px_0_rgba(255,255,255,0.22)] hover:border-red-400 hover:shadow-[0_12px_24px_rgba(239,68,68,0.26),inset_0_1px_0_rgba(255,255,255,0.24)]'
+          : 'border-red-500/70 bg-gradient-to-b from-red-500 to-red-700 shadow-[0_10px_22px_rgba(239,68,68,0.22),inset_0_1px_0_rgba(255,255,255,0.16)] hover:border-red-300 hover:shadow-[0_12px_26px_rgba(239,68,68,0.30),inset_0_1px_0_rgba(255,255,255,0.18)]'}
+      `}
     >
       PDF
     </button>

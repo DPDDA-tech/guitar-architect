@@ -331,3 +331,144 @@ export const getOverallAchievementProgress = (userUnlockedAchievementIds: string
 export const getTotalAchievementXp = (userUnlockedAchievementIds: string[]) => (
   getUnlockedAchievements(userUnlockedAchievementIds).reduce((sum, achievement) => sum + achievement.xp, 0)
 );
+
+const formatCountLabel = (count: number, singular: string, plural: string) => (
+  `${count} ${count === 1 ? singular : plural}`
+);
+
+const describeRequirement = (requirements: AchievementRequirement, unlockType: AchievementUnlockType, lang: 'pt' | 'en'): string => {
+  const type = inferUnlockType(requirements, unlockType);
+
+  if (type === 'composite') {
+    const parts = (requirements.allOf ?? requirements.anyOf ?? [])
+      .map(child => describeRequirement(child, inferUnlockType(child, 'manual'), lang))
+      .filter(Boolean);
+    if (parts.length === 0) return lang === 'pt' ? 'Complete os critérios combinados.' : 'Complete the combined criteria.';
+    return requirements.anyOf
+      ? `${lang === 'pt' ? 'Complete qualquer um' : 'Complete any one'}: ${parts.join(' · ')}`
+      : `${lang === 'pt' ? 'Complete todos' : 'Complete all'}: ${parts.join(' · ')}`;
+  }
+
+  if (type === 'exercise_completion') {
+    if (requirements.exerciseId === '*') {
+      const count = requirements.requiredCount ?? 1;
+      return lang === 'pt'
+        ? `Complete ${formatCountLabel(count, 'exercício prático', 'exercícios práticos')}.`
+        : `Complete ${formatCountLabel(count, 'practical exercise', 'practical exercises')}.`;
+    }
+    const exercise = requirements.exerciseId ? getExerciseById(requirements.exerciseId) : null;
+    const count = requirements.requiredCount ?? 1;
+    if (exercise?.title) {
+      return lang === 'pt'
+        ? `Complete ${formatCountLabel(count, 'vez', 'vezes')} o exercício ${exercise.title}.`
+        : `Complete ${formatCountLabel(count, 'time', 'times')} the exercise ${exercise.title}.`;
+    }
+    return lang === 'pt'
+      ? `Complete ${formatCountLabel(count, 'exercício', 'exercícios')} específicos.`
+      : `Complete ${formatCountLabel(count, 'specific exercise', 'specific exercises')}.`;
+  }
+
+  if (type === 'bpm_target') {
+    const exercise = requirements.exerciseId ? getExerciseById(requirements.exerciseId) : null;
+    const exerciseLabel = exercise?.title ?? (lang === 'pt' ? 'o exercício alvo' : 'the target exercise');
+    return lang === 'pt'
+      ? `Alcance ${requirements.minBpm ?? 0} BPM em ${exerciseLabel}.`
+      : `Reach ${requirements.minBpm ?? 0} BPM in ${exerciseLabel}.`;
+  }
+
+  if (type === 'module_completion') {
+    if (requirements.moduleId) {
+      return lang === 'pt'
+        ? `Conclua o módulo ${requirements.moduleId}.`
+        : `Complete the ${requirements.moduleId} module.`;
+    }
+    const count = requirements.requiredCount ?? requirements.moduleIds?.length ?? 1;
+    return lang === 'pt'
+      ? `Conclua ${formatCountLabel(count, 'módulo', 'módulos')}.`
+      : `Complete ${formatCountLabel(count, 'module', 'modules')}.`;
+  }
+
+  if (type === 'streak') {
+    const days = requirements.streakDays ?? requirements.requiredCount ?? 1;
+    return lang === 'pt'
+      ? `Mantenha ${formatCountLabel(days, 'dia consecutivo', 'dias consecutivos')} de prática.`
+      : `Maintain ${formatCountLabel(days, 'consecutive day', 'consecutive days')} of practice.`;
+  }
+
+  if (type === 'loyalty') {
+    const days = requirements.loyaltyDays ?? requirements.requiredCount ?? 1;
+    return lang === 'pt'
+      ? `Volte ao app em ${formatCountLabel(days, 'dia distinto', 'dias distintos')}.`
+      : `Return to the app on ${formatCountLabel(days, 'distinct day', 'distinct days')}.`;
+  }
+
+  if (type === 'tenure') {
+    const days = requirements.tenureDays ?? requirements.requiredCount ?? 1;
+    return lang === 'pt'
+      ? `Mantenha ${formatCountLabel(days, 'dia', 'dias')} desde o primeiro registro local.`
+      : `Keep ${formatCountLabel(days, 'day', 'days')} since the first local record.`;
+  }
+
+  if (type === 'anniversary') {
+    return lang === 'pt'
+      ? `Acesse o app em 24 de janeiro de ${requirements.anniversaryYear ?? 'aniversário válido'} com conta criada no mesmo ano do selo.`
+      : `Access the app on January 24, ${requirements.anniversaryYear ?? 'the valid anniversary year'} with an account created in that same badge year.`;
+  }
+
+  if (type === 'exploration') {
+    if (requirements.explorationKey === 'switch_instrument_family') {
+      const count = requirements.requiredCount ?? 1;
+      return lang === 'pt'
+        ? `Troque a família do instrumento ${formatCountLabel(count, 'vez', 'vezes')}.`
+        : `Switch instrument family ${formatCountLabel(count, 'time', 'times')}.`;
+    }
+    if (requirements.explorationKey === 'registered_instruments' || requirements.instrumentCount !== undefined) {
+      const count = requirements.instrumentCount ?? requirements.requiredCount ?? 1;
+      return lang === 'pt'
+        ? `Cadastre ${formatCountLabel(count, 'instrumento', 'instrumentos')}.`
+        : `Register ${formatCountLabel(count, 'instrument', 'instruments')}.`;
+    }
+    if (requirements.explorationKey === 'apply_scale') {
+      const count = requirements.requiredCount ?? 1;
+      return lang === 'pt'
+        ? `Aplique escalas ${formatCountLabel(count, 'vez', 'vezes')} no fretboard.`
+        : `Apply scales on the fretboard ${formatCountLabel(count, 'time', 'times')}.`;
+    }
+    if (requirements.explorationKey === 'open_metronome') {
+      const count = requirements.requiredCount ?? 1;
+      return lang === 'pt'
+        ? `Abra o metrônomo ${formatCountLabel(count, 'vez', 'vezes')}.`
+        : `Open the metronome ${formatCountLabel(count, 'time', 'times')}.`;
+    }
+    if (requirements.explorationKey === 'harmonic_cycle_progression') {
+      const count = requirements.requiredCount ?? 1;
+      return lang === 'pt'
+        ? `Explore progressões no ciclo harmônico ${formatCountLabel(count, 'vez', 'vezes')}.`
+        : `Explore harmonic-cycle progressions ${formatCountLabel(count, 'time', 'times')}.`;
+    }
+    if (requirements.explorationKey === 'export_diagram') {
+      const count = requirements.requiredCount ?? 1;
+      return lang === 'pt'
+        ? `Exporte diagramas ${formatCountLabel(count, 'vez', 'vezes')}.`
+        : `Export diagrams ${formatCountLabel(count, 'time', 'times')}.`;
+    }
+    const count = requirements.requiredCount ?? 1;
+    return lang === 'pt'
+      ? `Complete ${formatCountLabel(count, 'interação de exploração', 'interações de exploração')}.`
+      : `Complete ${formatCountLabel(count, 'exploration interaction', 'exploration interactions')}.`;
+  }
+
+  if (type === 'tier_collection') {
+    const tierLabel = requirements.achievementTier !== undefined ? getTierDisplay(requirements.achievementTier, lang) : (lang === 'pt' ? 'tier alvo' : 'target tier');
+    const count = requirements.unlockedAchievementCount ?? requirements.requiredCount ?? 1;
+    return lang === 'pt'
+      ? `Desbloqueie ${formatCountLabel(count, 'conquista pronta', 'conquistas prontas')} do ${tierLabel}.`
+      : `Unlock ${formatCountLabel(count, 'ready achievement', 'ready achievements')} from ${tierLabel}.`;
+  }
+
+  return lang === 'pt' ? 'Complete o critério manual do item.' : 'Complete the item manual criterion.';
+};
+
+export const getAchievementCriteriaText = (achievement: Achievement, lang: 'pt' | 'en' = 'pt') => (
+  describeRequirement(achievement.requirements, achievement.unlockType, lang)
+);

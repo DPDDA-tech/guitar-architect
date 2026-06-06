@@ -45,7 +45,7 @@ const familyLabel = (family: ThemeCollectionItem['instrumentFamily'], lang: 'pt'
 
 const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, locked = false, compact = false, lang = 'en', isLight = false }) => {
   const [imageFailed, setImageFailed] = useState(false);
-  const canUseImage = Boolean(theme.image) && !imageFailed && !locked;
+  const canUseImage = Boolean(theme.image) && !imageFailed;
 
   return (
     <div
@@ -65,9 +65,10 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, locked = false, comp
             src={theme.image}
             alt=""
             aria-hidden="true"
-            className={`absolute inset-0 h-full w-full object-contain p-3 transition duration-500 ${locked ? 'opacity-24 blur-[1px]' : 'opacity-95 drop-shadow-[0_18px_28px_rgba(2,6,23,0.30)] group-hover:scale-[1.025]'}`}
+            className={`absolute inset-0 h-full w-full object-contain p-3 transition duration-500 ${locked ? 'opacity-38 blur-[1.6px] saturate-[0.55] brightness-[0.6]' : 'opacity-95 drop-shadow-[0_18px_28px_rgba(2,6,23,0.30)] group-hover:scale-[1.025]'}`}
             onError={() => setImageFailed(true)}
           />
+          {locked && <div className="absolute inset-0 bg-slate-950/42" />}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,rgba(255,255,255,0.16),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.10),transparent_45%,rgba(2,6,23,0.22))]" />
           <span className="absolute left-8 top-7 h-1 w-1 rounded-full bg-white/45" />
           <span className="absolute right-9 top-12 h-1 w-1 rounded-full bg-white/30" />

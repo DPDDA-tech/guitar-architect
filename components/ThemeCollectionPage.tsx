@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { translations, Lang } from '../i18n';
-import { loadConfig, saveConfig } from '../utils/persistence';
+import { isStableUserStorageId, loadConfig, saveConfig } from '../utils/persistence';
 import { AppState, ThemeMode } from '../types';
 import ThemeCollectionHeader from './themeCollection/ThemeCollectionHeader';
 import ThemeGrid from './themeCollection/ThemeGrid';
@@ -9,7 +9,7 @@ import { THEME_REGISTRY, DEFAULT_THEME_ID } from '../features/themeCollection/th
 import { getThemeCopy } from '../features/themeCollection/themeCopy';
 import { getThemeWithState, loadThemeCollectionState, saveThemeCollectionState, selectTheme } from '../features/themeCollection/themeUtils';
 import { getUnlockedAchievements, getUnlockedRewards } from '../utils/achievementUtils';
-import { getUnlockedAchievementIds, unlockAchievement } from '../utils/achievementStorage';
+import { getUnlockedAchievementIds, migrateAchievementStorageScope, unlockAchievement } from '../utils/achievementStorage';
 import { getCollectionLoreByPath, type CollectionLoreItem } from '../data/collectionLore';
 import { supporterRewards, getUnlockedSupporterRewards } from '../data/supporterRewards';
 import { getSupporterContributionTotal, setSupporterContributionTotal, syncUnlockedSupporterRewards, hydrateSupporterFromServer } from '../utils/supporterStorage';
@@ -155,7 +155,7 @@ const getInitialConfig = (): AppState | null => {
 };
 
 const ThemeCollectionPage: React.FC = () => {
-  const config = useMemo(() => getInitialConfig(), []);
+  const [config, setConfig] = useState<AppState | null>(() => getInitialConfig());
   const [lang, setLang] = useState<Lang>(() => config?.lang || 'pt');
   const [theme, setTheme] = useState<ThemeMode>(() => config?.theme || 'dark');
   const currentUserId = useMemo(() => config?.currentUser, [config]);
@@ -181,6 +181,7 @@ const ThemeCollectionPage: React.FC = () => {
     constancy: false,
     firstSupporters: false,
     work: false,
+    achievements: false,
   });
 
   const constancyState = useMemo(() => getConstancyState(currentUserId), [currentUserId, constancyRefreshToken]);
@@ -189,6 +190,15 @@ const ThemeCollectionPage: React.FC = () => {
   const [supporterTotal, setSupporterTotal] = useState(() => getSupporterContributionTotal(currentUserId));
   const [supporterInput, setSupporterInput] = useState(() => String(getSupporterContributionTotal(currentUserId)));
   const isLight = theme === 'light';
+
+  useEffect(() => {
+    setCollectionState(loadThemeCollectionState(currentUserId));
+    setUnlockedAchievementIds(getUnlockedAchievementIds(currentUserId));
+    const nextSupporterTotal = getSupporterContributionTotal(currentUserId);
+    setSupporterTotal(nextSupporterTotal);
+    setSupporterInput(String(nextSupporterTotal));
+  }, [currentUserId]);
+
   const achievementUnlockedThemeIds = useMemo(() => {
     const unlockedAssets = new Set<string>();
     getUnlockedAchievements(unlockedAchievementIds).forEach(achievement => {
@@ -299,6 +309,15 @@ const ThemeCollectionPage: React.FC = () => {
       if (email) setUserEmail(email);
       setIsAdmin(isAdminEmail(email || ''));
 
+      const latestConfig = loadConfig();
+      if (uid && latestConfig?.currentUser && !isStableUserStorageId(latestConfig.currentUser)) {
+        const healedConfig = loadConfig(latestConfig.currentUser) ?? latestConfig;
+        migrateAchievementStorageScope(latestConfig.currentUser, uid);
+        const nextConfig = { ...healedConfig, currentUser: uid };
+        saveConfig(nextConfig, uid);
+        setConfig(nextConfig);
+      }
+
       // Only hydrate after auth state confirms a logged user (not guest)
       if (uid) {
         try {
@@ -383,7 +402,9 @@ const ThemeCollectionPage: React.FC = () => {
   const persistConfigPatch = (patch: Partial<AppState>) => {
     const current = loadConfig(currentUserId);
     if (!current) return;
-    saveConfig({ ...current, ...patch }, currentUserId);
+    const nextConfig = { ...current, ...patch };
+    saveConfig(nextConfig, currentUserId);
+    setConfig(nextConfig);
   };
 
   const toggleTheme = () => {
@@ -462,7 +483,7 @@ const ThemeCollectionPage: React.FC = () => {
         onToggleLang={toggleLang}
       />
 
-      <main className="mx-auto max-w-[1700px] px-4 py-7">
+      <main className="mx-auto flex max-w-[1700px] flex-col px-4 py-7">
         <section className={`rounded-2xl border p-5 ${panelClass}`}>
           <div className="grid gap-4 md:grid-cols-3">
             {[
@@ -486,7 +507,7 @@ const ThemeCollectionPage: React.FC = () => {
         <ThemeGrid category="tier5" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} collapsible isOpen={openThemeCollections.tier5} onToggleOpen={() => setOpenThemeCollections(prev => ({ ...prev, tier5: !prev.tier5 }))} />
         <ThemeGrid category="tier6" items={items} activeThemeId={effectiveCollectionState.activeThemeId} isLight={isLight} lang={lang} onSelect={handleSelect} onPreview={setPreviewTheme} collapsible isOpen={openThemeCollections.tier6} onToggleOpen={() => setOpenThemeCollections(prev => ({ ...prev, tier6: !prev.tier6 }))} />
 
-        <section className="mt-10">
+        <section className="mt-10" style={{ order: 40 }}>
           <CollectionSectionToggle
             titlePt="Galeria de Apoiadores"
             titleEn="Supporter Gallery"
@@ -496,11 +517,11 @@ const ThemeCollectionPage: React.FC = () => {
             tone="amber"
             onToggle={() => setOpenCollectionPanels(prev => ({ ...prev, supporter: !prev.supporter }))}
           />
-          <div className={`${openCollectionPanels.supporter ? 'block' : 'hidden'}`}>
+          <div className={`${openCollectionPanels.supporter ? 'flex flex-col' : 'hidden'}`}>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300">
-                Supporter | {lang === 'pt' ? 'Apoiadores' : 'Supporters'}
+                {lang === 'pt' ? 'Apoiadores | Galeria' : 'Supporter | Supporters'}
               </p>
               <h2 className="mt-2 text-2xl font-black uppercase tracking-tight">
                 {lang === 'pt' ? 'Apoiadores da Obra' : 'Project Supporters'}
@@ -521,8 +542,8 @@ const ThemeCollectionPage: React.FC = () => {
               <div className="relative">
                 <div className="flex items-center justify-between gap-3 mb-4">
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.28em] text-amber-500">DEV / Admin Tools</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-400 mt-1">Supporter Preview</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.28em] text-amber-500">{lang === 'pt' ? 'DEV / Ferramentas Admin' : 'DEV / Admin Tools'}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-400 mt-1">{lang === 'pt' ? 'Prévia de apoiador' : 'Supporter Preview'}</p>
                   </div>
                   <span className={`rounded-full border px-2.5 py-1 text-[8px] font-black uppercase ${isLight ? 'border-amber-300/50 bg-amber-300/20 text-amber-700' : 'border-amber-700/60 bg-amber-900/30 text-amber-300'}`}>
                     MODO DEV
@@ -552,7 +573,7 @@ const ThemeCollectionPage: React.FC = () => {
                       <div className={`rounded-xl border p-3 ${isLight ? 'border-amber-100/60 bg-white/50' : 'border-amber-900/40 bg-slate-950/30'}`}>
                         <p className="text-[9px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">Próximo Tier</p>
                         {tierInfo.isMaxTier ? (
-                          <p className="text-base font-black mt-1 text-amber-600 dark:text-amber-400">Max ✓</p>
+                          <p className="text-base font-black mt-1 text-amber-600 dark:text-amber-400">{lang === 'pt' ? 'Máx ✓' : 'Max ✓'}</p>
                         ) : (
                           <p className="text-sm font-black mt-1 text-amber-700 dark:text-amber-300">
                             Faltam <span className="text-amber-600 dark:text-amber-400">R$ {remaining}</span>
@@ -590,7 +611,7 @@ const ThemeCollectionPage: React.FC = () => {
               </div>
             </div>
           )}
-          <div className={`mb-5 rounded-2xl border p-5 ${isLight ? 'border-amber-200 bg-[linear-gradient(180deg,rgba(255,251,235,0.9),rgba(255,255,255,0.94))] shadow-[0_18px_42px_rgba(146,64,14,0.10)]' : 'border-amber-900/45 bg-[linear-gradient(145deg,rgba(24,18,8,0.82),rgba(3,7,18,0.94))] shadow-[0_22px_70px_rgba(0,0,0,0.28)]'}`}>
+          <div className={`mb-5 rounded-2xl border p-5 ${isLight ? 'border-amber-200 bg-[linear-gradient(180deg,rgba(255,251,235,0.9),rgba(255,255,255,0.94))] shadow-[0_18px_42px_rgba(146,64,14,0.10)]' : 'border-amber-900/45 bg-[linear-gradient(145deg,rgba(24,18,8,0.82),rgba(3,7,18,0.94))] shadow-[0_22px_70px_rgba(0,0,0,0.28)]'}`} style={{ order: 20 }}>
             <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300">
@@ -607,7 +628,7 @@ const ThemeCollectionPage: React.FC = () => {
                 <div className={`mt-5 rounded-2xl border p-4 ${isLight ? 'border-amber-200 bg-white/78' : 'border-amber-900/45 bg-slate-950/48'}`}>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full border border-amber-300/60 bg-amber-400/12 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">
-                      Supporter Season 1
+                      {lang === 'pt' ? 'Apoiadores Temporada 1' : 'Supporter Season 1'}
                     </span>
                     <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] ${isLight ? 'border-slate-200 bg-white text-slate-600' : 'border-slate-800 bg-slate-950/70 text-slate-300'}`}>
                       {lang === 'pt' ? 'Fundação' : 'Foundation'}
@@ -695,8 +716,8 @@ const ThemeCollectionPage: React.FC = () => {
               </div>
             </div>
           </div>
-          <div id="supporter-rewards-grid" className="scroll-mt-6" />
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div id="supporter-rewards-grid" className="scroll-mt-6" style={{ order: 9 }} />
+          <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" style={{ order: 10 }}>
             {supporterRewards.map(reward => {
               const unlocked = unlockedSupporterIds.includes(reward.id);
               const valueLabel = reward.maxValue
@@ -721,7 +742,7 @@ const ThemeCollectionPage: React.FC = () => {
                   </div>
                   <div className="mt-4 flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">{valueLabel}</p>
+                      <p className={`text-[9px] font-black uppercase tracking-[0.18em] ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>{valueLabel}</p>
                       <h3 className="mt-1 text-base font-black">{reward.title}</h3>
                     </div>
                     <span className={`rounded-full border px-2.5 py-1.5 text-[8px] font-black uppercase ${isLight ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-amber-900/70 bg-amber-950/35 text-amber-200'}`}>
@@ -736,7 +757,7 @@ const ThemeCollectionPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="mt-10">
+        <section className="mt-10" style={{ order: 10 }}>
           <CollectionSectionToggle
             titlePt="Galeria de Constância"
             titleEn="Constancy Gallery"
@@ -846,7 +867,7 @@ const ThemeCollectionPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="mt-10">
+        <section className="mt-10" style={{ order: 50 }}>
           <CollectionSectionToggle
             titlePt="Galeria Primeiros Apoiadores"
             titleEn="Early Supporter Gallery"
@@ -860,14 +881,14 @@ const ThemeCollectionPage: React.FC = () => {
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300">
-                Supporter | {lang === 'pt' ? 'Primeiros Apoiadores' : 'Early Supporters'}
+                {lang === 'pt' ? 'Apoiadores | Primeiros apoiadores' : 'Supporter | Early Supporters'}
               </p>
               <h2 className="mt-2 text-2xl font-black uppercase tracking-tight">
                 {lang === 'pt' ? 'Primeiros da Obra' : 'First of the Work'}
               </h2>
               <p className={`mt-2 max-w-3xl text-sm font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                 {lang === 'pt'
-                  ? 'Selos históricos concedidos aos primeiros apoiadores de cada nível durante a Season 1.'
+                  ? 'Selos históricos concedidos aos primeiros apoiadores de cada nível durante a Temporada 1.'
                   : 'Historical badges awarded to the first supporters of each level during Season 1.'}
               </p>
             </div>
@@ -918,7 +939,7 @@ const ThemeCollectionPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="mt-10">
+        <section className="mt-10" style={{ order: 20 }}>
           <CollectionSectionToggle
             titlePt="Galeria da Obra"
             titleEn="Work Gallery"
@@ -983,9 +1004,22 @@ const ThemeCollectionPage: React.FC = () => {
           </div>
         </section>
 
-        <AchievementsPanel isLight={isLight} />
+        <section className="mt-10" style={{ order: 30 }}>
+          <CollectionSectionToggle
+            titlePt="Conquistas / Recompensas"
+            titleEn="Achievements / Rewards"
+            isOpen={openCollectionPanels.achievements}
+            isLight={isLight}
+            lang={lang}
+            tone="blue"
+            onToggle={() => setOpenCollectionPanels(prev => ({ ...prev, achievements: !prev.achievements }))}
+          />
+          <div className={`${openCollectionPanels.achievements ? 'block' : 'hidden'}`}>
+            <AchievementsPanel isLight={isLight} />
+          </div>
+        </section>
 
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center" style={{ order: 60 }}>
           <button onClick={() => navigateTo('/studio')} className="rounded-xl border border-blue-500/50 bg-blue-600 px-5 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/30">
             {t.backToFretboard}
           </button>
