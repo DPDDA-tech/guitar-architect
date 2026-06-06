@@ -459,7 +459,7 @@ const KidsRhythmGamePage: React.FC = () => {
             </div>
 
             <div
-              className="relative h-[500px] w-32 mx-auto bg-gradient-to-b from-transparent via-emerald-100/20 to-transparent border-x-2 border-emerald-300/30 rounded-2xl cursor-pointer"
+              className="relative h-[400px] md:h-[500px] w-40 md:w-32 mx-auto bg-gradient-to-b from-transparent via-emerald-100/20 to-transparent border-x-2 border-emerald-300/30 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform touch-none"
               onClick={() => void handleClick()}
             >
               {fallingBeats.map((beat) => (
@@ -499,7 +499,7 @@ const KidsRhythmGamePage: React.FC = () => {
             <button
               onClick={() => void handleClick()}
               disabled={!isPlaying || gameCompleted}
-              className="mt-6 w-full h-20 bg-amber-500 hover:bg-amber-400 text-white text-xl font-black uppercase rounded-2xl border-4 border-amber-600 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-6 w-full h-20 md:h-24 bg-amber-500 hover:bg-amber-400 text-white text-xl font-black uppercase rounded-2xl border-4 border-amber-600 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed touch-none"
             >
               TOQUE AQUI!
             </button>
