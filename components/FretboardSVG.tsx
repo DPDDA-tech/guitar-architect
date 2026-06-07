@@ -7,6 +7,7 @@ import { FretboardState, EditorMode, ThemeMode, CagedShape, Note } from '../type
 import { translations } from '../i18n';
 import { getAllChordBrushVoicings } from '../music/musicTheory';
 import type { ChordVoicing } from '../music/musicTheory';
+import { normalizeStringStatus } from '../utils/chordDiagram';
 
 interface FretboardSVGProps {
   state: FretboardState;
@@ -409,7 +410,7 @@ const renderBrushPaths = () => {
         
         {/* MUTE / OPEN LABELS & SYMBOLS */}
         {startFret === 0 && Array.from({ length: numStrings }).map((_, s) => {
-          const status = stringStatuses[s] || 'normal';
+          const status = normalizeStringStatus((stringStatuses[s] as any) || 'normal');
           const nutX = getX(0);
           const x = isLeftHanded ? nutX + 55 : nutX - 55;
           const y = getY(s);

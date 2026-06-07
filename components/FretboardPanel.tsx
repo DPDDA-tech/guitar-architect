@@ -46,6 +46,7 @@ import { FretboardExecutionFeedback, type FretboardExecutionFeedbackData } from 
 import { FretboardGuidedPractice, type FretboardGuidedPracticeData } from './FretboardGuidedPractice';
 import { FretboardOnboardingOverlay, type FretboardOnboardingTip } from './FretboardOnboardingOverlay';
 import { generateChordVoicings, type ChordType } from '../music/chordLibrary';
+import { buildChordRenderState } from '../utils/chordDiagram';
 
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
@@ -181,25 +182,13 @@ const buildChordVisualState = (
   });
   if (!voicings.length) return null;
   const selected = voicings[0];
-  const markers: Marker[] = selected.positions.map((position, index) => ({
-    id: crypto.randomUUID(),
-    string: position.string,
-    fret: position.fret,
-    shape: index === 0 ? 'circle' : 'square',
-    color: index === 0 ? '#ef4444' : '#2563eb',
-    finger: position.finger || '1',
-  }));
-  const stringStatuses: StringStatus[] = Array(tuning.length).fill('muted');
-  selected.positions.forEach((position) => {
-    stringStatuses[position.string] = position.fret === 0 ? 'open' : 'normal';
+  const { markers, lines, stringStatuses } = buildChordRenderState({
+    stringCount: tuning.length,
+    positions: selected.positions,
+    mutedStrings: selected.mutedStrings,
+    barre: selected.barre,
+    shapeMode: 'lead-circle',
   });
-  const lines: Line[] = selected.barre ? [{
-    id: crypto.randomUUID(),
-    start: { string: selected.barre.fromString, fret: selected.barre.fret },
-    end: { string: selected.barre.toString, fret: selected.barre.fret },
-    color: '#0f172a',
-    width: 11,
-  }] : [];
   return {
     root: selected.root,
     markers,

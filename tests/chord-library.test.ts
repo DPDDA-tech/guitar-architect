@@ -124,6 +124,31 @@ describe('chord library', () => {
     expect(getShapeByString(gVoicings[0])).toEqual([3, 0, 0, 0, 2, 3]);
   });
 
+  it('keeps traditional open-chord shapes stable for the studio chord tab', () => {
+    const expectedShapes = [
+      ['C', 'major', [0, 1, 0, 2, 3, null]],
+      ['D', 'major', [2, 3, 2, 0, null, null]],
+      ['E', 'major', [0, 0, 1, 2, 2, 0]],
+      ['G', 'major', [3, 0, 0, 0, 2, 3]],
+      ['A', 'minor', [0, 1, 2, 2, 0, null]],
+      ['E', 'minor', [0, 0, 0, 2, 2, 0]],
+      ['A', '7', [0, 2, 0, 2, 0, null]],
+      ['G', '7', [1, 0, 0, 0, 2, 3]],
+    ] as const;
+
+    expectedShapes.forEach(([root, type, expectedShape]) => {
+      const voicings = generateChordVoicings(root, type, TUNINGS_PRESETS.Standard, {
+        maxFretSpan: 4,
+        maxResults: 40,
+        preferOpenChords: true,
+        preferRootInBass: true,
+      });
+
+      expect(voicings[0]?.isKnownShape).toBe(true);
+      expect(getShapeByString(voicings[0])).toEqual(expectedShape);
+    });
+  });
+
   it('includes movable barre shapes derived from open major forms', () => {
     const voicings = generateChordVoicings('C', 'major', TUNINGS_PRESETS.Standard, {
       maxFretSpan: 4,

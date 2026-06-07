@@ -108,6 +108,30 @@ const TeensPage: React.FC = () => {
       unlockXp: 220,
     },
     {
+      title: 'Explorador de Acordes',
+      subtitle: lang === 'pt' ? 'Descubra os acordes essenciais e seus formatos mais usados.' : 'Discover essential chords and their most common shapes.',
+      visual: (
+        <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
+          <path d="M20 14H220" stroke="#334155" strokeOpacity="0.28" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 24H220" stroke="#334155" strokeOpacity="0.24" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 34H220" stroke="#334155" strokeOpacity="0.2" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 44H220" stroke="#334155" strokeOpacity="0.18" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 54H220" stroke="#334155" strokeOpacity="0.14" strokeWidth="2" strokeLinecap="round" />
+          <path d="M54 18V50M98 18V50M142 18V50M186 18V50" stroke="#475569" strokeOpacity="0.3" strokeWidth="2" />
+          <circle cx="54" cy="24" r="4" fill="#22d3ee" />
+          <circle cx="54" cy="44" r="4" fill="#22d3ee" />
+          <circle cx="98" cy="34" r="4" fill="#a855f7" />
+          <circle cx="142" cy="24" r="4" fill="#f59e0b" />
+          <circle cx="142" cy="44" r="4" fill="#f59e0b" />
+          <circle cx="186" cy="34" r="4" fill="#f472b6" />
+          <path d="M40 56C66 42 76 20 100 18C126 16 138 42 162 44C182 46 196 36 212 22" stroke="#22d3ee" strokeWidth="2.4" strokeLinecap="round" />
+        </svg>
+      ),
+      available: true,
+      path: '/teens/explorador-de-acordes',
+      unlockXp: 240,
+    },
+    {
       title: 'Construtor de Acordes',
       subtitle: lang === 'pt' ? 'Monte blocos harmônicos por sensação.' : 'Build harmonic blocks by feel.',
       visual: (

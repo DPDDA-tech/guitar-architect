@@ -36,6 +36,7 @@ import TeenRiffChallengesPage from './components/TeenRiffChallengesPage';
 import TeenRhythmLabPage from './components/TeenRhythmLabPage';
 import TeenBatidasPopularesPage from './components/TeenBatidasPopularesPage';
 import TeenBasicCarePage from './components/TeenBasicCarePage';
+import TeenChordExplorerPage from './components/TeenChordExplorerPage';
 import TeenScaleHunterPage from './components/TeenScaleHunterPage';
 import TeenChordBuilderPage from './components/TeenChordBuilderPage';
 import TeenBlueprintReadingPage from './components/TeenBlueprintReadingPage';
@@ -182,6 +183,7 @@ const App: React.FC = () => {
       case '/teens/rhythm-lab': return <TeenRhythmLabPage />;
       case '/teens/batidas-populares': return <TeenBatidasPopularesPage />;
       case '/teens/cuidados-basicos': return <TeenBasicCarePage />;
+      case '/teens/explorador-de-acordes': return <TeenChordExplorerPage />;
       case '/teens/scale-hunter': return <TeenScaleHunterPage />;
       case '/teens/chord-builder': return <TeenChordBuilderPage />;
       case '/teens/blueprint-reading': return <TeenBlueprintReadingPage />;

@@ -21,6 +21,7 @@ import {
   getFretboardChordNotes,
   identifyChordFromNotes
 } from '../music/chordLibrary';
+import { buildChordRenderState } from '../utils/chordDiagram';
 
 interface FretboardInstanceProps {
   state: FretboardState;
@@ -1358,30 +1359,15 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       }
       return picked.slice(0, expectedCount);
     })();
-    const markers: Marker[] = selectedPositions.map((position, index) => ({
-      id: crypto.randomUUID(),
-      string: position.string,
-      fret: position.fret,
-      shape: index === 0 ? 'circle' : 'square',
-      color: index === 0 ? '#ef4444' : '#2563eb',
-      finger: position.finger || '1'
-    }));
-    const stringStatuses: StringStatus[] = Array(currentTuning.length).fill('muted');
-    selectedPositions.forEach(position => {
-      stringStatuses[position.string] = 'normal';
+    const { markers, lines, stringStatuses } = buildChordRenderState({
+      stringCount: currentTuning.length,
+      positions: selectedPositions,
+      mutedStrings: selected.mutedStrings,
+      barre: selected.barre && selectedPositions.length === selected.positions.length ? selected.barre : undefined,
+      lineColor: isLight ? '#0f172a' : '#f8fafc',
+      lineWidth: 11,
+      shapeMode: 'lead-circle',
     });
-    selectedPositions.forEach(position => {
-      if (position.fret === 0 && position.string >= 0 && position.string < stringStatuses.length) {
-        stringStatuses[position.string] = 'open';
-      }
-    });
-    const lines: Line[] = selected.barre && selectedPositions.length === selected.positions.length ? [{
-      id: crypto.randomUUID(),
-      start: { string: selected.barre.fromString, fret: selected.barre.fret },
-      end: { string: selected.barre.toString, fret: selected.barre.fret },
-      color: isLight ? '#0f172a' : '#f8fafc',
-      width: 11
-    }] : [];
     const frequencies = selectedPositions.map((position) => (
       getFrequencyForPosition(state.instrumentType, currentTuning, position.string, position.fret)
     ));
@@ -1492,19 +1478,17 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       : trainerCurrentShape;
     if (!shape || !Array.isArray(shape.positions) || shape.positions.length === 0) return;
     const currentState = latestStateRef.current;
-    const markers: Marker[] = shape.positions
+    const rawPositions = shape.positions
       .filter((position: any) => typeof position.string === 'number' && typeof position.fret === 'number')
-      .map((position: any, index: number) => ({
-        id: crypto.randomUUID(),
+      .map((position: any) => ({
         string: position.string,
         fret: position.fret,
-        shape: index === 0 ? 'circle' : 'square',
-        color: index === 0 ? '#ef4444' : '#2563eb',
         finger: '1',
       }));
-    const stringStatuses: StringStatus[] = Array(currentTuning.length).fill('muted');
-    markers.forEach(marker => {
-      stringStatuses[marker.string] = marker.fret === 0 ? 'open' : 'normal';
+    const { markers, stringStatuses } = buildChordRenderState({
+      stringCount: currentTuning.length,
+      positions: rawPositions,
+      shapeMode: 'lead-circle',
     });
     recordAction({
       ...currentState,
@@ -1851,30 +1835,17 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
 
   const applyChordVoicing = (voicing: ChordVoicingCandidate) => {
     const instrument = INSTRUMENT_PRESETS[state.instrumentType];
-    const markers = voicing.positions.map(position => ({
-      id: crypto.randomUUID(),
-      string: position.string,
-      fret: position.fret,
-      shape: markerShape,
-      color: markerColor,
-      finger: position.finger && position.finger !== '0' ? position.finger : '1'
-    }));
-    const stringStatuses = Array(instrument.strings).fill('normal') as StringStatus[];
-    voicing.mutedStrings.forEach(stringIndex => {
-      if (stringIndex < stringStatuses.length) stringStatuses[stringIndex] = 'mute';
+    const { markers, lines: barreLines, stringStatuses } = buildChordRenderState({
+      stringCount: instrument.strings,
+      positions: voicing.positions,
+      mutedStrings: voicing.mutedStrings,
+      barre: voicing.barre,
+      markerColor,
+      markerShape,
+      lineColor: isLight ? '#0f172a' : '#f8fafc',
+      lineWidth: 11,
+      shapeMode: 'uniform',
     });
-    voicing.positions.forEach(position => {
-      if (position.fret === 0 && position.string < stringStatuses.length) {
-        stringStatuses[position.string] = 'open';
-      }
-    });
-    const barreLines = voicing.barre ? [{
-      id: crypto.randomUUID(),
-      start: { string: voicing.barre.fromString, fret: voicing.barre.fret },
-      end: { string: voicing.barre.toString, fret: voicing.barre.fret },
-      color: isLight ? '#0f172a' : '#f8fafc',
-      width: 11
-    }] : [];
 
     recordAction({
       ...state,
