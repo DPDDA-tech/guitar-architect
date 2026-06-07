@@ -193,6 +193,13 @@ const KidsCustomShopPage: React.FC = () => {
   return (
     <div className={`min-h-screen p-5 md:p-10 transition-colors duration-700 ${bg}`}>
       <div className="mx-auto max-w-3xl">
+        <button
+          type="button"
+          onClick={() => navigateTo('/kids')}
+          className={`mb-6 rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] transition-all ${isLight ? 'border-emerald-300 bg-white text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.12)] hover:border-emerald-400 hover:shadow-[0_10px_24px_rgba(16,185,129,0.16)]' : 'border-emerald-500/70 bg-emerald-950/60 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.16),0_0_24px_rgba(16,185,129,0.18)] hover:border-emerald-400 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.22),0_0_30px_rgba(16,185,129,0.24)]'}`}
+        >
+          {copy.backKids}
+        </button>
 
         {/* header */}
         <header className="mb-8 flex flex-col items-center text-center">

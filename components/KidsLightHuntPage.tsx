@@ -291,6 +291,13 @@ const KidsLightHuntPage: React.FC = () => {
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <main className="relative mx-auto max-w-5xl">
+        <button
+          type="button"
+          onClick={() => navigateTo('/kids')}
+          className={`mb-6 rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] transition-all ${isLight ? 'border-emerald-300 bg-white text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.12)] hover:border-emerald-400 hover:shadow-[0_10px_24px_rgba(16,185,129,0.16)]' : 'border-emerald-500/70 bg-emerald-950/60 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.16),0_0_24px_rgba(16,185,129,0.18)] hover:border-emerald-400 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.22),0_0_30px_rgba(16,185,129,0.24)]'}`}
+        >
+          Voltar ao Kids
+        </button>
         <header className="mb-6 md:mb-8 text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-500">Guitar Architect Kids</p>
           <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Caça às Luzes</h1>

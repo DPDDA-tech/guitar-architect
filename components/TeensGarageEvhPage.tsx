@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { getTeensTheme } from '../utils/ecosystemPreferences';
 
 const navigateTo = (path: string) => {
@@ -288,6 +288,13 @@ const TeensGarageEvhPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,rgba(139,92,246,0.1),transparent_50%)]" />
 
       <div className="relative mx-auto max-w-6xl">
+        <button
+          type="button"
+          onClick={() => navigateTo('/teens')}
+          className={`mb-4 rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/60 text-violet-200'}`}
+        >
+          Voltar ao Teens
+        </button>
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">GA Teens / Garagem / EVH Frankenstein Tribute</p>
 
         <div className="mt-4 flex flex-wrap gap-3">
@@ -297,38 +304,42 @@ const TeensGarageEvhPage: React.FC = () => {
         </div>
 
         <header className={`mt-5 rounded-3xl border p-6 md:p-9 ${isLight ? 'border-violet-200 bg-white/90' : 'border-violet-700/45 bg-zinc-900/65'}`}>
-          <h1 className="text-4xl font-black tracking-tight md:text-5xl">EVH Frankenstein Tribute</h1>
-          <p className={`mt-4 max-w-4xl text-base font-bold leading-relaxed ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>Como criar uma réplica visual inspirada na fase Red • White • Black da guitarra Frankenstein.</p>
-          <div className="mt-4 flex flex-wrap gap-2">{badges.map((badge) => <span key={badge} className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase ${isLight ? 'border-cyan-300 bg-cyan-50 text-cyan-700' : 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300'}`}>{badge}</span>)}</div>
-          <div className="mt-3 flex flex-wrap gap-2">{microBadges.map((badge) => <span key={badge} className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase ${isLight ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-amber-500/40 bg-amber-500/10 text-amber-200'}`}>{badge}</span>)}</div>
-          <p className="mt-4 text-sm font-black uppercase tracking-[0.14em] text-amber-400">Cada Frankenstein é única.</p>
-          <p className={`mt-2 max-w-4xl text-sm leading-7 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>Este tutorial é uma homenagem visual e educacional inspirada na Frankenstein, não uma reprodução oficial licenciada.</p>
-          <p className={`mt-4 max-w-4xl text-sm leading-7 ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>A Frankenstein de Eddie Van Halen não era uma guitarra perfeita. Ela nasceu de experimentos, peças misturadas, pintura improvisada e uma busca obsessiva por identidade sonora. Este guia mostra uma forma acessível de recriar a estética clássica Red • White • Black, usando a sequência de pintura mais comum entre builders modernos: preto, branco e vermelho.</p>
-          <p className={`mt-4 rounded-2xl border p-3 text-sm leading-7 ${isLight ? 'border-violet-200 bg-violet-50 text-zinc-700' : 'border-violet-700/50 bg-violet-950/20 text-zinc-300'}`}>Embora existam discussões sobre a ordem histórica exata da pintura da guitarra original, muitos builders atuais utilizam a sequência PRETO → BRANCO → VERMELHO porque ela facilita o mascaramento, cria profundidade visual e gera um resultado muito convincente para réplicas DIY.</p>
-
-          <div className={`mt-6 rounded-2xl border p-4 ${isLight ? 'border-violet-200 bg-violet-50/60' : 'border-violet-700/40 bg-violet-950/20'}`}>
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-violet-400">Projeto 001 — EVH Frankenstein Tribute</p>
-            <div className={`mt-3 h-2 w-full rounded-full ${isLight ? 'bg-violet-100' : 'bg-zinc-800'}`}>
-              <div className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${progressPercent}%` }} />
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] xl:items-start">
+            <div>
+              <h1 className="text-4xl font-black tracking-tight md:text-5xl">EVH Frankenstein Tribute</h1>
+              <p className={`mt-4 max-w-4xl text-base font-bold leading-relaxed ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>Como criar uma réplica visual inspirada na fase Red • White • Black da guitarra Frankenstein.</p>
+              <div className="mt-4 flex flex-wrap gap-2">{badges.map((badge) => <span key={badge} className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase ${isLight ? 'border-cyan-300 bg-cyan-50 text-cyan-700' : 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300'}`}>{badge}</span>)}</div>
+              <div className="mt-3 flex flex-wrap gap-2">{microBadges.map((badge) => <span key={badge} className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase ${isLight ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-amber-500/40 bg-amber-500/10 text-amber-200'}`}>{badge}</span>)}</div>
+              <p className="mt-4 text-sm font-black uppercase tracking-[0.14em] text-amber-400">Cada Frankenstein é única.</p>
+              <p className={`mt-2 max-w-4xl text-sm leading-7 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>Este tutorial é uma homenagem visual e educacional inspirada na Frankenstein, não uma reprodução oficial licenciada.</p>
+              <p className={`mt-4 max-w-4xl text-sm leading-7 ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>A Frankenstein de Eddie Van Halen não era uma guitarra perfeita. Ela nasceu de experimentos, peças misturadas, pintura improvisada e uma busca obsessiva por identidade sonora. Este guia mostra uma forma acessível de recriar a estética clássica Red • White • Black, usando a sequência de pintura mais comum entre builders modernos: preto, branco e vermelho.</p>
+              <p className={`mt-4 rounded-2xl border p-3 text-sm leading-7 ${isLight ? 'border-violet-200 bg-violet-50 text-zinc-700' : 'border-violet-700/50 bg-violet-950/20 text-zinc-300'}`}>Embora existam discussões sobre a ordem histórica exata da pintura da guitarra original, muitos builders atuais utilizam a sequência PRETO → BRANCO → VERMELHO porque ela facilita o mascaramento, cria profundidade visual e gera um resultado muito convincente para réplicas DIY.</p>
             </div>
-            <p className={`mt-2 text-xs font-bold ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{progressPercent}% concluído · {completedCount}/{chapters.length} etapas</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {progressLabels.map((label, index) => (
-                <span key={label} className={`rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ${completed[`sec-${index + 1}`] ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-300' : isLight ? 'border-zinc-300 bg-white text-zinc-500' : 'border-zinc-700 bg-zinc-900 text-zinc-400'}`}>
-                  {index + 1}. {label}
-                </span>
-              ))}
+
+            <div className="space-y-4">
+              <div className={`rounded-2xl border p-3 ${isLight ? 'border-violet-200 bg-violet-50/60' : 'border-violet-700/40 bg-violet-950/20'}`}>
+                <ImageCard item={images[0]} onOpen={setActiveImage} wide />
+              </div>
+
+              <div className={`rounded-2xl border p-4 ${isLight ? 'border-violet-200 bg-violet-50/60' : 'border-violet-700/40 bg-violet-950/20'}`}>
+                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-violet-400">Projeto 001 — EVH Frankenstein Tribute</p>
+                <div className={`mt-3 h-2 w-full rounded-full ${isLight ? 'bg-violet-100' : 'bg-zinc-800'}`}>
+                  <div className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${progressPercent}%` }} />
+                </div>
+                <p className={`mt-2 text-xs font-bold ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{progressPercent}% concluído · {completedCount}/{chapters.length} etapas</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {progressLabels.map((label, index) => (
+                    <span key={label} className={`rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ${completed[`sec-${index + 1}`] ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-300' : isLight ? 'border-zinc-300 bg-white text-zinc-500' : 'border-zinc-700 bg-zinc-900 text-zinc-400'}`}>
+                      {index + 1}. {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </header>
 
         <section className="mt-7 space-y-4">
-          <article>
-            <h2 className="text-xl font-black">Visão geral do projeto</h2>
-            <p className={`mt-2 text-sm leading-7 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>Prévia visual das etapas. Abra os capítulos abaixo para seguir o workshop.</p>
-            <div className="mt-3 max-w-4xl"><ImageCard item={images[0]} onOpen={setActiveImage} wide /></div>
-          </article>
-
           {chapters.map((chapter) => {
             const isExpanded = expandedChapterId === chapter.id;
             return (
@@ -368,6 +379,23 @@ const TeensGarageEvhPage: React.FC = () => {
             );
           })}
         </section>
+
+        <div className="mt-8 flex justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigateTo('/teens')}
+            className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95"
+          >
+            Voltar ao Teens
+          </button>
+          <button
+            type="button"
+            onClick={() => navigateTo('/studio')}
+            className="rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-500 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(8,145,178,0.3)] transition-all hover:from-cyan-500 hover:to-sky-400 active:scale-95"
+          >
+            Ir para Studio
+          </button>
+        </div>
       </div>
 
       {activeImage && (

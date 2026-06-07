@@ -83,7 +83,7 @@ const KidsPage: React.FC = () => {
           <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-emerald-500">
             Guitar Architect Kids
           </h1>
-          <p className="mt-4 max-w-2xl text-lg font-bold opacity-80 leading-relaxed">
+          <p className="mt-4 max-w-2xl text-sm md:text-base font-bold opacity-80 leading-relaxed">
             {copy.subtitle}
           </p>
 

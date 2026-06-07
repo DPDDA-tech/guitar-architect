@@ -857,6 +857,13 @@ const TeenRhythmLabPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_0%,rgba(59,130,246,0.14),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(168,85,247,0.16),transparent_48%)]" />
 
       <main className="relative mx-auto max-w-7xl">
+        <button
+          type="button"
+          onClick={() => navigateTo('/teens')}
+          className={`mb-6 rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/60 text-violet-200'}`}
+        >
+          Voltar ao Teens
+        </button>
         <header className="mb-8 text-center">
           <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-400">GA Teens</p>
           <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Laboratório de Ritmo</h1>
@@ -1269,7 +1276,7 @@ const TeenRhythmLabPage: React.FC = () => {
         <div className="mt-6 flex justify-center gap-3">
           <button
             onClick={() => navigateTo('/teens')}
-            className="rounded-xl border border-violet-500 bg-violet-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-violet-500"
+            className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95"
           >
             Voltar ao Teens
           </button>
@@ -1285,7 +1292,7 @@ const TeenRhythmLabPage: React.FC = () => {
                 persistent: true,
               },
             })}
-            className="rounded-xl border border-cyan-500 bg-cyan-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-cyan-500"
+            className="rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-500 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(8,145,178,0.3)] transition-all hover:from-cyan-500 hover:to-sky-400 active:scale-95"
           >
             Ir para Studio
           </button>

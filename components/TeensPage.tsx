@@ -40,14 +40,14 @@ const TeensPage: React.FC = () => {
 
   const copy = lang === 'pt'
     ? {
-        title: 'GA Teens',
+        title: 'Guitar Architect Teens',
         subtitle: 'Descubra, pratique e evolua como um verdadeiro arquiteto do som.',
         ecosystem: 'Explorar Ecossistema',
         studio: 'Modo Profissional (Studio)',
         locked: 'Nível bloqueado',
       }
     : {
-        title: 'GA Teens',
+        title: 'Guitar Architect Teens',
         subtitle: 'Discover, practice and evolve like a true architect of sound.',
         ecosystem: 'Explore Ecosystem',
         studio: 'Professional Mode (Studio)',
@@ -130,6 +130,30 @@ const TeensPage: React.FC = () => {
       available: true,
       path: '/teens/explorador-de-acordes',
       unlockXp: 240,
+    },
+    {
+      title: 'Mapa de Tríades',
+      subtitle: lang === 'pt' ? 'Veja tríades e inversões ligadas pelo braço inteiro.' : 'See triads and inversions connected across the full neck.',
+      visual: (
+        <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
+          <path d="M20 14H220" stroke="#334155" strokeOpacity="0.28" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 24H220" stroke="#334155" strokeOpacity="0.24" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 34H220" stroke="#334155" strokeOpacity="0.2" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 44H220" stroke="#334155" strokeOpacity="0.18" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 54H220" stroke="#334155" strokeOpacity="0.14" strokeWidth="2" strokeLinecap="round" />
+          <path d="M48 18V50M90 18V50M132 18V50M174 18V50" stroke="#475569" strokeOpacity="0.3" strokeWidth="2" />
+          <circle cx="48" cy="44" r="4" fill="#ef4444" />
+          <circle cx="90" cy="34" r="4" fill="#2563eb" />
+          <circle cx="132" cy="24" r="4" fill="#2563eb" />
+          <circle cx="174" cy="34" r="4" fill="#ef4444" opacity="0.65" />
+          <circle cx="216" cy="24" r="4" fill="#2563eb" opacity="0.65" />
+          <path d="M48 44C64 40 74 38 90 34C106 30 116 28 132 24" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M174 34C190 30 200 28 216 24" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+        </svg>
+      ),
+      available: true,
+      path: '/teens/triad-map',
+      unlockXp: 260,
     },
     {
       title: 'Construtor de Acordes',
@@ -217,10 +241,10 @@ const TeensPage: React.FC = () => {
             <div className="absolute inset-0 bg-violet-500 blur-3xl opacity-20 group-hover:opacity-40 transition-opacity" />
             <img src="/gateenslogo.webp" alt="GA Teens" className="relative w-36 h-36 md:w-52 md:h-52 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.5)] transition-transform group-hover:scale-105" />
           </div>
-          <h1 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-violet-500">
+          <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-violet-500">
             {copy.title}
           </h1>
-          <p className="mt-4 max-w-2xl text-lg font-bold opacity-80 leading-relaxed italic">{copy.subtitle}</p>
+          <p className="mt-4 max-w-2xl text-sm md:text-base font-bold opacity-80 leading-relaxed italic">{copy.subtitle}</p>
 
           <div className={`mt-5 w-full max-w-md rounded-xl border px-4 py-3 ${isLight ? 'border-violet-200 bg-violet-50/60' : 'border-violet-700/60 bg-violet-950/35'}`}>
             <div className="flex items-center justify-between gap-2">
