@@ -202,12 +202,11 @@ export const createReadonlyFretboardStateFromChordDiagramData = (
 ): FretboardState => {
   const positions: ChordRenderPosition[] = [];
   const stringCount = diagram.strings.length;
-  const toVisualString = (string: number) => stringCount - 1 - string;
 
   diagram.strings.forEach((stringState, string) => {
     if (stringState.type === 'fretted') {
       positions.push({
-        string: toVisualString(string),
+        string,
         fret: stringState.fret,
         note: stringState.note,
         finger: stringState.finger ? String(stringState.finger) : undefined,
@@ -215,7 +214,7 @@ export const createReadonlyFretboardStateFromChordDiagramData = (
     }
     if (stringState.type === 'open') {
       positions.push({
-        string: toVisualString(string),
+        string,
         fret: 0,
         note: stringState.note,
       });
@@ -226,7 +225,7 @@ export const createReadonlyFretboardStateFromChordDiagramData = (
     stringCount,
     positions,
     mutedStrings: diagram.strings
-      .map((stringState, stringIndex) => stringState.type === 'mute' ? toVisualString(stringIndex) : null)
+      .map((stringState, stringIndex) => stringState.type === 'mute' ? stringIndex : null)
       .filter((stringIndex): stringIndex is number => stringIndex !== null),
     barre: diagram.barre,
     shapeMode: 'lead-circle',
@@ -264,7 +263,7 @@ export const createReadonlyFretboardStateFromChordDiagramData = (
       ? (diagram.strings.length === 5 ? 'bass-5' : 'bass-4')
       : 'guitar-6',
     tuning: 'Custom',
-    customTuning: [...diagram.tuning].reverse(),
+    customTuning: diagram.tuning,
     stringStatuses,
     labelMode: 'none',
     harmonyMode: 'OFF',
