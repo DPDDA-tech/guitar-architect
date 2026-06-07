@@ -1,8 +1,18 @@
-export const TEEN_CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const;
+﻿export const TEEN_CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const;
 
 export type TeenChromaticNote = typeof TEEN_CHROMATIC_NOTES[number];
 export type TeenChordInstrument = 'guitar' | 'bass';
-export type TeenGuitarQuality = 'major' | 'minor' | 'dominant7' | 'minor7';
+export type TeenGuitarQuality =
+  | 'major'
+  | 'minor'
+  | 'dominant7'
+  | 'major7'
+  | 'minor7'
+  | 'sus4'
+  | 'add9'
+  | 'halfDiminished'
+  | 'diminished'
+  | 'augmented';
 export type TeenBassQuality = 'root' | 'root5' | 'arpeggioMajor' | 'arpeggioMinor' | 'arpeggio7' | 'arpeggioMinor7';
 export type TeenChordQuality = TeenGuitarQuality | TeenBassQuality;
 export type TeenToneRole = 'root' | 'accent' | 'guide';
@@ -10,6 +20,7 @@ export type TeenToneRole = 'root' | 'accent' | 'guide';
 export type TeenShapeCell = {
   stringIndex: number;
   fretOffset: number;
+  absoluteFret?: number;
   role: TeenToneRole;
 };
 
@@ -46,16 +57,22 @@ export const TEEN_GUITAR_QUALITIES: Array<{ id: TeenGuitarQuality; label: string
   { id: 'major', label: 'Maior' },
   { id: 'minor', label: 'Menor' },
   { id: 'dominant7', label: '7' },
+  { id: 'major7', label: 'Maj7' },
   { id: 'minor7', label: 'm7' },
+  { id: 'sus4', label: 'Sus4' },
+  { id: 'add9', label: 'Add9' },
+  { id: 'halfDiminished', label: 'm7b5' },
+  { id: 'diminished', label: 'Dim' },
+  { id: 'augmented', label: 'Aug' },
 ];
 
 export const TEEN_BASS_QUALITIES: Array<{ id: TeenBassQuality; label: string }> = [
-  { id: 'root', label: 'Tônica' },
-  { id: 'root5', label: 'Tônica + Quinta' },
-  { id: 'arpeggioMajor', label: 'Arpejo Maior' },
-  { id: 'arpeggioMinor', label: 'Arpejo Menor' },
-  { id: 'arpeggio7', label: 'Arpejo 7' },
-  { id: 'arpeggioMinor7', label: 'Arpejo m7' },
+  { id: 'root', label: 'Tônica + Oitava' },
+  { id: 'root5', label: 'Tônica + Quinta + Oitava' },
+  { id: 'arpeggioMajor', label: 'Arpejo Maior (curto)' },
+  { id: 'arpeggioMinor', label: 'Arpejo Menor (curto)' },
+  { id: 'arpeggio7', label: 'Arpejo 7 (curto)' },
+  { id: 'arpeggioMinor7', label: 'Arpejo m7 (curto)' },
 ];
 
 const GUITAR_SHAPES: Record<TeenGuitarQuality, TeenShapeTemplate[]> = {
@@ -63,15 +80,14 @@ const GUITAR_SHAPES: Record<TeenGuitarQuality, TeenShapeTemplate[]> = {
     {
       id: 'g-major-form-1',
       label: 'Forma 1',
-      rootStringIndex: 0,
+      rootStringIndex: 1,
       preferredFret: 3,
       cells: [
-        { stringIndex: 0, fretOffset: 0, role: 'root' },
-        { stringIndex: 1, fretOffset: 2, role: 'guide' },
-        { stringIndex: 2, fretOffset: 2, role: 'guide' },
-        { stringIndex: 3, fretOffset: 1, role: 'accent' },
-        { stringIndex: 4, fretOffset: 0, role: 'guide' },
-        { stringIndex: 5, fretOffset: 0, role: 'accent' },
+        { stringIndex: 1, fretOffset: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: -1, role: 'guide' },
+        { stringIndex: 3, fretOffset: -3, role: 'accent' },
+        { stringIndex: 4, fretOffset: -2, role: 'guide' },
+        { stringIndex: 5, fretOffset: -3, role: 'accent' },
       ],
     },
     {
@@ -90,13 +106,41 @@ const GUITAR_SHAPES: Record<TeenGuitarQuality, TeenShapeTemplate[]> = {
     {
       id: 'g-major-form-3',
       label: 'Forma 3',
-      rootStringIndex: 3,
-      preferredFret: 5,
+      rootStringIndex: 0,
+      preferredFret: 8,
       cells: [
-        { stringIndex: 2, fretOffset: 0, role: 'guide' },
-        { stringIndex: 3, fretOffset: 0, role: 'root' },
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: -1, role: 'guide' },
+        { stringIndex: 2, fretOffset: -3, role: 'accent' },
+        { stringIndex: 3, fretOffset: -3, role: 'guide' },
+        { stringIndex: 4, fretOffset: -3, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-major-form-4',
+      label: 'Forma 4',
+      rootStringIndex: 0,
+      preferredFret: 8,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
         { stringIndex: 4, fretOffset: 0, role: 'accent' },
-        { stringIndex: 5, fretOffset: -2, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-major-form-5',
+      label: 'Forma 5',
+      rootStringIndex: 2,
+      preferredFret: 10,
+      cells: [
+        { stringIndex: 2, fretOffset: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 3, role: 'accent' },
+        { stringIndex: 5, fretOffset: 2, role: 'guide' },
       ],
     },
   ],
@@ -105,7 +149,7 @@ const GUITAR_SHAPES: Record<TeenGuitarQuality, TeenShapeTemplate[]> = {
       id: 'g-minor-form-1',
       label: 'Forma 1',
       rootStringIndex: 0,
-      preferredFret: 3,
+      preferredFret: 1,
       cells: [
         { stringIndex: 0, fretOffset: 0, role: 'root' },
         { stringIndex: 1, fretOffset: 2, role: 'guide' },
@@ -131,13 +175,39 @@ const GUITAR_SHAPES: Record<TeenGuitarQuality, TeenShapeTemplate[]> = {
     {
       id: 'g-minor-form-3',
       label: 'Forma 3',
-      rootStringIndex: 3,
+      rootStringIndex: 2,
       preferredFret: 5,
       cells: [
-        { stringIndex: 2, fretOffset: 0, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 3, role: 'accent' },
+        { stringIndex: 5, fretOffset: 1, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-minor-form-4',
+      label: 'Forma 4',
+      rootStringIndex: 3,
+      preferredFret: 7,
+      cells: [
+        { stringIndex: 2, fretOffset: -2, role: 'guide' },
         { stringIndex: 3, fretOffset: 0, role: 'root' },
-        { stringIndex: 4, fretOffset: -1, role: 'accent' },
-        { stringIndex: 5, fretOffset: -2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-minor-form-5',
+      label: 'Forma 5',
+      rootStringIndex: 0,
+      preferredFret: 8,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, role: 'accent' },
+        { stringIndex: 4, fretOffset: 0, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, role: 'accent' },
       ],
     },
   ],
@@ -146,7 +216,7 @@ const GUITAR_SHAPES: Record<TeenGuitarQuality, TeenShapeTemplate[]> = {
       id: 'g-dom7-form-1',
       label: 'Forma 1',
       rootStringIndex: 0,
-      preferredFret: 3,
+      preferredFret: 1,
       cells: [
         { stringIndex: 0, fretOffset: 0, role: 'root' },
         { stringIndex: 1, fretOffset: 2, role: 'guide' },
@@ -172,13 +242,39 @@ const GUITAR_SHAPES: Record<TeenGuitarQuality, TeenShapeTemplate[]> = {
     {
       id: 'g-dom7-form-3',
       label: 'Forma 3',
-      rootStringIndex: 3,
+      rootStringIndex: 2,
       preferredFret: 5,
       cells: [
-        { stringIndex: 2, fretOffset: 0, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 1, role: 'accent' },
+        { stringIndex: 5, fretOffset: 2, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-dom7-form-4',
+      label: 'Forma 4',
+      rootStringIndex: 3,
+      preferredFret: 7,
+      cells: [
+        { stringIndex: 2, fretOffset: -2, role: 'guide' },
         { stringIndex: 3, fretOffset: 0, role: 'root' },
         { stringIndex: 4, fretOffset: -1, role: 'accent' },
-        { stringIndex: 5, fretOffset: -1, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-dom7-form-5',
+      label: 'Forma 5',
+      rootStringIndex: 0,
+      preferredFret: 8,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, role: 'accent' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
       ],
     },
   ],
@@ -187,7 +283,7 @@ const GUITAR_SHAPES: Record<TeenGuitarQuality, TeenShapeTemplate[]> = {
       id: 'g-min7-form-1',
       label: 'Forma 1',
       rootStringIndex: 0,
-      preferredFret: 3,
+      preferredFret: 1,
       cells: [
         { stringIndex: 0, fretOffset: 0, role: 'root' },
         { stringIndex: 1, fretOffset: 2, role: 'guide' },
@@ -213,16 +309,679 @@ const GUITAR_SHAPES: Record<TeenGuitarQuality, TeenShapeTemplate[]> = {
     {
       id: 'g-min7-form-3',
       label: 'Forma 3',
-      rootStringIndex: 3,
+      rootStringIndex: 2,
       preferredFret: 5,
       cells: [
-        { stringIndex: 2, fretOffset: 0, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 1, role: 'accent' },
+        { stringIndex: 5, fretOffset: 1, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-min7-form-4',
+      label: 'Forma 4',
+      rootStringIndex: 3,
+      preferredFret: 7,
+      cells: [
+        { stringIndex: 2, fretOffset: -2, role: 'guide' },
         { stringIndex: 3, fretOffset: 0, role: 'root' },
         { stringIndex: 4, fretOffset: -1, role: 'accent' },
-        { stringIndex: 5, fretOffset: -2, role: 'guide' },
+        { stringIndex: 5, fretOffset: -1, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-min7-form-5',
+      label: 'Forma 5',
+      rootStringIndex: 0,
+      preferredFret: 8,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, role: 'accent' },
+        { stringIndex: 3, fretOffset: 0, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
       ],
     },
   ],
+  major7: [
+    {
+      id: 'g-maj7-form-1',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 1,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 1, role: 'accent' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-maj7-form-2',
+      label: 'Forma 2',
+      rootStringIndex: 1,
+      preferredFret: 3,
+      cells: [
+        { stringIndex: 1, fretOffset: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 1, role: 'accent' },
+        { stringIndex: 4, fretOffset: 2, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, role: 'accent' },
+      ],
+    },
+    {
+      id: 'g-maj7-form-3',
+      label: 'Forma 3',
+      rootStringIndex: 2,
+      preferredFret: 5,
+      cells: [
+        { stringIndex: 2, fretOffset: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 2, role: 'accent' },
+        { stringIndex: 5, fretOffset: 2, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-maj7-form-4',
+      label: 'Forma 4',
+      rootStringIndex: 3,
+      preferredFret: 7,
+      cells: [
+        { stringIndex: 2, fretOffset: -2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, role: 'root' },
+        { stringIndex: 4, fretOffset: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-maj7-form-5',
+      label: 'Forma 5',
+      rootStringIndex: 0,
+      preferredFret: 8,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 1, role: 'accent' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+  ],
+  sus4: [
+    {
+      id: 'g-sus4-form-1',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 1,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 3, fretOffset: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-sus4-form-2',
+      label: 'Forma 2',
+      rootStringIndex: 1,
+      preferredFret: 3,
+      cells: [
+        { stringIndex: 1, fretOffset: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 2, role: 'accent' },
+        { stringIndex: 4, fretOffset: 3, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, role: 'accent' },
+      ],
+    },
+    {
+      id: 'g-sus4-form-3',
+      label: 'Forma 3',
+      rootStringIndex: 2,
+      preferredFret: 5,
+      cells: [
+        { stringIndex: 2, fretOffset: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 3, role: 'accent' },
+        { stringIndex: 5, fretOffset: 3, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-sus4-form-4',
+      label: 'Forma 4',
+      rootStringIndex: 3,
+      preferredFret: 7,
+      cells: [
+        { stringIndex: 2, fretOffset: -2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, role: 'root' },
+        { stringIndex: 4, fretOffset: 1, role: 'accent' },
+        { stringIndex: 5, fretOffset: 1, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-sus4-form-5',
+      label: 'Forma 5',
+      rootStringIndex: 0,
+      preferredFret: 8,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 3, fretOffset: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+  ],
+  add9: [
+    {
+      id: 'g-add9-form-1',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 1,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 2, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-add9-form-2',
+      label: 'Forma 2',
+      rootStringIndex: 1,
+      preferredFret: 3,
+      cells: [
+        { stringIndex: 1, fretOffset: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 4, role: 'accent' },
+        { stringIndex: 4, fretOffset: 2, role: 'guide' },
+        { stringIndex: 5, fretOffset: 3, role: 'accent' },
+      ],
+    },
+    {
+      id: 'g-add9-form-3',
+      label: 'Forma 3',
+      rootStringIndex: 2,
+      preferredFret: 5,
+      cells: [
+        { stringIndex: 2, fretOffset: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 3, role: 'accent' },
+        { stringIndex: 5, fretOffset: 4, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-add9-form-4',
+      label: 'Forma 4',
+      rootStringIndex: 3,
+      preferredFret: 7,
+      cells: [
+        { stringIndex: 2, fretOffset: -2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, role: 'root' },
+        { stringIndex: 4, fretOffset: 2, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-add9-form-5',
+      label: 'Forma 5',
+      rootStringIndex: 0,
+      preferredFret: 8,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 2, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+  ],
+  halfDiminished: [
+    {
+      id: 'g-m7b5-form-1',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 1,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 1, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, role: 'accent' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-m7b5-form-2',
+      label: 'Forma 2',
+      rootStringIndex: 1,
+      preferredFret: 3,
+      cells: [
+        { stringIndex: 1, fretOffset: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: 1, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, role: 'accent' },
+        { stringIndex: 4, fretOffset: 1, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, role: 'accent' },
+      ],
+    },
+    {
+      id: 'g-m7b5-form-3',
+      label: 'Forma 3',
+      rootStringIndex: 2,
+      preferredFret: 5,
+      cells: [
+        { stringIndex: 2, fretOffset: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 1, role: 'accent' },
+        { stringIndex: 5, fretOffset: 1, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-m7b5-form-4',
+      label: 'Forma 4',
+      rootStringIndex: 3,
+      preferredFret: 7,
+      cells: [
+        { stringIndex: 2, fretOffset: -1, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, role: 'root' },
+        { stringIndex: 4, fretOffset: -1, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-m7b5-form-5',
+      label: 'Forma 5',
+      rootStringIndex: 0,
+      preferredFret: 8,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 1, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, role: 'accent' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+  ],
+  diminished: [
+    {
+      id: 'g-dim-form-1',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 1,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 1, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 3, fretOffset: 0, role: 'guide' },
+        { stringIndex: 4, fretOffset: 2, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-dim-form-2',
+      label: 'Forma 2',
+      rootStringIndex: 1,
+      preferredFret: 3,
+      cells: [
+        { stringIndex: 1, fretOffset: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: 1, role: 'guide' },
+        { stringIndex: 3, fretOffset: 2, role: 'accent' },
+        { stringIndex: 4, fretOffset: 0, role: 'guide' },
+        { stringIndex: 5, fretOffset: 2, role: 'accent' },
+      ],
+    },
+    {
+      id: 'g-dim-form-3',
+      label: 'Forma 3',
+      rootStringIndex: 2,
+      preferredFret: 5,
+      cells: [
+        { stringIndex: 2, fretOffset: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 2, role: 'accent' },
+        { stringIndex: 5, fretOffset: 1, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-dim-form-4',
+      label: 'Forma 4',
+      rootStringIndex: 3,
+      preferredFret: 7,
+      cells: [
+        { stringIndex: 2, fretOffset: -1, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, role: 'root' },
+        { stringIndex: 4, fretOffset: 1, role: 'accent' },
+        { stringIndex: 5, fretOffset: -1, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-dim-form-5',
+      label: 'Forma 5',
+      rootStringIndex: 0,
+      preferredFret: 8,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 1, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 3, fretOffset: 0, role: 'guide' },
+        { stringIndex: 4, fretOffset: 2, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+  ],
+  augmented: [
+    {
+      id: 'g-aug-form-1',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 1,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 3, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 1, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-aug-form-2',
+      label: 'Forma 2',
+      rootStringIndex: 1,
+      preferredFret: 3,
+      cells: [
+        { stringIndex: 1, fretOffset: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: 3, role: 'guide' },
+        { stringIndex: 3, fretOffset: 2, role: 'accent' },
+        { stringIndex: 4, fretOffset: 1, role: 'guide' },
+        { stringIndex: 5, fretOffset: 1, role: 'accent' },
+      ],
+    },
+    {
+      id: 'g-aug-form-3',
+      label: 'Forma 3',
+      rootStringIndex: 2,
+      preferredFret: 5,
+      cells: [
+        { stringIndex: 2, fretOffset: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 3, role: 'guide' },
+        { stringIndex: 4, fretOffset: 2, role: 'accent' },
+        { stringIndex: 5, fretOffset: 1, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-aug-form-4',
+      label: 'Forma 4',
+      rootStringIndex: 3,
+      preferredFret: 7,
+      cells: [
+        { stringIndex: 2, fretOffset: -1, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, role: 'root' },
+        { stringIndex: 4, fretOffset: 1, role: 'accent' },
+        { stringIndex: 5, fretOffset: 1, role: 'guide' },
+      ],
+    },
+    {
+      id: 'g-aug-form-5',
+      label: 'Forma 5',
+      rootStringIndex: 0,
+      preferredFret: 8,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 3, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 3, fretOffset: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 1, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, role: 'guide' },
+      ],
+    },
+  ],
+};
+
+const GUITAR_OPEN_SHAPES: Partial<Record<TeenGuitarQuality, Partial<Record<TeenChromaticNote, TeenShapeTemplate>>>> = {
+  major: {
+    C: {
+      id: 'g-major-open-c',
+      label: 'Forma 1',
+      rootStringIndex: 1,
+      preferredFret: 3,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 3, role: 'root' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 1, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+      ],
+    },
+    A: {
+      id: 'g-major-open-a',
+      label: 'Forma 1',
+      rootStringIndex: 1,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 2, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 0, role: 'guide' },
+      ],
+    },
+    E: {
+      id: 'g-major-open-e',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 1, role: 'accent' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 0, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+      ],
+    },
+    G: {
+      id: 'g-major-open-g',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 3,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: 3, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 0, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 0, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 3, role: 'accent' },
+      ],
+    },
+    D: {
+      id: 'g-major-open-d',
+      label: 'Forma 1',
+      rootStringIndex: 2,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 3, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+      ],
+    },
+  },
+  minor: {
+    A: {
+      id: 'g-minor-open-a',
+      label: 'Forma 1',
+      rootStringIndex: 1,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 1, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 0, role: 'guide' },
+      ],
+    },
+    E: {
+      id: 'g-minor-open-e',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 0, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+      ],
+    },
+    D: {
+      id: 'g-minor-open-d',
+      label: 'Forma 1',
+      rootStringIndex: 2,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 3, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 1, role: 'guide' },
+      ],
+    },
+  },
+  dominant7: {
+    A: {
+      id: 'g-dom7-open-a',
+      label: 'Forma 1',
+      rootStringIndex: 1,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+      ],
+    },
+    E: {
+      id: 'g-dom7-open-e',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 1, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 0, role: 'guide' },
+      ],
+    },
+    D: {
+      id: 'g-dom7-open-d',
+      label: 'Forma 1',
+      rootStringIndex: 2,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 1, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+      ],
+    },
+    G: {
+      id: 'g-dom7-open-g',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 3,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: 3, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 0, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 1, role: 'guide' },
+      ],
+    },
+    C: {
+      id: 'g-dom7-open-c',
+      label: 'Forma 1',
+      rootStringIndex: 1,
+      preferredFret: 3,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 3, role: 'root' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 3, role: 'accent' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 1, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+      ],
+    },
+  },
+  minor7: {
+    A: {
+      id: 'g-min7-open-a',
+      label: 'Forma 1',
+      rootStringIndex: 1,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 1, role: 'guide' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+      ],
+    },
+    E: {
+      id: 'g-min7-open-e',
+      label: 'Forma 1',
+      rootStringIndex: 0,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 0, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 0, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 0, role: 'guide' },
+      ],
+    },
+    D: {
+      id: 'g-min7-open-d',
+      label: 'Forma 1',
+      rootStringIndex: 2,
+      preferredFret: 0,
+      cells: [
+        { stringIndex: 0, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 1, fretOffset: 0, absoluteFret: -1, role: 'root' },
+        { stringIndex: 2, fretOffset: 0, absoluteFret: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 0, absoluteFret: 2, role: 'guide' },
+        { stringIndex: 4, fretOffset: 0, absoluteFret: 1, role: 'accent' },
+        { stringIndex: 5, fretOffset: 0, absoluteFret: 1, role: 'guide' },
+      ],
+    },
+  },
 };
 
 const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
@@ -232,14 +991,20 @@ const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
       label: 'Forma 1',
       rootStringIndex: 0,
       preferredFret: 3,
-      cells: [{ stringIndex: 0, fretOffset: 0, role: 'root' }],
+      cells: [
+        { stringIndex: 0, fretOffset: 0, role: 'root' },
+        { stringIndex: 2, fretOffset: 2, role: 'guide' },
+      ],
     },
     {
       id: 'b-root-form-2',
       label: 'Forma 2',
       rootStringIndex: 1,
       preferredFret: 3,
-      cells: [{ stringIndex: 1, fretOffset: 0, role: 'root' }],
+      cells: [
+        { stringIndex: 1, fretOffset: 0, role: 'root' },
+        { stringIndex: 3, fretOffset: 2, role: 'guide' },
+      ],
     },
   ],
   root5: [
@@ -251,6 +1016,7 @@ const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
       cells: [
         { stringIndex: 0, fretOffset: 0, role: 'root' },
         { stringIndex: 1, fretOffset: 2, role: 'accent' },
+        { stringIndex: 2, fretOffset: 2, role: 'guide' },
       ],
     },
     {
@@ -261,6 +1027,7 @@ const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
       cells: [
         { stringIndex: 1, fretOffset: 0, role: 'root' },
         { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 3, fretOffset: 2, role: 'guide' },
       ],
     },
   ],
@@ -272,8 +1039,9 @@ const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
       preferredFret: 3,
       cells: [
         { stringIndex: 0, fretOffset: 0, role: 'root' },
-        { stringIndex: 1, fretOffset: 2, role: 'accent' },
-        { stringIndex: 1, fretOffset: 4, role: 'guide' },
+        { stringIndex: 1, fretOffset: -1, role: 'accent' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'accent' },
       ],
     },
     {
@@ -283,8 +1051,9 @@ const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
       preferredFret: 5,
       cells: [
         { stringIndex: 1, fretOffset: 0, role: 'root' },
-        { stringIndex: 2, fretOffset: 2, role: 'accent' },
-        { stringIndex: 2, fretOffset: 4, role: 'guide' },
+        { stringIndex: 2, fretOffset: -1, role: 'accent' },
+        { stringIndex: 2, fretOffset: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 2, role: 'accent' },
       ],
     },
   ],
@@ -296,8 +1065,9 @@ const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
       preferredFret: 3,
       cells: [
         { stringIndex: 0, fretOffset: 0, role: 'root' },
-        { stringIndex: 1, fretOffset: 1, role: 'accent' },
+        { stringIndex: 1, fretOffset: -2, role: 'accent' },
         { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 2, role: 'accent' },
       ],
     },
     {
@@ -307,8 +1077,9 @@ const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
       preferredFret: 5,
       cells: [
         { stringIndex: 1, fretOffset: 0, role: 'root' },
-        { stringIndex: 2, fretOffset: 1, role: 'accent' },
+        { stringIndex: 2, fretOffset: -2, role: 'accent' },
         { stringIndex: 2, fretOffset: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 2, role: 'accent' },
       ],
     },
   ],
@@ -320,9 +1091,9 @@ const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
       preferredFret: 3,
       cells: [
         { stringIndex: 0, fretOffset: 0, role: 'root' },
-        { stringIndex: 1, fretOffset: 2, role: 'accent' },
-        { stringIndex: 1, fretOffset: 4, role: 'guide' },
-        { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 1, fretOffset: -1, role: 'accent' },
+        { stringIndex: 1, fretOffset: 2, role: 'guide' },
+        { stringIndex: 2, fretOffset: 0, role: 'accent' },
       ],
     },
     {
@@ -332,9 +1103,9 @@ const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
       preferredFret: 5,
       cells: [
         { stringIndex: 1, fretOffset: 0, role: 'root' },
-        { stringIndex: 2, fretOffset: 2, role: 'accent' },
-        { stringIndex: 2, fretOffset: 4, role: 'guide' },
-        { stringIndex: 3, fretOffset: 2, role: 'accent' },
+        { stringIndex: 2, fretOffset: -1, role: 'accent' },
+        { stringIndex: 2, fretOffset: 2, role: 'guide' },
+        { stringIndex: 3, fretOffset: 0, role: 'accent' },
       ],
     },
   ],
@@ -346,9 +1117,9 @@ const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
       preferredFret: 3,
       cells: [
         { stringIndex: 0, fretOffset: 0, role: 'root' },
-        { stringIndex: 1, fretOffset: 1, role: 'accent' },
+        { stringIndex: 1, fretOffset: -2, role: 'accent' },
         { stringIndex: 1, fretOffset: 2, role: 'guide' },
-        { stringIndex: 2, fretOffset: 2, role: 'accent' },
+        { stringIndex: 2, fretOffset: 0, role: 'accent' },
       ],
     },
     {
@@ -358,9 +1129,9 @@ const BASS_SHAPES: Record<TeenBassQuality, TeenShapeTemplate[]> = {
       preferredFret: 5,
       cells: [
         { stringIndex: 1, fretOffset: 0, role: 'root' },
-        { stringIndex: 2, fretOffset: 1, role: 'accent' },
+        { stringIndex: 2, fretOffset: -2, role: 'accent' },
         { stringIndex: 2, fretOffset: 2, role: 'guide' },
-        { stringIndex: 3, fretOffset: 2, role: 'accent' },
+        { stringIndex: 3, fretOffset: 0, role: 'accent' },
       ],
     },
   ],
@@ -370,7 +1141,7 @@ const getNoteFretCandidates = (openNote: TeenChromaticNote, targetNote: TeenChro
   const openIndex = NOTE_INDEX[openNote];
   const targetIndex = NOTE_INDEX[targetNote];
   const candidates: number[] = [];
-  for (let fret = 0; fret <= 12; fret += 1) {
+  for (let fret = 0; fret <= 24; fret += 1) {
     if ((openIndex + fret) % 12 === targetIndex) {
       candidates.push(fret);
     }
@@ -385,19 +1156,28 @@ const renderTemplate = (
 ): TeenRenderedShape | null => {
   const minOffset = Math.min(...template.cells.map((cell) => cell.fretOffset));
   const maxOffset = Math.max(...template.cells.map((cell) => cell.fretOffset));
-  const candidates = getNoteFretCandidates(tuning[template.rootStringIndex], note)
-    .filter((fret) => fret + minOffset >= 0 && fret + maxOffset <= 12);
+  const candidates = getNoteFretCandidates(tuning[template.rootStringIndex], note);
 
-  const rootFret = (candidates.length > 0 ? candidates : getNoteFretCandidates(tuning[template.rootStringIndex], note))
-    .sort((left, right) => Math.abs(left - template.preferredFret) - Math.abs(right - template.preferredFret))[0];
+  const rootFret = candidates
+    .filter((fret) => fret + minOffset >= 0 && fret + maxOffset <= 24)
+    .sort((a, b) => {
+      if (template.preferredFret <= 3) return a - b;
+      return Math.abs(a - template.preferredFret) - Math.abs(b - template.preferredFret);
+    })[0];
 
   if (rootFret === undefined) {
     return null;
   }
 
   const cells = template.cells
-    .map((cell) => ({ stringIndex: cell.stringIndex, fret: rootFret + cell.fretOffset, role: cell.role }))
-    .filter((cell) => cell.fret >= 0 && cell.fret <= 12);
+    .map((cell) => {
+      if (cell.absoluteFret !== undefined) {
+        if (cell.absoluteFret === -1) return null;
+        return { stringIndex: cell.stringIndex, fret: cell.absoluteFret, role: cell.role };
+      }
+      return { stringIndex: cell.stringIndex, fret: rootFret + cell.fretOffset, role: cell.role };
+    })
+    .filter((cell): cell is TeenRenderedCell => cell !== null && cell.fret >= 0 && cell.fret <= 24);
 
   return {
     id: template.id,
@@ -413,16 +1193,31 @@ export const getTeenChordExplorerShapes = (
   quality: TeenChordQuality
 ): TeenRenderedShape[] => {
   if (instrument === 'guitar') {
+    const openTemplate = GUITAR_OPEN_SHAPES[quality as TeenGuitarQuality]?.[note];
     const templates = GUITAR_SHAPES[quality as TeenGuitarQuality] ?? [];
-    return templates
+    const resolvedTemplates = openTemplate
+      ? [openTemplate, ...templates.slice(1)]
+      : templates;
+    return resolvedTemplates
+      .filter((template): template is TeenShapeTemplate => Boolean(template))
       .map((template) => renderTemplate(GUITAR_TUNING, note, template))
-      .filter((shape): shape is TeenRenderedShape => Boolean(shape));
+      .filter((shape): shape is TeenRenderedShape => Boolean(shape))
+      .sort((left, right) => left.rootFret - right.rootFret)
+      .map((shape, index) => ({
+        ...shape,
+        label: `Forma ${index + 1}`,
+      }));
   }
 
   const templates = BASS_SHAPES[quality as TeenBassQuality] ?? [];
   return templates
     .map((template) => renderTemplate(BASS_TUNING, note, template))
-    .filter((shape): shape is TeenRenderedShape => Boolean(shape));
+    .filter((shape): shape is TeenRenderedShape => Boolean(shape))
+    .sort((left, right) => left.rootFret - right.rootFret)
+    .map((shape, index) => ({
+      ...shape,
+      label: `Forma ${index + 1}`,
+    }));
 };
 
 export const getTeenChordQualityOptions = (instrument: TeenChordInstrument) =>
@@ -430,3 +1225,4 @@ export const getTeenChordQualityOptions = (instrument: TeenChordInstrument) =>
 
 export const getTeenChordTuning = (instrument: TeenChordInstrument) =>
   instrument === 'guitar' ? GUITAR_TUNING : BASS_TUNING;
+

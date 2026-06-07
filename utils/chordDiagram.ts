@@ -1,5 +1,6 @@
 import type { FretboardState, Line, Marker, MarkerShape, StringStatus } from '../types';
 import type { ChordVoicingCandidate, ChordVoicingNote } from '../music/chordLibrary';
+import type { TeenChordInstrument, TeenRenderedShape } from '../data/teenChordExplorer';
 
 export type ChordStringState =
   | { type: 'mute' }
@@ -11,6 +12,8 @@ export type ChordDiagramData = {
   tuning: string[];
   strings: ChordStringState[];
   baseFret?: number;
+  visibleFrets?: number;
+  rootNote?: string;
   title?: string;
   subtitle?: string;
   barre?: {
@@ -161,13 +164,50 @@ export const createChordDiagramDataFromVoicing = (
   };
 };
 
-export const createReadonlyFretboardStateFromChordDiagramData = (diagram: ChordDiagramData): FretboardState => {
+export const createChordDiagramDataFromTeenShape = (
+  shape: TeenRenderedShape,
+  tuning: string[],
+  instrument: TeenChordInstrument,
+  rootNote?: string,
+): ChordDiagramData => {
+  const stringCount = tuning.length;
+  const strings: ChordStringState[] = Array.from({ length: stringCount }, () => ({ type: 'mute' }));
+  
+  shape.cells.forEach((cell) => {
+    if (cell.fret === 0) {
+      strings[cell.stringIndex] = { type: 'open' };
+    } else {
+      strings[cell.stringIndex] = { type: 'fretted', fret: cell.fret };
+    }
+  });
+  const frettedFrets = shape.cells
+    .filter((cell) => cell.fret > 0)
+    .map((cell) => cell.fret);
+  const hasOpenStrings = shape.cells.some((cell) => cell.fret === 0);
+  const baseFret = hasOpenStrings ? 1 : frettedFrets.length > 0 ? Math.min(...frettedFrets) : 1;
+
+  return {
+    instrument,
+    tuning,
+    strings,
+    baseFret: baseFret <= 1 ? 1 : baseFret,
+    rootNote,
+    title: shape.label,
+  };
+};
+
+export const createReadonlyFretboardStateFromChordDiagramData = (
+  diagram: ChordDiagramData,
+  isLeftHanded = false,
+): FretboardState => {
   const positions: ChordRenderPosition[] = [];
+  const stringCount = diagram.strings.length;
+  const toVisualString = (string: number) => stringCount - 1 - string;
 
   diagram.strings.forEach((stringState, string) => {
     if (stringState.type === 'fretted') {
       positions.push({
-        string,
+        string: toVisualString(string),
         fret: stringState.fret,
         note: stringState.note,
         finger: stringState.finger ? String(stringState.finger) : undefined,
@@ -175,7 +215,7 @@ export const createReadonlyFretboardStateFromChordDiagramData = (diagram: ChordD
     }
     if (stringState.type === 'open') {
       positions.push({
-        string,
+        string: toVisualString(string),
         fret: 0,
         note: stringState.note,
       });
@@ -183,17 +223,32 @@ export const createReadonlyFretboardStateFromChordDiagramData = (diagram: ChordD
   });
 
   const { markers, lines, stringStatuses } = buildChordRenderState({
-    stringCount: diagram.strings.length,
+    stringCount,
     positions,
     mutedStrings: diagram.strings
-      .map((stringState, stringIndex) => stringState.type === 'mute' ? stringIndex : null)
+      .map((stringState, stringIndex) => stringState.type === 'mute' ? toVisualString(stringIndex) : null)
       .filter((stringIndex): stringIndex is number => stringIndex !== null),
     barre: diagram.barre,
     shapeMode: 'lead-circle',
   });
 
-  const startFret = (diagram.baseFret || 1) <= 1 ? 0 : Math.max(1, (diagram.baseFret || 1) - 1);
-  const endFret = Math.max(startFret === 0 ? 4 : startFret + 4, ...positions.map((position) => position.fret + 1), 4);
+  positions
+    .filter((position) => position.fret === 0)
+    .forEach((position) => {
+      markers.push({
+        id: crypto.randomUUID(),
+        string: position.string,
+        fret: 0,
+        shape: 'circle',
+        color: '#2563eb',
+        finger: undefined,
+      });
+    });
+
+  const visibleFrets = Math.max(5, diagram.visibleFrets || 5);
+  const startFret = 0;
+  const minimumEndFret = visibleFrets - 1;
+  const endFret = Math.max(minimumEndFret, ...positions.map((position) => position.fret + 1), 4);
 
   return {
     id: `chord-diagram-${diagram.title || 'viewer'}`,
@@ -202,14 +257,14 @@ export const createReadonlyFretboardStateFromChordDiagramData = (diagram: ChordD
     notes: '',
     startFret,
     endFret,
-    isLeftHanded: false,
-    root: 'C',
+    isLeftHanded,
+    root: diagram.rootNote || 'C',
     scaleType: 'Major (Ionian)',
     instrumentType: diagram.instrument === 'bass'
       ? (diagram.strings.length === 5 ? 'bass-5' : 'bass-4')
       : 'guitar-6',
     tuning: 'Custom',
-    customTuning: diagram.tuning,
+    customTuning: [...diagram.tuning].reverse(),
     stringStatuses,
     labelMode: 'none',
     harmonyMode: 'OFF',
