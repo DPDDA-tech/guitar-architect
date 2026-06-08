@@ -23,6 +23,7 @@ import { constancyRewards } from '../data/constancyRewards';
 import { getRewardMetadataById } from '../utils/rewardLookup';
 import { isAdminEmail } from '../utils/adminAccess';
 import { getConstancyState, getNextConstancyMilestone } from '../utils/constancyStorage';
+import { listActiveSupabaseRewardGrantIdsByEmail } from '../utils/supabaseRewardGrants';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
 
@@ -165,6 +166,7 @@ const ThemeCollectionPage: React.FC = () => {
   const [previewAsset, setPreviewAsset] = useState<CollectionPreview | null>(null);
   const [supporterToast, setSupporterToast] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [activeGrantedRewardIds, setActiveGrantedRewardIds] = useState<string[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [constancyRefreshToken, setConstancyRefreshToken] = useState(0);
   const [openThemeCollections, setOpenThemeCollections] = useState<Record<string, boolean>>({
@@ -280,14 +282,29 @@ const ThemeCollectionPage: React.FC = () => {
         }
       }
     });
+    activeGrantedRewardIds.forEach(id => {
+      const meta = getRewardMetadataById(id);
+      if (meta && meta.image && meta.image.includes('/tierothers/') && !itemMap.has(meta.image)) {
+        itemMap.set(meta.image, {
+          id: meta.id.startsWith('reward:') || meta.id.startsWith('achievement:') ? meta.id : `reward:${meta.id}`,
+          title: meta.title,
+          description: meta.description || 'Item especial desbloqueado.',
+          type: meta.category || 'Special',
+          rarity: 'rare',
+          image: meta.image
+        });
+      }
+    });
     return Array.from(itemMap.values());
-  }, [unlockedAchievementIds]);
+  }, [unlockedAchievementIds, activeGrantedRewardIds]);
   const activeTheme = items.find(item => item.id === effectiveCollectionState.activeThemeId) || items.find(item => item.id === DEFAULT_THEME_ID) || items[0];
   const activeThemeCopy = getThemeCopy(activeTheme, lang);
   const unlockedCount = items.filter(item => item.unlocked).length;
   const unlockedSupporterIds = useMemo(() => {
-    return getUnlockedSupporterRewards(supporterTotal).map(reward => reward.id);
-  }, [supporterTotal]);
+    const byTotal = getUnlockedSupporterRewards(supporterTotal).map(reward => reward.id);
+    const byGrant = activeGrantedRewardIds.filter(id => supporterRewards.some(reward => reward.id === id));
+    return Array.from(new Set([...byTotal, ...byGrant]));
+  }, [supporterTotal, activeGrantedRewardIds]);
   const t = translations[lang].harmonicCycle;
   const panelClass = isLight
     ? 'border-[#c2d0e1] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(244,248,252,0.92))] shadow-[0_24px_70px_rgba(71,85,105,0.18),inset_0_1px_0_rgba(255,255,255,0.85)]'
@@ -307,6 +324,7 @@ const ThemeCollectionPage: React.FC = () => {
       const uid = data.user?.id || null;
       const email = data.user?.email || null;
       if (email) setUserEmail(email);
+      setActiveGrantedRewardIds(email ? await listActiveSupabaseRewardGrantIdsByEmail(email) : []);
       setIsAdmin(isAdminEmail(email || ''));
 
       const latestConfig = loadConfig();
@@ -340,6 +358,9 @@ const ThemeCollectionPage: React.FC = () => {
       : userEmail;
 
     const eligibleByEmail = getEligibleFirstSupporterRewardIds(effectiveFirstSupporterEmail);
+    const eligibleByGrant = activeGrantedRewardIds.filter(id =>
+      supporterFirstRewards.some(r => r.id === id)
+    );
     
     // FIX: Também considerar como elegível se o ID estiver na lista de conquistas desbloqueadas
     // (Isso permite que selos sincronizados via Supabase/Hydrate apareçam na UI)
@@ -347,8 +368,8 @@ const ThemeCollectionPage: React.FC = () => {
       supporterFirstRewards.some(r => r.id === id)
     );
 
-    return Array.from(new Set([...eligibleByEmail, ...eligibleBySync]));
-  }, [userEmail, unlockedAchievementIds]);
+    return Array.from(new Set([...eligibleByEmail, ...eligibleByGrant, ...eligibleBySync]));
+  }, [userEmail, unlockedAchievementIds, activeGrantedRewardIds]);
 
   // LOGS TEMPORÁRIOS DE INVESTIGAÇÃO UI
   useEffect(() => {
@@ -819,7 +840,7 @@ const ThemeCollectionPage: React.FC = () => {
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {constancyRewards.map(reward => {
-              const unlocked = constancyState.unlockedRewardIds.includes(reward.id);
+              const unlocked = constancyState.unlockedRewardIds.includes(reward.id) || activeGrantedRewardIds.includes(reward.id);
               return (
                 <button
                   key={reward.id}

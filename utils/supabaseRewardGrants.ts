@@ -61,6 +61,29 @@ export async function listActiveSupabaseRewardGrants(): Promise<SupabaseRewardGr
 }
 
 /**
+ * Lista os IDs de selos ativos concedidos para um e-mail específico.
+ */
+export async function listActiveSupabaseRewardGrantIdsByEmail(email: string): Promise<string[]> {
+  const target = normalize(email);
+  if (!target) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('reward_grants')
+      .select('reward_id')
+      .eq('email', target)
+      .is('revoked_at', null);
+
+    if (error) throw error;
+
+    return Array.from(new Set((data || []).map(row => row.reward_id).filter(Boolean)));
+  } catch (err) {
+    console.warn('[SupabaseRewards] Falha ao listar grants ativos por e-mail:', err);
+    return [];
+  }
+}
+
+/**
  * Verifica se um e-mail possui um selo ativo no Supabase.
  */
 export async function hasSupabaseRewardGrant(email: string, rewardId: string): Promise<boolean> {
