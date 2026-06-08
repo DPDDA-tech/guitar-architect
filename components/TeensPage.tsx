@@ -31,6 +31,14 @@ const MoonIcon = () => (
   </svg>
 );
 
+const GlobeIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18" />
+    <path d="M12 3a14 14 0 0 1 4 9 14 14 0 0 1-4 9 14 14 0 0 1-4-9 14 14 0 0 1 4-9Z" />
+  </svg>
+);
+
 const TeensPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => getTeensTheme());
   const [lang, setLang] = useState<'pt' | 'en'>(() => getTeensLang());
@@ -260,32 +268,27 @@ const TeensPage: React.FC = () => {
             )}
           </div>
 
-          <div className="mt-6 flex w-full items-center justify-center">
-            <div className="hidden md:flex absolute right-3 items-center gap-3">
-              <button
-                onClick={handleToggleTheme}
-                className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}
-                aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
-                title={isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
-              >
-                {isLight ? <MoonIcon /> : <SunIcon />}
-              </button>
-              <button onClick={handleToggleLang} className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}>{lang.toUpperCase()}</button>
-            </div>
-          </div>
-
-          <div className="mt-3 flex md:hidden gap-2">
-            <button
-              onClick={handleToggleTheme}
-              className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}
-              aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
-              title={isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
-            >
-              {isLight ? <MoonIcon /> : <SunIcon />}
-            </button>
-            <button onClick={handleToggleLang} className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}>{lang.toUpperCase()}</button>
-          </div>
         </header>
+
+        <div className="mb-8 flex items-center justify-end gap-2">
+          <button
+            onClick={() => navigateTo('/ecosystem')}
+            className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}
+            aria-label={lang === 'pt' ? 'Voltar ao ecossistema' : 'Back to ecosystem'}
+            title={lang === 'pt' ? 'Ecossistema' : 'Ecosystem'}
+          >
+            <GlobeIcon />
+          </button>
+          <button
+            onClick={handleToggleTheme}
+            className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}
+            aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
+            title={isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
+          >
+            {isLight ? <MoonIcon /> : <SunIcon />}
+          </button>
+          <button onClick={handleToggleLang} className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}>{lang.toUpperCase()}</button>
+        </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-12">
           {modules.map((module, idx) => {

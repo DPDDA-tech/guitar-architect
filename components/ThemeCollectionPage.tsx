@@ -406,26 +406,6 @@ const ThemeCollectionPage: React.FC = () => {
     return Array.from(new Set([...eligibleByEmail, ...eligibleByGrant, ...eligibleBySync]));
   }, [userEmail, unlockedAchievementIds, activeGrantedRewardIds]);
 
-  // LOGS TEMPORÁRIOS DE INVESTIGAÇÃO UI
-  useEffect(() => {
-    if (import.meta.env.DEV || window.location.hostname.includes('vercel.app') || true) {
-      console.group('[GA UI Debug] Badge Rendering');
-      console.log('Unlocked IDs (Storage):', unlockedAchievementIds);
-      console.log('Eligible First Supporter IDs:', eligibleFirstSupporterIds);
-      
-      const target = 'first_supporter_prime_architect';
-      const hasInStorage = unlockedAchievementIds.includes(target);
-      const hasInEligibility = eligibleFirstSupporterIds.includes(target);
-      
-      if (hasInStorage && !hasInEligibility) {
-        console.warn(`[UI Mismatch] ${target} está no localStorage mas o memo de elegibilidade falhou.`);
-      } else if (hasInStorage && hasInEligibility) {
-        console.log(`[UI Success] ${target} está pronto para renderizar.`);
-      }
-      console.groupEnd();
-    }
-  }, [unlockedAchievementIds, eligibleFirstSupporterIds]);
-
   useEffect(() => {
     if (unlockedAchievementIds.includes(CORE_ACHIEVEMENT_ID)) return;
     setUnlockedAchievementIds(unlockAchievement(CORE_ACHIEVEMENT_ID, currentUserId));

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { getKidsTheme } from '../utils/ecosystemPreferences';
+import EcosystemPageActions from './ecosystem/EcosystemPageActions';
+import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
 type SlotId = 'lead' | 'bass' | 'rhythm';
 type Role = 'lead' | 'bass' | 'rhythm';
@@ -119,51 +121,39 @@ const KidsBuildBandPage: React.FC = () => {
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
 
       <main className="relative mx-auto max-w-6xl">
-        <button
-          type="button"
-          onClick={() => navigateTo('/kids')}
-          className={`mb-6 rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] transition-all ${isLight ? 'border-emerald-300 bg-white text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.12)] hover:border-emerald-400 hover:shadow-[0_10px_24px_rgba(16,185,129,0.16)]' : 'border-emerald-500/70 bg-emerald-950/60 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.16),0_0_24px_rgba(16,185,129,0.18)] hover:border-emerald-400 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.22),0_0_30px_rgba(16,185,129,0.24)]'}`}
-        >
-          Voltar ao Kids
-        </button>
-        <header className="mb-6 md:mb-8 text-center">
-          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-fuchsia-500">Guitar Architect Kids</p>
-          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Monte a Banda</h1>
-          <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Escolha instrumentos para criar sua primeira banda.
-          </p>
-        </header>
+        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel="Voltar ao Kids" backPath="/kids" />
+        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="Monte a Banda" subtitle="Escolha instrumentos para criar sua primeira banda." />
 
         <section className="grid gap-6 lg:grid-cols-[340px_1fr]">
           <aside className={`rounded-3xl border p-4 md:p-5 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-500">Desafio</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Desafio</p>
             <div className="mt-2 grid gap-2">
               {challenges.map((challenge) => (
                 <button
                   key={challenge.id}
                   onClick={() => setSelectedChallengeId(challenge.id)}
-                  className={`rounded-xl border px-3 py-2 text-left text-xs font-black transition-all ${selectedChallengeId === challenge.id ? 'border-fuchsia-500 bg-fuchsia-600 text-white' : isLight ? 'border-slate-300 bg-white hover:border-fuchsia-400' : 'border-zinc-700 bg-zinc-950 hover:border-fuchsia-500'}`}
+                  className={`rounded-xl border px-3 py-2 text-left text-xs font-black transition-all ${selectedChallengeId === challenge.id ? 'border-emerald-500 bg-emerald-600 text-white' : isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}
                 >
                   {challenge.title}
                 </button>
               ))}
             </div>
 
-            <div className={`mt-4 rounded-xl border px-3 py-3 text-xs font-bold ${isLight ? 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-900' : 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-100'}`}>
+            <div className={`mt-4 rounded-xl border px-3 py-3 text-xs font-bold ${isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100'}`}>
               {selectedChallenge.description}
             </div>
 
             <button
               onClick={clearBand}
-              className={`mt-4 w-full rounded-xl border px-3 py-3 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-fuchsia-400' : 'border-zinc-700 bg-zinc-950 hover:border-fuchsia-500'}`}
+              className={`mt-4 w-full rounded-xl border px-3 py-3 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}
             >
               Limpar palco
             </button>
           </aside>
 
           <div className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-            <div className={`rounded-2xl border p-4 md:p-5 transition-all ${isBandComplete ? 'border-fuchsia-400 bg-gradient-to-br from-fuchsia-500/10 via-cyan-500/5 to-emerald-500/10 shadow-[0_0_30px_rgba(217,70,239,0.25)]' : isLight ? 'border-slate-200 bg-slate-50/80' : 'border-zinc-700 bg-zinc-950/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-500">Palco Futurista</p>
+            <div className={`rounded-2xl border p-4 md:p-5 transition-all ${isBandComplete ? 'border-emerald-400 bg-gradient-to-br from-emerald-500/10 via-cyan-500/5 to-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.25)]' : isLight ? 'border-slate-200 bg-slate-50/80' : 'border-zinc-700 bg-zinc-950/70'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Palco Futurista</p>
 
               <div className="mt-3 grid gap-3 md:grid-cols-3">
                 {slotInfo.map((slot) => {
@@ -175,7 +165,7 @@ const KidsBuildBandPage: React.FC = () => {
                     <button
                       key={slot.id}
                       onClick={() => setSelectedSlot(slot.id)}
-                      className={`rounded-2xl border p-3 text-left transition-all ${isActive ? 'border-fuchsia-500 bg-fuchsia-500/15' : isLight ? 'border-slate-300 bg-white hover:border-fuchsia-400' : 'border-zinc-700 bg-zinc-900/70 hover:border-fuchsia-500'}`}
+                      className={`rounded-2xl border p-3 text-left transition-all ${isActive ? 'border-emerald-500 bg-emerald-500/15' : isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-900/70 hover:border-emerald-500'}`}
                     >
                       <p className="text-xs font-black uppercase">{slot.icon} {slot.label}</p>
                       {assignedInstrument ? (
@@ -205,13 +195,13 @@ const KidsBuildBandPage: React.FC = () => {
             </div>
 
             <div className="mt-4">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-500">Instrumentos disponiveis</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Instrumentos disponiveis</p>
               <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {instruments.map((instrument) => (
                   <button
                     key={instrument.id}
                     onClick={() => assignInstrument(instrument.id)}
-                    className={`rounded-2xl border p-3 text-left transition-all ${isLight ? 'border-slate-300 bg-white hover:border-fuchsia-400' : 'border-zinc-700 bg-zinc-950 hover:border-fuchsia-500'}`}
+                    className={`rounded-2xl border p-3 text-left transition-all ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}
                   >
                     <img src={instrument.image} alt={instrument.label} className="h-24 w-full rounded-lg object-contain" />
                     <p className="mt-2 text-xs font-black uppercase">{instrument.label}</p>
@@ -223,7 +213,7 @@ const KidsBuildBandPage: React.FC = () => {
               </div>
             </div>
 
-            <div className={`mt-4 rounded-xl border px-3 py-3 text-sm font-black ${isLight ? 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-900' : 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-100'}`}>
+            <div className={`mt-4 rounded-xl border px-3 py-3 text-sm font-black ${isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100'}`}>
               {feedback}
             </div>
 

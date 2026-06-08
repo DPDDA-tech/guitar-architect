@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
 import { loadConfig } from '../utils/persistence';
+import EcosystemPageActions from './ecosystem/EcosystemPageActions';
+import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 import {
   addKidsCustomGuitar,
   KidsCustomGuitar,
@@ -193,28 +195,16 @@ const KidsCustomShopPage: React.FC = () => {
   return (
     <div className={`min-h-screen p-5 md:p-10 transition-colors duration-700 ${bg}`}>
       <div className="mx-auto max-w-3xl">
-        <button
-          type="button"
-          onClick={() => navigateTo('/kids')}
-          className={`mb-6 rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] transition-all ${isLight ? 'border-emerald-300 bg-white text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.12)] hover:border-emerald-400 hover:shadow-[0_10px_24px_rgba(16,185,129,0.16)]' : 'border-emerald-500/70 bg-emerald-950/60 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.16),0_0_24px_rgba(16,185,129,0.18)] hover:border-emerald-400 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.22),0_0_30px_rgba(16,185,129,0.24)]'}`}
-        >
-          {copy.backKids}
-        </button>
+          <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={copy.backKids} backPath="/kids" />
 
-        {/* header */}
-        <header className="mb-8 flex flex-col items-center text-center">
-          <h1 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-emerald-500">
-            {copy.title}
-          </h1>
-          <p className="mt-2 text-base font-bold opacity-75">{copy.subtitle}</p>
-          {step !== 'model' && step !== 'saved' && (
-            <div className="mt-4">
-              <button onClick={() => setStep(step === 'color' ? 'model' : 'color')} className={btnSecondary}>
-                {copy.back}
-              </button>
-            </div>
-          )}
-        </header>
+        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={copy.title} subtitle={copy.subtitle} />
+        {step !== 'model' && step !== 'saved' && (
+          <div className="mb-8 flex justify-center">
+            <button onClick={() => setStep(step === 'color' ? 'model' : 'color')} className={btnSecondary}>
+              {copy.back}
+            </button>
+          </div>
+        )}
 
         {/* info banner for guardian */}
         {showBanner && (

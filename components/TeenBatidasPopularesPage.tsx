@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
+import EcosystemPageActions from './ecosystem/EcosystemPageActions';
+import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -602,20 +604,8 @@ const TeenBatidasPopularesPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-7xl">
-        <button
-          type="button"
-          onClick={() => navigateTo('/teens')}
-          className={`mb-6 rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/60 text-violet-200'}`}
-        >
-          Voltar ao Teens
-        </button>
-        <header className="mb-8 text-center">
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-400">GA Teens</p>
-          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Batidas Populares</h1>
-          <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Aprenda batidas com setas tradicionais de cifra: OUVIR → ENTENDER → TOCAR
-          </p>
-        </header>
+        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel="Voltar ao Teens" backPath="/teens" />
+        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Batidas Populares" subtitle="Aprenda batidas com setas tradicionais de cifra: OUVIR → ENTENDER → TOCAR" />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
           <div className="grid gap-3 md:grid-cols-4">

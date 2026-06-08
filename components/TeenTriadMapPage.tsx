@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import FretboardSVG from './FretboardSVG';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
+import EcosystemPageActions from './ecosystem/EcosystemPageActions';
+import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 import {
   generateTeenTriadMap,
   getTeenTriadGroups,
@@ -439,20 +441,8 @@ const TeenTriadMapPage: React.FC = () => {
       />
 
       <main className="relative mx-auto max-w-7xl">
-        <button
-          type="button"
-          onClick={() => navigateTo('/teens')}
-          className={`mb-6 rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/60 text-violet-200'}`}
-        >
-          {copy.back}
-        </button>
-        <header className="mb-5 text-center">
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-400">GA Teens</p>
-          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">{copy.title}</h1>
-          <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            {copy.subtitle}
-          </p>
-        </header>
+        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={copy.back} backPath="/teens" />
+        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title={copy.title} subtitle={copy.subtitle} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
           <div className="grid gap-3 md:grid-cols-4">

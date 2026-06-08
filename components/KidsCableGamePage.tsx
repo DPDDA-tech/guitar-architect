@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { getKidsTheme } from '../utils/ecosystemPreferences';
+import EcosystemPageActions from './ecosystem/EcosystemPageActions';
+import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
 type CableInstrument = {
   id: string;
@@ -81,20 +83,9 @@ const KidsCableGamePage: React.FC = () => {
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
 
       <main className="relative mx-auto max-w-6xl">
-        <button
-          type="button"
-          onClick={() => navigateTo('/kids')}
-          className={`mb-6 rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] transition-all ${isLight ? 'border-emerald-300 bg-white text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.12)] hover:border-emerald-400 hover:shadow-[0_10px_24px_rgba(16,185,129,0.16)]' : 'border-emerald-500/70 bg-emerald-950/60 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.16),0_0_24px_rgba(16,185,129,0.18)] hover:border-emerald-400 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.22),0_0_30px_rgba(16,185,129,0.24)]'}`}
-        >
-          Voltar ao Kids
-        </button>
-        <header className="mb-6 text-center">
-          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-amber-500">Guitar Architect Kids</p>
-          <h1 className="mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight">Ligue os Cabos</h1>
-          <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
+        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel="Voltar ao Kids" backPath="/kids" />
+        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="Ligue os Cabos" subtitle="Ligue cada instrumento Ã¡ descriÃ§Ã£o correta." />
             Ligue cada instrumento á descrição correta.
-          </p>
-        </header>
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
           <div className="grid gap-4 md:grid-cols-2">
