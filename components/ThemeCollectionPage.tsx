@@ -194,6 +194,39 @@ const ThemeCollectionPage: React.FC = () => {
   const isLight = theme === 'light';
 
   useEffect(() => {
+    let cancelled = false;
+
+    const refreshGrantedRewards = async (email?: string | null) => {
+      const nextIds = email ? await listActiveSupabaseRewardGrantIdsByEmail(email) : [];
+      if (!cancelled) {
+        setActiveGrantedRewardIds(nextIds);
+      }
+    };
+
+    void refreshGrantedRewards(userEmail);
+
+    const handleFocusRefresh = () => {
+      void refreshGrantedRewards(userEmail);
+    };
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextEmail = session?.user?.email || null;
+      setUserEmail(nextEmail);
+      void refreshGrantedRewards(nextEmail);
+    });
+
+    window.addEventListener('focus', handleFocusRefresh);
+    document.addEventListener('visibilitychange', handleFocusRefresh);
+
+    return () => {
+      cancelled = true;
+      authListener.subscription.unsubscribe();
+      window.removeEventListener('focus', handleFocusRefresh);
+      document.removeEventListener('visibilitychange', handleFocusRefresh);
+    };
+  }, [userEmail]);
+
+  useEffect(() => {
     setCollectionState(loadThemeCollectionState(currentUserId));
     setUnlockedAchievementIds(getUnlockedAchievementIds(currentUserId));
     const nextSupporterTotal = getSupporterContributionTotal(currentUserId);
@@ -324,7 +357,6 @@ const ThemeCollectionPage: React.FC = () => {
       const uid = data.user?.id || null;
       const email = data.user?.email || null;
       if (email) setUserEmail(email);
-      setActiveGrantedRewardIds(email ? await listActiveSupabaseRewardGrantIdsByEmail(email) : []);
       setIsAdmin(isAdminEmail(email || ''));
 
       const latestConfig = loadConfig();
