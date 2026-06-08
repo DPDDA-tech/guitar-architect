@@ -227,11 +227,11 @@ const KidsBuildBandPage: React.FC = () => {
               {feedback}
             </div>
 
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-              <button onClick={() => navigateTo('/kids/games')} className="rounded-xl border border-amber-500 bg-amber-500 px-4 py-2 text-xs font-black uppercase text-white hover:bg-amber-400">
+            <div className="mt-5 grid gap-2 sm:flex sm:flex-row">
+              <button onClick={() => navigateTo('/kids/games')} className="min-h-[44px] rounded-xl border border-amber-500 bg-amber-500 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-amber-400">
                 Voltar aos Jogos
               </button>
-              <button onClick={() => navigateTo('/kids')} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
+              <button onClick={() => navigateTo('/kids')} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
                 Voltar ao Kids
               </button>
             </div>

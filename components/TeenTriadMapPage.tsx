@@ -110,19 +110,23 @@ const getVisualizationButtonClass = (
     : 'border-zinc-700 bg-zinc-950 text-zinc-200';
 
   if (button === 'shape') {
-    return mode === 'shape' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : inactive;
+    return mode === 'shape'
+      ? isLight
+        ? 'border-cyan-500 bg-cyan-100 text-cyan-900'
+        : 'border-cyan-300 bg-cyan-500/25 text-cyan-50'
+      : inactive;
   }
 
   if (button === 'notes') {
-    if (mode === 'notes-active') return 'border-cyan-400 bg-cyan-500/20 text-cyan-300';
-    if (mode === 'notes-group') return 'border-violet-400 bg-violet-500/20 text-violet-300';
-    if (mode === 'notes-all') return 'border-violet-400 bg-violet-500/20 text-violet-300';
+    if (mode === 'notes-active') return isLight ? 'border-cyan-500 bg-cyan-100 text-cyan-900' : 'border-cyan-300 bg-cyan-500/25 text-cyan-50';
+    if (mode === 'notes-group') return isLight ? 'border-violet-500 bg-violet-100 text-violet-900' : 'border-violet-300 bg-violet-500/25 text-violet-50';
+    if (mode === 'notes-all') return isLight ? 'border-violet-500 bg-violet-100 text-violet-900' : 'border-violet-300 bg-violet-500/25 text-violet-50';
     return inactive;
   }
 
-  if (mode === 'intervals-active') return 'border-cyan-400 bg-cyan-500/20 text-cyan-300';
-  if (mode === 'intervals-group') return 'border-violet-400 bg-violet-500/20 text-violet-300';
-  if (mode === 'intervals-all') return 'border-violet-400 bg-violet-500/20 text-violet-300';
+  if (mode === 'intervals-active') return isLight ? 'border-cyan-500 bg-cyan-100 text-cyan-900' : 'border-cyan-300 bg-cyan-500/25 text-cyan-50';
+  if (mode === 'intervals-group') return isLight ? 'border-violet-500 bg-violet-100 text-violet-900' : 'border-violet-300 bg-violet-500/25 text-violet-50';
+  if (mode === 'intervals-all') return isLight ? 'border-violet-500 bg-violet-100 text-violet-900' : 'border-violet-300 bg-violet-500/25 text-violet-50';
   return inactive;
 };
 
@@ -387,15 +391,21 @@ const TeenTriadMapPage: React.FC = () => {
     : 'border-zinc-700 bg-zinc-950 text-zinc-200';
 
   const toolbarButtonClass = (selected: boolean) =>
-    `${selected ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : inactiveButtonClass} h-10 rounded-xl border px-4 text-xs font-black uppercase transition-all`;
+    `${selected
+      ? isLight
+        ? 'border-cyan-500 bg-cyan-100 text-cyan-900'
+        : 'border-cyan-300 bg-cyan-500/25 text-cyan-50'
+      : inactiveButtonClass} min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase leading-tight transition-all`;
 
   const violetButtonClass = (selected: boolean) =>
     `${selected
-      ? 'border-violet-400 bg-violet-500/20 text-violet-100'
+      ? isLight
+        ? 'border-violet-500 bg-violet-100 text-violet-900'
+        : 'border-violet-300 bg-violet-500/25 text-violet-50'
       : isLight
         ? 'border-slate-300 bg-white text-slate-700 hover:border-violet-400'
         : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-violet-500'
-    } h-10 rounded-xl border px-4 text-xs font-black uppercase transition-all`;
+    } min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase leading-tight transition-all`;
 
   const handleToggleTheme = () => {
     setTheme((current) => {
@@ -427,7 +437,6 @@ const TeenTriadMapPage: React.FC = () => {
           backgroundSize: '100% 30px',
         }}
       />
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_0%,rgba(59,130,246,0.14),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(168,85,247,0.16),transparent_48%)]" />
 
       <main className="relative mx-auto max-w-7xl">
         <button
@@ -559,7 +568,7 @@ const TeenTriadMapPage: React.FC = () => {
 
               <div>
                 <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.stringGroup}</p>
-                <div className="mt-2 grid grid-cols-3 gap-2">
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {groupOptions.map((group) => (
                     <button key={group.id} onClick={() => setActiveGroupId(group.id)} className={`${toolbarButtonClass(activeGroupId === group.id)} inline-flex items-center justify-center text-center`}>
                       {group.label}
@@ -581,7 +590,7 @@ const TeenTriadMapPage: React.FC = () => {
 
               <div>
                 <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.inversion}</p>
-                <div className="mt-2 grid grid-cols-3 gap-2">
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {([
                     { id: 'root', label: copy.root },
                     { id: 'first', label: copy.first },
@@ -596,22 +605,22 @@ const TeenTriadMapPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="mt-4 grid gap-3 sm:flex sm:flex-wrap sm:items-center">
             <button
               onClick={() => handleVisualizationToggle('notes')}
-              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase transition-all ${getVisualizationButtonClass(visualizationMode, 'notes', isLight)}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight transition-all ${getVisualizationButtonClass(visualizationMode, 'notes', isLight)}`}
             >
               {copy.showNotes}
             </button>
             <button
               onClick={() => handleVisualizationToggle('intervals')}
-              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase transition-all ${getVisualizationButtonClass(visualizationMode, 'intervals', isLight)}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight transition-all ${getVisualizationButtonClass(visualizationMode, 'intervals', isLight)}`}
             >
               {copy.showIntervals}
             </button>
             <button
               onClick={() => handleVisualizationToggle('shape')}
-              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase transition-all ${getVisualizationButtonClass(visualizationMode, 'shape', isLight)}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight transition-all ${getVisualizationButtonClass(visualizationMode, 'shape', isLight)}`}
             >
               {copy.shapeOnly}
             </button>

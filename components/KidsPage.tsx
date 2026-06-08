@@ -106,10 +106,10 @@ const KidsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-3 flex md:hidden gap-2">
+          <div className="mt-3 grid w-full max-w-[180px] grid-cols-2 gap-2 md:hidden">
             <button
               onClick={handleToggleTheme}
-              className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'border-emerald-300 bg-white text-emerald-700' : 'border-emerald-700 bg-emerald-950/70 text-emerald-200'}`}
+              className={`flex h-10 w-full items-center justify-center rounded-xl border ${isLight ? 'border-emerald-300 bg-white text-emerald-700' : 'border-emerald-700 bg-emerald-950/70 text-emerald-200'}`}
               aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
               title={isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
             >
@@ -117,7 +117,7 @@ const KidsPage: React.FC = () => {
             </button>
             <button
               onClick={handleToggleLang}
-              className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-emerald-300 bg-white text-emerald-700' : 'border-emerald-700 bg-emerald-950/70 text-emerald-200'}`}
+              className={`min-h-[40px] rounded-xl border px-3 py-2 text-[11px] font-black uppercase text-center ${isLight ? 'border-emerald-300 bg-white text-emerald-700' : 'border-emerald-700 bg-emerald-950/70 text-emerald-200'}`}
             >
               {lang.toUpperCase()}
             </button>

@@ -210,7 +210,6 @@ const TeenRiffChallengesPage: React.FC = () => {
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#02030a] text-zinc-100'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_0%,rgba(59,130,246,0.14),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(168,85,247,0.16),transparent_48%)]" />
 
       <main className="relative mx-auto max-w-6xl">
         <button
@@ -301,31 +300,39 @@ const TeenRiffChallengesPage: React.FC = () => {
             })}
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap">
             <button
               onClick={() => void playSequence(selectedRiff.notes)}
               disabled={isPlaying}
-              className="rounded-xl border border-cyan-400 bg-cyan-500/20 px-4 py-2 text-xs font-black uppercase text-cyan-100 hover:bg-cyan-500/30 disabled:opacity-50"
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${
+                isLight
+                  ? 'border-cyan-500 bg-cyan-100 text-cyan-900 hover:bg-cyan-200'
+                  : 'border-cyan-300 bg-cyan-500/25 text-cyan-50 hover:bg-cyan-500/35'
+              }`}
             >
               Ouvir desafio
             </button>
             <button
               onClick={() => void playSequence(userNotes)}
               disabled={isPlaying || userNotes.length === 0}
-              className="rounded-xl border border-violet-400 bg-violet-500/20 px-4 py-2 text-xs font-black uppercase text-violet-100 hover:bg-violet-500/30 disabled:opacity-50"
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${
+                isLight
+                  ? 'border-violet-500 bg-violet-100 text-violet-900 hover:bg-violet-200'
+                  : 'border-violet-300 bg-violet-500/25 text-violet-50 hover:bg-violet-500/35'
+              }`}
             >
               Ouvir sua versão
             </button>
             <button
               onClick={clearUser}
-              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
             >
               Limpar
             </button>
             <button
               onClick={goNextChallenge}
               disabled={!isNextUnlocked}
-              className="rounded-xl border border-emerald-400 bg-emerald-500/20 px-4 py-2 text-xs font-black uppercase text-emerald-100 hover:bg-emerald-500/30 disabled:opacity-40"
+              className="min-h-[44px] rounded-xl border border-emerald-400 bg-emerald-500/20 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-emerald-100 hover:bg-emerald-500/30 disabled:opacity-40"
             >
               Próximo desafio
             </button>

@@ -303,17 +303,17 @@ const KidsSoundLengthsPage: React.FC = () => {
             Jogue fases curtas e ganhe estrelas no ritmo.
           </p>
 
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button onClick={() => void startLoop('session5')} disabled={isPlaying} className="rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-white hover:bg-cyan-500 disabled:opacity-50">
+          <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
+            <button onClick={() => void startLoop('session5')} disabled={isPlaying} className="min-h-[44px] rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-cyan-500 disabled:opacity-50">
               Jogar 5 fases
             </button>
-            <button onClick={() => void startLoop('infinite')} disabled={isPlaying} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
+            <button onClick={() => void startLoop('infinite')} disabled={isPlaying} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
               Modo infinito
             </button>
-            <button onClick={() => void repeatCurrentSequence()} disabled={isPlaying || sequence.length === 0} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
+            <button onClick={() => void repeatCurrentSequence()} disabled={isPlaying || sequence.length === 0} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
               Repetir caminho
             </button>
-            <button onClick={resetLoop} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
+            <button onClick={resetLoop} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
               Reiniciar
             </button>
           </div>
@@ -396,33 +396,33 @@ const KidsSoundLengthsPage: React.FC = () => {
             )}
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
             <button
               onClick={() => void playCustomSequence()}
               disabled={customSequence.length === 0 || isPlayingCustom}
-              className="rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-white hover:bg-cyan-500 disabled:opacity-50"
+              className="min-h-[44px] rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-cyan-500 disabled:opacity-50"
             >
               {isPlayingCustom ? 'Tocando...' : 'Play'}
             </button>
             <button
               onClick={removeLastCustom}
               disabled={customSequence.length === 0 || isPlayingCustom}
-              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
             >
               Apagar última
             </button>
             <button
               onClick={clearCustom}
               disabled={customSequence.length === 0}
-              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
             >
               Limpar
             </button>
           </div>
         </section>
 
-        <div className="mt-6 flex justify-center">
-          <button onClick={() => navigateTo('/kids')} className="rounded-xl border border-emerald-500 bg-emerald-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-emerald-500">
+        <div className="mt-6 grid gap-3 sm:flex sm:justify-center">
+          <button onClick={() => navigateTo('/kids')} className="min-h-[44px] rounded-xl border border-emerald-500 bg-emerald-600 px-5 py-3 text-xs font-black uppercase text-center leading-tight text-white hover:bg-emerald-500">
             Voltar ao Kids
           </button>
         </div>

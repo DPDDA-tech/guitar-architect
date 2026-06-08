@@ -179,7 +179,7 @@ const KidsFirstStepsPage: React.FC = () => {
                 <button
                   key={part.key}
                   onClick={() => setSelectedPart(part.key)}
-                  className={`rounded-xl border px-3 py-2 text-xs font-black uppercase transition-all ${selectedPart === part.key ? 'border-emerald-500 bg-emerald-600 text-white' : isLight ? 'border-slate-300 hover:border-emerald-400' : 'border-zinc-700 hover:border-emerald-500'}`}
+                  className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight transition-all ${selectedPart === part.key ? 'border-emerald-500 bg-emerald-600 text-white' : isLight ? 'border-slate-300 hover:border-emerald-400' : 'border-zinc-700 hover:border-emerald-500'}`}
                 >
                   {part.label}
                 </button>
@@ -202,17 +202,17 @@ const KidsFirstStepsPage: React.FC = () => {
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-2">
-              <button onClick={clearColors} className={`rounded-xl border px-3 py-3 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-slate-400' : 'border-zinc-700 bg-zinc-950 hover:border-zinc-500'}`}>
+              <button onClick={clearColors} className={`min-h-[44px] rounded-xl border px-3 py-3 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-slate-400' : 'border-zinc-700 bg-zinc-950 hover:border-zinc-500'}`}>
                 Limpar
               </button>
-              <button onClick={surpriseColors} className="rounded-xl border border-emerald-500 bg-emerald-600 px-3 py-3 text-xs font-black uppercase text-white hover:bg-emerald-500">
+              <button onClick={surpriseColors} className="min-h-[44px] rounded-xl border border-emerald-500 bg-emerald-600 px-3 py-3 text-xs font-black uppercase text-center leading-tight text-white hover:bg-emerald-500">
                 Surpresa
               </button>
             </div>
 
             <button
               onClick={() => navigateTo('/kids')}
-              className={`mt-3 w-full rounded-xl border px-3 py-3 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}
+              className={`mt-3 min-h-[44px] w-full rounded-xl border px-3 py-3 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}
             >
               Voltar ao Kids
             </button>

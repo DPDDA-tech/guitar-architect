@@ -169,7 +169,7 @@ const KidsMemoryGamePage: React.FC = () => {
                 <button
                   key={item.key}
                   onClick={() => setSelectedDifficulty(item.key)}
-                  className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${selectedDifficulty === item.key ? 'border-amber-500 bg-amber-500 text-white' : isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
+                  className={`min-h-[40px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight ${selectedDifficulty === item.key ? 'border-amber-500 bg-amber-500 text-white' : isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
                 >
                   {item.label}
                 </button>
@@ -210,14 +210,14 @@ const KidsMemoryGamePage: React.FC = () => {
             })}
           </div>
 
-          <div className={`sticky bottom-2 z-20 mt-4 flex flex-col items-center gap-2 rounded-2xl border px-3 py-3 sm:flex-row sm:justify-center ${isLight ? 'border-slate-200 bg-white/95' : 'border-zinc-700 bg-zinc-950/90 backdrop-blur-sm'}`}>
-            <button onClick={() => startNewGame()} className="rounded-xl border border-amber-500 bg-amber-500 px-4 py-2 text-xs font-black uppercase text-white hover:bg-amber-400">
+          <div className={`sticky bottom-2 z-20 mt-4 grid gap-2 rounded-2xl border px-3 py-3 sm:flex sm:flex-row sm:justify-center ${isLight ? 'border-slate-200 bg-white/95' : 'border-zinc-700 bg-zinc-950/90 backdrop-blur-sm'}`}>
+            <button onClick={() => startNewGame()} className="min-h-[44px] rounded-xl border border-amber-500 bg-amber-500 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-amber-400">
               Novo jogo
             </button>
-            <button onClick={() => navigateTo('/kids/games')} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
+            <button onClick={() => navigateTo('/kids/games')} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
               Voltar aos Jogos
             </button>
-            <button onClick={() => navigateTo('/kids')} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
+            <button onClick={() => navigateTo('/kids')} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
               Voltar ao Kids
             </button>
           </div>

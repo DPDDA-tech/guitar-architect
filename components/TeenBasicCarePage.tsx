@@ -72,7 +72,6 @@ const TeenBasicCarePage: React.FC = () => {
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 transition-colors duration-300 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-[#050312] text-violet-50'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_18%_0%,rgba(34,211,238,0.15),transparent_40%),radial-gradient(circle_at_82%_0%,rgba(168,85,247,0.14),transparent_44%)]" />
 
       <main className="relative mx-auto max-w-6xl">
         <button

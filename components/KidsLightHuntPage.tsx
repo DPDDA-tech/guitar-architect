@@ -305,18 +305,18 @@ const KidsLightHuntPage: React.FC = () => {
         </header>
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <p className="text-xs font-black uppercase tracking-wider text-cyan-500">Nível {level} de 8</p>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex">
               <button
                 onClick={() => void startLevel()}
-                className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-cyan-300 bg-cyan-50 text-cyan-800 hover:border-cyan-400' : 'border-cyan-500/50 bg-cyan-500/10 text-cyan-200 hover:border-cyan-400'}`}
+                className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-cyan-300 bg-cyan-50 text-cyan-800 hover:border-cyan-400' : 'border-cyan-500/50 bg-cyan-500/10 text-cyan-200 hover:border-cyan-400'}`}
               >
                 Começar
               </button>
               <button
                 onClick={restart}
-                className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
+                className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
               >
                 Reiniciar
               </button>
@@ -324,12 +324,12 @@ const KidsLightHuntPage: React.FC = () => {
           </div>
           <div className="mb-3">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Tempo entre notas</p>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-2 grid gap-2 sm:flex sm:flex-wrap">
               {TEMPO_PRESETS.map((tempo) => (
                 <button
                   key={tempo.id}
                   onClick={() => setTempoId(tempo.id)}
-                  className={`rounded-xl border px-3 py-2 text-xs font-black uppercase transition-all ${
+                  className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight transition-all ${
                     tempoId === tempo.id
                       ? 'border-cyan-400 bg-cyan-500/15 ring-2 ring-cyan-300/40'
                       : isLight
@@ -427,16 +427,16 @@ const KidsLightHuntPage: React.FC = () => {
             {useCustomPath && (
               <p className="mt-2 text-[10px] font-black uppercase tracking-wider text-cyan-500">Sequência personalizada ativa</p>
             )}
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
               <button
                 onClick={removeCustomLast}
-                className={`rounded-lg border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}
+                className={`min-h-[40px] rounded-lg border px-3 py-2 text-[11px] font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}
               >
                 Apagar última
               </button>
               <button
                 onClick={clearCustomPath}
-                className={`rounded-lg border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}
+                className={`min-h-[40px] rounded-lg border px-3 py-2 text-[11px] font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}
               >
                 Limpar
               </button>
@@ -445,7 +445,7 @@ const KidsLightHuntPage: React.FC = () => {
                   setUseCustomPath(false);
                   restart();
                 }}
-                className={`rounded-lg border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}
+                className={`min-h-[40px] rounded-lg border px-3 py-2 text-[11px] font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}
               >
                 Usar caminho pronto
               </button>
@@ -453,8 +453,8 @@ const KidsLightHuntPage: React.FC = () => {
           </div>
         </section>
 
-        <div className="mt-6 flex justify-center">
-          <button onClick={() => navigateTo('/kids')} className="rounded-xl border border-emerald-500 bg-emerald-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-emerald-500">
+        <div className="mt-6 grid gap-3 sm:flex sm:justify-center">
+          <button onClick={() => navigateTo('/kids')} className="min-h-[44px] rounded-xl border border-emerald-500 bg-emerald-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-emerald-500">
             Voltar ao Kids
           </button>
         </div>

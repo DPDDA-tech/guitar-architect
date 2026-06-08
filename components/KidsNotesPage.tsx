@@ -529,10 +529,10 @@ const KidsNotesPage: React.FC = () => {
         </section>
 
         <section className={`mt-5 rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-          <div className="mb-3 flex items-center justify-end">
+          <div className="mb-3 flex justify-end">
             <button
               onClick={() => setSoundEnabled((prev) => !prev)}
-              className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${soundEnabled ? 'border-emerald-500 bg-emerald-600 text-white' : isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
+              className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight ${soundEnabled ? 'border-emerald-500 bg-emerald-600 text-white' : isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
             >
               Som: {soundEnabled ? 'Ligado' : 'Desligado'}
             </button>
@@ -600,25 +600,25 @@ const KidsNotesPage: React.FC = () => {
             )}
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
             <button
               onClick={() => void playSequence()}
               disabled={noteSequence.length === 0 || isPlayingSequence}
-              className="rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-white hover:bg-cyan-500 disabled:opacity-50"
+              className="min-h-[44px] rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-cyan-500 disabled:opacity-50"
             >
               {isPlayingSequence ? 'Tocando...' : 'Play'}
             </button>
             <button
               onClick={removeLastSequenceNote}
               disabled={noteSequence.length === 0 || isPlayingSequence}
-              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
             >
               Apagar ultima
             </button>
             <button
               onClick={clearSequence}
               disabled={noteSequence.length === 0}
-              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
             >
               Limpar
             </button>
@@ -669,7 +669,7 @@ const KidsNotesPage: React.FC = () => {
               <button
                 onClick={() => void playModel()}
                 disabled={isPlayingModel}
-                className="mt-3 rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-white hover:bg-cyan-500 disabled:opacity-50"
+                className="mt-3 min-h-[44px] rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-cyan-500 disabled:opacity-50"
               >
                 {isPlayingModel ? 'Tocando modelo...' : 'Play modelo'}
               </button>
@@ -716,25 +716,25 @@ const KidsNotesPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
                 <button
                   onClick={() => void playUserVersion()}
                   disabled={userMelodySequence.length === 0 || isPlayingUserVersion}
-                  className="rounded-xl border border-emerald-500 bg-emerald-600 px-4 py-2 text-xs font-black uppercase text-white hover:bg-emerald-500 disabled:opacity-50"
+                  className="min-h-[44px] rounded-xl border border-emerald-500 bg-emerald-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-emerald-500 disabled:opacity-50"
                 >
               {isPlayingUserVersion ? 'Tocando versão...' : 'Play sua versão'}
                 </button>
                 <button
                   onClick={removeLastMelodyNote}
                   disabled={userMelodySequence.length === 0 || isPlayingUserVersion}
-                  className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
+                  className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
                 >
                   Apagar ultima
                 </button>
                 <button
                   onClick={clearMelodyVersion}
                   disabled={userMelodySequence.length === 0}
-                  className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
+                  className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
                 >
                   Limpar
                 </button>
@@ -808,14 +808,14 @@ const KidsNotesPage: React.FC = () => {
             Escute o caminho e repita clicando nas bolas coloridas.
           </p>
 
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <button onClick={() => void startMemoryGame()} disabled={memoryIsPlaying} className="rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-white hover:bg-cyan-500 disabled:opacity-50">
+          <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap sm:items-center">
+            <button onClick={() => void startMemoryGame()} disabled={memoryIsPlaying} className="min-h-[44px] rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-cyan-500 disabled:opacity-50">
                 Começar
             </button>
-            <button onClick={() => void replayMemorySequence()} disabled={memoryIsPlaying || memorySequence.length === 0} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
+            <button onClick={() => void replayMemorySequence()} disabled={memoryIsPlaying || memorySequence.length === 0} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
                 Repetir sequência
             </button>
-            <button onClick={resetMemoryGame} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
+            <button onClick={resetMemoryGame} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
               Reiniciar
             </button>
               <span className="text-xs font-black uppercase tracking-wider text-cyan-500">Nível: {memoryLevel}</span>
@@ -850,11 +850,11 @@ const KidsNotesPage: React.FC = () => {
           </div>
         </section>
 
-        <div className="mt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-center">
-          <button onClick={() => navigateTo('/kids')} className="rounded-xl border border-emerald-500 bg-emerald-600 px-4 py-2 text-xs font-black uppercase text-white hover:bg-emerald-500">
+        <div className="mt-6 grid gap-2 sm:flex sm:flex-row sm:justify-center">
+          <button onClick={() => navigateTo('/kids')} className="min-h-[44px] rounded-xl border border-emerald-500 bg-emerald-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-emerald-500">
             Voltar ao Kids
           </button>
-          <button onClick={() => navigateTo('/kids/games')} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
+          <button onClick={() => navigateTo('/kids/games')} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
             Jogos Musicais
           </button>
         </div>

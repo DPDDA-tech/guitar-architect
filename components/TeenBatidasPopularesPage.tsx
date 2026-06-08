@@ -600,7 +600,6 @@ const TeenBatidasPopularesPage: React.FC = () => {
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 transition-colors duration-300 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-[#050312] text-violet-50'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_0%,rgba(34,211,238,0.16),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(168,85,247,0.18),transparent_45%)]" />
 
       <main className="relative mx-auto max-w-7xl">
         <button
@@ -726,14 +725,16 @@ const TeenBatidasPopularesPage: React.FC = () => {
             {feedback}
           </div>
 
-          <div className="mt-4 flex items-center gap-2">
-            <div className="flex gap-2">
+          <div className="mt-4">
+            <div className="flex flex-wrap gap-2">
               {(['LISTEN', 'UNDERSTAND', 'PLAY'] as Phase[]).map((phase) => (
                 <div
                   key={phase}
                   className={`px-3 py-1.5 rounded-lg border text-xs font-black uppercase transition-all ${
                     currentPhase === phase
-                      ? 'border-cyan-400 bg-cyan-500/20 text-cyan-100'
+                      ? isLight
+                        ? 'border-cyan-500 bg-cyan-100 text-cyan-900'
+                        : 'border-cyan-300 bg-cyan-500/25 text-cyan-50'
                       : isLight
                         ? 'border-slate-300 bg-white text-slate-500'
                         : 'border-zinc-700 bg-zinc-950 text-zinc-500'
@@ -745,31 +746,35 @@ const TeenBatidasPopularesPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2">
+          <div className="mt-4 grid gap-2 sm:flex sm:flex-wrap sm:items-center">
             <button
               onClick={startLoop}
-              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-cyan-300 bg-cyan-50 text-cyan-800 hover:border-cyan-500' : 'border-cyan-500/50 bg-cyan-500/10 text-cyan-200 hover:bg-cyan-500/20'}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-cyan-300 bg-cyan-50 text-cyan-800 hover:border-cyan-500' : 'border-cyan-500/50 bg-cyan-500/10 text-cyan-200 hover:bg-cyan-500/20'}`}
             >
               Iniciar Loop
             </button>
             <button
               onClick={stopLoop}
               disabled={!isLooping}
-              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-orange-400 disabled:opacity-50' : 'border-zinc-700 bg-zinc-950 hover:border-orange-500 disabled:opacity-50'}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-orange-400 disabled:opacity-50' : 'border-zinc-700 bg-zinc-950 hover:border-orange-500 disabled:opacity-50'}`}
             >
               Parar Loop
             </button>
             {currentPhase !== 'PLAY' && (
               <button
                 onClick={advancePhase}
-                className="rounded-xl border border-violet-400 bg-violet-500/20 px-4 py-2 text-xs font-black uppercase text-violet-100 hover:bg-violet-500/30"
+                className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${
+                  isLight
+                    ? 'border-violet-500 bg-violet-100 text-violet-900 hover:bg-violet-200'
+                    : 'border-violet-300 bg-violet-500/25 text-violet-50 hover:bg-violet-500/35'
+                }`}
               >
                 Avançar Fase →
               </button>
             )}
             <button
               onClick={resetSession}
-              className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-red-400' : 'border-zinc-700 bg-zinc-950 hover:border-red-500'}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-red-400' : 'border-zinc-700 bg-zinc-950 hover:border-red-500'}`}
             >
               Reiniciar
             </button>

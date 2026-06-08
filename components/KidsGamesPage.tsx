@@ -72,14 +72,14 @@ const KidsGamesPage: React.FC = () => {
               {game.available ? (
                 <button
                   onClick={() => navigateTo(game.path)}
-                  className="mt-3 w-full rounded-xl border border-amber-500 bg-amber-500 px-3 py-2 text-xs font-black uppercase text-white hover:bg-amber-400"
+                  className="mt-3 min-h-[44px] w-full rounded-xl border border-amber-500 bg-amber-500 px-3 py-2 text-xs font-black uppercase text-white hover:bg-amber-400"
                 >
                   Jogar
                 </button>
               ) : (
                 <button
                   disabled
-                  className={`mt-3 w-full rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 text-slate-400' : 'border-zinc-700 text-zinc-500'}`}
+                  className={`mt-3 min-h-[44px] w-full rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 text-slate-400' : 'border-zinc-700 text-zinc-500'}`}
                 >
                   Em breve
                 </button>
@@ -88,8 +88,8 @@ const KidsGamesPage: React.FC = () => {
           ))}
         </section>
 
-        <div className="mt-8 flex flex-col items-center gap-3">
-          <button onClick={() => navigateTo('/kids')} className="rounded-xl border border-emerald-500 bg-emerald-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-emerald-500">
+        <div className="mt-8 grid gap-3 sm:flex sm:flex-col sm:items-center">
+          <button onClick={() => navigateTo('/kids')} className="min-h-[44px] rounded-xl border border-emerald-500 bg-emerald-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-emerald-500">
             Voltar ao Kids
           </button>
         </div>
