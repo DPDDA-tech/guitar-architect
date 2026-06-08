@@ -24,6 +24,7 @@ import { getRewardMetadataById } from '../utils/rewardLookup';
 import { isAdminEmail } from '../utils/adminAccess';
 import { getConstancyState, getNextConstancyMilestone } from '../utils/constancyStorage';
 import { listActiveSupabaseRewardGrantIdsByEmail } from '../utils/supabaseRewardGrants';
+import { listStoredAdminRewardGrantIdsByEmail } from '../utils/adminRewardGrantStorage';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
 
@@ -197,7 +198,9 @@ const ThemeCollectionPage: React.FC = () => {
     let cancelled = false;
 
     const refreshGrantedRewards = async (email?: string | null) => {
-      const nextIds = email ? await listActiveSupabaseRewardGrantIdsByEmail(email) : [];
+      const remoteIds = email ? await listActiveSupabaseRewardGrantIdsByEmail(email) : [];
+      const localIds = listStoredAdminRewardGrantIdsByEmail(email);
+      const nextIds = Array.from(new Set([...remoteIds, ...localIds]));
       if (!cancelled) {
         setActiveGrantedRewardIds(nextIds);
       }

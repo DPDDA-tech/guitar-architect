@@ -126,3 +126,20 @@ export function hasStoredAdminRewardGrant(
       grant.rewardId === rewardId
   );
 }
+
+export function listStoredAdminRewardGrantIdsByEmail(
+  email: string | null | undefined
+): string[] {
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!normalizedEmail) {
+    return [];
+  }
+
+  return Array.from(new Set(
+    getStoredAdminRewardGrants()
+      .filter((grant: AdminRewardGrant) => normalizeEmail(grant.email) === normalizedEmail)
+      .map((grant: AdminRewardGrant) => grant.rewardId)
+      .filter(Boolean)
+  ));
+}
