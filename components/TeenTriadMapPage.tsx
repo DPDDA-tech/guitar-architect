@@ -111,24 +111,20 @@ const getVisualizationButtonClass = (
     ? 'border-slate-300 bg-white text-slate-700'
     : 'border-zinc-700 bg-zinc-950 text-zinc-200';
 
+  const activeClass = isLight
+    ? 'border-violet-500 bg-violet-100 text-violet-900'
+    : 'border-violet-400 bg-violet-500/15 text-violet-50';
+
   if (button === 'shape') {
-    return mode === 'shape'
-      ? isLight
-        ? 'border-cyan-500 bg-cyan-100 text-cyan-900'
-        : 'border-cyan-300 bg-cyan-500/25 text-cyan-50'
-      : inactive;
+    return mode === 'shape' ? activeClass : inactive;
   }
 
   if (button === 'notes') {
-    if (mode === 'notes-active') return isLight ? 'border-cyan-500 bg-cyan-100 text-cyan-900' : 'border-cyan-300 bg-cyan-500/25 text-cyan-50';
-    if (mode === 'notes-group') return isLight ? 'border-violet-500 bg-violet-100 text-violet-900' : 'border-violet-300 bg-violet-500/25 text-violet-50';
-    if (mode === 'notes-all') return isLight ? 'border-violet-500 bg-violet-100 text-violet-900' : 'border-violet-300 bg-violet-500/25 text-violet-50';
+    if (mode === 'notes-active' || mode === 'notes-group' || mode === 'notes-all') return activeClass;
     return inactive;
   }
 
-  if (mode === 'intervals-active') return isLight ? 'border-cyan-500 bg-cyan-100 text-cyan-900' : 'border-cyan-300 bg-cyan-500/25 text-cyan-50';
-  if (mode === 'intervals-group') return isLight ? 'border-violet-500 bg-violet-100 text-violet-900' : 'border-violet-300 bg-violet-500/25 text-violet-50';
-  if (mode === 'intervals-all') return isLight ? 'border-violet-500 bg-violet-100 text-violet-900' : 'border-violet-300 bg-violet-500/25 text-violet-50';
+  if (mode === 'intervals-active' || mode === 'intervals-group' || mode === 'intervals-all') return activeClass;
   return inactive;
 };
 
@@ -395,8 +391,8 @@ const TeenTriadMapPage: React.FC = () => {
   const toolbarButtonClass = (selected: boolean) =>
     `${selected
       ? isLight
-        ? 'border-cyan-500 bg-cyan-100 text-cyan-900'
-        : 'border-cyan-300 bg-cyan-500/25 text-cyan-50'
+        ? 'border-violet-500 bg-violet-100 text-violet-900'
+        : 'border-violet-400 bg-violet-500/15 text-violet-50'
       : inactiveButtonClass} min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase leading-tight transition-all`;
 
   const violetButtonClass = (selected: boolean) =>
@@ -431,11 +427,11 @@ const TeenTriadMapPage: React.FC = () => {
     || visualizationMode === 'intervals-all';
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#02030a] text-zinc-100'}`}>
+    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: `linear-gradient(${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px)`,
+          backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
           backgroundSize: '100% 30px',
         }}
       />
@@ -444,34 +440,34 @@ const TeenTriadMapPage: React.FC = () => {
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={copy.back} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title={copy.title} subtitle={copy.subtitle} />
 
-        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
+        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-3 md:grid-cols-4">
-            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.instrument}</p>
+            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.instrument}</p>
               <p className="mt-1 text-base font-black uppercase">{instrument === 'guitar' ? copy.guitar : copy.bass}</p>
             </div>
-            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.note}</p>
+            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.note}</p>
               <p className="mt-1 text-base font-black">{note}</p>
             </div>
-            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.quality}</p>
+            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.quality}</p>
               <p className="mt-1 text-base font-black">{qualityLabels[lang][quality]}</p>
             </div>
-            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.inversion}</p>
+            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.inversion}</p>
               <p className="mt-1 text-base font-black">{getHighlightLabel(highlight, copy)}</p>
             </div>
           </div>
 
-          <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-bold ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'}`}>
+          <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-bold ${isLight ? 'border-violet-200 bg-violet-50 text-violet-800' : 'border-violet-500/30 bg-violet-500/8 text-violet-200'}`}>
             {copy.quickFlow}
           </div>
 
-          <div className={`mt-4 rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-indigo-800/70 bg-zinc-900/60'}`}>
+          <div className={`mt-4 rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="flex flex-wrap items-start gap-x-6 gap-y-4">
               <div className="min-w-fit">
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.instrument}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.instrument}</p>
                 <div className="mt-2 flex gap-2">
                   {(['guitar', 'bass'] as TeenTriadInstrument[]).map((item) => (
                     <button key={item} onClick={() => setInstrument(item)} className={toolbarButtonClass(instrument === item)}>
@@ -482,7 +478,7 @@ const TeenTriadMapPage: React.FC = () => {
               </div>
 
               <div className="min-w-fit">
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.handedness}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.handedness}</p>
                 <div className="mt-2 flex gap-2">
                   {(['right', 'left'] as const).map((item) => (
                     <button key={item} onClick={() => setHandedness(item)} className={violetButtonClass(handedness === item)}>
@@ -493,11 +489,11 @@ const TeenTriadMapPage: React.FC = () => {
               </div>
 
               <div className="min-w-fit">
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.frets}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.frets}</p>
                 <div className="mt-2 flex items-center gap-2">
                   <button
                     onClick={() => setFretCount((current) => Math.max(5, current - 1))}
-                    className={`h-10 w-10 rounded-xl border text-lg font-black ${isLight ? 'border-slate-300 bg-slate-100 text-slate-800 hover:border-cyan-400' : 'border-zinc-700 bg-slate-100 text-blue-600 hover:border-cyan-500'}`}
+                    className={`h-10 w-10 rounded-xl border text-lg font-black ${isLight ? 'border-slate-300 bg-slate-100 text-slate-800 hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-violet-500'}`}
                     aria-label="Diminuir casas"
                   >
                     -
@@ -505,7 +501,7 @@ const TeenTriadMapPage: React.FC = () => {
                   <div className="min-w-[28px] text-center text-xl font-black">{fretCount}</div>
                   <button
                     onClick={() => setFretCount((current) => Math.min(24, current + 1))}
-                    className={`h-10 w-10 rounded-xl border text-lg font-black ${isLight ? 'border-slate-300 bg-slate-100 text-slate-800 hover:border-cyan-400' : 'border-zinc-700 bg-slate-100 text-blue-600 hover:border-cyan-500'}`}
+                    className={`h-10 w-10 rounded-xl border text-lg font-black ${isLight ? 'border-slate-300 bg-slate-100 text-slate-800 hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-violet-500'}`}
                     aria-label="Aumentar casas"
                   >
                     +
@@ -516,10 +512,10 @@ const TeenTriadMapPage: React.FC = () => {
             </div>
           </div>
 
-          <div className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-indigo-800/70 bg-zinc-900/60'}`}>
+          <div className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr_1fr_1.1fr]">
               <div>
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.note}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.note}</p>
                 <div className="mt-2 grid grid-cols-6 gap-2">
                   {CHROMATIC_NOTES.map((item, index) => (
                     <button key={item} onClick={() => setNoteIndex(index)} className={`${violetButtonClass(note === item)} inline-flex items-center justify-center text-center`}>
@@ -530,7 +526,7 @@ const TeenTriadMapPage: React.FC = () => {
               </div>
 
               <div>
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.stringGroup}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.stringGroup}</p>
                 <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {groupOptions.map((group) => (
                     <button key={group.id} onClick={() => setActiveGroupId(group.id)} className={`${toolbarButtonClass(activeGroupId === group.id)} inline-flex items-center justify-center text-center`}>
@@ -541,7 +537,7 @@ const TeenTriadMapPage: React.FC = () => {
               </div>
 
               <div>
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.quality}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.quality}</p>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   {(['major', 'minor', 'diminished', 'augmented'] as TriadQuality[]).map((item) => (
                     <button key={item} onClick={() => setQuality(item)} className={`${toolbarButtonClass(quality === item)} inline-flex items-center justify-center text-center`}>
@@ -552,7 +548,7 @@ const TeenTriadMapPage: React.FC = () => {
               </div>
 
               <div>
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.inversion}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.inversion}</p>
                 <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {([
                     { id: 'root', label: copy.root },
@@ -588,7 +584,7 @@ const TeenTriadMapPage: React.FC = () => {
               {copy.shapeOnly}
             </button>
             <div className={`ml-auto rounded-xl border px-4 py-2 text-xs font-black ${isLight ? 'border-slate-200 bg-white text-slate-700' : 'border-zinc-800 bg-zinc-950/80 text-zinc-200'}`}>
-              <span className="uppercase tracking-[0.15em] text-cyan-400">{copy.notes}</span>
+              <span className="uppercase tracking-[0.15em] text-violet-400">{copy.notes}</span>
               <span className="ml-2">{triadNoteSequence.join(' · ')}</span>
               {showFormulaHint && (
                 <span className={`ml-2 ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>/ {triadRoleSequence.join(' · ')}</span>

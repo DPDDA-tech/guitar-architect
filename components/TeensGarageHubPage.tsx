@@ -44,7 +44,7 @@ const TeensGarageHubPage: React.FC = () => {
       };
 
   const gridStyle = {
-    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(129,140,248,0.25)'} 1px, transparent 1px)`,
+    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
     backgroundSize: '100% 28px',
   };
 
@@ -69,7 +69,7 @@ const TeensGarageHubPage: React.FC = () => {
                 <h2 className="mt-2 max-w-[12ch] text-3xl font-black md:text-4xl">{copy.projectTitle}</h2>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {projectBadges.map((badge) => (
-                    <span key={badge} className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase ${isLight ? 'border-cyan-300 bg-cyan-50 text-cyan-700' : 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300'}`}>
+                    <span key={badge} className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase ${isLight ? 'border-violet-300 bg-violet-50 text-violet-700' : 'border-violet-500/40 bg-violet-500/10 text-violet-300'}`}>
                       {badge}
                     </span>
                   ))}

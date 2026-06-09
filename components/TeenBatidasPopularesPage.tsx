@@ -295,7 +295,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
   );
 
   const gridStyle = {
-    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.34)' : 'rgba(129,140,248,0.22)'} 1px, transparent 1px)`,
+    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
     backgroundSize: '100% 28px',
   };
 
@@ -609,33 +609,33 @@ const TeenBatidasPopularesPage: React.FC = () => {
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Batidas Populares" subtitle="Aprenda batidas com setas tradicionais de cifra: OUVIR → ENTENDER → TOCAR" />
 
-        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
+        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-3 md:grid-cols-4">
-            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400">Fase</p>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Fase</p>
               <p className="mt-2 text-2xl font-black uppercase">{PHASE_LABELS[currentPhase]}</p>
             </div>
-            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400">Padrão</p>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Padrão</p>
               <p className="mt-2 text-2xl font-black">{selectedPattern.title}</p>
             </div>
-            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400">BPM / Compasso</p>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">BPM / Compasso</p>
               <p className="mt-2 text-2xl font-black">{currentBpm} · {selectedPattern.meter}</p>
               <p className={`mt-1 text-[11px] font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
                 Base: {selectedPattern.bpm} BPM
               </p>
             </div>
-            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400">Score / Streak</p>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Score / Streak</p>
               <p className="mt-2 text-2xl font-black">{score} pts · {streak}</p>
             </div>
           </div>
 
-          <div className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white' : 'border-indigo-800/70 bg-zinc-900/60'}`}>
+          <div className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400">Progressão</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Progressão</p>
                 <p className={`mt-1 text-sm font-bold ${isLight ? 'text-slate-700' : 'text-zinc-200'}`}>
                   Faltam {rankProgress.next ? Math.max(0, rankProgress.next.minXp - xp) : 0} XP para {rankProgress.next?.label ?? 'Architect'}
                 </p>
@@ -643,18 +643,18 @@ const TeenBatidasPopularesPage: React.FC = () => {
               <p className="text-[11px] font-black uppercase">Rank: {rankProgress.current.label} · XP {xp}</p>
             </div>
             <div className={`mt-3 h-2 w-full rounded-full ${isLight ? 'bg-slate-200' : 'bg-zinc-800'}`}>
-              <div className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
+              <div className="h-2 rounded-full bg-gradient-to-r from-violet-500 via-violet-400 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
             </div>
           </div>
 
-          <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-bold ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'}`}>
+          <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-bold ${isLight ? 'border-violet-200 bg-violet-50 text-violet-800' : 'border-violet-500/30 bg-violet-500/8 text-violet-200'}`}>
             {getPhaseInstructions()}
           </div>
 
-          <div className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white' : 'border-indigo-800/70 bg-zinc-900/60'}`}>
+          <div className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400">Velocidade</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Velocidade</p>
                 <p className={`mt-1 text-sm font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
                   Ajuste o BPM como num metrônomo para estudar mais lento ou mais rápido.
                 </p>
@@ -662,28 +662,28 @@ const TeenBatidasPopularesPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => adjustBpm(-5)}
-                  className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-slate-50 text-slate-800 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-cyan-500'}`}
+                  className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-slate-50 text-slate-800 hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-violet-500'}`}
                 >
                   -5
                 </button>
                 <button
                   onClick={() => adjustBpm(-1)}
-                  className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-slate-50 text-slate-800 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-cyan-500'}`}
+                  className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-slate-50 text-slate-800 hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-violet-500'}`}
                 >
                   -1
                 </button>
-                <div className={`min-w-[88px] rounded-xl border px-3 py-2 text-center text-sm font-black ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/40 bg-cyan-500/10 text-cyan-200'}`}>
+                <div className={`min-w-[88px] rounded-xl border px-3 py-2 text-center text-sm font-black ${isLight ? 'border-violet-200 bg-violet-50 text-violet-800' : 'border-violet-500/40 bg-violet-500/10 text-violet-200'}`}>
                   {currentBpm} BPM
                 </div>
                 <button
                   onClick={() => adjustBpm(1)}
-                  className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-slate-50 text-slate-800 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-cyan-500'}`}
+                  className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-slate-50 text-slate-800 hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-violet-500'}`}
                 >
                   +1
                 </button>
                 <button
                   onClick={() => adjustBpm(5)}
-                  className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-slate-50 text-slate-800 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-cyan-500'}`}
+                  className={`rounded-xl border px-3 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-slate-50 text-slate-800 hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-violet-500'}`}
                 >
                   +5
                 </button>
@@ -702,7 +702,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
               step={1}
               value={currentBpm}
               onChange={(event) => setCurrentBpm(Number(event.target.value))}
-              className="mt-4 w-full accent-cyan-500"
+              className="mt-4 w-full accent-violet-500"
               aria-label="Controle de BPM"
             />
           </div>
@@ -725,8 +725,8 @@ const TeenBatidasPopularesPage: React.FC = () => {
                   className={`px-3 py-1.5 rounded-lg border text-xs font-black uppercase transition-all ${
                     currentPhase === phase
                       ? isLight
-                        ? 'border-cyan-500 bg-cyan-100 text-cyan-900'
-                        : 'border-cyan-300 bg-cyan-500/25 text-cyan-50'
+                        ? 'border-violet-500 bg-violet-100 text-violet-900'
+                        : 'border-violet-400 bg-violet-500/15 text-violet-50'
                       : isLight
                         ? 'border-slate-300 bg-white text-slate-500'
                         : 'border-zinc-700 bg-zinc-950 text-zinc-500'
@@ -741,7 +741,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
           <div className="mt-4 grid gap-2 sm:flex sm:flex-wrap sm:items-center">
             <button
               onClick={startLoop}
-              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-cyan-300 bg-cyan-50 text-cyan-800 hover:border-cyan-500' : 'border-cyan-500/50 bg-cyan-500/10 text-cyan-200 hover:bg-cyan-500/20'}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-violet-300 bg-violet-50 text-violet-800 hover:border-violet-500' : 'border-violet-500/50 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20'}`}
             >
               Iniciar Loop
             </button>
@@ -772,10 +772,10 @@ const TeenBatidasPopularesPage: React.FC = () => {
             </button>
           </div>
 
-          <div className={`mt-6 rounded-3xl border p-4 md:p-5 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-indigo-800/70 bg-zinc-900/60'}`}>
+          <div className={`mt-6 rounded-3xl border p-4 md:p-5 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400">Levada Atual</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Levada Atual</p>
                 <h2 className="mt-2 text-2xl font-black">{selectedPattern.title}</h2>
                 <p className={`mt-2 max-w-2xl text-sm font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
                   {selectedPattern.description}
@@ -788,7 +788,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
 
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white' : 'border-zinc-800 bg-zinc-950/80'}`}>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Padrão em setas</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Padrão em setas</p>
                 <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6 md:grid-cols-4 lg:grid-cols-8">
                   {selectedPattern.steps.map((step, index) => {
                     const isCurrent = currentStep === index;
@@ -798,8 +798,8 @@ const TeenBatidasPopularesPage: React.FC = () => {
                         className={`rounded-2xl border px-3 py-3 text-center transition-all ${
                           isCurrent
                             ? isLight
-                              ? 'border-cyan-400 bg-cyan-50 shadow-[0_0_0_2px_rgba(34,211,238,0.12)]'
-                              : 'border-cyan-400 bg-cyan-500/15 shadow-[0_0_20px_rgba(34,211,238,0.18)]'
+                              ? 'border-violet-400 bg-violet-50 shadow-[0_0_0_2px_rgba(139,92,246,0.12)]'
+                              : 'border-violet-400 bg-violet-500/15 shadow-[0_0_20px_rgba(139,92,246,0.18)]'
                             : isLight
                               ? 'border-slate-200 bg-slate-50'
                               : 'border-zinc-800 bg-zinc-900/80'
@@ -816,7 +816,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
               </div>
 
               <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white' : 'border-zinc-800 bg-zinc-950/80'}`}>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Leitura rápida</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Leitura rápida</p>
                 <p className={`mt-4 text-xl md:text-2xl font-black tracking-[0.18em] ${isLight ? 'text-slate-900' : 'text-white'}`}>
                   {selectedPattern.steps.map((step) => step.symbol).join(' ')}
                 </p>
@@ -836,7 +836,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
           {currentPhase === 'PLAY' && (
             <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
               <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white' : 'border-zinc-800 bg-zinc-950/80'}`}>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Tocar junto</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Tocar junto</p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     onClick={() => handleStrum('↓')}
@@ -857,7 +857,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
               </div>
 
               <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white' : 'border-zinc-800 bg-zinc-950/80'}`}>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Últimos ataques</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Últimos ataques</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {userStrums.length === 0 && (
                     <p className={`text-sm font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
@@ -891,11 +891,11 @@ const TeenBatidasPopularesPage: React.FC = () => {
                 className={`rounded-2xl border px-4 py-4 text-left transition-all ${
                   selectedPatternId === pattern.id
                     ? isLight
-                      ? 'border-cyan-400 bg-cyan-50 shadow-[0_0_0_2px_rgba(34,211,238,0.12)]'
-                      : 'border-cyan-400 bg-cyan-500/10 shadow-[0_0_24px_rgba(34,211,238,0.12)]'
+                      ? 'border-violet-400 bg-violet-50 shadow-[0_0_0_2px_rgba(139,92,246,0.12)]'
+                      : 'border-violet-400 bg-violet-500/10 shadow-[0_0_24px_rgba(139,92,246,0.12)]'
                     : isLight
-                      ? 'border-slate-200 bg-white hover:border-cyan-300'
-                      : 'border-zinc-800 bg-zinc-950/70 hover:border-cyan-500/40'
+                      ? 'border-slate-200 bg-white hover:border-violet-300'
+                      : 'border-zinc-800 bg-zinc-950/70 hover:border-violet-500/40'
                 }`}
               >
                 <p className="text-sm font-black uppercase">{pattern.title}</p>

@@ -67,7 +67,7 @@ const TeenBasicCarePage: React.FC = () => {
 
   const gridStyle = useMemo(
     () => ({
-      backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.34)' : 'rgba(129,140,248,0.22)'} 1px, transparent 1px)`,
+      backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.34)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
       backgroundSize: '100% 28px',
     }),
     [isLight]
@@ -81,17 +81,17 @@ const TeenBasicCarePage: React.FC = () => {
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Cuidados Básicos" subtitle="Pequenos cuidados que fazem seu instrumento durar muito mais." />
 
-        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
+        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-            <div className={`rounded-3xl border p-5 md:p-6 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-indigo-800/70 bg-zinc-900/60'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400">Visão geral</p>
+            <div className={`rounded-3xl border p-5 md:p-6 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Visão geral</p>
               <h2 className="mt-3 text-2xl font-black uppercase tracking-tight">Cuidar bem evita problemas antes que eles cresçam</h2>
               <p className={`mt-3 max-w-2xl text-sm md:text-base font-bold leading-relaxed ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
                 Esta área é para manutenção básica e preventiva de guitarra, baixo e violão. O foco aqui é criar bons hábitos
                 de conservação, sem entrar em regulagens avançadas ou procedimentos que exigem ferramentas e experiência.
               </p>
-              <div className={`mt-5 rounded-2xl border px-4 py-4 ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-900' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-100'}`}>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Regra desta área</p>
+              <div className={`mt-5 rounded-2xl border px-4 py-4 ${isLight ? 'border-violet-200 bg-violet-50 text-violet-900' : 'border-violet-500/30 bg-violet-500/8 text-violet-100'}`}>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Regra desta área</p>
                 <p className="mt-2 text-sm font-bold">
                   Quando surgir dúvida sobre ajuste de tensor, ponte, elétrica ou estrutura, o caminho mais seguro é procurar
                   orientação de um luthier.
@@ -99,8 +99,8 @@ const TeenBasicCarePage: React.FC = () => {
               </div>
             </div>
 
-            <div className={`rounded-3xl border p-5 md:p-6 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-indigo-800/70 bg-zinc-900/60'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400">Leitura rápida</p>
+            <div className={`rounded-3xl border p-5 md:p-6 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Leitura rápida</p>
               <div className="mt-4">
                 <svg viewBox="0 0 260 180" className="w-full" fill="none" aria-hidden="true">
                   <path d="M20 46H236" stroke="#334155" strokeOpacity="0.45" strokeWidth="2" strokeLinecap="round" />

@@ -106,7 +106,7 @@ const TeenScaleHunterPage: React.FC = () => {
   const targetSequence = selectedPath.sequence.slice(0, LENGTH_BY_DIFFICULTY[difficulty]);
 
   const gridStyle = {
-    backgroundImage: `linear-gradient(${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px)`,
+    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
     backgroundSize: '100% 30px',
   };
 
@@ -215,38 +215,38 @@ const TeenScaleHunterPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#02030a] text-zinc-100'}`}>
+    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Caça às Escalas" subtitle="Caçe padrões no braço e reproduza caminhos musicais por região." />
 
-        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
+        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-3 md:grid-cols-3">
-            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Dificuldade</p>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Dificuldade</p>
               <p className="mt-1 text-lg font-black">{difficulty.toUpperCase()} · {targetSequence.length} {isPt ? 'passos' : 'steps'}</p>
             </div>
-            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Caminho</p>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Caminho</p>
               <p className="mt-1 text-lg font-black">{selectedPath.title}</p>
             </div>
-            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Streak / Combo</p>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Streak / Combo</p>
               <p className="mt-1 text-lg font-black">{streak} / {combo}</p>
             </div>
           </div>
 
-          <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+          <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{isPt ? 'Progressão' : 'Progress'}</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{isPt ? 'Progressão' : 'Progress'}</p>
               <p className="text-xs font-black uppercase">
                 Rank: <span className={rankProgress.current.accentClass}>{rankProgress.current.label}</span> · XP {xp}
               </p>
             </div>
             <div className={`mt-2 h-2 w-full rounded-full ${isLight ? 'bg-slate-200' : 'bg-zinc-800'}`}>
-              <div className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
+              <div className="h-2 rounded-full bg-gradient-to-r from-violet-500 via-violet-400 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
             </div>
           </div>
 
@@ -262,11 +262,11 @@ const TeenScaleHunterPage: React.FC = () => {
                 className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${
                   difficulty === item
                     ? isLight
-                      ? 'border-cyan-500 bg-cyan-100 text-cyan-900'
-                      : 'border-cyan-300 bg-cyan-500/25 text-cyan-50'
+                      ? 'border-violet-500 bg-violet-100 text-violet-900'
+                      : 'border-violet-400 bg-violet-500/15 text-violet-50'
                     : isLight
-                      ? 'border-slate-300 bg-white hover:border-cyan-400'
-                      : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'
+                      ? 'border-slate-300 bg-white hover:border-violet-400'
+                      : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'
                 }`}
               >
                 {item}
@@ -295,7 +295,7 @@ const TeenScaleHunterPage: React.FC = () => {
             ))}
           </div>
 
-          <div className={`mt-4 rounded-2xl border p-3 ${isLight ? 'border-slate-300 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+          <div className={`mt-4 rounded-2xl border p-3 ${isLight ? 'border-slate-300 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="grid gap-2" style={{ gridTemplateColumns: `72px repeat(${FRETS.length}, minmax(0, 1fr))` }}>
               <div className="text-[10px] font-black uppercase opacity-60 self-center">Cordas</div>
               {FRETS.map((fret) => (
@@ -317,7 +317,7 @@ const TeenScaleHunterPage: React.FC = () => {
                         onClick={() => void handlePickCell(cellId)}
                         className={`h-10 rounded-lg border text-[9px] font-black transition-all ${
                           isActive
-                            ? 'bg-cyan-500 text-white border-cyan-200 shadow-[0_0_18px_rgba(34,211,238,0.8)]'
+                            ? 'bg-violet-500 text-white border-violet-200 shadow-[0_0_18px_rgba(139,92,246,0.8)]'
                             : wasPicked
                               ? 'bg-emerald-500/25 border-emerald-300 text-emerald-100'
                               : inRegion
@@ -346,8 +346,8 @@ const TeenScaleHunterPage: React.FC = () => {
               disabled={isPlaying}
               className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${
                 isLight
-                  ? 'border-cyan-500 bg-cyan-100 text-cyan-900 hover:bg-cyan-200'
-                  : 'border-cyan-300 bg-cyan-500/25 text-cyan-50 hover:bg-cyan-500/35'
+                  ? 'border-violet-500 bg-violet-100 text-violet-900 hover:bg-violet-200'
+                  : 'border-violet-400 bg-violet-500/15 text-violet-50 hover:bg-violet-500/25'
               }`}
             >
               {isPt ? 'Ouvir sequência' : 'Play sequence'}
@@ -364,13 +364,13 @@ const TeenScaleHunterPage: React.FC = () => {
             </button>
             <button
               onClick={resetTry}
-              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'}`}
             >
               Limpar
             </button>
           </div>
 
-          <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-black ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'}`}>
+          <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-black ${isLight ? 'border-violet-200 bg-violet-50 text-violet-800' : 'border-violet-500/30 bg-violet-500/8 text-violet-200'}`}>
             {feedback}
           </div>
         </section>

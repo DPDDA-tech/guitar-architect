@@ -82,7 +82,7 @@ const TeensPage: React.FC = () => {
   };
 
   const gridStyle = {
-    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(129,140,248,0.25)'} 1px, transparent 1px)`,
+    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
     backgroundSize: '100% 28px',
   };
 
@@ -262,7 +262,7 @@ const TeensPage: React.FC = () => {
               <p className="text-[11px] font-black uppercase">{rankProgress.current.label} · XP {xp}</p>
             </div>
             <div className={`mt-2 h-2 w-full rounded-full ${isLight ? 'bg-violet-100' : 'bg-zinc-800'}`}>
-              <div className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
+              <div className="h-2 rounded-full bg-gradient-to-r from-violet-500 via-violet-400 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
             </div>
             {rankProgress.next && (
               <p className={`mt-2 text-[11px] font-bold ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>

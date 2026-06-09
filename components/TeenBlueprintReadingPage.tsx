@@ -290,7 +290,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
   const beatsPerBar = timeSignature === '3/4' ? 3 : timeSignature === '6/8' ? 6 : 4;
 
   const gridStyle = {
-    backgroundImage: `linear-gradient(${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px)`,
+    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
     backgroundSize: '100% 30px',
   };
 
@@ -370,30 +370,30 @@ const TeenBlueprintReadingPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#02030a] text-zinc-100'}`}>
+    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Leitura de Partitura + TAB" subtitle="Partitura como mapa musical: altura no eixo Y, tempo no eixo X, com apoio da TAB." />
 
-        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
-          <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
+          <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Progressão</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Progressão</p>
               <p className="text-xs font-black uppercase">
                 Rank: <span className={rankProgress.current.accentClass}>{rankProgress.current.label}</span> · XP {xp}
               </p>
             </div>
             <div className={`mt-2 h-2 w-full rounded-full ${isLight ? 'bg-slate-200' : 'bg-zinc-800'}`}>
-              <div className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
+              <div className="h-2 rounded-full bg-gradient-to-r from-violet-500 via-violet-400 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
             </div>
           </div>
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <article className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-900/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Painel 1 · Mapa Visual</p>
-              <div className="mt-3 rounded-xl border border-cyan-400/40 p-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Painel 1 · Mapa Visual</p>
+              <div className="mt-3 rounded-xl border border-violet-400/40 p-3">
                 <svg viewBox="0 0 360 120" className="h-28 w-full" fill="none">
                   {[20, 35, 50, 65, 80].map((y) => <line key={y} x1="10" y1={y} x2="350" y2={y} stroke="#64748b" strokeWidth="1.2" />)}
                   {selectedPattern.notes.map((note, idx) => (
@@ -410,7 +410,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
                   <button
                     key={pattern.id}
                     onClick={() => setSelectedPatternId(pattern.id)}
-                    className={`rounded-lg border px-3 py-2 text-left text-[10px] font-black uppercase ${selectedPatternId === pattern.id ? 'border-cyan-300 bg-cyan-500/20 text-cyan-200' : isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-900'}`}
+                    className={`rounded-lg border px-3 py-2 text-left text-[10px] font-black uppercase ${selectedPatternId === pattern.id ? 'border-violet-400 bg-violet-500/15 text-violet-200' : isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-900'}`}
                   >
                     {pattern.title}
                   </button>
@@ -420,7 +420,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={() => setFocusAxis('time')}
-                  className={`rounded-lg border px-3 py-1 text-[10px] font-black uppercase ${focusAxis === 'time' ? 'border-cyan-300 bg-cyan-500/20 text-cyan-200' : isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-900'}`}
+                  className={`rounded-lg border px-3 py-1 text-[10px] font-black uppercase ${focusAxis === 'time' ? 'border-violet-400 bg-violet-500/15 text-violet-200' : isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-900'}`}
                 >
                   Foco no tempo
                 </button>
@@ -434,7 +434,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
             </article>
 
             <article className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-900/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Painel 2 · Repertório Guiado</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Painel 2 · Repertório Guiado</p>
               <div className="mt-3 rounded-xl border border-violet-400/40 p-3">
                 <div className="text-[11px] font-black tracking-wide opacity-90">{selectedFragment.title}</div>
                 <svg viewBox="0 0 340 110" className="mt-2 h-24 w-full" fill="none">
@@ -502,7 +502,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
                     <button
                       key={value}
                       onClick={() => setSubdivision(value as Subdivision)}
-                      className={`rounded-lg border px-2 py-1 text-[10px] ${subdivision === value ? 'border-cyan-300 bg-cyan-500/20 text-cyan-200' : ''}`}
+                      className={`rounded-lg border px-2 py-1 text-[10px] ${subdivision === value ? 'border-violet-400 bg-violet-500/15 text-violet-200' : ''}`}
                     >
                       {value === 1 ? '1/4' : value === 2 ? '1/8' : '1/16'}
                     </button>
@@ -540,7 +540,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
                 return (
                   <div
                     key={`tick-${idx}`}
-                    className={`h-3 rounded ${active ? (strong ? 'bg-cyan-300' : 'bg-cyan-500') : isLight ? 'bg-slate-200' : 'bg-zinc-800'}`}
+                    className={`h-3 rounded ${active ? (strong ? 'bg-violet-400' : 'bg-violet-500') : isLight ? 'bg-slate-200' : 'bg-zinc-800'}`}
                   />
                 );
               })}
@@ -640,7 +640,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
           </div>
 
           <div className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-900/70'}`}>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Mini Desafios (Complemento)</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Mini Desafios (Complemento)</p>
             <p className="mt-2 text-sm font-black">{quiz.prompt}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {quiz.options.map((option) => (
@@ -648,13 +648,13 @@ const TeenBlueprintReadingPage: React.FC = () => {
                   key={option}
                   onClick={() => handleAnswer(option)}
                   disabled={locked}
-                  className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'} disabled:opacity-50`}
+                  className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'} disabled:opacity-50`}
                 >
                   {option}
                 </button>
               ))}
             </div>
-            <div className={`mt-3 rounded-xl border px-4 py-3 text-sm font-black ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'}`}>
+            <div className={`mt-3 rounded-xl border px-4 py-3 text-sm font-black ${isLight ? 'border-violet-200 bg-violet-50 text-violet-800' : 'border-violet-500/30 bg-violet-500/8 text-violet-200'}`}>
               {feedback}
             </div>
           </div>

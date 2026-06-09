@@ -79,7 +79,7 @@ const TeenRiffChallengesPage: React.FC = () => {
   const progressText = `${Math.min(userNotes.length, selectedRiff.notes.length)}/${selectedRiff.notes.length}`;
 
   const gridStyle = {
-    backgroundImage: `linear-gradient(${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px)`,
+    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
     backgroundSize: '100% 30px',
   };
 
@@ -212,53 +212,53 @@ const TeenRiffChallengesPage: React.FC = () => {
   const isNextUnlocked = unlockedRiffIds.includes(teenRiffChallenges[selectedIndex + 1]?.id ?? '');
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#02030a] text-zinc-100'}`}>
+    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title={isPt ? "Desafios de Riff" : "Riff Challenges"} subtitle={isPt ? "Ouça, memorize e reproduza riffs." : "Listen, memorize, and play back riffs."} />
 
-        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
+        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-3 md:grid-cols-3">
-            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Riff</p>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Riff</p>
               <p className="mt-1 text-lg font-black">{selectedRiff.title}</p>
             </div>
-            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Dificuldade</p>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Dificuldade</p>
               <p className="mt-1 text-lg font-black">{difficultyBadge[selectedRiff.difficulty]}</p>
             </div>
-            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">BPM</p>
+            <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">BPM</p>
               <p className="mt-1 text-lg font-black">{selectedRiff.bpm} | Progresso {progressText}</p>
             </div>
           </div>
 
           <div className="mt-3 grid gap-3 md:grid-cols-3">
-            <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Streak</p>
+            <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Streak</p>
               <p className="mt-1 text-lg font-black">{streak}</p>
             </div>
-            <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Combo</p>
+            <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Combo</p>
               <p className="mt-1 text-lg font-black">{combo}</p>
             </div>
-            <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Trilha</p>
+            <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Trilha</p>
               <p className="mt-1 text-lg font-black">{unlockedRiffIds.length}/{teenRiffChallenges.length}</p>
             </div>
           </div>
 
-          <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
+          <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">{isPt ? 'Progressão' : 'Progress'}</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">{isPt ? 'Progressão' : 'Progress'}</p>
               <p className="text-xs font-black uppercase">
                 Rank: <span className={rankProgress.current.accentClass}>{rankProgress.current.label}</span> · XP {xp}
               </p>
             </div>
             <div className={`mt-2 h-2 w-full rounded-full ${isLight ? 'bg-slate-200' : 'bg-zinc-800'}`}>
-              <div className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
+              <div className="h-2 rounded-full bg-gradient-to-r from-violet-500 via-violet-400 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
             </div>
             {rankProgress.next && (
               <p className={`mt-2 text-[11px] font-bold ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
@@ -277,10 +277,10 @@ const TeenRiffChallengesPage: React.FC = () => {
                   disabled={!isUnlocked}
                   className={`rounded-xl border px-3 py-3 text-left transition-all ${
                     selectedRiff.id === riff.id
-                      ? 'border-cyan-400 bg-cyan-500/15 ring-2 ring-cyan-300/40'
+                      ? 'border-violet-400 bg-violet-500/15 ring-2 ring-violet-300/40'
                       : isLight
-                        ? 'border-slate-300 bg-white hover:border-cyan-400'
-                        : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'
+                        ? 'border-slate-300 bg-white hover:border-violet-400'
+                        : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'
                   } ${!isUnlocked ? 'opacity-45 cursor-not-allowed' : ''}`}
                 >
                   <p className="text-sm font-black uppercase">{riff.title}</p>
@@ -298,8 +298,8 @@ const TeenRiffChallengesPage: React.FC = () => {
               disabled={isPlaying}
               className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${
                 isLight
-                  ? 'border-cyan-500 bg-cyan-100 text-cyan-900 hover:bg-cyan-200'
-                  : 'border-cyan-300 bg-cyan-500/25 text-cyan-50 hover:bg-cyan-500/35'
+                  ? 'border-violet-500 bg-violet-100 text-violet-900 hover:bg-violet-200'
+                  : 'border-violet-400 bg-violet-500/15 text-violet-50 hover:bg-violet-500/25'
               }`}
             >
               {isPt ? 'Ouvir desafio' : 'Play challenge'}
@@ -317,7 +317,7 @@ const TeenRiffChallengesPage: React.FC = () => {
             </button>
             <button
               onClick={clearUser}
-              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
+              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'}`}
             >
               Limpar
             </button>
@@ -339,10 +339,10 @@ const TeenRiffChallengesPage: React.FC = () => {
                   onClick={() => void handleUserNote(note)}
                   className={`h-16 rounded-2xl border text-sm font-black uppercase transition-all ${
                     isActive
-                      ? `${noteColor[note]} border-cyan-100 text-white shadow-[0_0_24px_rgba(34,211,238,0.7)] scale-[1.03]`
+                      ? `${noteColor[note]} border-violet-200 text-white shadow-[0_0_24px_rgba(139,92,246,0.7)] scale-[1.03]`
                       : isLight
-                        ? 'border-slate-300 bg-slate-100 text-slate-700 hover:border-cyan-400'
-                        : 'border-zinc-700 bg-zinc-900 text-zinc-100 hover:border-cyan-500'
+                        ? 'border-slate-300 bg-slate-100 text-slate-700 hover:border-violet-400'
+                        : 'border-zinc-700 bg-zinc-900 text-zinc-100 hover:border-violet-500'
                   }`}
                 >
                   {note}
@@ -367,8 +367,8 @@ const TeenRiffChallengesPage: React.FC = () => {
                   ? 'border-amber-300 bg-amber-50 text-amber-800'
                   : 'border-amber-500/40 bg-amber-500/10 text-amber-200'
                 : isLight
-                  ? 'border-cyan-200 bg-cyan-50 text-cyan-800'
-                  : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'
+                  ? 'border-violet-200 bg-violet-50 text-violet-800'
+                  : 'border-violet-500/30 bg-violet-500/8 text-violet-200'
           }`}>
             {feedback}
           </div>

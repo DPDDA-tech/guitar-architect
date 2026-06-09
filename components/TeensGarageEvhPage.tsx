@@ -220,7 +220,7 @@ const TeensGarageEvhPage: React.FC = () => {
             </div>
             <ImageCard item={images[23]} onOpen={setActiveImage} />
           </section>
-          <p className={`rounded-2xl border p-3 text-xs font-bold ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-700/40 bg-cyan-950/20 text-cyan-200'}`}>
+          <p className={`rounded-2xl border p-3 text-xs font-bold ${isLight ? 'border-violet-200 bg-violet-50 text-violet-800' : 'border-violet-500/30 bg-violet-500/8 text-violet-200'}`}>
             Curiosidade rápida: o posicionamento “caótico” de alguns detalhes visuais também era uma forma de provocar imitadores.
           </p>
         </div>
@@ -281,7 +281,7 @@ const TeensGarageEvhPage: React.FC = () => {
   };
 
   const gridStyle = {
-    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(129,140,248,0.25)'} 1px, transparent 1px)`,
+    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
     backgroundSize: '100% 28px',
   };
 
@@ -304,7 +304,7 @@ const TeensGarageEvhPage: React.FC = () => {
             <div>
               <h1 className="text-4xl font-black tracking-tight md:text-5xl">EVH Frankenstein Tribute</h1>
               <p className={`mt-4 max-w-4xl text-base font-bold leading-relaxed ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>Como criar uma réplica visual inspirada na fase Red • White • Black da guitarra Frankenstein.</p>
-              <div className="mt-4 flex flex-wrap gap-2">{badges.map((badge) => <span key={badge} className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase ${isLight ? 'border-cyan-300 bg-cyan-50 text-cyan-700' : 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300'}`}>{badge}</span>)}</div>
+              <div className="mt-4 flex flex-wrap gap-2">{badges.map((badge) => <span key={badge} className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase ${isLight ? 'border-violet-300 bg-violet-50 text-violet-700' : 'border-violet-500/40 bg-violet-500/10 text-violet-300'}`}>{badge}</span>)}</div>
               <div className="mt-3 flex flex-wrap gap-2">{microBadges.map((badge) => <span key={badge} className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase ${isLight ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-amber-500/40 bg-amber-500/10 text-amber-200'}`}>{badge}</span>)}</div>
               <p className="mt-4 text-sm font-black uppercase tracking-[0.14em] text-amber-400">Cada Frankenstein é única.</p>
               <p className={`mt-2 max-w-4xl text-sm leading-7 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>Este tutorial é uma homenagem visual e educacional inspirada na Frankenstein, não uma reprodução oficial licenciada.</p>
@@ -320,7 +320,7 @@ const TeensGarageEvhPage: React.FC = () => {
               <div className={`rounded-2xl border p-4 ${isLight ? 'border-violet-200 bg-violet-50/60' : 'border-violet-700/40 bg-violet-950/20'}`}>
                 <p className="text-[11px] font-black uppercase tracking-[0.16em] text-violet-400">Projeto 001 — EVH Frankenstein Tribute</p>
                 <div className={`mt-3 h-2 w-full rounded-full ${isLight ? 'bg-violet-100' : 'bg-zinc-800'}`}>
-                  <div className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 transition-all" style={{ width: `${progressPercent}%` }} />
+                  <div className="h-2 rounded-full bg-gradient-to-r from-violet-500 via-violet-400 to-fuchsia-500 transition-all" style={{ width: `${progressPercent}%` }} />
                 </div>
                 <p className={`mt-2 text-xs font-bold ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{progressPercent}% concluído · {completedCount}/{chapters.length} etapas</p>
                 <div className="mt-3 flex flex-wrap gap-2">

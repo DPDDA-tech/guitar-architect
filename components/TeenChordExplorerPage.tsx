@@ -111,7 +111,7 @@ const TeenChordExplorerPage: React.FC = () => {
     : [];
 
   const gridStyle = {
-    backgroundImage: `linear-gradient(${isLight ? '#cbd5e1' : '#1e1b4b'} 1px, transparent 1px)`,
+    backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
     backgroundSize: '100% 30px',
   };
 
@@ -176,43 +176,43 @@ const TeenChordExplorerPage: React.FC = () => {
   const qualityButtonClass = 'min-h-[38px] min-w-[76px] rounded-xl border px-3 py-1.5 text-[11px] font-black uppercase inline-flex items-center justify-center text-center leading-tight transition-all';
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#02030a] text-zinc-100'}`}>
+    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-7xl">
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={copy.back} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title={copy.title} subtitle={copy.subtitle} />
 
-        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
+        <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-3 md:grid-cols-4">
-            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.instrument}</p>
+            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.instrument}</p>
               <p className="mt-1 text-base font-black uppercase">{instrument === 'guitar' ? copy.guitar : copy.bass}</p>
             </div>
-            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.currentChord}</p>
+            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.currentChord}</p>
               <p className="mt-1 text-base font-black">{note}</p>
             </div>
-            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.quality}</p>
+            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.quality}</p>
               <p className="mt-1 text-base font-black">{getDisplayQualityLabel(quality, qualityOptions.find((option) => option.id === quality)?.label ?? '')}</p>
             </div>
-            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.currentShape}</p>
+            <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.currentShape}</p>
               <p className="mt-1 text-base font-black">{currentShapeLabel}</p>
             </div>
           </div>
 
-          <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-bold ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'}`}>
+          <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-bold ${isLight ? 'border-violet-200 bg-violet-50 text-violet-800' : 'border-violet-500/30 bg-violet-500/8 text-violet-200'}`}>
             {lang === 'pt'
               ? 'Escolha a nota, a qualidade e a forma do acorde. Depois alterne entre notas, intervalos ou somente shape para estudar o desenho no braço.'
               : 'Choose the note, chord quality and shape. Then switch between notes, intervals or shape only to study the pattern on the neck.'}
           </div>
 
-          <div className={`mt-4 rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-indigo-800/70 bg-zinc-900/60'}`}>
+          <div className={`mt-4 rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="flex flex-wrap items-start gap-x-6 gap-y-4">
               <div className="min-w-fit">
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.instrument}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.instrument}</p>
                 <div className="mt-2 flex gap-2">
                   {([
                     { id: 'guitar', label: copy.guitar },
@@ -224,11 +224,11 @@ const TeenChordExplorerPage: React.FC = () => {
                       className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase leading-tight transition-all ${
                         instrument === item.id
                           ? isLight
-                            ? 'border-cyan-500 bg-cyan-100 text-cyan-900'
-                            : 'border-cyan-300 bg-cyan-500/25 text-cyan-50'
+                            ? 'border-violet-500 bg-violet-100 text-violet-900'
+                            : 'border-violet-400 bg-violet-500/15 text-violet-50'
                           : isLight
-                            ? 'border-slate-300 bg-white text-slate-700 hover:border-cyan-400'
-                            : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-cyan-500'
+                            ? 'border-slate-300 bg-white text-slate-700 hover:border-violet-400'
+                            : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-violet-500'
                       }`}
                     >
                       {item.label}
@@ -238,7 +238,7 @@ const TeenChordExplorerPage: React.FC = () => {
               </div>
 
               <div className="min-w-fit">
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.handedness}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.handedness}</p>
                 <div className="mt-2 flex gap-2">
                   {([
                     { id: 'right', label: copy.right },
@@ -264,11 +264,11 @@ const TeenChordExplorerPage: React.FC = () => {
               </div>
 
               <div className="min-w-fit">
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.frets}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.frets}</p>
                 <div className="mt-2 flex items-center gap-3">
                   <button
                     onClick={() => setVisibleFrets((current) => Math.max(5, current - 1))}
-                    className={`h-11 w-11 rounded-xl border text-xl font-black ${isLight ? 'border-slate-300 bg-slate-100 text-slate-800 hover:border-cyan-400' : 'border-zinc-700 bg-slate-100 text-blue-600 hover:border-cyan-500'}`}
+                    className={`h-11 w-11 rounded-xl border text-xl font-black ${isLight ? 'border-slate-300 bg-slate-100 text-slate-800 hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-violet-500'}`}
                     aria-label={lang === 'pt' ? 'Diminuir casas' : 'Decrease frets'}
                   >
                     −
@@ -276,7 +276,7 @@ const TeenChordExplorerPage: React.FC = () => {
                   <div className="min-w-[28px] text-center text-2xl font-black">{visibleFrets}</div>
                   <button
                     onClick={() => setVisibleFrets((current) => Math.min(24, current + 1))}
-                    className={`h-11 w-11 rounded-xl border text-xl font-black ${isLight ? 'border-slate-300 bg-slate-100 text-slate-800 hover:border-cyan-400' : 'border-zinc-700 bg-slate-100 text-blue-600 hover:border-cyan-500'}`}
+                    className={`h-11 w-11 rounded-xl border text-xl font-black ${isLight ? 'border-slate-300 bg-slate-100 text-slate-800 hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-violet-500'}`}
                     aria-label={lang === 'pt' ? 'Aumentar casas' : 'Increase frets'}
                   >
                     +
@@ -286,24 +286,24 @@ const TeenChordExplorerPage: React.FC = () => {
             </div>
           </div>
 
-          <div className={`mt-4 rounded-3xl border p-4 md:p-5 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-indigo-800/70 bg-zinc-900/60'}`}>
+          <div className={`mt-4 rounded-3xl border p-4 md:p-5 ${isLight ? 'border-slate-200 bg-slate-50/90' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] xl:items-start">
               <div className="min-w-0">
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.currentChord} / {copy.quickNotes}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.currentChord} / {copy.quickNotes}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setNoteIndex((prev) => (prev - 1 + TEEN_CHROMATIC_NOTES.length) % TEEN_CHROMATIC_NOTES.length)}
-                    className={`${arrowButtonClass} ${isLight ? 'border-slate-300 bg-white text-slate-800 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-cyan-500'}`}
+                    className={`${arrowButtonClass} ${isLight ? 'border-slate-300 bg-white text-slate-800 hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-violet-500'}`}
                     aria-label={lang === 'pt' ? 'Nota anterior' : 'Previous note'}
                   >
                     ←
                   </button>
-                  <div className={`h-10 min-w-[88px] rounded-xl border px-4 text-center text-2xl font-black inline-flex items-center justify-center ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/40 bg-cyan-500/10 text-cyan-200'}`}>
+                  <div className={`h-10 min-w-[88px] rounded-xl border px-4 text-center text-2xl font-black inline-flex items-center justify-center ${isLight ? 'border-violet-200 bg-violet-50 text-violet-800' : 'border-violet-500/40 bg-violet-500/10 text-violet-200'}`}>
                     {note}
                   </div>
                   <button
                     onClick={() => setNoteIndex((prev) => (prev + 1) % TEEN_CHROMATIC_NOTES.length)}
-                    className={`${arrowButtonClass} ${isLight ? 'border-slate-300 bg-white text-slate-800 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-cyan-500'}`}
+                    className={`${arrowButtonClass} ${isLight ? 'border-slate-300 bg-white text-slate-800 hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-violet-500'}`}
                     aria-label={lang === 'pt' ? 'Próxima nota' : 'Next note'}
                   >
                     →
@@ -331,7 +331,7 @@ const TeenChordExplorerPage: React.FC = () => {
               </div>
 
               <div className="min-w-0">
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.quality}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.quality}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {topQualityOptions.map((option) => (
                     <button
@@ -340,11 +340,11 @@ const TeenChordExplorerPage: React.FC = () => {
                       className={`${qualityButtonClass} ${
                         quality === option.id
                           ? isLight
-                            ? 'border-cyan-500 bg-cyan-100 text-cyan-900'
-                            : 'border-cyan-300 bg-cyan-500/25 text-cyan-50'
+                            ? 'border-violet-500 bg-violet-100 text-violet-900'
+                            : 'border-violet-400 bg-violet-500/15 text-violet-50'
                           : isLight
-                            ? 'border-slate-300 bg-white text-slate-700 hover:border-cyan-400'
-                            : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-cyan-500'
+                            ? 'border-slate-300 bg-white text-slate-700 hover:border-violet-400'
+                            : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-violet-500'
                       }`}
                     >
                       {getDisplayQualityLabel(option.id, option.label)}
@@ -360,11 +360,11 @@ const TeenChordExplorerPage: React.FC = () => {
                         className={`${qualityButtonClass} ${
                           quality === option.id
                             ? isLight
-                              ? 'border-cyan-500 bg-cyan-100 text-cyan-900'
-                              : 'border-cyan-300 bg-cyan-500/25 text-cyan-50'
+                              ? 'border-violet-500 bg-violet-100 text-violet-900'
+                              : 'border-violet-400 bg-violet-500/15 text-violet-50'
                             : isLight
-                              ? 'border-slate-300 bg-white text-slate-700 hover:border-cyan-400'
-                              : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-cyan-500'
+                              ? 'border-slate-300 bg-white text-slate-700 hover:border-violet-400'
+                              : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-violet-500'
                         }`}
                       >
                         {getDisplayQualityLabel(option.id, option.label)}
@@ -377,7 +377,7 @@ const TeenChordExplorerPage: React.FC = () => {
 
             <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
               <div className="min-w-0">
-                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.currentShape}</p>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.currentShape}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setShapeIndex((prev) => (prev - 1 + Math.max(shapes.length, 1)) % Math.max(shapes.length, 1))}
