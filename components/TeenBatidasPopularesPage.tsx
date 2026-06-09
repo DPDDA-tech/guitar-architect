@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { getTeensTheme } from '../utils/ecosystemPreferences';
+import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
@@ -261,7 +261,9 @@ const STRUM_FREQUENCIES = [110, 146.83, 196, 246.94, 293.66, 369.99];
 
 const TeenBatidasPopularesPage: React.FC = () => {
   const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
+  const [lang] = useState<'pt' | 'en'>(() => getTeensLang());
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
   const [selectedPatternId, setSelectedPatternId] = useState(PATTERNS[0].id);
   const [currentBpm, setCurrentBpm] = useState(PATTERNS[0].bpm);
   const [currentPhase, setCurrentPhase] = useState<Phase>('LISTEN');
@@ -269,7 +271,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [feedback, setFeedback] = useState('Ouça a batida algumas vezes e deixe a mão entrar no balanço.');
+  const [feedback, setFeedback] = useState(() => (lang === 'pt' ? 'Ouça a batida algumas vezes e deixe a mão entrar no balanço.' : 'Listen to the groove a few times and let your hand enter the flow.'));
   const [xp, setXp] = useState(() => getTeensXp());
   const [userStrums, setUserStrums] = useState<UserStrum[]>([]);
   const [loopsCompleted, setLoopsCompleted] = useState(0);
@@ -495,7 +497,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
     setStreak(0);
     setLoopsCompleted(0);
     setUserStrums([]);
-    setFeedback('Ouça a batida algumas vezes e deixe a mão entrar no balanço.');
+    setFeedback(isPt ? 'Ouça a batida algumas vezes e deixe a mão entrar no balanço.' : 'Listen to the groove a few times and let your hand enter the flow.');
   }, [stopLoop]);
 
   const adjustBpm = useCallback((delta: number) => {
@@ -559,7 +561,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
   const getPhaseInstructions = () => {
     switch (currentPhase) {
       case 'LISTEN':
-        return 'Ouça o loop e perceba a respiração da mão. Não pense só nas setas: sinta o fluxo do compasso.';
+        return isPt ? 'Ouça o loop e perceba a respiração da mão. Não pense só nas setas: sinta o fluxo do compasso.' : 'Listen to the loop and feel the hand motion. Do not think only about the arrows: feel the flow of the measure.';
       case 'UNDERSTAND':
         return 'Leia a contagem e observe como as setas tradicionais de cifra se distribuem entre ataques e pausas.';
       case 'PLAY':
@@ -604,7 +606,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-7xl">
-        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel="Voltar ao Teens" backPath="/teens" />
+        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Batidas Populares" subtitle="Aprenda batidas com setas tradicionais de cifra: OUVIR → ENTENDER → TOCAR" />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
@@ -913,13 +915,13 @@ const TeenBatidasPopularesPage: React.FC = () => {
             onClick={() => navigateTo('/teens')}
             className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95"
           >
-            Voltar ao Teens
+            {isPt ? 'Voltar ao Teens' : 'Back to Teens'}
           </button>
           <button
             onClick={() => navigateTo('/studio')}
             className="rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-500 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(8,145,178,0.3)] transition-all hover:from-cyan-500 hover:to-sky-400 active:scale-95"
           >
-            Ir para Studio
+            {isPt ? 'Ir para Studio' : 'Go to Studio'}
           </button>
         </div>
       </main>

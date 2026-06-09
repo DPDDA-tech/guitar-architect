@@ -1,5 +1,5 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { getTeensTheme } from '../utils/ecosystemPreferences';
+﻿import React, { useMemo, useRef, useState } from 'react';
+import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { teenRiffChallenges, type TeenRiffChallenge, type TeenRiffDifficulty, type TeenRiffNote } from '../data/teenRiffData';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
@@ -41,6 +41,7 @@ const UNLOCK_STORAGE_KEY = 'ga_teens_riff_unlocks_v1';
 
 const TeenRiffChallengesPage: React.FC = () => {
   const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
+  const [lang] = useState<'pt' | 'en'>(() => getTeensLang());
   const [unlockedRiffIds, setUnlockedRiffIds] = useState<string[]>(() => {
     const fallback = teenRiffChallenges[0] ? [teenRiffChallenges[0].id] : [];
     try {
@@ -67,6 +68,7 @@ const TeenRiffChallengesPage: React.FC = () => {
   const playTokenRef = useRef(0);
 
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
 
   const selectedRiff = useMemo<TeenRiffChallenge>(() => {
     return teenRiffChallenges.find((riff) => riff.id === selectedRiffId) ?? teenRiffChallenges[0];
@@ -144,7 +146,7 @@ const TeenRiffChallengesPage: React.FC = () => {
     if (!nextRiff) return;
     if (!unlockedRiffIds.includes(nextRiff.id)) {
       persistUnlocks([...unlockedRiffIds, nextRiff.id]);
-      setFeedback(`Riff concluído! Novo desafio liberado: ${nextRiff.title}.`);
+      setFeedback(isPt ? `Riff concluído! Novo desafio liberado: ${nextRiff.title}.` : `Riff completed! New challenge unlocked: ${nextRiff.title}.`);
     }
   };
 
@@ -152,7 +154,7 @@ const TeenRiffChallengesPage: React.FC = () => {
     if (!unlockedRiffIds.includes(riffId)) return;
     setSelectedRiffId(riffId);
     setUserNotes([]);
-    setFeedback('Riff selecionado. Ouça e reproduza.');
+    setFeedback(isPt ? 'Riff selecionado. Ouça e reproduza.' : 'Riff selected. Listen and reproduce it.');
     setLastResult(null);
   };
 
@@ -170,7 +172,7 @@ const TeenRiffChallengesPage: React.FC = () => {
         if (JSON.stringify(next) === JSON.stringify(selectedRiff.notes)) {
           const earnedXp = selectedRiff.difficulty === 'hard' ? 30 : selectedRiff.difficulty === 'medium' ? 22 : 16;
           const nextXp = addTeensXp(earnedXp);
-          setFeedback('Riff concluído!');
+          setFeedback(isPt ? 'Riff concluído!' : 'Riff completed!');
           setStreak((value) => value + 1);
           setCombo((value) => value + 1);
           setLastResult('success');
@@ -179,12 +181,12 @@ const TeenRiffChallengesPage: React.FC = () => {
           window.setTimeout(() => setShowAchievement(false), 1400);
           unlockNextRiff(selectedIndex);
         } else {
-          setFeedback('Quase! Ouça novamente.');
+          setFeedback(isPt ? 'Quase! Ouça novamente.' : 'Almost! Listen again.');
           setCombo(0);
           setLastResult('error');
         }
       } else {
-        setFeedback('Continue tocando o riff...');
+        setFeedback(isPt ? 'Continue tocando o riff...' : 'Keep playing the riff...');
       }
 
       return next;
@@ -193,7 +195,7 @@ const TeenRiffChallengesPage: React.FC = () => {
 
   const clearUser = () => {
     setUserNotes([]);
-    setFeedback('Sua sequência foi limpa.');
+    setFeedback(isPt ? 'Sua sequência foi limpa.' : 'Your sequence was cleared.');
     setLastResult(null);
   };
 
@@ -203,7 +205,7 @@ const TeenRiffChallengesPage: React.FC = () => {
     if (!unlockedRiffIds.includes(next.id)) return;
     setSelectedRiffId(next.id);
     setUserNotes([]);
-    setFeedback(`Novo desafio: ${next.title}`);
+    setFeedback(isPt ? `Novo desafio: ${next.title}` : `New challenge: ${next.title}`);
     setLastResult(null);
   };
 
@@ -214,8 +216,8 @@ const TeenRiffChallengesPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
-        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel="Voltar ao Teens" backPath="/teens" />
-        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Desafios de Riff" subtitle="Ouça, memorize e reproduza riffs." />
+        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
+        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title={isPt ? "Desafios de Riff" : "Riff Challenges"} subtitle={isPt ? "Ouça, memorize e reproduza riffs." : "Listen, memorize, and play back riffs."} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
           <div className="grid gap-3 md:grid-cols-3">
@@ -250,7 +252,7 @@ const TeenRiffChallengesPage: React.FC = () => {
 
           <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Progressão</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">{isPt ? 'Progressão' : 'Progress'}</p>
               <p className="text-xs font-black uppercase">
                 Rank: <span className={rankProgress.current.accentClass}>{rankProgress.current.label}</span> · XP {xp}
               </p>
@@ -283,7 +285,7 @@ const TeenRiffChallengesPage: React.FC = () => {
                 >
                   <p className="text-sm font-black uppercase">{riff.title}</p>
                   <p className="mt-1 text-[10px] font-black opacity-70 uppercase">
-                    {difficultyBadge[riff.difficulty]} · {riff.notes.length} notas {isUnlocked ? '' : '· LOCKED'}
+                    {difficultyBadge[riff.difficulty]} · {riff.notes.length} {isPt ? 'notas' : 'notes'} {isUnlocked ? '' : `· ${isPt ? 'BLOQUEADO' : 'LOCKED'}`}
                   </p>
                 </button>
               );
@@ -300,7 +302,7 @@ const TeenRiffChallengesPage: React.FC = () => {
                   : 'border-cyan-300 bg-cyan-500/25 text-cyan-50 hover:bg-cyan-500/35'
               }`}
             >
-              Ouvir desafio
+              {isPt ? 'Ouvir desafio' : 'Play challenge'}
             </button>
             <button
               onClick={() => void playSequence(userNotes)}
@@ -311,7 +313,7 @@ const TeenRiffChallengesPage: React.FC = () => {
                   : 'border-violet-300 bg-violet-500/25 text-violet-50 hover:bg-violet-500/35'
               }`}
             >
-              Ouvir sua versão
+              {isPt ? 'Ouvir sua versão' : 'Play your version'}
             </button>
             <button
               onClick={clearUser}
@@ -324,7 +326,7 @@ const TeenRiffChallengesPage: React.FC = () => {
               disabled={!isNextUnlocked}
               className="min-h-[44px] rounded-xl border border-emerald-400 bg-emerald-500/20 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-emerald-100 hover:bg-emerald-500/30 disabled:opacity-40"
             >
-              Próximo desafio
+              {isPt ? 'Próximo desafio' : 'Next challenge'}
             </button>
           </div>
 
@@ -351,7 +353,7 @@ const TeenRiffChallengesPage: React.FC = () => {
 
           {showAchievement && (
             <div className={`mt-5 rounded-xl border px-4 py-3 text-sm font-black animate-pulse ${isLight ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'}`}>
-              +XP ganho • +1 streak • combo {combo} • desafio dominado
+              {isPt ? `+XP ganho • +1 streak • combo ${combo} • desafio dominado` : `+XP earned • +1 streak • combo ${combo} • challenge mastered`}
             </div>
           )}
 
@@ -377,7 +379,7 @@ const TeenRiffChallengesPage: React.FC = () => {
             onClick={() => navigateTo('/teens')}
             className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95"
           >
-            Voltar ao Teens
+            {isPt ? 'Voltar ao Teens' : 'Back to Teens'}
           </button>
           <button
             onClick={() => sendFretboardIntent({
@@ -387,14 +389,14 @@ const TeenRiffChallengesPage: React.FC = () => {
               scaleType: 'Major (Ionian)',
               focusFirstRegion: true,
               instruction: {
-                title: 'Do Riff à Escala',
-                description: 'As notas que você tocou fazem parte desta escala. Explore as regiões do braço.',
+                title: isPt ? 'Do Riff à Escala' : 'From Riff to Scale',
+                description: isPt ? 'As notas que você tocou fazem parte desta escala. Explore as regiões do braço.' : 'The notes you played are part of this scale. Explore the fretboard regions.',
                 persistent: true,
               },
             })}
             className="rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-500 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(8,145,178,0.3)] transition-all hover:from-cyan-500 hover:to-sky-400 active:scale-95"
           >
-            Ir para Studio
+            {isPt ? 'Ir para Studio' : 'Go to Studio'}
           </button>
         </div>
       </main>
@@ -403,3 +405,4 @@ const TeenRiffChallengesPage: React.FC = () => {
 };
 
 export default TeenRiffChallengesPage;
+

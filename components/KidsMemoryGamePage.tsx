@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getKidsTheme } from '../utils/ecosystemPreferences';
+import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
@@ -7,28 +7,34 @@ type Difficulty = 'easy' | 'medium' | 'hard';
 
 type Instrument = {
   key: string;
-  label: string;
+  label: {
+    pt: string;
+    en: string;
+  };
   image: string;
 };
 
 type MemoryCard = {
   id: number;
   instrumentKey: string;
-  label: string;
+  label: {
+    pt: string;
+    en: string;
+  };
   image: string;
   isFlipped: boolean;
   isMatched: boolean;
 };
 
 const INSTRUMENTS: Instrument[] = [
-  { key: 'classicS', label: 'Classic S', image: '/kids/workshop/classic-s.webp' },
-  { key: 'singleCut', label: 'Single Cut', image: '/kids/workshop/single-cut.webp' },
-  { key: 'explorer', label: 'Explorer', image: '/kids/workshop/explorer.webp' },
-  { key: 'flyingV', label: 'Flying V', image: '/kids/workshop/flyingv.webp' },
-  { key: 'contrabaixo', label: 'Contrabaixo', image: '/kids/workshop/contrabaixo.webp' },
-  { key: 'violao', label: 'Violao', image: '/kids/workshop/violao.webp' },
-  { key: 'banjo', label: 'Banjo', image: '/kids/workshop/banjo.webp' },
-  { key: 'semiAcustica', label: 'Semi-acústica', image: '/kids/workshop/semi-acustica.webp' },
+  { key: 'classicS', label: { pt: 'Classic S', en: 'Classic S' }, image: '/kids/workshop/classic-s.webp' },
+  { key: 'singleCut', label: { pt: 'Single Cut', en: 'Single Cut' }, image: '/kids/workshop/single-cut.webp' },
+  { key: 'explorer', label: { pt: 'Explorer', en: 'Explorer' }, image: '/kids/workshop/explorer.webp' },
+  { key: 'flyingV', label: { pt: 'Flying V', en: 'Flying V' }, image: '/kids/workshop/flyingv.webp' },
+  { key: 'contrabaixo', label: { pt: 'Contrabaixo', en: 'Bass' }, image: '/kids/workshop/contrabaixo.webp' },
+  { key: 'violao', label: { pt: 'Violão', en: 'Acoustic Guitar' }, image: '/kids/workshop/violao.webp' },
+  { key: 'banjo', label: { pt: 'Banjo', en: 'Banjo' }, image: '/kids/workshop/banjo.webp' },
+  { key: 'semiAcustica', label: { pt: 'Semiacústica', en: 'Semi-Acoustic' }, image: '/kids/workshop/semi-acustica.webp' },
 ];
 
 const PAIRS_BY_DIFFICULTY: Record<Difficulty, number> = {
@@ -68,6 +74,7 @@ const createDeck = (difficulty: Difficulty): MemoryCard[] => {
 
 const KidsMemoryGamePage: React.FC = () => {
   const [theme] = useState(() => getKidsTheme());
+  const [lang] = useState(() => getKidsLang());
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('easy');
   const [cards, setCards] = useState<MemoryCard[]>(() => createDeck('easy'));
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
@@ -77,7 +84,19 @@ const KidsMemoryGamePage: React.FC = () => {
   const [isLocked, setIsLocked] = useState(false);
 
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
 
+  const difficultyOptions: Array<{ key: Difficulty; label: string }> = isPt
+    ? [
+        { key: 'easy', label: 'Fácil' },
+        { key: 'medium', label: 'Médio' },
+        { key: 'hard', label: 'Difícil' },
+      ]
+    : [
+        { key: 'easy', label: 'Easy' },
+        { key: 'medium', label: 'Medium' },
+        { key: 'hard', label: 'Hard' },
+      ];
 
   const startNewGame = (difficulty: Difficulty = selectedDifficulty) => {
     setCards(createDeck(difficulty));
@@ -142,20 +161,15 @@ const KidsMemoryGamePage: React.FC = () => {
 
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
-
       <main className="relative mx-auto max-w-[1400px]">
-        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel="Voltar ao Kids" backPath="/kids" />
-        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="Jogo da Memória" subtitle="Encontre os pares de instrumentos." />
+        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={isPt ? 'Voltar ao Kids' : 'Back to Kids'} backPath="/kids" />
+        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={isPt ? 'Jogo da Memória' : 'Memory Game'} subtitle={isPt ? 'Encontre os pares de instrumentos.' : 'Find the matching instrument pairs.'} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
           <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider">Dificuldade</span>
-              {([
-          { key: 'easy',   label: 'Fácil' },
-          { key: 'medium', label: 'Médio' },
-          { key: 'hard',   label: 'Difícil' },
-              ] as Array<{ key: Difficulty; label: string }>).map((item) => (
+              <span className="text-xs font-black uppercase tracking-wider">{isPt ? 'Dificuldade' : 'Difficulty'}</span>
+              {difficultyOptions.map((item) => (
                 <button
                   key={item.key}
                   onClick={() => setSelectedDifficulty(item.key)}
@@ -166,12 +180,14 @@ const KidsMemoryGamePage: React.FC = () => {
               ))}
             </div>
 
-            <div className="text-xs font-black uppercase tracking-wider text-amber-500">Movimentos: {moves}</div>
+            <div className="text-xs font-black uppercase tracking-wider text-amber-500">
+              {isPt ? 'Movimentos' : 'Moves'}: {moves}
+            </div>
           </div>
 
           {gameCompleted && (
             <div className={`mb-4 rounded-xl border px-3 py-3 text-sm font-black ${isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'}`}>
-            VocÉ encontrou todos os instrumentos!
+              {isPt ? 'Você encontrou todos os instrumentos!' : 'You found all the instruments!'}
             </div>
           )}
 
@@ -186,8 +202,8 @@ const KidsMemoryGamePage: React.FC = () => {
                 >
                   {showFront ? (
                     <div className="flex h-full w-full flex-col items-center justify-between p-2 bg-white text-zinc-900">
-                      <img src={card.image} alt={card.label} className="mt-1 h-[70%] w-full object-contain" />
-                      <p className="mb-1 text-[10px] font-black uppercase tracking-tight">{card.label}</p>
+                      <img src={card.image} alt={card.label[isPt ? 'pt' : 'en']} className="mt-1 h-[70%] w-full object-contain" />
+                      <p className="mb-1 text-[10px] font-black uppercase tracking-tight">{card.label[isPt ? 'pt' : 'en']}</p>
                     </div>
                   ) : (
                     <div className={`flex h-full w-full flex-col items-center justify-center gap-2 ${isLight ? 'bg-slate-100' : 'bg-zinc-900'}`}>
@@ -202,13 +218,13 @@ const KidsMemoryGamePage: React.FC = () => {
 
           <div className={`sticky bottom-2 z-20 mt-4 grid gap-2 rounded-2xl border px-3 py-3 sm:flex sm:flex-row sm:justify-center ${isLight ? 'border-slate-200 bg-white/95' : 'border-zinc-700 bg-zinc-950/90 backdrop-blur-sm'}`}>
             <button onClick={() => startNewGame()} className="min-h-[44px] rounded-xl border border-amber-500 bg-amber-500 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-amber-400">
-              Novo jogo
+              {isPt ? 'Novo jogo' : 'New game'}
             </button>
             <button onClick={() => navigateTo('/kids/games')} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
-              Voltar aos Jogos
+              {isPt ? 'Voltar aos Jogos' : 'Back to Games'}
             </button>
             <button onClick={() => navigateTo('/kids')} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
-              Voltar ao Kids
+              {isPt ? 'Voltar ao Kids' : 'Back to Kids'}
             </button>
           </div>
         </section>
@@ -218,6 +234,3 @@ const KidsMemoryGamePage: React.FC = () => {
 };
 
 export default KidsMemoryGamePage;
-
-
-

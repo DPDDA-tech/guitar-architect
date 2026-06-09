@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { getTeensTheme } from '../utils/ecosystemPreferences';
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
@@ -359,6 +359,7 @@ const LANES: Array<{
 
 const TeenRhythmLabPage: React.FC = () => {
   const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
+  const [lang] = useState<'pt' | 'en'>(() => getTeensLang());
   const [selectedPatternId, setSelectedPatternId] = useState(PATTERNS[0].id);
   const [currentPhase, setCurrentPhase] = useState<Phase>('LISTEN');
   const [isLooping, setIsLooping] = useState(false);
@@ -370,7 +371,7 @@ const TeenRhythmLabPage: React.FC = () => {
   const [expectedNextBeat, setExpectedNextBeat] = useState(0);
   const [timingModeActive, setTimingModeActive] = useState(false);
   const [completedLoops, setCompletedLoops] = useState(0);
-  const [feedback, setFeedback] = useState('Clique nos tempos do compasso.');
+  const [feedback, setFeedback] = useState(() => (lang === 'pt' ? 'Clique nos tempos do compasso.' : 'Click on the beats of the measure.'));
   const [loopProgress, setLoopProgress] = useState(0);
   const [fallingBeats, setFallingBeats] = useState<FallingBeat[]>([]);
   const [hitEffects, setHitEffects] = useState<Record<LaneType, boolean>>({
@@ -391,6 +392,7 @@ const TeenRhythmLabPage: React.FC = () => {
   const isLoopingRef = useRef<boolean>(isLooping);
 
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
   const selectedPattern = useMemo(() => PATTERNS.find((p) => p.id === selectedPatternId) ?? PATTERNS[0], [selectedPatternId]);
   const rankProgress = getRankProgress(xp);
 
@@ -653,7 +655,7 @@ const TeenRhythmLabPage: React.FC = () => {
 
     const now = ctx.currentTime;
 
-    // Procurar beat da trilha específica na hit zone (recalibrado para 75% - linha visual)
+    // Procurar beat da trilha especÃ­fica na hit zone (recalibrado para 75% - linha visual)
     const candidate = fallingBeatsRef.current
       .filter((b) => !b.hit && b.lane === lane && b.position >= 65 && b.position <= 85)
       .sort((a, b) => Math.abs(75 - a.position) - Math.abs(75 - b.position))[0];
@@ -684,7 +686,7 @@ const TeenRhythmLabPage: React.FC = () => {
       feedbackText = isEarly ? '⚡ Muito adiantado' : '🐌 Muito atrasado';
     }
 
-    // Tocar som do instrumento específico (volume reduzido para não interferir no loop)
+    // Tocar som do instrumento especÃ­fico (volume reduzido para nÃ£o interferir no loop)
     if (lane === 'kick') await playKick(undefined, true);
     if (lane === 'snare') await playSnare(undefined, true);
 
@@ -693,7 +695,7 @@ const TeenRhythmLabPage: React.FC = () => {
       prev.map((b) => (b.id === candidate.id ? { ...b, hit: true, accuracy } : b))
     );
 
-    // Trigger hit effect na trilha específica
+    // Trigger hit effect na trilha especÃ­fica
     setHitEffects((prev) => ({ ...prev, [lane]: true }));
     setTimeout(() => {
       setHitEffects((prev) => ({ ...prev, [lane]: false }));
@@ -718,7 +720,7 @@ const TeenRhythmLabPage: React.FC = () => {
     setTimingModeActive(false);
     setCompletedLoops(0);
     setLoopProgress(0);
-    setFeedback('Clique nos tempos do compasso.');
+    setFeedback(isPt ? 'Clique nos tempos do compasso.' : 'Click on the beats of the measure.');
   }, [stopLoop]);
 
   const advancePhase = useCallback(() => {
@@ -733,7 +735,7 @@ const TeenRhythmLabPage: React.FC = () => {
       setTimingModeActive(false);
       setCompletedLoops(0);
       setLoopProgress(0);
-      setFeedback('Clique nos tempos do compasso.');
+      setFeedback(isPt ? 'Clique nos tempos do compasso.' : 'Click on the beats of the measure.');
     }
   }, [currentPhase]);
 
@@ -750,7 +752,7 @@ const TeenRhythmLabPage: React.FC = () => {
     isLoopingRef.current = isLooping;
   }, [isLooping]);
 
-  // Animação dos beats caindo
+  // AnimaÃ§Ã£o dos beats caindo
   useEffect(() => {
     if (currentPhase !== 'REPRODUCE' || !isLooping) return;
 
@@ -768,7 +770,7 @@ const TeenRhythmLabPage: React.FC = () => {
             return { ...beat, position: progress };
           })
           .filter((beat) => {
-            // Remover beats que passaram da tela (miss se não foi clicado)
+            // Remover beats que passaram da tela (miss se nÃ£o foi clicado)
             if (beat.position > 110) {
               if (!beat.hit) {
                 setStreak(0);
@@ -840,12 +842,12 @@ const TeenRhythmLabPage: React.FC = () => {
   const getPhaseInstructions = () => {
     switch (currentPhase) {
       case 'LISTEN':
-        return 'Ouça o padrão em loop quantas vezes precisar. Quando se sentir pronto, avance para entender a estrutura.';
+        return isPt ? 'Ouça o padrão em loop quantas vezes precisar. Quando se sentir pronto, avance para entender a estrutura.' : 'Listen to the pattern on loop as many times as needed. When ready, move on to understand the structure.';
       case 'UNDERSTAND':
         return 'Veja a grade mostrando cada instrumento. Observe como kick, snare e hi-hat se combinam no tempo.';
       case 'REPRODUCE':
         if (timingModeActive) {
-          return '🔥 MODO TIMING ATIVO! Clique nos tempos do compasso COM precisão. No tempo = ±300ms.';
+          return isPt ? '🔥 MODO TIMING ATIVO! Clique nos tempos do compasso COM precisão. No tempo = ±300ms.' : '🔥 TIMING MODE ACTIVE! Click the beats with precision. On time = ±300ms.';
         }
         return `Clique nos ${mainBeats.length} tempos do compasso na ordem certa. Após 1 loop completo, o modo timing será ativado!`;
       default:
@@ -858,8 +860,8 @@ const TeenRhythmLabPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-7xl">
-        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel="Voltar ao Teens" backPath="/teens" />
-        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Laboratório de Ritmo" subtitle="Sistema de aprendizado em 3 fases: OUVIR → ENTENDER → REPRODUZIR" />
+        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
+        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title={isPt ? "Laboratório de Ritmo" : "Rhythm Lab"} subtitle={isPt ? "Sistema de aprendizado em 3 fases: OUVIR → ENTENDER → REPRODUZIR" : "3-phase learning system: LISTEN → UNDERSTAND → REPRODUCE"} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
           <div className="grid gap-3 md:grid-cols-4">
@@ -868,7 +870,7 @@ const TeenRhythmLabPage: React.FC = () => {
               <p className="mt-1 text-lg font-black">{currentPhase}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Padrão</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{isPt ? 'Padrão' : 'Pattern'}</p>
               <p className="mt-1 text-lg font-black">{selectedPattern.title}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
@@ -883,7 +885,7 @@ const TeenRhythmLabPage: React.FC = () => {
 
           <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Progressão</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{isPt ? 'Progressão' : 'Progress'}</p>
               <p className="text-xs font-black uppercase">
                 Rank: <span className={rankProgress.current.accentClass}>{rankProgress.current.label}</span> · XP {xp}
               </p>
@@ -920,7 +922,7 @@ const TeenRhythmLabPage: React.FC = () => {
             <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-violet-200 bg-violet-50' : 'border-violet-500/30 bg-violet-500/10'}`}>
               <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Progresso</p>
               <p className={`mt-1 text-sm font-bold ${isLight ? 'text-violet-800' : 'text-violet-200'}`}>
-                Loops completados: {completedLoops} · Modo Timing: {timingModeActive ? '✅ ATIVO' : '⏳ Aguardando'}
+                {isPt ? 'Loops completados' : 'Completed loops'}: {completedLoops} · {isPt ? 'Modo Timing' : 'Timing Mode'}: {timingModeActive ? (isPt ? '✅ ATIVO' : '✅ ACTIVE') : (isPt ? '⏳ Aguardando' : '⏳ Waiting')}
               </p>
             </div>
           )}
@@ -956,14 +958,14 @@ const TeenRhythmLabPage: React.FC = () => {
                   : 'border-cyan-300 bg-cyan-500/25 text-cyan-50 hover:bg-cyan-500/35'
               }`}
             >
-              {isLooping ? 'Tocando...' : 'Iniciar Loop'}
+              {isLooping ? (isPt ? 'Tocando...' : 'Playing...') : (isPt ? 'Iniciar Loop' : 'Start Loop')}
             </button>
             <button
               onClick={stopLoop}
               disabled={!isLooping}
               className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-orange-400 disabled:opacity-50' : 'border-zinc-700 bg-zinc-950 hover:border-orange-500 disabled:opacity-50'}`}
             >
-              Parar Loop
+              {isPt ? 'Parar Loop' : 'Stop Loop'}
             </button>
             {currentPhase !== 'REPRODUCE' && (
               <button
@@ -974,20 +976,20 @@ const TeenRhythmLabPage: React.FC = () => {
                     : 'border-violet-300 bg-violet-500/25 text-violet-50 hover:bg-violet-500/35'
                 }`}
               >
-                Avançar Fase →
+                {isPt ? 'Avançar Fase →' : 'Advance Phase →'}
               </button>
             )}
             <button
               onClick={resetSession}
               className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-red-400' : 'border-zinc-700 bg-zinc-950 hover:border-red-500'}`}
             >
-              Reiniciar
+              {isPt ? 'Reiniciar' : 'Reset'}
             </button>
           </div>
 
           {currentPhase === 'UNDERSTAND' && (
             <div className="mt-6">
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400 mb-3">Grade DAW - Visualização</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400 mb-3">{isPt ? 'Grade DAW - Visualização' : 'DAW Grid - Visualization'}</p>
               <div className="space-y-2">
                 {[
                   { label: 'KICK', key: 'kick' as keyof DrumHit, color: isLight ? 'bg-red-500' : 'bg-red-600' },
@@ -1129,7 +1131,7 @@ const TeenRhythmLabPage: React.FC = () => {
 
                 {/* Linha de acerto unificada a 75% da altura - dentro do container */}
                 <div className="absolute inset-x-0 pointer-events-none" style={{ top: '75%', transform: 'translateY(-50%)' }}>
-                  {/* Zona de tolerância (fundo sombreado) */}
+                  {/* Zona de tolerÃ¢ncia (fundo sombreado) */}
                   <div className={`absolute inset-x-0 h-20 ${
                     isLight ? 'bg-cyan-200/20' : 'bg-cyan-900/20'
                   } blur-sm -translate-y-1/2`} style={{ top: '50%' }} />
@@ -1164,7 +1166,7 @@ const TeenRhythmLabPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Botões mobile - apenas em telas pequenas */}
+              {/* BotÃµes mobile - apenas em telas pequenas */}
               <div className="flex gap-4 justify-center mt-8 md:hidden">
                 <button
                   onClick={() => void handleLaneHit('kick')}
@@ -1189,21 +1191,21 @@ const TeenRhythmLabPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Instruções adaptativas */}
+              {/* InstruÃ§Ãµes adaptativas */}
               <div className={`text-center mt-6 text-sm font-bold ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
                 <span className="hidden md:inline">
-                  Teclas: <span className="text-red-400">[A]</span> Kick · <span className="text-blue-400">[S]</span> Snare
+                  {isPt ? 'Teclas' : 'Keys'}: <span className="text-red-400">[A]</span> Kick · <span className="text-blue-400">[S]</span> Snare
                   <div className="text-xs opacity-70 mt-1">ou clique nas trilhas</div>
                 </span>
                 <span className="md:hidden">
-                  Toque nos botões abaixo ou clique nas trilhas
+                  {isPt ? 'Toque nos botões abaixo ou clique nas trilhas' : 'Tap the buttons below or click the lanes'}
                 </span>
               </div>
 
-              {/* Últimos hits */}
+              {/* Ãšltimos hits */}
               {userHits.length > 0 && (
                 <div className={`mt-6 rounded-xl border px-4 py-3 ${isLight ? 'border-emerald-200 bg-emerald-50' : 'border-emerald-500/30 bg-emerald-500/10'}`}>
-                  <p className="text-[10px] uppercase font-black tracking-[0.2em] text-emerald-400 mb-2">Últimos Hits</p>
+                  <p className="text-[10px] uppercase font-black tracking-[0.2em] text-emerald-400 mb-2">{isPt ? 'Últimos Hits' : 'Latest Hits'}</p>
                   <div className="flex flex-wrap gap-2">
                     {userHits.slice(-10).map((hit, idx) => (
                       <div
@@ -1216,7 +1218,7 @@ const TeenRhythmLabPage: React.FC = () => {
                               : 'bg-red-500 text-white'
                         }`}
                       >
-                        {hit.accuracy === 'perfect' ? '✓' : hit.accuracy === 'good' || hit.accuracy === 'ok' ? '~' : '✗'}
+                        {hit.accuracy === 'perfect' ? '✓' : hit.accuracy === 'good' || hit.accuracy === 'ok' ? '~' : '✕'}
                       </div>
                     ))}
                   </div>
@@ -1227,7 +1229,7 @@ const TeenRhythmLabPage: React.FC = () => {
 
           {currentPhase === 'REPRODUCE' && userHits.length > 0 && (
             <div className={`mt-5 rounded-xl border px-4 py-3 ${isLight ? 'border-emerald-200 bg-emerald-50' : 'border-emerald-500/30 bg-emerald-500/10'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-emerald-400 mb-2">Últimos Hits</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-emerald-400 mb-2">{isPt ? 'Últimos Hits' : 'Latest Hits'}</p>
               <div className="flex flex-wrap gap-2">
                 {userHits.slice(-10).map((hit, idx) => (
                   <div
@@ -1277,7 +1279,7 @@ const TeenRhythmLabPage: React.FC = () => {
             onClick={() => navigateTo('/teens')}
             className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95"
           >
-            Voltar ao Teens
+            {isPt ? 'Voltar ao Teens' : 'Back to Teens'}
           </button>
           <button
             onClick={() => sendFretboardIntent({
@@ -1286,14 +1288,14 @@ const TeenRhythmLabPage: React.FC = () => {
               root: 'C',
               scaleType: 'Major (Ionian)',
               instruction: {
-                title: 'Ritmo no Braço',
-                description: 'Aplique o pulso que você treinou tocando as notas desta escala no tempo certo.',
+                title: isPt ? 'Ritmo no Braço' : 'Rhythm on the Fretboard',
+                description: isPt ? 'Aplique o pulso que você treinou tocando as notas desta escala no tempo certo.' : 'Apply the pulse you trained by playing the notes of this scale at the right time.',
                 persistent: true,
               },
             })}
             className="rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-500 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(8,145,178,0.3)] transition-all hover:from-cyan-500 hover:to-sky-400 active:scale-95"
           >
-            Ir para Studio
+            {isPt ? 'Ir para Studio' : 'Go to Studio'}
           </button>
         </div>
       </main>
@@ -1302,3 +1304,4 @@ const TeenRhythmLabPage: React.FC = () => {
 };
 
 export default TeenRhythmLabPage;
+

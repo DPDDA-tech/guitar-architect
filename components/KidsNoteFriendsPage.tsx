@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getKidsTheme } from '../utils/ecosystemPreferences';
+import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
@@ -125,6 +125,7 @@ const navigateTo = (path: string) => {
 
 const KidsNoteFriendsPage: React.FC = () => {
   const [theme] = useState(() => getKidsTheme());
+  const [lang] = useState(() => getKidsLang());
   const [selectedRelationshipId, setSelectedRelationshipId] = useState(noteRelationships[0].id);
   const [challengeIndex, setChallengeIndex] = useState(0);
   const [challengeFeedback, setChallengeFeedback] = useState('');
@@ -134,6 +135,7 @@ const KidsNoteFriendsPage: React.FC = () => {
   const [stepChallengeFeedback, setStepChallengeFeedback] = useState('');
 
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
 
 
   const selectedRelationship = noteRelationships.find(r => r.id === selectedRelationshipId) ?? noteRelationships[0];
@@ -181,7 +183,7 @@ const KidsNoteFriendsPage: React.FC = () => {
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
 
       <main className="relative mx-auto max-w-6xl">
-        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel="Voltar ao Kids" backPath="/kids" />
+        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={isPt ? "Voltar ao Kids" : "Back to Kids"} backPath="/kids" />
         <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="Notas que combinam" subtitle="Algumas notas gostam de tocar juntas. Vamos descobrir?" />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
@@ -298,7 +300,7 @@ const KidsNoteFriendsPage: React.FC = () => {
             Voltar para Notas
           </button>
           <button onClick={() => navigateTo('/kids')} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
-            Voltar ao Kids
+            {isPt ? 'Voltar ao Kids' : 'Back to Kids'}
           </button>
         </div>
       </main>

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { getTeensTheme } from '../utils/ecosystemPreferences';
+import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
@@ -61,7 +61,9 @@ const SECTIONS: CareSection[] = [
 
 const TeenBasicCarePage: React.FC = () => {
   const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
+  const [lang] = useState<'pt' | 'en'>(() => getTeensLang());
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
 
   const gridStyle = useMemo(
     () => ({
@@ -76,7 +78,7 @@ const TeenBasicCarePage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
-        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel="Voltar ao Teens" backPath="/teens" />
+        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Cuidados Básicos" subtitle="Pequenos cuidados que fazem seu instrumento durar muito mais." />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
@@ -156,13 +158,13 @@ const TeenBasicCarePage: React.FC = () => {
             onClick={() => navigateTo('/teens')}
             className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95"
           >
-            Voltar ao Teens
+            {isPt ? 'Voltar ao Teens' : 'Back to Teens'}
           </button>
           <button
             onClick={() => navigateTo('/studio')}
             className="rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-500 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(8,145,178,0.3)] transition-all hover:from-cyan-500 hover:to-sky-400 active:scale-95"
           >
-            Ir para Studio
+            {isPt ? 'Ir para Studio' : 'Go to Studio'}
           </button>
         </div>
       </main>

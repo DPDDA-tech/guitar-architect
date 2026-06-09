@@ -190,8 +190,8 @@ const KidsPage: React.FC = () => {
               ),
             },
             {
-              title: 'O Tamanho dos Sons',
-              subtitle: 'Descubra sons rápidos, longos e pausas musicais.',
+              title: lang === 'pt' ? 'O Tamanho dos Sons' : 'Sound Lengths',
+              subtitle: lang === 'pt' ? 'Descubra sons rápidos, longos e pausas musicais.' : 'Discover short, long, and silent musical sounds.',
               path: '/kids/sound-lengths',
               visual: (
                 <svg viewBox="0 0 320 88" className="h-20 w-full" fill="none">

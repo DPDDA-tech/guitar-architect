@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { getKidsTheme } from '../utils/ecosystemPreferences';
+import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
@@ -121,6 +121,7 @@ const SONG_MELODIES: Record<string, number[]> = {
 
 const KidsRhythmGamePage: React.FC = () => {
   const [theme] = useState(() => getKidsTheme());
+  const [lang] = useState(() => getKidsLang());
   const [selectedSong, setSelectedSong] = useState<KidsRhythmSong | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [fallingBeats, setFallingBeats] = useState<FallingBeat[]>([]);
@@ -131,7 +132,6 @@ const KidsRhythmGamePage: React.FC = () => {
   const [feedbackColor, setFeedbackColor] = useState('text-emerald-500');
   const [characterHit, setCharacterHit] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
-  const [audioReady, setAudioReady] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -142,7 +142,20 @@ const KidsRhythmGamePage: React.FC = () => {
   const currentMelodyRef = useRef<number[]>([]);
 
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
   const travelTimeMs = 3000;
+
+  const ensureAudioReady = useCallback(async () => {
+    const AudioCtx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return null;
+    if (!audioContextRef.current) {
+      audioContextRef.current = new AudioCtx();
+    }
+    if (audioContextRef.current.state === 'suspended') {
+      await audioContextRef.current.resume();
+    }
+    return audioContextRef.current;
+  }, []);
 
   const playHappyNote = useCallback((frequency: number, volume = 0.3) => {
     const ctx = audioContextRef.current;
@@ -275,23 +288,8 @@ const KidsRhythmGamePage: React.FC = () => {
     setTimeout(() => setFeedback(''), 1500);
   }, [isPlaying, gameCompleted, playSuccessSound]);
 
-  const enableAudio = useCallback(() => {
-    console.log('Ativando áudio...');
-    // Criar AudioContext diretamente no click
-    const AudioCtx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx) return;
-
-    audioContextRef.current = new AudioCtx();
-    console.log('AudioContext criado, state:', audioContextRef.current.state);
-
-    // Tocar nota de teste AUDÍVEL para confirmar que funciona
-    playHappyNote(NOTES.A4, 0.5);
-
-    setAudioReady(true);
-  }, [playHappyNote]);
-
-  const startSong = useCallback((song: KidsRhythmSong) => {
-    if (!audioContextRef.current) return;
+  const startSong = useCallback(async (song: KidsRhythmSong) => {
+    await ensureAudioReady();
 
     startTimeRef.current = Date.now();
 
@@ -321,14 +319,14 @@ const KidsRhythmGamePage: React.FC = () => {
           setTimeout(() => {
             setIsPlaying(false);
             setGameCompleted(true);
-            setFeedback('🏆 Você completou a música!');
+            setFeedback(isPt ? '🏆 Você completou a música!' : '🏆 You completed the song!');
             setFeedbackColor('text-emerald-500');
           }, travelTimeMs + 2000);
         }
       }, beatInterval);
 
       beatSpawnIntervalRef.current = spawnLoop;
-  }, [spawnBeat, travelTimeMs]);
+  }, [ensureAudioReady, isPt, spawnBeat, travelTimeMs]);
 
   const stopSong = useCallback(() => {
     if (beatSpawnIntervalRef.current) {
@@ -402,24 +400,10 @@ const KidsRhythmGamePage: React.FC = () => {
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <main className="relative mx-auto max-w-5xl">
-        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel="Voltar ao Kids" backPath="/kids" />
-        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="Toque no Tempo" subtitle="Toque no ritmo das músicas e veja o personagem dançar!" />
+        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={isPt ? "Voltar ao Kids" : "Back to Kids"} backPath="/kids" />
+        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={isPt ? 'Toque no Tempo' : 'Keep the Beat'} subtitle={isPt ? 'Toque no ritmo das músicas e veja o personagem dançar!' : 'Tap to the rhythm and watch the character dance!'} />
 
-        {!audioReady && !selectedSong && (
-          <div className="mb-6 max-w-md mx-auto">
-            <button
-              onClick={() => void enableAudio()}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white text-xl font-black uppercase rounded-2xl border-4 border-amber-600 px-8 py-6 active:scale-95 transition-all shadow-[0_0_30px_rgba(251,191,36,0.4)] animate-pulse"
-            >
-              🔊 Ativar Som
-            </button>
-            <p className={`mt-3 text-xs text-center ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
-              Clique para permitir sons no jogo
-            </p>
-          </div>
-        )}
-
-        {!selectedSong && audioReady && (
+        {!selectedSong && (
           <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
             {SONGS.map((song) => (
               <button
@@ -430,7 +414,7 @@ const KidsRhythmGamePage: React.FC = () => {
                 }`}
               >
                 <p className={`font-black uppercase text-sm ${isLight ? 'text-emerald-800' : 'text-emerald-200'}`}>{song.title}</p>
-                <p className={`mt-1 text-xs ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>{song.beats.length} batidas · {song.bpm} BPM</p>
+                <p className={`mt-1 text-xs ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>{song.beats.length} {isPt ? 'batidas' : 'beats'} · {song.bpm} BPM</p>
               </button>
             ))}
           </section>
@@ -445,11 +429,11 @@ const KidsRhythmGamePage: React.FC = () => {
               </div>
               <div className="text-right">
                 <p className="text-lg font-black">
-                  Pontos: <span className="text-emerald-500">{score}</span>
+                  {isPt ? 'Pontos' : 'Score'}: <span className="text-emerald-500">{score}</span>
                 </p>
                 {combo >= 5 && (
                   <p className="text-sm font-black">
-                    Combo: <span className="text-amber-500">{combo}</span> 🔥
+                    {isPt ? 'Combo' : 'Combo'}: <span className="text-amber-500">{combo}</span> 🔥
                   </p>
                 )}
               </div>
@@ -498,7 +482,7 @@ const KidsRhythmGamePage: React.FC = () => {
               disabled={!isPlaying || gameCompleted}
               className="mt-6 w-full h-20 md:h-24 bg-amber-500 hover:bg-amber-400 text-white text-xl font-black uppercase rounded-2xl border-4 border-amber-600 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed touch-none"
             >
-              TOQUE AQUI!
+              {isPt ? 'TOQUE AQUI!' : 'TAP HERE!'}
             </button>
 
             {feedback && (
@@ -510,7 +494,7 @@ const KidsRhythmGamePage: React.FC = () => {
             {gameCompleted && (
               <div className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-emerald-300 bg-emerald-50' : 'border-emerald-500/30 bg-emerald-500/10'}`}>
                 <p className="text-sm font-black text-emerald-600 dark:text-emerald-400">
-                  Total de acertos: {totalHits} de {selectedSong.beats.length}
+                  {isPt ? 'Total de acertos' : 'Total hits'}: {totalHits} {isPt ? 'de' : 'of'} {selectedSong.beats.length}
                 </p>
               </div>
             )}
@@ -521,7 +505,7 @@ const KidsRhythmGamePage: React.FC = () => {
                   onClick={() => void startSong(selectedSong)}
                   className="w-full bg-amber-500 hover:bg-amber-400 text-white rounded-xl border-4 border-amber-600 px-4 py-3 text-sm font-black uppercase active:scale-95 transition-transform"
                 >
-                  🔄 Tocar de Novo
+                  {isPt ? '🔄 Tocar de Novo' : '🔄 Play Again'}
                 </button>
               )}
               <button
@@ -530,7 +514,7 @@ const KidsRhythmGamePage: React.FC = () => {
                   isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'
                 }`}
               >
-                Escolher Outra Música
+                {isPt ? 'Escolher Outra Música' : 'Choose Another Song'}
               </button>
             </div>
           </section>
@@ -541,7 +525,7 @@ const KidsRhythmGamePage: React.FC = () => {
             onClick={() => navigateTo('/kids/games')}
             className="rounded-xl border border-emerald-500 bg-emerald-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-emerald-500"
           >
-            Voltar aos Jogos
+            {isPt ? 'Voltar aos Jogos' : 'Back to Games'}
           </button>
           <button
             onClick={() => navigateTo('/kids')}
@@ -549,13 +533,13 @@ const KidsRhythmGamePage: React.FC = () => {
               isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'
             }`}
           >
-            Voltar ao Kids
+            {isPt ? 'Voltar ao Kids' : 'Back to Kids'}
           </button>
         </div>
 
         <div className={`mt-6 max-w-2xl mx-auto text-center text-xs ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>
           <p>
-            💡 Para pais e educadores: nesta atividade a criança aprende a sentir o pulso musical clicando no momento certo. Toque no botão ou pressione ESPAÇO quando os símbolos chegarem à linha colorida.
+            {isPt ? '💡 Para pais e educadores: nesta atividade a criança aprende a sentir o pulso musical clicando no momento certo. Toque no botão ou pressione ESPAÇO quando os símbolos chegarem à linha colorida.' : '💡 For parents and educators: in this activity, children learn to feel the musical pulse by clicking at the right moment. Tap the button or press SPACE when the symbols reach the colored line.'}
           </p>
         </div>
       </main>

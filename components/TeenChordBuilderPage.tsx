@@ -1,5 +1,5 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { getTeensTheme } from '../utils/ecosystemPreferences';
+﻿import React, { useMemo, useRef, useState } from 'react';
+import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import { teenChordChallenges, teenChordStacks, type TeenChordNote } from '../data/teenChordData';
@@ -59,15 +59,16 @@ const chordIntervalCards: ChordIntervalCard[] = [
     title: 'Oitava',
     pair: ['LA', 'LA'],
     type: '8a',
-    description: 'A oitava reforça identidade da nota em outro registro.',
+    description: 'A oitava reforça a identidade da nota em outro registro.',
   },
 ];
 
 const TeenChordBuilderPage: React.FC = () => {
   const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
+  const [lang] = useState<'pt' | 'en'>(() => getTeensLang());
   const [activeChallengeId, setActiveChallengeId] = useState(teenChordChallenges[0].id);
   const [selectedNotes, setSelectedNotes] = useState<TeenChordNote[]>([]);
-  const [feedback, setFeedback] = useState('Escolha um desafio, monte 3 notas e compare o resultado.');
+  const [feedback, setFeedback] = useState(() => (lang === 'pt' ? 'Escolha um desafio, monte 3 notas e compare o resultado.' : 'Choose a challenge, build 3 notes, and compare the result.'));
   const [combo, setCombo] = useState(0);
   const [streak, setStreak] = useState(0);
   const [xp, setXp] = useState<number>(() => getTeensXp());
@@ -77,6 +78,7 @@ const TeenChordBuilderPage: React.FC = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
   const rankProgress = getRankProgress(xp);
 
   const activeChallenge = useMemo(
@@ -149,7 +151,7 @@ const TeenChordBuilderPage: React.FC = () => {
 
   const clearBuild = () => {
     setSelectedNotes([]);
-    setFeedback(`Construção limpa. Monte um novo bloco de ${requiredNotes} notas.`);
+    setFeedback(isPt ? `Construção limpa. Monte um novo bloco de ${requiredNotes} notas.` : `Build cleared. Create a new ${requiredNotes}-note block.`);
   };
 
   const checkBuild = () => {
@@ -163,12 +165,12 @@ const TeenChordBuilderPage: React.FC = () => {
       setXp(nextXp);
       setCombo((v) => v + 1);
       setStreak((v) => v + 1);
-      setFeedback(`Perfeito! Bloco correto. +${activeChallenge.xp} XP`);
+      setFeedback(isPt ? `Perfeito! Bloco correto. +${activeChallenge.xp} XP` : `Perfect! Correct block. +${activeChallenge.xp} XP`);
       return;
     }
 
     setCombo(0);
-    setFeedback('Quase! Compare as sensações e tente outra combinação.');
+    setFeedback(isPt ? 'Quase! Compare as sensações e tente outra combinação.' : 'Almost! Compare the sounds and try another combination.');
   };
 
   const nextChallenge = () => {
@@ -184,7 +186,7 @@ const TeenChordBuilderPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
-        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel="Voltar ao Teens" backPath="/teens" />
+        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Construtor de Acordes" subtitle="Monte blocos harmônicos por sensação e prepare o caminho para tríades, tétrades e inversões." />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
@@ -212,7 +214,7 @@ const TeenChordBuilderPage: React.FC = () => {
 
           <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Progressão</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{isPt ? 'Progressão' : 'Progress'}</p>
               <p className="text-xs font-black uppercase">
                 Rank: <span className={rankProgress.current.accentClass}>{rankProgress.current.label}</span> · XP {xp}
               </p>
@@ -247,7 +249,7 @@ const TeenChordBuilderPage: React.FC = () => {
           </div>
 
           <div className="mt-5 rounded-2xl border border-violet-500/35 bg-violet-500/10 p-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">Bloco-alvo (referência)</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">{isPt ? 'Bloco-alvo (referência)' : 'Target block (reference)'}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {targetStack.notes.map((note) => (
                 <span key={`target-${note}`} className={`rounded-full border border-violet-200/50 px-3 py-1 text-xs font-black ${noteColor[note]} text-white`}>
@@ -256,7 +258,7 @@ const TeenChordBuilderPage: React.FC = () => {
               ))}
             </div>
             <p className="mt-3 text-[11px] font-black text-violet-200/90">
-              Tipo: {targetStack.chordType.toUpperCase()} · {targetStack.blockLabel} · Monte {requiredNotes} notas
+              {isPt ? 'Tipo' : 'Type'}: {targetStack.chordType.toUpperCase()} · {targetStack.blockLabel} · {isPt ? `Monte ${requiredNotes} notas` : `Build ${requiredNotes} notes`}
             </p>
           </div>
 
@@ -316,7 +318,7 @@ const TeenChordBuilderPage: React.FC = () => {
                   : 'border-cyan-300 bg-cyan-500/25 text-cyan-50 hover:bg-cyan-500/35'
               }`}
             >
-              Ouvir referência
+              {isPt ? 'Ouvir referência' : 'Play reference'}
             </button>
             <button
               onClick={() => void playStack(selectedNotes)}
@@ -343,7 +345,7 @@ const TeenChordBuilderPage: React.FC = () => {
                   : 'border-violet-300 bg-violet-500/25 text-violet-50 hover:bg-violet-500/35'
               }`}
             >
-              Próximo exercício
+              {isPt ? 'Próximo exercício' : 'Next exercise'}
             </button>
             <button
               onClick={clearBuild}
@@ -363,7 +365,7 @@ const TeenChordBuilderPage: React.FC = () => {
             onClick={() => navigateTo('/teens')}
             className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95"
           >
-            Voltar ao Teens
+            {isPt ? 'Voltar ao Teens' : 'Back to Teens'}
           </button>
           <button
             onClick={() => sendFretboardIntent({
@@ -373,14 +375,14 @@ const TeenChordBuilderPage: React.FC = () => {
               scaleType: 'Major (Ionian)',
               harmonyMode: 'TRIADS',
               instruction: {
-                title: 'Do Bloco ao Campo Harmônico',
-                description: 'As tríades que você montou fazem parte deste campo harmônico. Explore os graus.',
+                title: isPt ? 'Do Bloco ao Campo Harmônico' : 'From Block to Harmonic Field',
+                description: isPt ? 'As tríades que você montou fazem parte deste campo harmônico. Explore os graus.' : 'The triads you built are part of this harmonic field. Explore the degrees.',
                 persistent: true,
               },
             })}
             className="rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-500 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(8,145,178,0.3)] transition-all hover:from-cyan-500 hover:to-sky-400 active:scale-95"
           >
-            Ir para Studio
+            {isPt ? 'Ir para Studio' : 'Go to Studio'}
           </button>
         </div>
       </main>
@@ -389,3 +391,4 @@ const TeenChordBuilderPage: React.FC = () => {
 };
 
 export default TeenChordBuilderPage;
+

@@ -1,5 +1,6 @@
 import React from 'react';
-import { getKidsLang, getTeensLang, type AppLang } from '../../utils/ecosystemPreferences';
+import { type AppLang } from '../../utils/ecosystemPreferences';
+import { getEcosystemLang, getLocalizedBackLabel } from './ecosystemPageCopy';
 
 type EcosystemPageActionsProps = {
   ecosystem: 'kids' | 'teens';
@@ -34,9 +35,7 @@ const GlobeIcon = () => (
   </svg>
 );
 
-const getCurrentLang = (ecosystem: 'kids' | 'teens'): AppLang => (
-  ecosystem === 'kids' ? getKidsLang() : getTeensLang()
-);
+const getCurrentLang = (ecosystem: 'kids' | 'teens'): AppLang => getEcosystemLang(ecosystem);
 
 export const EcosystemPageActions: React.FC<EcosystemPageActionsProps> = ({ ecosystem, isLight, backLabel, backPath }) => {
   const lang = getCurrentLang(ecosystem);
@@ -62,6 +61,8 @@ export const EcosystemPageActions: React.FC<EcosystemPageActionsProps> = ({ ecos
     window.location.reload();
   };
 
+  const localizedBackLabel = getLocalizedBackLabel(ecosystem, backPath, backLabel);
+
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <button
@@ -69,7 +70,7 @@ export const EcosystemPageActions: React.FC<EcosystemPageActionsProps> = ({ ecos
         onClick={() => navigateTo(backPath)}
         className={`rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] transition-all ${actionClass}`}
       >
-        {backLabel}
+        {localizedBackLabel}
       </button>
 
       <div className="flex items-center gap-2">

@@ -1,4 +1,5 @@
 import React from 'react';
+import { getLocalizedHeaderCopy } from './ecosystemPageCopy';
 
 type InternalEcosystemHeaderProps = {
   ecosystem: 'kids' | 'teens';
@@ -15,6 +16,7 @@ export const InternalEcosystemHeader: React.FC<InternalEcosystemHeaderProps> = (
 }) => {
   const brandLabel = ecosystem === 'kids' ? 'GUITAR ARCHITECT KIDS' : 'GUITAR ARCHITECT TEENS';
   const brandClass = ecosystem === 'kids' ? 'text-emerald-500' : 'text-violet-400';
+  const copy = getLocalizedHeaderCopy(ecosystem, title, subtitle);
 
   return (
     <header className="mb-8 text-center">
@@ -22,10 +24,10 @@ export const InternalEcosystemHeader: React.FC<InternalEcosystemHeaderProps> = (
         {brandLabel}
       </p>
       <h1 className={`mt-2 text-3xl md:text-5xl font-black uppercase tracking-tight ${isLight ? 'text-black' : 'text-white'}`}>
-        {title}
+        {copy.title}
       </h1>
       <p className={`mt-3 text-sm md:text-base font-bold ${isLight ? 'text-black' : 'text-white'}`}>
-        {subtitle}
+        {copy.subtitle}
       </p>
     </header>
   );

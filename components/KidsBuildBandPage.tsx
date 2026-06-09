@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { getKidsTheme } from '../utils/ecosystemPreferences';
+import React, { useEffect, useState } from 'react';
+import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
@@ -9,47 +9,47 @@ type ChallengeId = 'free' | 'rock' | 'acoustic' | 'findBass';
 
 type BandInstrument = {
   id: string;
-  label: string;
+  label: { pt: string; en: string };
   role: Role;
   image: string;
-  feedback: string;
+  feedback: { pt: string; en: string };
 };
 
 type Challenge = {
   id: ChallengeId;
-  title: string;
-  description: string;
+  title: { pt: string; en: string };
+  description: { pt: string; en: string };
   expected: Partial<Record<SlotId, string[]>>;
 };
 
 const instruments: BandInstrument[] = [
-  { id: 'classic-s', label: 'Classic S', role: 'lead', image: '/kids/workshop/classic-s.webp', feedback: 'Legal! Agora sua banda pode tocar melodias.' },
-  { id: 'single-cut', label: 'Single Cut', role: 'lead', image: '/kids/workshop/single-cut.webp', feedback: 'Muito bom! Esse instrumento ajuda nos riffs e solos.' },
-  { id: 'explorer', label: 'Explorer', role: 'lead', image: '/kids/workshop/explorer.webp', feedback: 'Que estilo! Sua banda ganhou energia para os solos.' },
-  { id: 'flyingv', label: 'Flying V', role: 'lead', image: '/kids/workshop/flyingv.webp', feedback: 'Visual radical! Sua banda esta pronta para melodias fortes.' },
-  { id: 'contrabaixo', label: 'Contrabaixo', role: 'bass', image: '/kids/workshop/contrabaixo.webp', feedback: 'Boa! Sua banda agora tem sons graves.' },
-  { id: 'violao', label: 'Violao', role: 'rhythm', image: '/kids/workshop/violao.webp', feedback: 'O violao ajuda no ritmo da musica.' },
-  { id: 'semi-acustica', label: 'Semi-acustica', role: 'rhythm', image: '/kids/workshop/semi-acustica.webp', feedback: 'Perfeito! A semi-acustica traz base e som cheio.' },
-  { id: 'banjo', label: 'Banjo', role: 'rhythm', image: '/kids/workshop/banjo.webp', feedback: 'Que divertido! O banjo da brilho para o ritmo.' },
+  { id: 'classic-s', label: { pt: 'Classic S', en: 'Classic S' }, role: 'lead', image: '/kids/workshop/classic-s.webp', feedback: { pt: 'Legal! Agora sua banda pode tocar melodias.', en: 'Nice! Now your band can play melodies.' } },
+  { id: 'single-cut', label: { pt: 'Single Cut', en: 'Single Cut' }, role: 'lead', image: '/kids/workshop/single-cut.webp', feedback: { pt: 'Muito bom! Esse instrumento ajuda nos riffs e solos.', en: 'Great! This instrument helps with riffs and solos.' } },
+  { id: 'explorer', label: { pt: 'Explorer', en: 'Explorer' }, role: 'lead', image: '/kids/workshop/explorer.webp', feedback: { pt: 'Que estilo! Sua banda ganhou energia para os solos.', en: 'So much style! Your band gained energy for solos.' } },
+  { id: 'flyingv', label: { pt: 'Flying V', en: 'Flying V' }, role: 'lead', image: '/kids/workshop/flyingv.webp', feedback: { pt: 'Visual radical! Sua banda está pronta para melodias fortes.', en: 'Bold look! Your band is ready for strong melodies.' } },
+  { id: 'contrabaixo', label: { pt: 'Contrabaixo', en: 'Bass' }, role: 'bass', image: '/kids/workshop/contrabaixo.webp', feedback: { pt: 'Boa! Sua banda agora tem sons graves.', en: 'Great! Your band now has low sounds.' } },
+  { id: 'violao', label: { pt: 'Violão', en: 'Acoustic Guitar' }, role: 'rhythm', image: '/kids/workshop/violao.webp', feedback: { pt: 'O violão ajuda no ritmo da música.', en: 'The acoustic guitar helps with the rhythm.' } },
+  { id: 'semi-acustica', label: { pt: 'Semiacústica', en: 'Semi-Acoustic' }, role: 'rhythm', image: '/kids/workshop/semi-acustica.webp', feedback: { pt: 'Perfeito! A semiacústica traz base e som cheio.', en: 'Perfect! The semi-acoustic brings support and a full sound.' } },
+  { id: 'banjo', label: { pt: 'Banjo', en: 'Banjo' }, role: 'rhythm', image: '/kids/workshop/banjo.webp', feedback: { pt: 'Que divertido! O banjo dá brilho para o ritmo.', en: 'So fun! The banjo adds sparkle to the rhythm.' } },
 ];
 
-const slotInfo: Array<{ id: SlotId; label: string; icon: string }> = [
-  { id: 'lead', label: 'Instrumento Principal (Solo)', icon: '??' },
-  { id: 'bass', label: 'Instrumento Grave (Graves)', icon: '??' },
-  { id: 'rhythm', label: 'Instrumento de Ritmo (Base)', icon: '??' },
+const slotInfo: Array<{ id: SlotId; label: { pt: string; en: string }; icon: string }> = [
+  { id: 'lead', label: { pt: 'Instrumento Principal (Solo)', en: 'Main Instrument (Lead)' }, icon: '🎸' },
+  { id: 'bass', label: { pt: 'Instrumento Grave (Graves)', en: 'Low Instrument (Bass)' }, icon: '🎵' },
+  { id: 'rhythm', label: { pt: 'Instrumento de Ritmo (Base)', en: 'Rhythm Instrument (Backing)' }, icon: '🥁' },
 ];
 
 const challenges: Challenge[] = [
   {
     id: 'free',
-    title: 'Modo Livre',
-    description: 'Escolha os instrumentos que voce quiser e monte sua banda.',
+    title: { pt: 'Modo Livre', en: 'Free Mode' },
+    description: { pt: 'Escolha os instrumentos que você quiser e monte sua banda.', en: 'Choose any instruments you want and build your band.' },
     expected: {},
   },
   {
     id: 'rock',
-    title: 'Monte uma banda de rock',
-    description: 'Sugestao: Flying V ou Explorer, Contrabaixo e uma base de ritmo.',
+    title: { pt: 'Monte uma banda de rock', en: 'Build a rock band' },
+    description: { pt: 'Sugestão: Flying V ou Explorer, Contrabaixo e uma base de ritmo.', en: 'Suggestion: Flying V or Explorer, Bass, and one rhythm instrument.' },
     expected: {
       lead: ['flyingv', 'explorer'],
       bass: ['contrabaixo'],
@@ -58,8 +58,8 @@ const challenges: Challenge[] = [
   },
   {
     id: 'acoustic',
-    title: 'Monte uma banda acustica',
-    description: 'Use instrumentos de madeira e som natural.',
+    title: { pt: 'Monte uma banda acústica', en: 'Build an acoustic band' },
+    description: { pt: 'Use instrumentos de madeira e som natural.', en: 'Use wooden instruments with a natural sound.' },
     expected: {
       lead: ['semi-acustica', 'violao'],
       bass: ['contrabaixo'],
@@ -68,8 +68,8 @@ const challenges: Challenge[] = [
   },
   {
     id: 'findBass',
-    title: 'Encontre um instrumento de sons graves',
-    description: 'Descubra qual instrumento segura os sons graves da banda.',
+    title: { pt: 'Encontre um instrumento de sons graves', en: 'Find a low-sound instrument' },
+    description: { pt: 'Descubra qual instrumento segura os sons graves da banda.', en: 'Find out which instrument holds the band’s low sounds.' },
     expected: {
       bass: ['contrabaixo'],
     },
@@ -83,13 +83,19 @@ const navigateTo = (path: string) => {
 
 const KidsBuildBandPage: React.FC = () => {
   const [theme] = useState(() => getKidsTheme());
+  const [lang] = useState(() => getKidsLang());
   const [selectedSlot, setSelectedSlot] = useState<SlotId>('lead');
   const [selectedChallengeId, setSelectedChallengeId] = useState<ChallengeId>('free');
   const [bandSlots, setBandSlots] = useState<Partial<Record<SlotId, string>>>({});
-  const [feedback, setFeedback] = useState('Escolha um slot e clique em um instrumento para montar sua banda.');
+  const [feedback, setFeedback] = useState('');
 
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
   const selectedChallenge = challenges.find((item) => item.id === selectedChallengeId) ?? challenges[0];
+
+  useEffect(() => {
+    setFeedback(isPt ? 'Escolha um slot e clique em um instrumento para montar sua banda.' : 'Choose a slot and click an instrument to build your band.');
+  }, [isPt]);
 
 
   const assignInstrument = (instrumentId: string) => {
@@ -97,12 +103,12 @@ const KidsBuildBandPage: React.FC = () => {
     if (!instrument) return;
 
     setBandSlots((prev) => ({ ...prev, [selectedSlot]: instrument.id }));
-    setFeedback(instrument.feedback);
+    setFeedback(instrument.feedback[isPt ? 'pt' : 'en']);
   };
 
   const clearBand = () => {
     setBandSlots({});
-    setFeedback('Palco limpo! Agora monte uma nova banda.');
+    setFeedback(isPt ? 'Palco limpo! Agora monte uma nova banda.' : 'Stage cleared! Now build a new band.');
   };
 
   const isBandComplete = slotInfo.every((slot) => Boolean(bandSlots[slot.id]));
@@ -121,12 +127,12 @@ const KidsBuildBandPage: React.FC = () => {
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
 
       <main className="relative mx-auto max-w-6xl">
-        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel="Voltar ao Kids" backPath="/kids" />
-        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="Monte a Banda" subtitle="Escolha instrumentos para criar sua primeira banda." />
+        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={isPt ? "Voltar ao Kids" : "Back to Kids"} backPath="/kids" />
+        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={isPt ? "Monte a Banda" : "Build the Band"} subtitle={isPt ? "Escolha instrumentos para criar sua primeira banda." : "Choose instruments to create your first band."} />
 
         <section className="grid gap-6 lg:grid-cols-[340px_1fr]">
           <aside className={`rounded-3xl border p-4 md:p-5 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Desafio</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">{isPt ? 'Desafio' : 'Challenge'}</p>
             <div className="mt-2 grid gap-2">
               {challenges.map((challenge) => (
                 <button
@@ -134,26 +140,26 @@ const KidsBuildBandPage: React.FC = () => {
                   onClick={() => setSelectedChallengeId(challenge.id)}
                   className={`rounded-xl border px-3 py-2 text-left text-xs font-black transition-all ${selectedChallengeId === challenge.id ? 'border-emerald-500 bg-emerald-600 text-white' : isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}
                 >
-                  {challenge.title}
+                  {challenge.title[isPt ? 'pt' : 'en']}
                 </button>
               ))}
             </div>
 
             <div className={`mt-4 rounded-xl border px-3 py-3 text-xs font-bold ${isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100'}`}>
-              {selectedChallenge.description}
+              {selectedChallenge.description[isPt ? 'pt' : 'en']}
             </div>
 
             <button
               onClick={clearBand}
               className={`mt-4 w-full rounded-xl border px-3 py-3 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}
             >
-              Limpar palco
+              {isPt ? 'Limpar palco' : 'Clear stage'}
             </button>
           </aside>
 
           <div className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
             <div className={`rounded-2xl border p-4 md:p-5 transition-all ${isBandComplete ? 'border-emerald-400 bg-gradient-to-br from-emerald-500/10 via-cyan-500/5 to-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.25)]' : isLight ? 'border-slate-200 bg-slate-50/80' : 'border-zinc-700 bg-zinc-950/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Palco Futurista</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">{isPt ? 'Palco Futurista' : 'Futuristic Stage'}</p>
 
               <div className="mt-3 grid gap-3 md:grid-cols-3">
                 {slotInfo.map((slot) => {
@@ -167,14 +173,14 @@ const KidsBuildBandPage: React.FC = () => {
                       onClick={() => setSelectedSlot(slot.id)}
                       className={`rounded-2xl border p-3 text-left transition-all ${isActive ? 'border-emerald-500 bg-emerald-500/15' : isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-900/70 hover:border-emerald-500'}`}
                     >
-                      <p className="text-xs font-black uppercase">{slot.icon} {slot.label}</p>
+                      <p className="text-xs font-black uppercase">{slot.icon} {slot.label[isPt ? 'pt' : 'en']}</p>
                       {assignedInstrument ? (
                         <div className="mt-2 rounded-xl border border-white/15 bg-black/20 p-2">
-                          <img src={assignedInstrument.image} alt={assignedInstrument.label} className="h-20 w-full rounded-lg object-contain" />
-                          <p className="mt-1 text-[11px] font-black uppercase">{assignedInstrument.label}</p>
+                          <img src={assignedInstrument.image} alt={assignedInstrument.label[isPt ? 'pt' : 'en']} className="h-20 w-full rounded-lg object-contain" />
+                          <p className="mt-1 text-[11px] font-black uppercase">{assignedInstrument.label[isPt ? 'pt' : 'en']}</p>
                         </div>
                       ) : (
-                        <p className={`mt-2 text-[11px] font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Clique e escolha um instrumento</p>
+                        <p className={`mt-2 text-[11px] font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>{isPt ? 'Clique e escolha um instrumento' : 'Click and choose an instrument'}</p>
                       )}
                     </button>
                   );
@@ -183,19 +189,19 @@ const KidsBuildBandPage: React.FC = () => {
 
               {isBandComplete && (
                 <div className={`mt-4 rounded-xl border px-3 py-3 text-sm font-black ${isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'}`}>
-                  Sua banda esta pronta! ?
+                  {isPt ? 'Sua banda está pronta!' : 'Your band is ready!'}
                 </div>
               )}
 
               {challengeCompleted && selectedChallenge.id !== 'free' && (
                 <div className={`mt-3 rounded-xl border px-3 py-3 text-sm font-black ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'}`}>
-                  Desafio concluido! Voce montou a combinacao pedida.
+                  {isPt ? 'Desafio concluído! Você montou a combinação pedida.' : 'Challenge complete! You built the requested combination.'}
                 </div>
               )}
             </div>
 
             <div className="mt-4">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Instrumentos disponiveis</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">{isPt ? 'Instrumentos disponíveis' : 'Available instruments'}</p>
               <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {instruments.map((instrument) => (
                   <button
@@ -203,10 +209,10 @@ const KidsBuildBandPage: React.FC = () => {
                     onClick={() => assignInstrument(instrument.id)}
                     className={`rounded-2xl border p-3 text-left transition-all ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}
                   >
-                    <img src={instrument.image} alt={instrument.label} className="h-24 w-full rounded-lg object-contain" />
-                    <p className="mt-2 text-xs font-black uppercase">{instrument.label}</p>
+                    <img src={instrument.image} alt={instrument.label[isPt ? 'pt' : 'en']} className="h-24 w-full rounded-lg object-contain" />
+                    <p className="mt-2 text-xs font-black uppercase">{instrument.label[isPt ? 'pt' : 'en']}</p>
                     <p className={`text-[10px] font-bold ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
-                      {instrument.role === 'bass' ? 'Graves' : instrument.role === 'rhythm' ? 'Base/Ritmo' : 'Solo/Melodia'}
+                      {instrument.role === 'bass' ? (isPt ? 'Graves' : 'Bass') : instrument.role === 'rhythm' ? (isPt ? 'Base/Ritmo' : 'Rhythm') : (isPt ? 'Solo/Melodia' : 'Lead/Melody')}
                     </p>
                   </button>
                 ))}
@@ -219,10 +225,10 @@ const KidsBuildBandPage: React.FC = () => {
 
             <div className="mt-5 grid gap-2 sm:flex sm:flex-row">
               <button onClick={() => navigateTo('/kids/games')} className="min-h-[44px] rounded-xl border border-amber-500 bg-amber-500 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-amber-400">
-                Voltar aos Jogos
+                {isPt ? 'Voltar aos Jogos' : 'Back to Games'}
               </button>
               <button onClick={() => navigateTo('/kids')} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
-                Voltar ao Kids
+                {isPt ? 'Voltar ao Kids' : 'Back to Kids'}
               </button>
             </div>
           </div>

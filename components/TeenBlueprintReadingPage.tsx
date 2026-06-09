@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { getTeensTheme } from '../utils/ecosystemPreferences';
+import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
@@ -256,9 +256,10 @@ const clefData: ClefInfo[] = [
 
 const TeenBlueprintReadingPage: React.FC = () => {
   const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
+  const [lang] = useState<'pt' | 'en'>(() => getTeensLang());
   const [xp, setXp] = useState<number>(() => getTeensXp());
   const [quizIndex, setQuizIndex] = useState(0);
-  const [feedback, setFeedback] = useState('Comece pelos painéis e finalize com mini desafios.');
+  const [feedback, setFeedback] = useState(() => (lang === 'pt' ? 'Comece pelos painéis e finalize com mini desafios.' : 'Start with the panels and finish with mini challenges.'));
   const [locked, setLocked] = useState(false);
   const [tabVisible, setTabVisible] = useState(true);
   const [focusAxis, setFocusAxis] = useState<'time' | 'pitch'>('time');
@@ -278,6 +279,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
   const metronomeTimerRef = useRef<number | null>(null);
 
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
   const rankProgress = getRankProgress(xp);
   const quiz = useMemo(() => quizzes[quizIndex], [quizIndex]);
   const selectedFigureData = figures.find((item) => item.id === selectedFigure) ?? figures[2];
@@ -359,7 +361,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
       setXp(nextXp);
       setFeedback(`Acertou! +${quiz.xp} XP`);
     } else {
-      setFeedback(`Quase! Resposta certa: ${quiz.answer}`);
+      setFeedback(isPt ? `Quase! Resposta certa: ${quiz.answer}` : `Almost! Correct answer: ${quiz.answer}`);
     }
     window.setTimeout(() => {
       setQuizIndex((prev) => (prev + 1) % quizzes.length);
@@ -372,7 +374,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
-        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel="Voltar ao Teens" backPath="/teens" />
+        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Leitura de Partitura + TAB" subtitle="Partitura como mapa musical: altura no eixo Y, tempo no eixo X, com apoio da TAB." />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
@@ -663,7 +665,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
             onClick={() => navigateTo('/teens')}
             className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95"
           >
-            Voltar ao Teens
+            {isPt ? 'Voltar ao Teens' : 'Back to Teens'}
           </button>
           <button
             onClick={() => sendFretboardIntent({
@@ -680,7 +682,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
             })}
             className="rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-500 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(8,145,178,0.3)] transition-all hover:from-cyan-500 hover:to-sky-400 active:scale-95"
           >
-            Ir para Studio
+            {isPt ? 'Ir para Studio' : 'Go to Studio'}
           </button>
         </div>
       </main>

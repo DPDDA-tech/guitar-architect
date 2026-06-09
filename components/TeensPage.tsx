@@ -10,7 +10,10 @@ const navigateTo = (path: string) => {
 };
 
 type TeensModule = {
-  title: string;
+  title: {
+    pt: string;
+    en: string;
+  };
   subtitle: string;
   visual: React.ReactNode;
   available: boolean;
@@ -85,7 +88,7 @@ const TeensPage: React.FC = () => {
 
   const modules: TeensModule[] = [
     {
-      title: 'Desafios de Riff',
+      title: { pt: 'Desafios de Riff', en: 'Riff Challenges' },
       subtitle: lang === 'pt' ? 'Ouça, memorize e reproduza riffs.' : 'Listen, memorize and reproduce riffs.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -98,7 +101,7 @@ const TeensPage: React.FC = () => {
       path: '/teens/riff-challenges',
     },
     {
-      title: 'Caça às Escalas',
+      title: { pt: 'Caça às Escalas', en: 'Scale Hunter' },
       subtitle: lang === 'pt' ? 'Caçe padrões por região no braço.' : 'Hunt regional fretboard patterns.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -116,7 +119,7 @@ const TeensPage: React.FC = () => {
       unlockXp: 220,
     },
     {
-      title: 'Explorador de Acordes',
+      title: { pt: 'Explorador de Acordes', en: 'Chord Explorer' },
       subtitle: lang === 'pt' ? 'Descubra os acordes essenciais e seus formatos mais usados.' : 'Discover essential chords and their most common shapes.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -140,7 +143,7 @@ const TeensPage: React.FC = () => {
       unlockXp: 240,
     },
     {
-      title: 'Mapa de Tríades',
+      title: { pt: 'Mapa de Tríades', en: 'Triad Map' },
       subtitle: lang === 'pt' ? 'Veja tríades e inversões ligadas pelo braço inteiro.' : 'See triads and inversions connected across the full neck.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -164,7 +167,7 @@ const TeensPage: React.FC = () => {
       unlockXp: 260,
     },
     {
-      title: 'Construtor de Acordes',
+      title: { pt: 'Construtor de Acordes', en: 'Chord Builder' },
       subtitle: lang === 'pt' ? 'Monte blocos harmônicos por sensação.' : 'Build harmonic blocks by feel.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -181,7 +184,7 @@ const TeensPage: React.FC = () => {
       unlockXp: 280,
     },
     {
-      title: 'Laboratório de Ritmo',
+      title: { pt: 'Laboratório de Ritmo', en: 'Rhythm Lab' },
       subtitle: lang === 'pt' ? 'Treine pulsos e timing em loops curtos.' : 'Train pulses and timing with short loops.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -199,7 +202,7 @@ const TeensPage: React.FC = () => {
       unlockXp: 120,
     },
     {
-      title: 'Batidas Populares',
+      title: { pt: 'Batidas Populares', en: 'Popular Strumming' },
       subtitle: lang === 'pt' ? 'Aprenda levadas com setas tradicionais de cifra.' : 'Learn strumming patterns with classic arrow notation.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -217,7 +220,7 @@ const TeensPage: React.FC = () => {
       unlockXp: 160,
     },
     {
-      title: 'Leitura de Partitura + TAB',
+      title: { pt: 'Leitura de Partitura + TAB', en: 'Staff Reading + TAB' },
       subtitle: lang === 'pt' ? 'Leia partitura + TAB como um mapa musical.' : 'Read staff + TAB as a musical map.',
       visual: (
         <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
@@ -302,7 +305,7 @@ const TeensPage: React.FC = () => {
                   : '';
             return (
               <button
-                key={module.title}
+                key={module.path}
                 type="button"
                 disabled={!module.available}
                 onClick={() => module.available && navigateTo(module.path)}
@@ -311,7 +314,7 @@ const TeensPage: React.FC = () => {
               >
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1 w-12 rounded-b-full bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className={`mb-3 w-full rounded-2xl border px-3 py-2 ${isLight ? 'border-violet-200 bg-violet-50/70' : 'border-violet-500/25 bg-violet-900/20'}`}>{module.visual}</div>
-                <h3 className="text-sm font-black uppercase tracking-[0.14em]">{module.title}</h3>
+                <h3 className="text-sm font-black uppercase tracking-[0.14em]">{module.title[lang]}</h3>
                 <p className="mt-2 text-[11px] font-bold opacity-70">{module.subtitle}</p>
                 {!module.available && (
                   <p className="mt-3 text-[9px] font-black opacity-40 tracking-[0.2em] group-hover:text-violet-400 transition-colors uppercase">

@@ -37,9 +37,15 @@ const GUITAR_MODELS: GuitarModel[] = [
   { id: 'banjo',      label: 'Banjo',         colors: STANDARD_COLORS },
 ];
 
-const COLOR_LABELS: Record<string, string> = {
+const COLOR_LABELS_PT: Record<string, string> = {
   black: 'Preta', blue: 'Azul', green: 'Verde', grey: 'Cinza', gray: 'Cinza',
   pink: 'Rosa', red: 'Vermelha', white: 'Branca', yellow: 'Amarela',
+  sunburst: 'Sunburst', dgil: 'Dave Gil', evh: 'EVH', relic: 'Relic', srv: 'SRV',
+};
+
+const COLOR_LABELS_EN: Record<string, string> = {
+  black: 'Black', blue: 'Blue', green: 'Green', grey: 'Grey', gray: 'Gray',
+  pink: 'Pink', red: 'Red', white: 'White', yellow: 'Yellow',
   sunburst: 'Sunburst', dgil: 'Dave Gil', evh: 'EVH', relic: 'Relic', srv: 'SRV',
 };
 
@@ -91,6 +97,9 @@ const KidsCustomShopPage: React.FC = () => {
   const [isExporting,    setIsExporting]    = useState(false);
 
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const modelLabels = isPt ? { classics: 'Classic-S', superstrat: 'Superstrat', modern: 'Modern', explorer: 'Explorer', flyingv: 'Flying V', sinlgec: 'Single Cut', semiac: 'Semi Acústica', cbaixo: 'Contrabaixo', violao: 'Violão', banjo: 'Banjo' } : { classics: 'Classic-S', superstrat: 'Superstrat', modern: 'Modern', explorer: 'Explorer', flyingv: 'Flying V', sinlgec: 'Single Cut', semiac: 'Semi Acoustic', cbaixo: 'Bass', violao: 'Acoustic Guitar', banjo: 'Banjo' };
+  const colorLabels = isPt ? COLOR_LABELS_PT : COLOR_LABELS_EN;
 
   const copy = {
     title:       isPt ? 'Custom Shop'                             : 'Custom Shop',
@@ -235,11 +244,11 @@ const KidsCustomShopPage: React.FC = () => {
                 >
                   <img
                     src={modelThumbPath(model)}
-                    alt={model.label}
+                    alt={modelLabels[model.id as keyof typeof modelLabels] ?? model.label}
                     className="h-24 w-full object-contain mb-3 drop-shadow-md group-hover:scale-105 transition-transform"
                     loading="lazy"
                   />
-                  <span className="text-[13px] font-black uppercase tracking-wide">{model.label}</span>
+                  <span className="text-[13px] font-black uppercase tracking-wide">{modelLabels[model.id as keyof typeof modelLabels] ?? model.label}</span>
                 </button>
               ))}
             </div>
@@ -250,18 +259,18 @@ const KidsCustomShopPage: React.FC = () => {
         {step === 'color' && selectedModel && (
           <section className="flex flex-col items-center">
             <h2 className="mb-5 text-xl font-black uppercase tracking-wide text-emerald-400">
-              {copy.stepColor} — {selectedModel.label}
+              {copy.stepColor} — {modelLabels[selectedModel.id as keyof typeof modelLabels] ?? selectedModel.label}
             </h2>
 
             {/* preview of selected color */}
             <div className={`mb-6 rounded-[24px] border p-5 flex flex-col items-center ${cardBase}`}>
               <img
                 src={guitarImagePath(selectedModel.id, selectedColor)}
-                alt={`${selectedModel.label} ${selectedColor}`}
+                alt={`${modelLabels[selectedModel.id as keyof typeof modelLabels] ?? selectedModel.label} ${selectedColor}`}
                 className="h-48 object-contain drop-shadow-xl transition-all duration-300"
               />
               <span className="mt-3 text-sm font-black uppercase opacity-75">
-                {COLOR_LABELS[selectedColor] ?? selectedColor}
+                {colorLabels[selectedColor] ?? selectedColor}
               </span>
             </div>
 
@@ -274,7 +283,7 @@ const KidsCustomShopPage: React.FC = () => {
                 return (
                   <button
                     key={color}
-                    title={COLOR_LABELS[color] ?? color}
+                    title={colorLabels[color] ?? color}
                     onClick={() => setSelectedColor(color as string)}
                     style={isGradient ? { background: swatch } : { backgroundColor: swatch }}
                     className={`w-10 h-10 rounded-full border-4 transition-all active:scale-90 ${isSelected ? 'border-emerald-400 scale-110 shadow-[0_0_12px_rgba(52,211,153,0.6)]' : color === 'white' && isLight ? 'border-gray-300 hover:scale-110 hover:border-emerald-300/60' : 'border-transparent hover:scale-110 hover:border-emerald-300/60'}`}
@@ -300,11 +309,11 @@ const KidsCustomShopPage: React.FC = () => {
             <div className={`mb-6 rounded-[24px] border p-5 flex flex-col items-center ${cardBase}`}>
               <img
                 src={guitarImagePath(selectedModel.id, selectedColor)}
-                alt={`${selectedModel.label} ${selectedColor}`}
+                alt={`${modelLabels[selectedModel.id as keyof typeof modelLabels] ?? selectedModel.label} ${selectedColor}`}
                 className="h-40 object-contain drop-shadow-xl"
               />
               <span className="mt-2 text-xs font-bold uppercase opacity-60">
-                {selectedModel.label} · {COLOR_LABELS[selectedColor] ?? selectedColor}
+                {modelLabels[selectedModel.id as keyof typeof modelLabels] ?? selectedModel.label} · {colorLabels[selectedColor] ?? selectedColor}
               </span>
             </div>
 
@@ -356,7 +365,7 @@ const KidsCustomShopPage: React.FC = () => {
                 {savedGuitar.name}
               </h3>
               <p className={`mt-1 text-xs font-bold uppercase opacity-60`}>
-                {selectedModel.label} · {COLOR_LABELS[savedGuitar.color] ?? savedGuitar.color}
+                {modelLabels[selectedModel.id as keyof typeof modelLabels] ?? selectedModel.label} · {colorLabels[savedGuitar.color] ?? savedGuitar.color}
               </p>
             </div>
 

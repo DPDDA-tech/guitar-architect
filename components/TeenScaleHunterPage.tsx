@@ -1,5 +1,5 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { getTeensTheme } from '../utils/ecosystemPreferences';
+﻿import React, { useMemo, useRef, useState } from 'react';
+import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
@@ -84,12 +84,13 @@ const normalizeNote = (note: string): ScaleNote | null => {
 
 const TeenScaleHunterPage: React.FC = () => {
   const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
+  const [lang] = useState<'pt' | 'en'>(() => getTeensLang());
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
   const [selectedPathId, setSelectedPathId] = useState<string>(PATHS[0].id);
   const [activeCell, setActiveCell] = useState<CellId | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [userInput, setUserInput] = useState<CellId[]>([]);
-  const [feedback, setFeedback] = useState('Escolha um caminho e toque em Ouvir sequência.');
+  const [feedback, setFeedback] = useState(() => (lang === 'pt' ? 'Escolha um caminho e toque em Ouvir sequência.' : 'Choose a path and press Play sequence.'));
   const [streak, setStreak] = useState(0);
   const [combo, setCombo] = useState(0);
   const [xp, setXp] = useState<number>(() => getTeensXp());
@@ -98,6 +99,7 @@ const TeenScaleHunterPage: React.FC = () => {
   const playTokenRef = useRef(0);
 
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
   const rankProgress = getRankProgress(xp);
 
   const selectedPath = useMemo(() => PATHS.find((p) => p.id === selectedPathId) ?? PATHS[0], [selectedPathId]);
@@ -164,7 +166,7 @@ const TeenScaleHunterPage: React.FC = () => {
 
     if (playTokenRef.current === token) {
       setIsPlaying(false);
-      setFeedback('Sua vez: reproduza o caminho no braço.');
+      setFeedback(isPt ? 'Sua vez: reproduza o caminho no braço.' : 'Your turn: reproduce the path on the fretboard.');
     }
   };
 
@@ -181,7 +183,7 @@ const TeenScaleHunterPage: React.FC = () => {
 
       if (cellId !== expected) {
         setCombo(0);
-        setFeedback('Quase! Ouça de novo e siga o padrão do caminho.');
+        setFeedback(isPt ? 'Quase! Ouça de novo e siga o padrão do caminho.' : 'Almost! Listen again and follow the path pattern.');
         return next;
       }
 
@@ -190,7 +192,7 @@ const TeenScaleHunterPage: React.FC = () => {
         setXp(nextXp);
         setStreak((v) => v + 1);
         setCombo((v) => v + 1);
-        setFeedback('Caminho concluído! Novo XP adicionado.');
+        setFeedback(isPt ? 'Caminho concluído! Novo XP adicionado.' : 'Path completed! New XP added.');
       } else {
         setFeedback('Boa leitura! Continue o caminho...');
       }
@@ -201,7 +203,7 @@ const TeenScaleHunterPage: React.FC = () => {
 
   const resetTry = () => {
     setUserInput([]);
-    setFeedback('Tentativa limpa. Ouça a sequência novamente.');
+    setFeedback(isPt ? 'Tentativa limpa. Ouça a sequência novamente.' : 'Attempt cleared. Listen to the sequence again.');
   };
 
   const newChallenge = () => {
@@ -209,7 +211,7 @@ const TeenScaleHunterPage: React.FC = () => {
     const next = pool[Math.floor(Math.random() * pool.length)] ?? PATHS[0];
     setSelectedPathId(next.id);
     setUserInput([]);
-    setFeedback('Novo caminho carregado. Ouça e reproduza.');
+    setFeedback(isPt ? 'Novo caminho carregado. Ouça e reproduza.' : 'New path loaded. Listen and reproduce it.');
   };
 
   return (
@@ -217,14 +219,14 @@ const TeenScaleHunterPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
-        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel="Voltar ao Teens" backPath="/teens" />
+        <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
         <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Caça às Escalas" subtitle="Caçe padrões no braço e reproduza caminhos musicais por região." />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-indigo-900/70 bg-zinc-950/75'}`}>
           <div className="grid gap-3 md:grid-cols-3">
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
               <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Dificuldade</p>
-              <p className="mt-1 text-lg font-black">{difficulty.toUpperCase()} · {targetSequence.length} passos</p>
+              <p className="mt-1 text-lg font-black">{difficulty.toUpperCase()} · {targetSequence.length} {isPt ? 'passos' : 'steps'}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
               <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Caminho</p>
@@ -238,7 +240,7 @@ const TeenScaleHunterPage: React.FC = () => {
 
           <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-indigo-800/70 bg-zinc-900/70'}`}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">Progressão</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{isPt ? 'Progressão' : 'Progress'}</p>
               <p className="text-xs font-black uppercase">
                 Rank: <span className={rankProgress.current.accentClass}>{rankProgress.current.label}</span> · XP {xp}
               </p>
@@ -255,7 +257,7 @@ const TeenScaleHunterPage: React.FC = () => {
                 onClick={() => {
                   setDifficulty(item);
                   setUserInput([]);
-                  setFeedback('Dificuldade ajustada. Ouça e reproduza.');
+                  setFeedback(isPt ? 'Dificuldade ajustada. Ouça e reproduza.' : 'Difficulty adjusted. Listen and reproduce it.');
                 }}
                 className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${
                   difficulty === item
@@ -276,7 +278,7 @@ const TeenScaleHunterPage: React.FC = () => {
                 onClick={() => {
                   setSelectedPathId(path.id);
                   setUserInput([]);
-                  setFeedback('Caminho selecionado. Ouça e reproduza.');
+                  setFeedback(isPt ? 'Caminho selecionado. Ouça e reproduza.' : 'Path selected. Listen and reproduce it.');
                 }}
                 className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${
                   selectedPathId === path.id
@@ -348,7 +350,7 @@ const TeenScaleHunterPage: React.FC = () => {
                   : 'border-cyan-300 bg-cyan-500/25 text-cyan-50 hover:bg-cyan-500/35'
               }`}
             >
-              Ouvir sequência
+              {isPt ? 'Ouvir sequência' : 'Play sequence'}
             </button>
             <button
               onClick={newChallenge}
@@ -358,7 +360,7 @@ const TeenScaleHunterPage: React.FC = () => {
                   : 'border-violet-300 bg-violet-500/25 text-violet-50 hover:bg-violet-500/35'
               }`}
             >
-              Novo desafio
+              {isPt ? 'Novo desafio' : 'New challenge'}
             </button>
             <button
               onClick={resetTry}
@@ -378,7 +380,7 @@ const TeenScaleHunterPage: React.FC = () => {
             onClick={() => navigateTo('/teens')}
             className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95"
           >
-            Voltar ao Teens
+            {isPt ? 'Voltar ao Teens' : 'Back to Teens'}
           </button>
           <button
             onClick={() => sendFretboardIntent({
@@ -388,14 +390,14 @@ const TeenScaleHunterPage: React.FC = () => {
               scaleType: 'Major (Ionian)',
               focusFirstRegion: true,
               instruction: {
-                title: 'Do Caçador ao Braço Completo',
-                description: 'Você treinou uma região. Agora veja a escala completa no braço.',
+                title: isPt ? 'Do Caçador ao Braço Completo' : 'From Hunter to Full Fretboard',
+                description: isPt ? 'Você treinou uma região. Agora veja a escala completa no braço.' : 'You trained one region. Now see the full scale on the fretboard.',
                 persistent: true,
               },
             })}
             className="rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-500 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(8,145,178,0.3)] transition-all hover:from-cyan-500 hover:to-sky-400 active:scale-95"
           >
-            Ir para Studio
+            {isPt ? 'Ir para Studio' : 'Go to Studio'}
           </button>
         </div>
       </main>
@@ -404,3 +406,4 @@ const TeenScaleHunterPage: React.FC = () => {
 };
 
 export default TeenScaleHunterPage;
+

@@ -513,33 +513,6 @@ const TeenTriadMapPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex min-w-fit gap-4">
-                <div>
-                  <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.mode}</p>
-                  <div className="mt-2 flex gap-2">
-                    <button
-                      onClick={handleToggleTheme}
-                      className={`h-12 w-12 rounded-2xl border inline-flex items-center justify-center transition-all ${
-                        isLight
-                          ? 'border-slate-300 bg-white text-slate-700 hover:border-cyan-400'
-                          : 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-cyan-500'
-                      }`}
-                      aria-label="Alternar tema"
-                    >
-                      {isLight ? <MoonIcon /> : <SunIcon />}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[10px] uppercase font-black tracking-[0.2em] text-cyan-400">{copy.language}</p>
-                  <div className="mt-2 flex gap-2">
-                    <button onClick={handleToggleLang} className={`${toolbarButtonClass(false)} h-12 min-w-[48px] inline-flex items-center justify-center`}>
-                      {lang.toUpperCase()}
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 

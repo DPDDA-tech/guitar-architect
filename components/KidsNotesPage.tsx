@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { getKidsTheme } from '../utils/ecosystemPreferences';
+﻿import React, { useEffect, useRef, useState } from 'react';
+import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
@@ -7,7 +7,10 @@ type NoteId = 'DO' | 'RE' | 'MI' | 'FA' | 'SOL' | 'LA' | 'SI';
 
 type Challenge = {
   id: string;
-  prompt: string;
+  prompt: {
+    pt: string;
+    en: string;
+  };
   options: NoteId[];
   answer: NoteId;
 };
@@ -39,10 +42,10 @@ const NOTES: Array<{ id: NoteId; color: string; glow: string; curiosity: string;
 ];
 
 const CHALLENGES: Challenge[] = [
-  { id: 'c1', prompt: 'Clique na nota azul', options: ['DO', 'RE', 'SOL', 'LA'], answer: 'SOL' },
-  { id: 'c2', prompt: 'Qual nota vem depois do DO?', options: ['RE', 'MI', 'FA', 'SI'], answer: 'RE' },
-  { id: 'c3', prompt: 'Encontre a nota vermelha', options: ['DO', 'FA', 'LA', 'SI'], answer: 'DO' },
-  { id: 'c4', prompt: 'Clique na nota LA', options: ['SI', 'LA', 'RE', 'MI'], answer: 'LA' },
+  { id: 'c1', prompt: { pt: 'Clique na nota azul', en: 'Click the blue note' }, options: ['DO', 'RE', 'SOL', 'LA'], answer: 'SOL' },
+  { id: 'c2', prompt: { pt: 'Qual nota vem depois do DO?', en: 'Which note comes after DO?' }, options: ['RE', 'MI', 'FA', 'SI'], answer: 'RE' },
+  { id: 'c3', prompt: { pt: 'Encontre a nota vermelha', en: 'Find the red note' }, options: ['DO', 'FA', 'LA', 'SI'], answer: 'DO' },
+  { id: 'c4', prompt: { pt: 'Clique na nota LA', en: 'Click the LA note' }, options: ['SI', 'LA', 'RE', 'MI'], answer: 'LA' },
 ];
 
 const MELODY_CHALLENGES: MelodyChallenge[] = [
@@ -173,6 +176,7 @@ const navigateTo = (path: string) => {
 
 const KidsNotesPage: React.FC = () => {
   const [theme] = useState(() => getKidsTheme());
+  const [lang] = useState(() => getKidsLang());
   const [selectedNote, setSelectedNote] = useState<NoteId | null>(null);
   const [challengeIndex, setChallengeIndex] = useState(0);
   const [challengeFeedback, setChallengeFeedback] = useState('');
@@ -193,7 +197,7 @@ const KidsNotesPage: React.FC = () => {
   const [memoryUserInput, setMemoryUserInput] = useState<NoteId[]>([]);
   const [memoryIsPlaying, setMemoryIsPlaying] = useState(false);
   const [memoryLevel, setMemoryLevel] = useState(0);
-  const [memoryFeedback, setMemoryFeedback] = useState('Clique em Começar para seguir as notas.');
+  const [memoryFeedback, setMemoryFeedback] = useState('');
   const [memoryPlayingIndex, setMemoryPlayingIndex] = useState<number | null>(null);
   const [letterChallenge, setLetterChallenge] = useState<NoteLetterChallenge | null>(null);
   const [letterFeedback, setLetterFeedback] = useState('');
@@ -204,8 +208,13 @@ const KidsNotesPage: React.FC = () => {
   const memoryPlayIdRef = useRef(0);
 
   const isLight = theme === 'light';
+  const isPt = lang === 'pt';
   const currentChallenge = CHALLENGES[challengeIndex];
   const selectedMelody = MELODY_CHALLENGES.find((item) => item.id === selectedMelodyId) ?? MELODY_CHALLENGES[0];
+
+  useEffect(() => {
+    setMemoryFeedback(isPt ? 'Clique em Começar para seguir as notas.' : 'Click Start to follow the notes.');
+  }, [isPt]);
 
 
   const selectedNoteData = NOTES.find(note => note.id === selectedNote);
@@ -422,13 +431,13 @@ const KidsNotesPage: React.FC = () => {
     setMemorySequence(first);
     setMemoryUserInput([]);
     setMemoryLevel(1);
-      setMemoryFeedback('Olhe e escute o caminho da música.');
+      setMemoryFeedback(isPt ? 'Olhe e escute o caminho da música.' : 'Watch and listen to the music path.');
     await playMemorySequence(first);
   };
 
   const replayMemorySequence = async () => {
     if (memorySequence.length === 0) return;
-    setMemoryFeedback('Vamos ouvir de novo com calma.');
+    setMemoryFeedback(isPt ? 'Vamos ouvir de novo com calma.' : 'Let’s hear it again slowly.');
     await playMemorySequence(memorySequence);
   };
 
@@ -439,7 +448,7 @@ const KidsNotesPage: React.FC = () => {
     setMemoryIsPlaying(false);
     setMemoryLevel(0);
     setMemoryPlayingIndex(null);
-      setMemoryFeedback('Reiniciado! Clique em Começar para um novo caminho.');
+      setMemoryFeedback(isPt ? 'Reiniciado! Clique em Começar para um novo caminho.' : 'Reset! Click Start for a new path.');
   };
 
   const handleMemoryNoteClick = async (note: NoteId) => {
@@ -450,7 +459,7 @@ const KidsNotesPage: React.FC = () => {
 
     const currentIndex = nextInput.length - 1;
     if (memorySequence[currentIndex] !== note) {
-      setMemoryFeedback('Quase! Vamos tentar de novo. Voce consegue!');
+      setMemoryFeedback(isPt ? 'Quase! Vamos tentar de novo. Você consegue!' : 'Almost! Let’s try again. You can do it!');
       setMemoryUserInput([]);
       return;
     }
@@ -458,7 +467,7 @@ const KidsNotesPage: React.FC = () => {
     if (nextInput.length === memorySequence.length) {
       const nextLevel = memorySequence.length + 1;
       const nextSequence = [...memorySequence, randomNote()];
-      setMemoryFeedback(`Boa! Nivel ${nextLevel}. Agora ficou um pouquinho maior.`);
+      setMemoryFeedback(isPt ? `Boa! Nível ${nextLevel}. Agora ficou um pouquinho maior.` : `Great! Level ${nextLevel}. Now it is a little longer.`);
       setMemorySequence(nextSequence);
       setMemoryUserInput([]);
       setMemoryLevel(nextLevel);
@@ -485,8 +494,8 @@ const KidsNotesPage: React.FC = () => {
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
 
       <main className="relative mx-auto max-w-6xl">
-        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel="Voltar ao Kids" backPath="/kids" />
-        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="Conhecendo as Notas" subtitle="As músicas usam notas musicais. Vamos descobrir?" />
+        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={isPt ? "Voltar ao Kids" : "Back to Kids"} backPath="/kids" />
+        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={isPt ? "Conhecendo as Notas" : "Discovering Notes"} subtitle={isPt ? "As músicas usam notas musicais. Vamos descobrir?" : "Songs use musical notes. Shall we discover them?"} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-7">
@@ -524,11 +533,11 @@ const KidsNotesPage: React.FC = () => {
               onClick={() => setSoundEnabled((prev) => !prev)}
               className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight ${soundEnabled ? 'border-emerald-500 bg-emerald-600 text-white' : isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
             >
-              Som: {soundEnabled ? 'Ligado' : 'Desligado'}
+              Sound: {soundEnabled ? (isPt ? 'Ligado' : 'On') : (isPt ? 'Desligado' : 'Off')}
             </button>
           </div>
-          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">Desafios</p>
-          <p className="mt-2 text-sm font-black">{currentChallenge.prompt}</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">{isPt ? 'Desafios' : 'Challenges'}</p>
+          <p className="mt-2 text-sm font-black">{isPt ? currentChallenge.prompt.pt : currentChallenge.prompt.en}</p>
 
           <div className="mt-3 grid gap-2 sm:grid-cols-4">
             {currentChallenge.options.map((option) => (
@@ -550,9 +559,9 @@ const KidsNotesPage: React.FC = () => {
         </section>
 
         <section className={`mt-5 rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">Monte sua música</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">{isPt ? 'Monte sua música' : 'Build Your Music'}</p>
           <p className={`mt-2 text-sm font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-              Invente sua sequência de notas e aperte play para ouvir.
+              {isPt ? 'Invente sua sequência de notas e aperte play para ouvir.' : 'Create your note sequence and press play to listen.'}
           </p>
 
           <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-7">
@@ -575,7 +584,7 @@ const KidsNotesPage: React.FC = () => {
 
           <div className={`mt-3 min-h-[58px] rounded-xl border px-3 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-950/70'}`}>
             {noteSequence.length === 0 ? (
-              <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Sua sequência:</p>
+              <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>{isPt ? 'Sua sequência:' : 'Your sequence:'}</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {noteSequence.map((note, index) => (
@@ -603,26 +612,26 @@ const KidsNotesPage: React.FC = () => {
               disabled={noteSequence.length === 0 || isPlayingSequence}
               className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
             >
-              Apagar ultima
+              {isPt ? 'Apagar última' : 'Delete last'}
             </button>
             <button
               onClick={clearSequence}
               disabled={noteSequence.length === 0}
               className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
             >
-              Limpar
+              {isPt ? 'Limpar' : 'Clear'}
             </button>
           </div>
         </section>
 
         <section className={`mt-5 rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">Copie a música</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">{isPt ? 'Copie a música' : 'Copy the Song'}</p>
           <p className={`mt-2 text-sm font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-              Toque o modelo, monte sua versão e ouça para comparar.
+              {isPt ? 'Toque o modelo, monte sua versão e ouça para comparar.' : 'Play the model, build your version, and listen to compare.'}
           </p>
 
           <div className="mt-3">
-                <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em]">Caminho da música</label>
+                <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em]">{isPt ? 'Caminho da música' : 'Song path'}</label>
             <select
               value={selectedMelodyId}
               onChange={(e) => handleMelodyChange(e.target.value)}
@@ -636,7 +645,7 @@ const KidsNotesPage: React.FC = () => {
 
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
             <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-950/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Toque o modelo</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">{isPt ? 'Toque o modelo' : 'Play the model'}</p>
               <p className="mt-2 text-sm font-black">{selectedMelody.title}</p>
               <p className={`mt-1 text-xs font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>{selectedMelody.displayNotes}</p>
               <p className={`mt-1 text-[11px] font-semibold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>{selectedMelody.source}</p>
@@ -661,12 +670,12 @@ const KidsNotesPage: React.FC = () => {
                 disabled={isPlayingModel}
                 className="mt-3 min-h-[44px] rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-cyan-500 disabled:opacity-50"
               >
-                {isPlayingModel ? 'Tocando modelo...' : 'Play modelo'}
+                {isPlayingModel ? (isPt ? 'Tocando modelo...' : 'Playing model...') : (isPt ? 'Tocar modelo' : 'Play model')}
               </button>
             </div>
 
             <div className={`rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-950/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Monte sua versão</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">{isPt ? 'Monte sua versão' : 'Build your version'}</p>
               <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-7">
                 {NOTES.map((note) => (
                   <button
@@ -687,7 +696,7 @@ const KidsNotesPage: React.FC = () => {
 
               <div className={`mt-3 min-h-[58px] rounded-xl border px-3 py-3 ${isLight ? 'border-slate-200 bg-white' : 'border-zinc-700 bg-zinc-900'}`}>
                 {userMelodySequence.length === 0 ? (
-                  <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>Sua versão:</p>
+                  <p className={`text-xs font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>{isPt ? 'Sua versão:' : 'Your version:'}</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {userMelodySequence.map((note, index) => (
@@ -712,21 +721,21 @@ const KidsNotesPage: React.FC = () => {
                   disabled={userMelodySequence.length === 0 || isPlayingUserVersion}
                   className="min-h-[44px] rounded-xl border border-emerald-500 bg-emerald-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-emerald-500 disabled:opacity-50"
                 >
-              {isPlayingUserVersion ? 'Tocando versão...' : 'Play sua versão'}
+              {isPlayingUserVersion ? (isPt ? 'Tocando versão...' : 'Playing version...') : (isPt ? 'Tocar sua versão' : 'Play your version')}
                 </button>
                 <button
                   onClick={removeLastMelodyNote}
                   disabled={userMelodySequence.length === 0 || isPlayingUserVersion}
                   className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
                 >
-                  Apagar ultima
+                  {isPt ? 'Apagar última' : 'Delete last'}
                 </button>
                 <button
                   onClick={clearMelodyVersion}
                   disabled={userMelodySequence.length === 0}
                   className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
                 >
-                  Limpar
+                  {isPt ? 'Limpar' : 'Clear'}
                 </button>
               </div>
             </div>
@@ -740,13 +749,13 @@ const KidsNotesPage: React.FC = () => {
         </section>
 
         <section className={`mt-5 rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">Qual ê a letra?</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">{isPt ? 'Qual é a letra?' : 'Which Letter Is It?'}</p>
           <p className={`mt-2 text-sm font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-              Alguns músicos usam letras para chamar as notas.
+              {isPt ? 'Alguns músicos usam letras para chamar as notas.' : 'Some musicians use letters to name the notes.'}
           </p>
 
           <div className={`mt-3 rounded-xl border px-3 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-zinc-700 bg-zinc-950/70'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Mapa rápido</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">{isPt ? 'Mapa rápido' : 'Quick map'}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {(['DO', 'RE', 'MI', 'FA', 'SOL', 'LA', 'SI'] as NoteId[]).map((note) => (
                 <span
@@ -768,7 +777,7 @@ const KidsNotesPage: React.FC = () => {
                 <div className={`flex h-14 w-14 items-center justify-center rounded-full text-white text-sm font-black shadow-lg ${NOTE_VISUAL[letterChallenge.note].color} ${NOTE_VISUAL[letterChallenge.note].glow}`}>
                   {letterChallenge.note}
                 </div>
-                <p className="text-sm font-black">Qual letra representa essa nota?</p>
+                <p className="text-sm font-black">{isPt ? 'Qual letra representa essa nota?' : 'Which letter represents this note?'}</p>
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -793,22 +802,22 @@ const KidsNotesPage: React.FC = () => {
         </section>
 
         <section className={`mt-5 rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">Siga as Notas</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-500">{isPt ? 'Siga as Notas' : 'Follow the Notes'}</p>
           <p className={`mt-2 text-sm font-bold ${isLight ? 'text-slate-600' : 'text-zinc-300'}`}>
-            Escute o caminho e repita clicando nas bolas coloridas.
+            {isPt ? 'Escute o caminho e repita clicando nas bolas coloridas.' : 'Listen to the path and repeat it by clicking the colored circles.'}
           </p>
 
           <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap sm:items-center">
             <button onClick={() => void startMemoryGame()} disabled={memoryIsPlaying} className="min-h-[44px] rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-cyan-500 disabled:opacity-50">
-                Começar
+                {isPt ? 'Começar' : 'Start'}
             </button>
             <button onClick={() => void replayMemorySequence()} disabled={memoryIsPlaying || memorySequence.length === 0} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight disabled:opacity-50 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
-                Repetir sequência
+                {isPt ? 'Repetir sequência' : 'Repeat sequence'}
             </button>
             <button onClick={resetMemoryGame} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
-              Reiniciar
+              {isPt ? 'Reiniciar' : 'Reset'}
             </button>
-              <span className="text-xs font-black uppercase tracking-wider text-cyan-500">Nível: {memoryLevel}</span>
+              <span className="text-xs font-black uppercase tracking-wider text-cyan-500">{isPt ? 'Nível' : 'Level'}: {memoryLevel}</span>
           </div>
 
           <div className={`mt-3 min-h-[52px] rounded-xl border px-3 py-3 text-sm font-black ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'}`}>
@@ -842,10 +851,10 @@ const KidsNotesPage: React.FC = () => {
 
         <div className="mt-6 grid gap-2 sm:flex sm:flex-row sm:justify-center">
           <button onClick={() => navigateTo('/kids')} className="min-h-[44px] rounded-xl border border-emerald-500 bg-emerald-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-emerald-500">
-            Voltar ao Kids
+            {isPt ? 'Voltar ao Kids' : 'Back to Kids'}
           </button>
           <button onClick={() => navigateTo('/kids/games')} className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
-            Jogos Musicais
+            {isPt ? 'Jogos Musicais' : 'Music Games'}
           </button>
         </div>
       </main>
@@ -854,5 +863,6 @@ const KidsNotesPage: React.FC = () => {
 };
 
 export default KidsNotesPage;
+
 
 

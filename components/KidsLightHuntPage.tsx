@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { getKidsTheme } from '../utils/ecosystemPreferences';
+import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
 import { LIGHT_GRID } from '../data/kidsLightHuntData';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
@@ -12,10 +12,9 @@ const navigateTo = (path: string) => {
 type NaturalNote = 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B';
 type PathPreset = {
   id: 'pathA' | 'pathB' | 'pathC' | 'pathD';
-  label: string;
   notes: NaturalNote[];
 };
-type TempoPreset = { id: 'slow' | 'medium' | 'fast'; label: string; stepMs: number; gapMs: number };
+type TempoPreset = { id: 'slow' | 'medium' | 'fast'; stepMs: number; gapMs: number };
 
 type CellInfo = {
   cellId: number;
@@ -38,7 +37,7 @@ const NATURAL_SEMITONES: Record<NaturalNote, number> = {
 };
 
 const OPEN_STRING_NOTES: NaturalNote[] = ['E', 'B', 'G', 'D', 'A', 'E'];
-const OPEN_STRING_MIDI = [64, 59, 55, 50, 45, 40]; // E4 B3 G3 D3 A2 E2
+const OPEN_STRING_MIDI = [64, 59, 55, 50, 45, 40];
 
 const NOTE_COLOR: Record<NaturalNote, string> = {
   C: 'bg-red-500',
@@ -51,15 +50,15 @@ const NOTE_COLOR: Record<NaturalNote, string> = {
 };
 
 const PATH_PRESETS: PathPreset[] = [
-  { id: 'pathA', label: 'Caminho A', notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B'] },
-  { id: 'pathB', label: 'Caminho B', notes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] },
-  { id: 'pathC', label: 'Caminho C', notes: ['G', 'A', 'B', 'C', 'D', 'E', 'F'] },
-  { id: 'pathD', label: 'Caminho D', notes: ['E', 'F', 'G', 'A', 'B', 'C', 'D'] },
+  { id: 'pathA', notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B'] },
+  { id: 'pathB', notes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] },
+  { id: 'pathC', notes: ['G', 'A', 'B', 'C', 'D', 'E', 'F'] },
+  { id: 'pathD', notes: ['E', 'F', 'G', 'A', 'B', 'C', 'D'] },
 ];
 const TEMPO_PRESETS: TempoPreset[] = [
-  { id: 'slow', label: 'Lento', stepMs: 700, gapMs: 220 },
-  { id: 'medium', label: 'Médio', stepMs: 520, gapMs: 140 },
-  { id: 'fast', label: 'Rápido', stepMs: 380, gapMs: 100 },
+  { id: 'slow', stepMs: 700, gapMs: 220 },
+  { id: 'medium', stepMs: 520, gapMs: 140 },
+  { id: 'fast', stepMs: 380, gapMs: 100 },
 ];
 
 const midiToHz = (midi: number) => 440 * Math.pow(2, (midi - 69) / 12);
@@ -98,6 +97,45 @@ const CELL_MAP = createCellMap();
 
 const KidsLightHuntPage: React.FC = () => {
   const [theme] = useState(() => getKidsTheme());
+  const [lang] = useState(() => getKidsLang());
+  const isLight = theme === 'light';
+  const isPt = lang === 'pt';
+
+  const copy = {
+    backKids: isPt ? 'Voltar ao Kids' : 'Back to Kids',
+    levelOf: isPt ? 'Nível' : 'Level',
+    of: isPt ? 'de' : 'of',
+    start: isPt ? 'Começar' : 'Start',
+    restart: isPt ? 'Reiniciar' : 'Restart',
+    tempoBetween: isPt ? 'Tempo entre notas' : 'Time between notes',
+    choosePath: isPt ? 'Escolha a sequência para brincar' : 'Choose a sequence to play',
+    createPath: isPt ? 'Crie sua sequência' : 'Create your sequence',
+    customActive: isPt ? 'Sequência personalizada ativa' : 'Custom sequence active',
+    eraseLast: isPt ? 'Apagar última' : 'Erase last',
+    clear: isPt ? 'Limpar' : 'Clear',
+    useReadyPath: isPt ? 'Usar caminho pronto' : 'Use ready path',
+    initialFeedback: isPt ? 'Escolha um caminho e toque em Começar.' : 'Choose a path and tap Start.',
+    nowYourTurn: isPt ? 'Agora é sua vez. Repita o caminho!' : 'Now it is your turn. Repeat the path!',
+    lightWillAppear: isPt ? 'Uma luz vai aparecer. Toque nela!' : 'A light will appear. Tap it!',
+    allLevels: isPt ? 'Você completou todos os 8 níveis!' : 'You completed all 8 levels!',
+    nextLevel: isPt ? 'Boa! Próximo nível!' : 'Nice! Next level!',
+    keepGoing: isPt ? 'Muito bem! Siga o caminho.' : 'Great! Keep following the path.',
+    almost: isPt ? 'Quase! Observe a sequência e tente de novo.' : 'Almost! Watch the sequence and try again.',
+  };
+
+  const pathLabels = {
+    pathA: isPt ? 'Caminho A' : 'Path A',
+    pathB: isPt ? 'Caminho B' : 'Path B',
+    pathC: isPt ? 'Caminho C' : 'Path C',
+    pathD: isPt ? 'Caminho D' : 'Path D',
+  } as const;
+
+  const tempoLabels = {
+    slow: isPt ? 'Lento' : 'Slow',
+    medium: isPt ? 'Médio' : 'Medium',
+    fast: isPt ? 'Rápido' : 'Fast',
+  } as const;
+
   const [selectedPathId, setSelectedPathId] = useState<PathPreset['id']>('pathA');
   const [tempoId, setTempoId] = useState<TempoPreset['id']>('medium');
   const [useCustomPath, setUseCustomPath] = useState(false);
@@ -105,15 +143,13 @@ const KidsLightHuntPage: React.FC = () => {
   const [sequence, setSequence] = useState<number[]>([]);
   const [customPath, setCustomPath] = useState<NaturalNote[]>(['C', 'D', 'E', 'F']);
   const [stepIndex, setStepIndex] = useState(0);
-  const [feedback, setFeedback] = useState('Escolha um caminho e toque em Começar.');
+  const [feedback, setFeedback] = useState(copy.initialFeedback);
   const [litCellId, setLitCellId] = useState<number | null>(null);
   const [pulseId, setPulseId] = useState<number | null>(null);
   const [isPlayingSequence, setIsPlayingSequence] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const playTokenRef = useRef(0);
-
-  const isLight = theme === 'light';
 
   const selectedPath = PATH_PRESETS.find((preset) => preset.id === selectedPathId) ?? PATH_PRESETS[0];
   const selectedTempo = TEMPO_PRESETS.find((preset) => preset.id === tempoId) ?? TEMPO_PRESETS[1];
@@ -218,7 +254,7 @@ const KidsLightHuntPage: React.FC = () => {
 
     if (playTokenRef.current === token) {
       setIsPlayingSequence(false);
-      setFeedback('Agora é sua vez. Repita o caminho!');
+      setFeedback(copy.nowYourTurn);
     }
   };
 
@@ -226,7 +262,7 @@ const KidsLightHuntPage: React.FC = () => {
     const next = buildSequence(targetLevel);
     setSequence(next);
     setStepIndex(0);
-    setFeedback('Uma luz vai aparecer. Toque nela!');
+    setFeedback(copy.lightWillAppear);
     await playSequence(next);
   };
 
@@ -240,7 +276,7 @@ const KidsLightHuntPage: React.FC = () => {
 
       if (stepIndex === sequence.length - 1) {
         if (level >= 8) {
-          setFeedback('Você completou todos os 8 níveis!');
+          setFeedback(copy.allLevels);
           setSequence([]);
           setLitCellId(null);
           return;
@@ -249,16 +285,16 @@ const KidsLightHuntPage: React.FC = () => {
         const nextLevel = level + 1;
         setLevel(nextLevel);
         setStepIndex(0);
-        setFeedback('Boa! Próximo nível!');
+        setFeedback(copy.nextLevel);
 
         await new Promise((resolve) => window.setTimeout(resolve, 1000));
         await startLevel(nextLevel);
       } else {
         setStepIndex((prev) => prev + 1);
-        setFeedback('Muito bem! Siga o caminho.');
+        setFeedback(copy.keepGoing);
       }
     } else {
-      setFeedback('Quase! Observe a sequência e tente de novo.');
+      setFeedback(copy.almost);
       setStepIndex(0);
       await new Promise((resolve) => window.setTimeout(resolve, 700));
       await playSequence(sequence);
@@ -273,7 +309,7 @@ const KidsLightHuntPage: React.FC = () => {
     setSequence([]);
     setLitCellId(null);
     setPulseId(null);
-    setFeedback('Escolha um caminho e toque em Começar.');
+    setFeedback(copy.initialFeedback);
   };
 
   const addToCustomPath = (note: NaturalNote) => {
@@ -293,43 +329,31 @@ const KidsLightHuntPage: React.FC = () => {
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <main className="relative mx-auto max-w-5xl">
-        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel="Voltar ao Kids" backPath="/kids" />
+        <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={copy.backKids} backPath="/kids" />
         <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="Caça às Luzes" subtitle="Siga as luzes pelo braço musical." />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
           <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-            <p className="text-xs font-black uppercase tracking-wider text-cyan-500">Nível {level} de 8</p>
+            <p className="text-xs font-black uppercase tracking-wider text-cyan-500">{copy.levelOf} {level} {copy.of} 8</p>
             <div className="grid grid-cols-2 gap-2 sm:flex">
-              <button
-                onClick={() => void startLevel()}
-                className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-cyan-300 bg-cyan-50 text-cyan-800 hover:border-cyan-400' : 'border-cyan-500/50 bg-cyan-500/10 text-cyan-200 hover:border-cyan-400'}`}
-              >
-                Começar
+              <button onClick={() => void startLevel()} className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-cyan-300 bg-cyan-50 text-cyan-800 hover:border-cyan-400' : 'border-cyan-500/50 bg-cyan-500/10 text-cyan-200 hover:border-cyan-400'}`}>
+                {copy.start}
               </button>
-              <button
-                onClick={restart}
-                className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
-              >
-                Reiniciar
+              <button onClick={restart} className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}>
+                {copy.restart}
               </button>
             </div>
           </div>
           <div className="mb-3">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Tempo entre notas</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">{copy.tempoBetween}</p>
             <div className="mt-2 grid gap-2 sm:flex sm:flex-wrap">
               {TEMPO_PRESETS.map((tempo) => (
                 <button
                   key={tempo.id}
                   onClick={() => setTempoId(tempo.id)}
-                  className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight transition-all ${
-                    tempoId === tempo.id
-                      ? 'border-cyan-400 bg-cyan-500/15 ring-2 ring-cyan-300/40'
-                      : isLight
-                        ? 'border-slate-300 bg-white hover:border-cyan-400'
-                        : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'
-                  }`}
+                  className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black uppercase text-center leading-tight transition-all ${tempoId === tempo.id ? 'border-cyan-400 bg-cyan-500/15 ring-2 ring-cyan-300/40' : isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
                 >
-                  {tempo.label}
+                  {tempoLabels[tempo.id]}
                 </button>
               ))}
             </div>
@@ -350,13 +374,7 @@ const KidsLightHuntPage: React.FC = () => {
                       <button
                         key={`cell-${cellId}`}
                         onClick={() => void handleCellClick(cellId)}
-                        className={`h-12 w-full rounded-full border transition-all duration-300 ${
-                          isLit
-                            ? `${colorClass} border-cyan-200 shadow-[0_0_20px_rgba(34,211,238,0.65)]`
-                            : isLight
-                              ? 'border-slate-300 bg-slate-200/60'
-                              : 'border-zinc-700 bg-zinc-900/90'
-                        } ${isPulse ? 'scale-110 ring-2 ring-cyan-300' : ''}`}
+                        className={`h-12 w-full rounded-full border transition-all duration-300 ${isLit ? `${colorClass} border-cyan-200 shadow-[0_0_20px_rgba(34,211,238,0.65)]` : isLight ? 'border-slate-300 bg-slate-200/60' : 'border-zinc-700 bg-zinc-900/90'} ${isPulse ? 'scale-110 ring-2 ring-cyan-300' : ''}`}
                       >
                         <span className={`text-[10px] font-black ${isLit ? 'text-white' : isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{info.note}</span>
                       </button>
@@ -373,7 +391,7 @@ const KidsLightHuntPage: React.FC = () => {
         </section>
 
         <section className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/70'}`}>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Escolha a sequência para brincar</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">{copy.choosePath}</p>
           <div className="mt-2 grid gap-2 sm:grid-cols-2">
             {PATH_PRESETS.map((preset) => (
               <button
@@ -385,7 +403,7 @@ const KidsLightHuntPage: React.FC = () => {
                 }}
                 className={`rounded-xl border px-3 py-3 text-left transition-all ${selectedPathId === preset.id ? 'border-cyan-400 bg-cyan-500/15 ring-2 ring-cyan-300/40' : isLight ? 'border-slate-300 bg-white hover:border-cyan-400' : 'border-zinc-700 bg-zinc-950 hover:border-cyan-500'}`}
               >
-                <p className="text-xs font-black uppercase">{preset.label}</p>
+                <p className="text-xs font-black uppercase">{pathLabels[preset.id]}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {preset.notes.map((note) => (
                     <span key={`${preset.id}-${note}`} className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-black text-white ${NOTE_COLOR[note]}`}>
@@ -397,14 +415,10 @@ const KidsLightHuntPage: React.FC = () => {
             ))}
           </div>
           <div className={`mt-3 rounded-xl border p-3 ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950/80'}`}>
-            <p className="text-xs font-black uppercase">Crie sua sequência</p>
+            <p className="text-xs font-black uppercase">{copy.createPath}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {NATURAL_ORDER.map((note) => (
-                <button
-                  key={`custom-add-${note}`}
-                  onClick={() => addToCustomPath(note)}
-                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 text-[11px] font-black text-white ${NOTE_COLOR[note]}`}
-                >
+                <button key={`custom-add-${note}`} onClick={() => addToCustomPath(note)} className={`inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 text-[11px] font-black text-white ${NOTE_COLOR[note]}`}>
                   {note}
                 </button>
               ))}
@@ -416,30 +430,16 @@ const KidsLightHuntPage: React.FC = () => {
                 </span>
               ))}
             </div>
-            {useCustomPath && (
-              <p className="mt-2 text-[10px] font-black uppercase tracking-wider text-cyan-500">Sequência personalizada ativa</p>
-            )}
+            {useCustomPath && <p className="mt-2 text-[10px] font-black uppercase tracking-wider text-cyan-500">{copy.customActive}</p>}
             <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
-              <button
-                onClick={removeCustomLast}
-                className={`min-h-[40px] rounded-lg border px-3 py-2 text-[11px] font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}
-              >
-                Apagar última
+              <button onClick={removeCustomLast} className={`min-h-[40px] rounded-lg border px-3 py-2 text-[11px] font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}>
+                {copy.eraseLast}
               </button>
-              <button
-                onClick={clearCustomPath}
-                className={`min-h-[40px] rounded-lg border px-3 py-2 text-[11px] font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}
-              >
-                Limpar
+              <button onClick={clearCustomPath} className={`min-h-[40px] rounded-lg border px-3 py-2 text-[11px] font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}>
+                {copy.clear}
               </button>
-              <button
-                onClick={() => {
-                  setUseCustomPath(false);
-                  restart();
-                }}
-                className={`min-h-[40px] rounded-lg border px-3 py-2 text-[11px] font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}
-              >
-                Usar caminho pronto
+              <button onClick={() => { setUseCustomPath(false); restart(); }} className={`min-h-[40px] rounded-lg border px-3 py-2 text-[11px] font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-slate-50 hover:border-cyan-400' : 'border-zinc-700 bg-zinc-900 hover:border-cyan-500'}`}>
+                {copy.useReadyPath}
               </button>
             </div>
           </div>
@@ -447,7 +447,7 @@ const KidsLightHuntPage: React.FC = () => {
 
         <div className="mt-6 grid gap-3 sm:flex sm:justify-center">
           <button onClick={() => navigateTo('/kids')} className="min-h-[44px] rounded-xl border border-emerald-500 bg-emerald-600 px-5 py-3 text-xs font-black uppercase text-white hover:bg-emerald-500">
-            Voltar ao Kids
+            {copy.backKids}
           </button>
         </div>
       </main>
