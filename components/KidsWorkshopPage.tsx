@@ -190,11 +190,6 @@ const partHotspots: Record<WorkshopModelKey, Record<PartKey, Hotspot>> = {
   banjo: { body: { left: '19%', top: '18%', width: '36%', height: '64%' }, neck: { left: '52%', top: '45%', width: '30%', height: '11%' }, headstock: { left: '81%', top: '40%', width: '12%', height: '16%' }, details: { left: '26%', top: '35%', width: '20%', height: '28%' } },
 };
 
-const navigateTo = (path: string) => {
-  window.history.pushState(null, '', path);
-  window.dispatchEvent(new Event('ga-route-change'));
-};
-
 const KidsWorkshopPage: React.FC = () => {
   const [theme] = useState(() => getKidsTheme());
   const [lang] = useState(() => getKidsLang());
@@ -206,6 +201,12 @@ const KidsWorkshopPage: React.FC = () => {
   const selectedModelOption = MODEL_OPTIONS.find((option) => option.key === selectedModel) ?? MODEL_OPTIONS[0];
   const selectedInstrument = instrumentInfo[selectedModel];
   const hotspot = selectedPart ? partHotspots[selectedModel][selectedPart] : null;
+
+  const goToInstrument = (direction: -1 | 1) => {
+    const currentIndex = MODEL_OPTIONS.findIndex((option) => option.key === selectedModel);
+    const nextIndex = (currentIndex + direction + MODEL_OPTIONS.length) % MODEL_OPTIONS.length;
+    setSelectedModel(MODEL_OPTIONS[nextIndex].key);
+  };
 
   return (
     <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
@@ -239,14 +240,20 @@ const KidsWorkshopPage: React.FC = () => {
                 <p className="mt-1 font-bold opacity-90">{partInfo[selectedPart].text[isPt ? 'pt' : 'en']}</p>
               </div>
             )}
-
-            <button onClick={() => navigateTo('/kids')} className={`mt-6 w-full rounded-xl border px-3 py-3 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}>
-              {isPt ? 'Voltar ao Kids' : 'Back to Kids'}
-            </button>
           </aside>
 
           <div className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-            <div className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-emerald-500">{isPt ? 'Prévia' : 'Preview'}</div>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="text-xs font-black uppercase tracking-[0.2em] text-emerald-500">{isPt ? 'Prévia' : 'Preview'}</div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => goToInstrument(-1)} aria-label={isPt ? 'Instrumento anterior' : 'Previous instrument'} className={`rounded-xl border px-3 py-1.5 text-[11px] font-black uppercase transition-all ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}>
+                  ← {isPt ? 'Anterior' : 'Previous'}
+                </button>
+                <button onClick={() => goToInstrument(1)} aria-label={isPt ? 'Próximo instrumento' : 'Next instrument'} className={`rounded-xl border px-3 py-1.5 text-[11px] font-black uppercase transition-all ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}>
+                  {isPt ? 'Próximo' : 'Next'} →
+                </button>
+              </div>
+            </div>
             <div className="relative flex min-h-[300px] items-center justify-center overflow-hidden rounded-2xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5 p-4 md:min-h-[420px]">
               <img key={selectedModel} src={MODEL_IMAGE_MAP[selectedModel]} alt={`Preview ${selectedModelOption.label[isPt ? 'pt' : 'en']}`} className="max-h-[380px] w-full object-contain transition-all duration-300 ease-out md:max-h-[520px]" loading="eager" />
               {hotspot && (

@@ -11,14 +11,19 @@ export interface RewardMetadata {
   description?: string;
 }
 
+const isCollectorBadgeId = (id: string) => id.startsWith('logo-collector-');
+
 export function isRewardEligibleForHeaderBadge(id: string): boolean {
   if (!id) return false;
 
   if (id.startsWith('reward:')) {
     const rewId = id.replace('reward:', '');
+    if (isCollectorBadgeId(rewId)) return true;
     const rew = getRewardById(rewId);
     return Boolean(rew && rew.type !== 'logo');
   }
+
+  if (isCollectorBadgeId(id)) return true;
 
   const rewardRaw = getRewardById(id);
   if (rewardRaw) return rewardRaw.type !== 'logo';

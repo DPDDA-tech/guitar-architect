@@ -151,12 +151,22 @@ export function saveConstancyState(state: ConstancyState, userId?: string | null
   const checkKey = getScopedStorageKey(GA_LAST_CONSTANCY_CHECK_KEY, userId);
   const rewardsKey = getScopedStorageKey(GA_UNLOCKED_CONSTANCY_REWARDS_KEY, userId);
 
+  // Selos já desbloqueados e o recorde de streak nunca podem regredir,
+  // independente do que o chamador esteja tentando persistir.
+  const existingHighest = readNumber(localStorage.getItem(highestKey));
+  const existingRewardIds = readRewardIds(localStorage.getItem(rewardsKey));
+
+  const safeHighestStreak = Math.max(state.highestStreak, existingHighest);
+  const safeUnlockedIds = Array.from(new Set([
+    ...existingRewardIds,
+    ...state.unlockedRewardIds,
+    ...getUnlockedConstancyRewardIdsForStreak(safeHighestStreak),
+  ].filter(Boolean)));
+
   localStorage.setItem(currentKey, String(state.currentStreak));
-  localStorage.setItem(highestKey, String(state.highestStreak));
+  localStorage.setItem(highestKey, String(safeHighestStreak));
   localStorage.setItem(checkKey, state.lastCheckDate || '');
-  
-  const uniqueIds = Array.from(new Set(state.unlockedRewardIds.filter(Boolean)));
-  localStorage.setItem(rewardsKey, JSON.stringify(uniqueIds));
+  localStorage.setItem(rewardsKey, JSON.stringify(safeUnlockedIds));
   window.dispatchEvent(new Event('ga-constancy-updated'));
 }
 

@@ -4,11 +4,12 @@ import { isAdminEmail } from '../utils/adminAccess';
 import { getStoredAdminRewardGrants, type AdminRewardGrant } from '../utils/adminRewardGrantStorage';
 import { grantRewardToEmail, revokeRewardFromEmail } from '../utils/adminRewardActions';
 import { getAdminRewardCatalog } from '../utils/adminRewardCatalog';
-import { 
-  listActiveSupabaseRewardGrants, 
-  grantSupabaseRewardToEmail, 
+import {
+  listActiveSupabaseRewardGrants,
+  grantSupabaseRewardToEmail,
   revokeSupabaseRewardFromEmail,
-  grantRewardToAllUsers
+  grantRewardToAllUsers,
+  listSupporterProfileBadgeGrants
 } from '../utils/supabaseRewardGrants';
 import { getRegisteredUserCount } from '../utils/supabaseAdminUsers';
 import {
@@ -118,7 +119,16 @@ const AdminRewardsPage: React.FC = () => {
       grantedBy: g.granted_by
     }));
 
-    setGrants([...remote, ...local]);
+    const supporterProfileBadges = (await listSupporterProfileBadgeGrants()).map(g => ({
+      email: g.email,
+      rewardId: g.reward_id,
+      reason: g.reason,
+      source: g.source,
+      grantedAt: g.granted_at,
+      grantedBy: g.granted_by
+    }));
+
+    setGrants([...remote, ...supporterProfileBadges, ...local]);
   };
 
   const refreshUserCount = async () => {

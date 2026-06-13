@@ -796,12 +796,19 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
       const isMobileViewport = window.innerWidth < 1024;
       setIsLandscapeMobile(isMobileViewport && window.innerWidth > window.innerHeight);
     };
+    let orientationTimeout: ReturnType<typeof setTimeout> | undefined;
+    const handleOrientationChange = () => {
+      updateOrientation();
+      // iOS Safari reports stale innerWidth/innerHeight immediately after rotation
+      orientationTimeout = setTimeout(updateOrientation, 250);
+    };
     updateOrientation();
     window.addEventListener('resize', updateOrientation);
-    window.addEventListener('orientationchange', updateOrientation);
+    window.addEventListener('orientationchange', handleOrientationChange);
     return () => {
       window.removeEventListener('resize', updateOrientation);
-      window.removeEventListener('orientationchange', updateOrientation);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      if (orientationTimeout) clearTimeout(orientationTimeout);
     };
   }, []);
 

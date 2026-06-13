@@ -69,10 +69,16 @@ Array.from({ length: 10 }, (_, i) => {
 });
 
 // 4. Instrument Gallery (AUTOMATIC)
-[1, 3, 5, 8, 10].forEach(count => {
+[
+  { count: 1, suffix: 'instrument' },
+  { count: 3, suffix: 'instruments' },
+  { count: 5, suffix: 'instruments' },
+  { count: 8, suffix: 'instruments' },
+  { count: 10, suffix: 'instruments' },
+].forEach(({ count, suffix }) => {
   const countStr = count.toString().padStart(2, '0');
   catalog.push({
-    id: `collectors-${countStr}`,
+    id: `logo-collector-${countStr}-${suffix}`,
     title: `Instrument Gallery • ${countStr} ${count === 1 ? 'Instrument' : 'Instruments'}`,
     category: 'system',
     grantMode: 'automatic',

@@ -320,8 +320,8 @@ const renderBrushPaths = () => {
     <div className={`relative rounded-[40px] overflow-hidden border ${isLight ? 'border-zinc-200 shadow-sm md:shadow-xl' : 'border-zinc-800 shadow-sm shadow-black/20 md:shadow-none'}`}>
       <svg 
         viewBox={`0 0 ${width} ${height}`} 
-        className={`w-full select-none touch-none ${isLight ? 'bg-white' : 'bg-zinc-900'}`} 
-        style={{ touchAction: 'none' }} 
+        className={`w-full select-none ${isLight ? 'bg-white' : 'bg-zinc-900'}`}
+        style={{ touchAction: 'manipulation' }}
         onClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const clickX = (e.clientX - rect.left) * (width / rect.width);

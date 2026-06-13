@@ -142,6 +142,65 @@ export async function revokeSupabaseRewardFromEmail(email: string, rewardId: str
 }
 
 /**
+ * Lista os selos concedidos via perfil de apoiador (supporter_profiles.unlocked_badges
+ * / unlocked_rewards), como o "Prime Architect", que não passam pela tabela reward_grants.
+ * Apenas leitura — não cria/altera schema.
+ */
+export async function listSupporterProfileBadgeGrants(): Promise<SupabaseRewardGrant[]> {
+  try {
+    const { data, error } = await supabase
+      .from('supporter_profiles')
+      .select('user_id, unlocked_badges, unlocked_rewards, updated_at');
+
+    if (error) throw error;
+    if (!data || data.length === 0) return [];
+
+    const users = await listAllAdminEligibleUsers();
+    const emailByUserId = new Map(users.filter(u => u.id).map(u => [u.id as string, u.email]));
+
+    const grants: SupabaseRewardGrant[] = [];
+
+    data.forEach((row: { user_id: string; unlocked_badges: unknown; unlocked_rewards: unknown; updated_at: string | null }) => {
+      const email = emailByUserId.get(row.user_id);
+      if (!email) return;
+
+      const parseList = (value: unknown): string[] => {
+        if (Array.isArray(value)) return value.filter((id): id is string => typeof id === 'string');
+        if (typeof value === 'string') {
+          try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : [];
+          } catch {
+            return [];
+          }
+        }
+        return [];
+      };
+
+      const rewardIds = Array.from(new Set([...parseList(row.unlocked_badges), ...parseList(row.unlocked_rewards)]));
+
+      rewardIds.forEach((rewardId) => {
+        grants.push({
+          id: `supporter-profile-${row.user_id}-${rewardId}`,
+          email,
+          reward_id: rewardId,
+          reason: null,
+          source: 'supporter-profile',
+          granted_by: null,
+          granted_at: row.updated_at || new Date(0).toISOString(),
+          revoked_at: null,
+        });
+      });
+    });
+
+    return grants;
+  } catch (err) {
+    console.warn('[SupabaseRewards] Falha ao listar selos de supporter_profiles:', err);
+    return [];
+  }
+}
+
+/**
  * Concede uma recompensa para todos os usuários cadastrados no sistema.
  */
 export async function grantRewardToAllUsers(
