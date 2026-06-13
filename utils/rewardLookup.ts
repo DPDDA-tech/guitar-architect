@@ -12,75 +12,122 @@ export interface RewardMetadata {
 }
 
 const isCollectorBadgeId = (id: string) => id.startsWith('logo-collector-');
+const isAnniversaryBadgeId = (id: string) => id.startsWith('logo-anniversary-');
 
-export function isRewardEligibleForHeaderBadge(id: string): boolean {
-  if (!id) return false;
+export function resolveHeaderBadgeRewardId(id: string): string | null {
+  if (!id) return null;
 
   if (id.startsWith('reward:')) {
-    const rewId = id.replace('reward:', '');
-    if (isCollectorBadgeId(rewId)) return true;
-    const rew = getRewardById(rewId);
-    return Boolean(rew && rew.type !== 'logo');
+    return id.replace('reward:', '') || null;
   }
 
-  if (isCollectorBadgeId(id)) return true;
+  if (id.startsWith('achievement:')) {
+    const achievement = getAchievementById(id.replace('achievement:', ''));
+    if (achievement?.rewardIds?.length === 1) {
+      return achievement.rewardIds[0];
+    }
+    return null;
+  }
 
-  const rewardRaw = getRewardById(id);
-  if (rewardRaw) return rewardRaw.type !== 'logo';
+  const achievement = getAchievementById(id);
+  if (achievement?.rewardIds?.length === 1) {
+    return achievement.rewardIds[0];
+  }
 
-  // Institutional/simple IDs (supporter, first supporters, constancy) remain allowed.
-  if (supporterRewards.some(r => r.id === id)) return true;
-  if (supporterFirstRewards.some(r => r.id === id)) return true;
-  if (constancyRewards.some(r => r.id === id)) return true;
+  return id;
+}
 
-  // Achievement asset entries are not treated as profile header badges.
+export function isRewardEligibleForHeaderBadge(id: string): boolean {
+  const resolvedId = resolveHeaderBadgeRewardId(id);
+  if (!resolvedId) return false;
+
+  if (isCollectorBadgeId(resolvedId) || isAnniversaryBadgeId(resolvedId)) return true;
+
+  const rewardRaw = getRewardById(resolvedId);
+  if (rewardRaw) {
+    if (rewardRaw.usableInProfile === false) return false;
+    return rewardRaw.type !== 'logo';
+  }
+
+  if (supporterRewards.some(r => r.id === resolvedId)) return true;
+  if (supporterFirstRewards.some(r => r.id === resolvedId)) return true;
+  if (constancyRewards.some(r => r.id === resolvedId)) return true;
+
   return false;
 }
 
-/**
- * Resolve um ID de recompensa/selo em metadados para exibição.
- * Procura em: Supporter Rewards, Achievements e Recompensas Avulsas.
- */
 export function getRewardMetadataById(id: string): RewardMetadata | null {
   if (!id) return null;
 
-  // 1. Tentar Supporter Rewards (IDs simples)
-  const supporter = supporterRewards.find(r => r.id === id);
+  const resolvedId = resolveHeaderBadgeRewardId(id) || id;
+
+  const supporter = supporterRewards.find(r => r.id === resolvedId);
   if (supporter) {
-    return { id: supporter.id, title: supporter.title, image: supporter.image, category: 'supporter', description: supporter.description };
+    return {
+      id: supporter.id,
+      title: supporter.title,
+      image: supporter.image,
+      category: 'supporter',
+      description: supporter.description,
+    };
   }
 
-  // 1.1 Tentar Primeiros Apoiadores (IDs simples)
-  const firstSupporter = supporterFirstRewards.find(r => r.id === id);
+  const firstSupporter = supporterFirstRewards.find(r => r.id === resolvedId);
   if (firstSupporter) {
-    return { id: firstSupporter.id, title: firstSupporter.title, image: firstSupporter.image, category: firstSupporter.category, description: firstSupporter.description };
+    return {
+      id: firstSupporter.id,
+      title: firstSupporter.title,
+      image: firstSupporter.image,
+      category: firstSupporter.category,
+      description: firstSupporter.description,
+    };
   }
 
-  // 1.2 Tentar Selos de Constância (IDs simples)
-  const constancy = constancyRewards.find(r => r.id === id);
+  const constancy = constancyRewards.find(r => r.id === resolvedId);
   if (constancy) {
-    return { id: constancy.id, title: constancy.title, image: constancy.image, category: constancy.category, description: constancy.description };
+    return {
+      id: constancy.id,
+      title: constancy.title,
+      image: constancy.image,
+      category: constancy.category,
+      description: constancy.description,
+    };
   }
 
-  // 2. Tentar IDs prefixados (usados na Coleção da Obra)
+  const rewardRaw = getRewardById(resolvedId);
+  if (rewardRaw && rewardRaw.asset.path) {
+    return {
+      id: rewardRaw.id,
+      title: rewardRaw.title,
+      image: rewardRaw.asset.path,
+      category: rewardRaw.type,
+      description: rewardRaw.description,
+    };
+  }
+
   if (id.startsWith('achievement:')) {
     const achId = id.replace('achievement:', '');
     const ach = getAchievementById(achId);
-    if (ach && ach.asset.path) return { id, title: ach.title, image: ach.asset.path, category: ach.category, description: ach.description };
+    if (ach && ach.asset.path) {
+      return {
+        id,
+        title: ach.title,
+        image: ach.asset.path,
+        category: ach.category,
+        description: ach.description,
+      };
+    }
   }
 
-  if (id.startsWith('reward:')) {
-    const rewId = id.replace('reward:', '');
-    const rew = getRewardById(rewId);
-    if (rew && rew.asset.path) return { id, title: rew.title, image: rew.asset.path, category: rew.type, description: rew.description };
-  }
-
-  // 3. Fallback: Tentar busca direta por ID bruto em conquistas/recompensas
   const achRaw = getAchievementById(id);
-  if (achRaw && achRaw.asset.path) return { id: achRaw.id, title: achRaw.title, image: achRaw.asset.path, description: achRaw.description };
-
-  const rewardRaw = getRewardById(id);
-  if (rewardRaw && rewardRaw.asset.path) return { id: rewardRaw.id, title: rewardRaw.title, image: rewardRaw.asset.path, category: rewardRaw.type, description: rewardRaw.description };
+  if (achRaw && achRaw.asset.path) {
+    return {
+      id: achRaw.id,
+      title: achRaw.title,
+      image: achRaw.asset.path,
+      description: achRaw.description,
+    };
+  }
 
   return null;
 }

@@ -5,7 +5,7 @@ import {
   MAX_PINNED_PROFILE_BADGES,
   toggleProfileBadgePin,
 } from '../../utils/pinnedProfileBadges';
-import { isRewardEligibleForHeaderBadge } from '../../utils/rewardLookup';
+import { isRewardEligibleForHeaderBadge, resolveHeaderBadgeRewardId } from '../../utils/rewardLookup';
 
 interface PinBadgeActionProps {
   rewardId: string;
@@ -13,22 +13,24 @@ interface PinBadgeActionProps {
 }
 
 export const PinBadgeAction: React.FC<PinBadgeActionProps> = ({ rewardId, isUnlocked }) => {
+  const resolvedRewardId = resolveHeaderBadgeRewardId(rewardId);
   const [isPinned, setIsPinned] = useState(false);
   const [canPinMore, setCanPinMore] = useState(true);
   const [feedback, setFeedback] = useState<{ text: string; type: 'success' | 'warning' } | null>(null);
 
   useEffect(() => {
-    if (!rewardId) return;
-    setIsPinned(isProfileBadgePinned(rewardId));
+    if (!resolvedRewardId) return;
+    setIsPinned(isProfileBadgePinned(resolvedRewardId));
     setCanPinMore(canPinMoreProfileBadges());
     setFeedback(null);
-  }, [rewardId]);
+  }, [resolvedRewardId]);
 
   const isEligible = isRewardEligibleForHeaderBadge(rewardId);
   if (!isUnlocked || !rewardId || !isEligible) return null;
 
   const handleToggle = () => {
-    const result = toggleProfileBadgePin(rewardId);
+    if (!resolvedRewardId) return;
+    const result = toggleProfileBadgePin(resolvedRewardId);
 
     if (result.ok) {
       const nowPinned = result.action === 'pinned';
