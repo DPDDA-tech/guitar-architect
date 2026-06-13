@@ -12,7 +12,7 @@ import { getUnlockedAchievements, getUnlockedRewards } from '../utils/achievemen
 import { getUnlockedAchievementIds, migrateAchievementStorageScope, unlockAchievement } from '../utils/achievementStorage';
 import { getCollectionLoreByPath, type CollectionLoreItem } from '../data/collectionLore';
 import { supporterRewards, getUnlockedSupporterRewards } from '../data/supporterRewards';
-import { getSupporterContributionTotal, setSupporterContributionTotal, syncUnlockedSupporterRewards, hydrateSupporterFromServer } from '../utils/supporterStorage';
+import { getSupporterContributionTotal, getUnlockedSupporterRewardIds, setSupporterContributionTotal, syncUnlockedSupporterRewards, hydrateSupporterFromServer } from '../utils/supporterStorage';
 import { SUPPORTER_PIX_KEY, SUPPORTER_CONTACT_EMAIL } from '../utils/supporterConstants';
 import { getSupporterTierInfo, formatTierName } from '../utils/supporterTierHelpers';
 import { PinBadgeAction } from './themeCollection/PinBadgeAction';
@@ -23,7 +23,7 @@ import { constancyRewards } from '../data/constancyRewards';
 import { getRewardMetadataById } from '../utils/rewardLookup';
 import { isAdminEmail } from '../utils/adminAccess';
 import { getConstancyState, getNextConstancyMilestone } from '../utils/constancyStorage';
-import { listActiveSupabaseRewardGrantIdsByEmail } from '../utils/supabaseRewardGrants';
+import { listUnifiedActiveRewardGrantIds } from '../utils/supabaseRewardGrants';
 import { listStoredAdminRewardGrantIdsByEmail } from '../utils/adminRewardGrantStorage';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
@@ -167,6 +167,7 @@ const ThemeCollectionPage: React.FC = () => {
   const [previewAsset, setPreviewAsset] = useState<CollectionPreview | null>(null);
   const [supporterToast, setSupporterToast] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [activeGrantedRewardIds, setActiveGrantedRewardIds] = useState<string[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [constancyRefreshToken, setConstancyRefreshToken] = useState(0);
@@ -197,8 +198,8 @@ const ThemeCollectionPage: React.FC = () => {
   useEffect(() => {
     let cancelled = false;
 
-    const refreshGrantedRewards = async (email?: string | null) => {
-      const remoteIds = email ? await listActiveSupabaseRewardGrantIdsByEmail(email) : [];
+    const refreshGrantedRewards = async (email?: string | null, userId?: string | null) => {
+      const remoteIds = await listUnifiedActiveRewardGrantIds({ email, userId });
       const localIds = listStoredAdminRewardGrantIdsByEmail(email);
       const nextIds = Array.from(new Set([...remoteIds, ...localIds]));
       if (!cancelled) {
@@ -206,16 +207,18 @@ const ThemeCollectionPage: React.FC = () => {
       }
     };
 
-    void refreshGrantedRewards(userEmail);
+    void refreshGrantedRewards(userEmail, authUserId || currentUserId);
 
     const handleFocusRefresh = () => {
-      void refreshGrantedRewards(userEmail);
+      void refreshGrantedRewards(userEmail, authUserId || currentUserId);
     };
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       const nextEmail = session?.user?.email || null;
+      const nextUserId = session?.user?.id || null;
       setUserEmail(nextEmail);
-      void refreshGrantedRewards(nextEmail);
+      setAuthUserId(nextUserId);
+      void refreshGrantedRewards(nextEmail, nextUserId || currentUserId);
     });
 
     window.addEventListener('focus', handleFocusRefresh);
@@ -227,7 +230,7 @@ const ThemeCollectionPage: React.FC = () => {
       window.removeEventListener('focus', handleFocusRefresh);
       document.removeEventListener('visibilitychange', handleFocusRefresh);
     };
-  }, [userEmail]);
+  }, [authUserId, currentUserId, userEmail]);
 
   useEffect(() => {
     setCollectionState(loadThemeCollectionState(currentUserId));
@@ -338,9 +341,10 @@ const ThemeCollectionPage: React.FC = () => {
   const unlockedCount = items.filter(item => item.unlocked).length;
   const unlockedSupporterIds = useMemo(() => {
     const byTotal = getUnlockedSupporterRewards(supporterTotal).map(reward => reward.id);
+    const byLocalState = getUnlockedSupporterRewardIds(currentUserId);
     const byGrant = activeGrantedRewardIds.filter(id => supporterRewards.some(reward => reward.id === id));
-    return Array.from(new Set([...byTotal, ...byGrant]));
-  }, [supporterTotal, activeGrantedRewardIds]);
+    return Array.from(new Set([...byTotal, ...byLocalState, ...byGrant]));
+  }, [supporterTotal, activeGrantedRewardIds, currentUserId]);
   const t = translations[lang].harmonicCycle;
   const panelClass = isLight
     ? 'border-[#c2d0e1] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(244,248,252,0.92))] shadow-[0_24px_70px_rgba(71,85,105,0.18),inset_0_1px_0_rgba(255,255,255,0.85)]'
@@ -360,6 +364,7 @@ const ThemeCollectionPage: React.FC = () => {
       const uid = data.user?.id || null;
       const email = data.user?.email || null;
       if (email) setUserEmail(email);
+      if (uid) setAuthUserId(uid);
       setIsAdmin(isAdminEmail(email || ''));
 
       const latestConfig = loadConfig();

@@ -167,6 +167,30 @@ const TeensPage: React.FC = () => {
       unlockXp: 260,
     },
     {
+      title: { pt: 'Mapa de Tétrades', en: 'Tetrad Map' },
+      subtitle: lang === 'pt' ? 'Veja tétrades e inversões ligadas pelo braço inteiro.' : 'See tetrads and inversions connected across the full neck.',
+      visual: (
+        <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
+          <path d="M20 14H220" stroke="#334155" strokeOpacity="0.28" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 24H220" stroke="#334155" strokeOpacity="0.24" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 34H220" stroke="#334155" strokeOpacity="0.2" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 44H220" stroke="#334155" strokeOpacity="0.18" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 54H220" stroke="#334155" strokeOpacity="0.14" strokeWidth="2" strokeLinecap="round" />
+          <path d="M48 18V50M90 18V50M132 18V50M174 18V50" stroke="#475569" strokeOpacity="0.3" strokeWidth="2" />
+          <circle cx="48" cy="44" r="4" fill="#10b981" />
+          <circle cx="90" cy="34" r="4" fill="#2563eb" />
+          <circle cx="132" cy="24" r="4" fill="#2563eb" />
+          <circle cx="174" cy="34" r="4" fill="#10b981" opacity="0.65" />
+          <circle cx="216" cy="44" r="4" fill="#2563eb" opacity="0.65" />
+          <path d="M48 44C64 40 74 38 90 34C106 30 116 28 132 24" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M174 34C190 38 200 40 216 44" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+        </svg>
+      ),
+      available: true,
+      path: '/teens/tetrad-map',
+      unlockXp: 270,
+    },
+    {
       title: { pt: 'Construtor de Acordes', en: 'Chord Builder' },
       subtitle: lang === 'pt' ? 'Monte blocos harmônicos por sensação.' : 'Build harmonic blocks by feel.',
       visual: (

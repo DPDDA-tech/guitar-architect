@@ -19,9 +19,19 @@ const MoonIcon = () => (
   </svg>
 );
 
+type ThemeMode = 'light' | 'dark';
+type AppLang = 'pt' | 'en';
+
+const syncEcosystemPreferences = (theme: ThemeMode, lang: AppLang) => {
+  localStorage.setItem('ga_kids_theme', theme);
+  localStorage.setItem('ga_teens_theme', theme);
+  localStorage.setItem('ga_kids_lang', lang);
+  localStorage.setItem('ga_teens_lang', lang);
+};
+
 const EcosystemPage: React.FC = () => {
-  const [theme] = useState(() => loadConfig()?.theme || 'dark');
-  const [lang] = useState(() => loadConfig()?.lang || 'pt');
+  const [theme, setTheme] = useState<ThemeMode>(() => loadConfig()?.theme === 'light' ? 'light' : 'dark');
+  const [lang, setLang] = useState<AppLang>(() => loadConfig()?.lang === 'en' ? 'en' : 'pt');
   const isLight = theme === 'light';
 
   const actionClass = isLight
@@ -30,16 +40,20 @@ const EcosystemPage: React.FC = () => {
 
   const handleToggleTheme = () => {
     const current = loadConfig();
-    const next = { ...(current || {}), theme: isLight ? 'dark' : 'light' };
+    const nextTheme: ThemeMode = isLight ? 'dark' : 'light';
+    const next = { ...(current || {}), theme: nextTheme, lang };
     localStorage.setItem('ga_config', JSON.stringify(next));
-    window.location.reload();
+    syncEcosystemPreferences(nextTheme, lang);
+    setTheme(nextTheme);
   };
 
   const handleToggleLang = () => {
     const current = loadConfig();
-    const next = { ...(current || {}), lang: lang === 'pt' ? 'en' : 'pt' };
+    const nextLang: AppLang = lang === 'pt' ? 'en' : 'pt';
+    const next = { ...(current || {}), theme, lang: nextLang };
     localStorage.setItem('ga_config', JSON.stringify(next));
-    window.location.reload();
+    syncEcosystemPreferences(theme, nextLang);
+    setLang(nextLang);
   };
 
   const gridStyle = {
@@ -52,7 +66,19 @@ const EcosystemPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none opacity-50" style={gridStyle} />
 
       <div className="relative mx-auto max-w-6xl py-12 text-center">
-        <div className="mb-6 flex items-center justify-end gap-2">
+        <p className="mb-3 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">
+          {lang === 'pt' ? 'Ecossistema Musical' : 'Music Ecosystem'}
+        </p>
+
+        <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter">
+          Guitar Architect
+        </h1>
+
+        <p className="mt-4 mb-16 text-zinc-500 font-bold uppercase text-[14px] tracking-[0.25em]">
+          {lang === 'pt' ? 'Defina sua etapa na construção musical' : 'Choose your stage in the musical journey'}
+        </p>
+
+        <div className="mb-8 flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={handleToggleTheme}
@@ -73,46 +99,34 @@ const EcosystemPage: React.FC = () => {
           </button>
         </div>
 
-        <p className="mb-3 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">
-          Ecossistema Musical
-        </p>
-
-        <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter">
-          Guitar Architect
-        </h1>
-
-        <p className="mt-4 mb-16 text-zinc-500 font-bold uppercase text-[14px] tracking-[0.25em]">
-          Defina sua etapa na construção musical
-        </p>
-
         <div className="grid gap-8 md:grid-cols-3">
           {[
             {
               id: 'kids',
               title: 'KIDS',
-              subtitle: 'Descoberta musical',
+              subtitle: lang === 'pt' ? 'Descoberta musical' : 'Musical discovery',
               logo: '/gakidslogo.webp',
               path: '/kids',
               btn: 'bg-emerald-600',
-              cta: 'Entrar no Kids',
+              cta: lang === 'pt' ? 'Entrar no Kids' : 'Enter Kids',
             },
             {
               id: 'teens',
               title: 'TEENS',
-              subtitle: 'Riffs e desafios',
+              subtitle: lang === 'pt' ? 'Riffs e desafios' : 'Riffs and challenges',
               logo: '/gateenslogo.webp',
               path: '/teens',
               btn: 'bg-violet-600',
-              cta: 'Entrar no Teens',
+              cta: lang === 'pt' ? 'Entrar no Teens' : 'Enter Teens',
             },
             {
               id: 'studio',
               title: 'STUDIO',
-              subtitle: 'Ferramentas avançadas',
+              subtitle: lang === 'pt' ? 'Ferramentas avançadas' : 'Advanced tools',
               logo: '/logogastudio.webp',
               path: '/studio',
               btn: 'bg-blue-600',
-              cta: 'Abrir Studio',
+              cta: lang === 'pt' ? 'Abrir Studio' : 'Open Studio',
             },
           ].map(area => {
             const isStudio = area.id === 'studio';

@@ -4,6 +4,7 @@ import { listAllAdminEligibleUsers } from './supabaseAdminUsers';
 export type SupabaseRewardGrant = {
   id: string;
   email: string;
+  user_id?: string | null;
   reward_id: string;
   reason: string | null;
   source: string;
@@ -83,6 +84,82 @@ export async function listActiveSupabaseRewardGrantIdsByEmail(email: string): Pr
   }
 }
 
+export async function listUnifiedActiveRewardGrantIdsByEmail(email: string): Promise<string[]> {
+  const target = normalize(email);
+  if (!target) return [];
+
+  const [rewardGrantIds, supporterProfileGrants] = await Promise.all([
+    listActiveSupabaseRewardGrantIdsByEmail(target),
+    listSupporterProfileBadgeGrants(),
+  ]);
+
+  const supporterProfileIds = supporterProfileGrants
+    .filter((grant) => normalize(grant.email) === target)
+    .map((grant) => grant.reward_id);
+
+  return Array.from(new Set([...rewardGrantIds, ...supporterProfileIds]));
+}
+
+export async function listSupporterProfileRewardIdsByUserId(userId: string): Promise<string[]> {
+  const target = (userId || '').trim();
+  if (!target) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('supporter_profiles')
+      .select('unlocked_badges, unlocked_rewards')
+      .eq('user_id', target)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) return [];
+
+    const parseList = (value: unknown): string[] => {
+      if (Array.isArray(value)) return value.filter((id): id is string => typeof id === 'string');
+      if (typeof value === 'string') {
+        try {
+          const parsed = JSON.parse(value);
+          return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : [];
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    };
+
+    return Array.from(new Set([
+      ...parseList((data as { unlocked_badges?: unknown }).unlocked_badges),
+      ...parseList((data as { unlocked_rewards?: unknown }).unlocked_rewards),
+    ]));
+  } catch (err) {
+    console.warn('[SupabaseRewards] Falha ao listar reward IDs de supporter_profiles por user_id:', err);
+    return [];
+  }
+}
+
+export async function listUnifiedActiveRewardGrantIds(params: { email?: string | null; userId?: string | null }): Promise<string[]> {
+  const targetEmail = normalize(params.email || '');
+  const targetUserId = (params.userId || '').trim();
+
+  const [emailGrantIds, supporterIdsByUserId, supporterProfileGrants] = await Promise.all([
+    targetEmail ? listActiveSupabaseRewardGrantIdsByEmail(targetEmail) : Promise.resolve([]),
+    targetUserId ? listSupporterProfileRewardIdsByUserId(targetUserId) : Promise.resolve([]),
+    !targetUserId && targetEmail ? listSupporterProfileBadgeGrants() : Promise.resolve([]),
+  ]);
+
+  const supporterIdsByEmail = (!targetUserId && targetEmail)
+    ? supporterProfileGrants
+        .filter((grant) => normalize(grant.email) === targetEmail)
+        .map((grant) => grant.reward_id)
+    : [];
+
+  return Array.from(new Set([
+    ...emailGrantIds,
+    ...supporterIdsByUserId,
+    ...supporterIdsByEmail,
+  ]));
+}
+
 /**
  * Verifica se um e-mail possui um selo ativo no Supabase.
  */
@@ -157,12 +234,19 @@ export async function listSupporterProfileBadgeGrants(): Promise<SupabaseRewardG
 
     const users = await listAllAdminEligibleUsers();
     const emailByUserId = new Map(users.filter(u => u.id).map(u => [u.id as string, u.email]));
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData.user?.id && authData.user.email) {
+        emailByUserId.set(authData.user.id, authData.user.email.trim().toLowerCase());
+      }
+    } catch {
+      // best effort only
+    }
 
     const grants: SupabaseRewardGrant[] = [];
 
     data.forEach((row: { user_id: string; unlocked_badges: unknown; unlocked_rewards: unknown; updated_at: string | null }) => {
-      const email = emailByUserId.get(row.user_id);
-      if (!email) return;
+      const email = emailByUserId.get(row.user_id) || `user:${row.user_id}`;
 
       const parseList = (value: unknown): string[] => {
         if (Array.isArray(value)) return value.filter((id): id is string => typeof id === 'string');
@@ -183,6 +267,7 @@ export async function listSupporterProfileBadgeGrants(): Promise<SupabaseRewardG
         grants.push({
           id: `supporter-profile-${row.user_id}-${rewardId}`,
           email,
+          user_id: row.user_id,
           reward_id: rewardId,
           reason: null,
           source: 'supporter-profile',
