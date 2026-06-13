@@ -47,6 +47,7 @@ import { FretboardGuidedPractice, type FretboardGuidedPracticeData } from './Fre
 import { FretboardOnboardingOverlay, type FretboardOnboardingTip } from './FretboardOnboardingOverlay';
 import { generateChordVoicings, type ChordType } from '../music/chordLibrary';
 import { buildChordRenderState } from '../utils/chordDiagram';
+import { getGlobalLang, getGlobalTheme, setGlobalLang, setGlobalTheme } from '../utils/ecosystemPreferences';
 
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
@@ -654,10 +655,9 @@ const FretboardPanel: React.FC = () => {
   const [globalTranspose, setGlobalTranspose] = useState(0);
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window === 'undefined') return 'light';
-    const savedTheme = loadConfig()?.theme;
-    return savedTheme === 'dark' ? 'dark' : 'light';
+    return getGlobalTheme();
   });
-  const [lang, setLang] = useState<Lang>('pt');
+  const [lang, setLang] = useState<Lang>(() => getGlobalLang());
   const [user, setUser] = useState('');
   const [userLogo, setUserLogo] = useState<string | undefined>(undefined);
   const [defaultInstrument, setDefaultInstrument] = useState<InstrumentType>('guitar-6');
@@ -971,7 +971,12 @@ const handleMigrateLocalIdentity = async (sourceIdentity: string) => {
   useEffect(() => {
     // Manter o idioma acessível globalmente para o SVG
     (window as any).ga_lang = lang;
+    setGlobalLang(lang);
   }, [lang]);
+
+  useEffect(() => {
+    setGlobalTheme(theme);
+  }, [theme]);
 
   useEffect(() => {
     recordAppLoyaltyVisit();
@@ -3146,7 +3151,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
   </div>
 )}
 
-<SupportModal isOpen={showSupportModal} onClose={() => setShowSupportModal(false)} isLight={theme === 'light'} />
+<SupportModal isOpen={showSupportModal} onClose={() => setShowSupportModal(false)} isLight={theme === 'light'} lang={lang} />
 <MyInstruments
   isOpen={showMyInstruments}
   onClose={closeMyInstruments}

@@ -2,6 +2,7 @@ import React from 'react';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
+import AppFooter from './AppFooter';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -49,7 +50,8 @@ const TeensGarageHubPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen relative p-6 md:p-12 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#03010a] text-violet-50'}`}>
+    <>
+    <div className={`relative p-6 md:p-12 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#03010a] text-violet-50'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <div className="relative mx-auto max-w-6xl">
@@ -126,6 +128,9 @@ const TeensGarageHubPage: React.FC = () => {
         </div>
       </div>
     </div>
+
+    <AppFooter isLight={isLight} lang={lang} logoSrc="/gateenslogo.webp" logoAlt="Guitar Architect Teens" />
+    </>
   );
 };
 

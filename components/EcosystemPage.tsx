@@ -1,5 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { loadConfig } from '../utils/persistence';
+import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -22,16 +23,9 @@ const MoonIcon = () => (
 type ThemeMode = 'light' | 'dark';
 type AppLang = 'pt' | 'en';
 
-const syncEcosystemPreferences = (theme: ThemeMode, lang: AppLang) => {
-  localStorage.setItem('ga_kids_theme', theme);
-  localStorage.setItem('ga_teens_theme', theme);
-  localStorage.setItem('ga_kids_lang', lang);
-  localStorage.setItem('ga_teens_lang', lang);
-};
-
 const EcosystemPage: React.FC = () => {
-  const [theme, setTheme] = useState<ThemeMode>(() => loadConfig()?.theme === 'light' ? 'light' : 'dark');
-  const [lang, setLang] = useState<AppLang>(() => loadConfig()?.lang === 'en' ? 'en' : 'pt');
+  const [theme, setTheme] = useState<ThemeMode>(() => getGlobalTheme());
+  const [lang, setLang] = useState<AppLang>(() => getGlobalLang());
   const isLight = theme === 'light';
 
   const actionClass = isLight
@@ -43,7 +37,7 @@ const EcosystemPage: React.FC = () => {
     const nextTheme: ThemeMode = isLight ? 'dark' : 'light';
     const next = { ...(current || {}), theme: nextTheme, lang };
     localStorage.setItem('ga_config', JSON.stringify(next));
-    syncEcosystemPreferences(nextTheme, lang);
+    setGlobalPreferences(nextTheme, lang);
     setTheme(nextTheme);
   };
 
@@ -52,7 +46,7 @@ const EcosystemPage: React.FC = () => {
     const nextLang: AppLang = lang === 'pt' ? 'en' : 'pt';
     const next = { ...(current || {}), theme, lang: nextLang };
     localStorage.setItem('ga_config', JSON.stringify(next));
-    syncEcosystemPreferences(theme, nextLang);
+    setGlobalPreferences(theme, nextLang);
     setLang(nextLang);
   };
 

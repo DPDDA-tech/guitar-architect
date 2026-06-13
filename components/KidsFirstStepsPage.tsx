@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
+import AppFooter from './AppFooter';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
@@ -77,6 +78,12 @@ const KidsFirstStepsPage: React.FC = () => {
     contrabaixo: isPt ? 'Contrabaixo' : 'Bass',
     violao: isPt ? 'Violão' : 'Acoustic Guitar',
     banjo: 'Banjo',
+  };
+
+  const goToInstrument = (direction: -1 | 1) => {
+    const currentIndex = MODEL_OPTIONS.findIndex((option) => option.key === selectedModel);
+    const nextIndex = (currentIndex + direction + MODEL_OPTIONS.length) % MODEL_OPTIONS.length;
+    setSelectedModel(MODEL_OPTIONS[nextIndex].key);
   };
 
   const applyColor = (color: string) => {
@@ -165,7 +172,8 @@ const KidsFirstStepsPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
+    <>
+    <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={copy.backKids} backPath="/kids" />
         <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="Primeiros Passos" subtitle="Pinte as figuras dos instrumentos." />
@@ -220,23 +228,44 @@ const KidsFirstStepsPage: React.FC = () => {
               </button>
             </div>
 
-            <button
-              onClick={() => navigateTo('/kids')}
-              className={`mt-3 min-h-[44px] w-full rounded-xl border px-3 py-3 text-center text-xs font-black uppercase leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}
-            >
-              {copy.backKids}
-            </button>
           </aside>
 
           <div className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
-            <div className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-emerald-500">{copy.preview}</div>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="text-xs font-black uppercase tracking-[0.2em] text-emerald-500">{copy.preview}</div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => goToInstrument(-1)} aria-label={isPt ? 'Instrumento anterior' : 'Previous instrument'} className={`rounded-xl border px-3 py-1.5 text-[11px] font-black uppercase transition-all ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}>
+                  ← {isPt ? 'Anterior' : 'Previous'}
+                </button>
+                <button onClick={() => goToInstrument(1)} aria-label={isPt ? 'Próximo instrumento' : 'Next instrument'} className={`rounded-xl border px-3 py-1.5 text-[11px] font-black uppercase transition-all ${isLight ? 'border-slate-300 bg-white hover:border-emerald-400' : 'border-zinc-700 bg-zinc-950 hover:border-emerald-500'}`}>
+                  {isPt ? 'Próximo' : 'Next'} →
+                </button>
+              </div>
+            </div>
             <div className="relative flex min-h-[300px] items-center justify-center overflow-hidden rounded-2xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5 p-4 md:min-h-[420px]">
               {renderInstrument()}
             </div>
           </div>
         </section>
+
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <button
+            onClick={() => navigateTo('/kids')}
+            className="rounded-xl border border-emerald-500 bg-emerald-600 px-8 py-4 text-xs font-black uppercase text-white shadow-lg shadow-emerald-900/20 transition-all hover:bg-emerald-500 active:scale-95"
+          >
+            {copy.backKids}
+          </button>
+        </div>
       </main>
     </div>
+
+    <AppFooter
+      isLight={isLight}
+      lang={lang}
+      logoSrc="/gakidslogo.webp"
+      logoAlt="Guitar Architect Kids"
+    />
+    </>
   );
 };
 

@@ -8,8 +8,14 @@
   };
 
   const config = readConfig();
-  const lang = config.lang === 'en' ? 'en' : 'pt';
-  const isDark = config.theme === 'dark';
+  const globalLang = localStorage.getItem('ga_lang');
+  const globalTheme = localStorage.getItem('ga_theme');
+  const lang = globalLang === 'en' || globalLang === 'pt'
+    ? globalLang
+    : (config.lang === 'en' ? 'en' : 'pt');
+  const isDark = globalTheme === 'dark' || globalTheme === 'light'
+    ? globalTheme === 'dark'
+    : config.theme === 'dark';
   const page = location.pathname.split('/').pop() || '';
 
   document.documentElement.classList.toggle('dark', isDark);

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
+import AppFooter from './AppFooter';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
@@ -146,7 +147,8 @@ const KidsIdentifyGamePage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
+    <>
+    <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={isPt ? 'Voltar ao Kids' : 'Back to Kids'} backPath="/kids" />
         <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={isPt ? 'Qual é o Instrumento?' : 'Which Instrument Is It?'} subtitle={isPt ? 'Observe a imagem e escolha o instrumento certo.' : 'Look at the image and choose the right instrument.'} />
@@ -238,6 +240,14 @@ const KidsIdentifyGamePage: React.FC = () => {
         </section>
       </main>
     </div>
+
+    <AppFooter
+      isLight={isLight}
+      lang={lang}
+      logoSrc="/gakidslogo.webp"
+      logoAlt="Guitar Architect Kids"
+    />
+    </>
   );
 };
 

@@ -1,8 +1,9 @@
 ﻿import React, { useState } from 'react';
-import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
+import { getTeensLang, getTeensTheme, setGlobalLang, setGlobalTheme } from '../utils/ecosystemPreferences';
 import { getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { TeensGarageSection } from './TeensGarageSection';
 import { TeensBasicCareSection } from './TeensBasicCareSection';
+import AppFooter from './AppFooter';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -68,7 +69,7 @@ const TeensPage: React.FC = () => {
   const handleToggleTheme = () => {
     setTheme((prev) => {
       const next = prev === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('ga_teens_theme', next);
+      setGlobalTheme(next);
       return next;
     });
   };
@@ -76,7 +77,7 @@ const TeensPage: React.FC = () => {
   const handleToggleLang = () => {
     setLang((prev) => {
       const next = prev === 'pt' ? 'en' : 'pt';
-      localStorage.setItem('ga_teens_lang', next);
+      setGlobalLang(next);
       return next;
     });
   };
@@ -266,7 +267,8 @@ const TeensPage: React.FC = () => {
   ];
 
   return (
-    <div className={`min-h-screen relative p-6 md:p-12 transition-all duration-500 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#03010a] text-violet-50'}`}>
+    <>
+    <div className={`relative p-6 md:p-12 transition-all duration-500 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-[#03010a] text-violet-50'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <div className="relative mx-auto max-w-5xl">
@@ -356,8 +358,17 @@ const TeensPage: React.FC = () => {
           <button onClick={() => navigateTo('/ecosystem')} className="px-12 py-5 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-black uppercase text-xs shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all active:scale-95">{copy.ecosystem}</button>
           <button onClick={() => navigateTo('/studio')} className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${isLight ? 'text-zinc-500 hover:text-zinc-900' : 'text-zinc-500 hover:text-white'}`}>{copy.studio}</button>
         </div>
+
       </div>
     </div>
+
+    <AppFooter
+      isLight={isLight}
+      lang={lang}
+      logoSrc="/gateenslogo.webp"
+      logoAlt="Guitar Architect Teens"
+    />
+    </>
   );
 };
 

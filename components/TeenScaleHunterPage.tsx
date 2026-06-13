@@ -4,6 +4,7 @@ import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
+import AppFooter from './AppFooter';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -215,7 +216,8 @@ const TeenScaleHunterPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
+    <>
+    <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
@@ -402,6 +404,14 @@ const TeenScaleHunterPage: React.FC = () => {
         </div>
       </main>
     </div>
+
+    <AppFooter
+      isLight={isLight}
+      lang={lang}
+      logoSrc="/gateenslogo.webp"
+      logoAlt="Guitar Architect Teens"
+    />
+    </>
   );
 };
 

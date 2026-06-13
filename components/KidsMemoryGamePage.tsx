@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
+import AppFooter from './AppFooter';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
@@ -160,7 +161,8 @@ const KidsMemoryGamePage: React.FC = () => {
       : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8';
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
+    <>
+    <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <main className="relative mx-auto max-w-[1400px]">
         <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={isPt ? 'Voltar ao Kids' : 'Back to Kids'} backPath="/kids" />
         <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={isPt ? 'Jogo da Memória' : 'Memory Game'} subtitle={isPt ? 'Encontre os pares de instrumentos.' : 'Find the matching instrument pairs.'} />
@@ -230,6 +232,14 @@ const KidsMemoryGamePage: React.FC = () => {
         </section>
       </main>
     </div>
+
+    <AppFooter
+      isLight={isLight}
+      lang={lang}
+      logoSrc="/gakidslogo.webp"
+      logoAlt="Guitar Architect Kids"
+    />
+    </>
   );
 };
 

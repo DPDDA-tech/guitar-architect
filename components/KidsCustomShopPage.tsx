@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
+import AppFooter from './AppFooter';
 import { loadConfig } from '../utils/persistence';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
@@ -202,7 +203,8 @@ const KidsCustomShopPage: React.FC = () => {
 
   // ── render ────────────────────────────────────────────────────────────────────
   return (
-    <div className={`min-h-screen p-5 md:p-10 transition-colors duration-700 ${bg}`}>
+    <>
+    <div className={`p-5 md:p-10 transition-colors duration-700 ${bg}`}>
       <div className="mx-auto max-w-3xl">
           <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={copy.backKids} backPath="/kids" />
 
@@ -406,6 +408,14 @@ const KidsCustomShopPage: React.FC = () => {
         </div>
       </div>
     </div>
+
+    <AppFooter
+      isLight={isLight}
+      lang={lang}
+      logoSrc="/gakidslogo.webp"
+      logoAlt="Guitar Architect Kids"
+    />
+    </>
   );
 };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { type AppLang } from '../../utils/ecosystemPreferences';
+import { setGlobalLang, setGlobalTheme, type AppLang } from '../../utils/ecosystemPreferences';
 import { getEcosystemLang, getLocalizedBackLabel } from './ecosystemPageCopy';
 
 type EcosystemPageActionsProps = {
@@ -39,8 +39,6 @@ const getCurrentLang = (ecosystem: 'kids' | 'teens'): AppLang => getEcosystemLan
 
 export const EcosystemPageActions: React.FC<EcosystemPageActionsProps> = ({ ecosystem, isLight, backLabel, backPath }) => {
   const lang = getCurrentLang(ecosystem);
-  const themeStorageKey = ecosystem === 'kids' ? 'ga_kids_theme' : 'ga_teens_theme';
-  const langStorageKey = ecosystem === 'kids' ? 'ga_kids_lang' : 'ga_teens_lang';
   const actionClass = ecosystem === 'kids'
     ? (isLight
       ? 'border-emerald-300 bg-white text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.12)] hover:border-emerald-400 hover:shadow-[0_10px_24px_rgba(16,185,129,0.16)]'
@@ -51,13 +49,13 @@ export const EcosystemPageActions: React.FC<EcosystemPageActionsProps> = ({ ecos
 
   const handleToggleTheme = () => {
     const nextTheme = isLight ? 'dark' : 'light';
-    localStorage.setItem(themeStorageKey, nextTheme);
+    setGlobalTheme(nextTheme);
     window.location.reload();
   };
 
   const handleToggleLang = () => {
     const nextLang = lang === 'pt' ? 'en' : 'pt';
-    localStorage.setItem(langStorageKey, nextLang);
+    setGlobalLang(nextLang);
     window.location.reload();
   };
 

@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import FretboardSVG from './FretboardSVG';
 import { getIntervalName, getNoteAt } from '../music/musicTheory';
-import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
+import { getTeensLang, getTeensTheme, setGlobalLang } from '../utils/ecosystemPreferences';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
+import AppFooter from './AppFooter';
 import {
   generateTeenTetradMap,
   getTeenTetradGroups,
@@ -487,8 +488,7 @@ const TeenTetradMapPage: React.FC = () => {
   }, [activeGroupId, groupOptions]);
 
   useEffect(() => {
-    localStorage.setItem('ga_teens_lang', lang);
-    (window as Window & { ga_lang?: string }).ga_lang = lang;
+    setGlobalLang(lang);
   }, [lang]);
 
   const inactiveButtonClass = isLight
@@ -517,7 +517,8 @@ const TeenTetradMapPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
+    <>
+    <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -739,6 +740,9 @@ const TeenTetradMapPage: React.FC = () => {
         </div>
       </main>
     </div>
+
+    <AppFooter isLight={isLight} lang={lang} logoSrc="/gateenslogo.webp" logoAlt="Guitar Architect Teens" />
+    </>
   );
 };
 

@@ -5,6 +5,7 @@ import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import { teenChordChallenges, teenChordStacks, type TeenChordNote } from '../data/teenChordData';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
+import AppFooter from './AppFooter';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -182,7 +183,8 @@ const TeenChordBuilderPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
+    <>
+    <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-6xl">
@@ -387,6 +389,9 @@ const TeenChordBuilderPage: React.FC = () => {
         </div>
       </main>
     </div>
+
+    <AppFooter isLight={isLight} lang={isPt ? 'pt' : 'en'} logoSrc="/gateenslogo.webp" logoAlt="Guitar Architect Teens" />
+    </>
   );
 };
 

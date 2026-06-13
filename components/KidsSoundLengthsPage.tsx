@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
+import AppFooter from './AppFooter';
 import { rhythmChallenges, rhythmExamples, type RhythmType } from '../data/kidsRhythmData';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
@@ -280,7 +281,8 @@ const KidsSoundLengthsPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
+    <>
+    <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={copy.backKids} backPath="/kids" />
         <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="O Tamanho dos Sons" subtitle="Descubra sons rápidos, longos e pausas musicais." />
@@ -363,6 +365,14 @@ const KidsSoundLengthsPage: React.FC = () => {
         </div>
       </main>
     </div>
+
+    <AppFooter
+      isLight={isLight}
+      lang={lang}
+      logoSrc="/gakidslogo.webp"
+      logoAlt="Guitar Architect Kids"
+    />
+    </>
   );
 };
 

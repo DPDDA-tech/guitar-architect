@@ -25,6 +25,7 @@ import { isAdminEmail } from '../utils/adminAccess';
 import { getConstancyState, getNextConstancyMilestone } from '../utils/constancyStorage';
 import { listUnifiedActiveRewardGrantIds } from '../utils/supabaseRewardGrants';
 import { listStoredAdminRewardGrantIdsByEmail } from '../utils/adminRewardGrantStorage';
+import { getGlobalLang, getGlobalTheme, setGlobalLang, setGlobalTheme } from '../utils/ecosystemPreferences';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
 
@@ -158,8 +159,8 @@ const getInitialConfig = (): AppState | null => {
 
 const ThemeCollectionPage: React.FC = () => {
   const [config, setConfig] = useState<AppState | null>(() => getInitialConfig());
-  const [lang, setLang] = useState<Lang>(() => config?.lang || 'pt');
-  const [theme, setTheme] = useState<ThemeMode>(() => config?.theme || 'dark');
+  const [lang, setLang] = useState<Lang>(() => getGlobalLang());
+  const [theme, setTheme] = useState<ThemeMode>(() => getGlobalTheme());
   const currentUserId = useMemo(() => config?.currentUser, [config]);
 
   const [collectionState, setCollectionState] = useState(() => loadThemeCollectionState(currentUserId));
@@ -451,12 +452,14 @@ const ThemeCollectionPage: React.FC = () => {
   const toggleTheme = () => {
     const nextTheme: ThemeMode = isLight ? 'dark' : 'light';
     setTheme(nextTheme);
+    setGlobalTheme(nextTheme);
     persistConfigPatch({ theme: nextTheme });
   };
 
   const toggleLang = () => {
     const nextLang: Lang = lang === 'pt' ? 'en' : 'pt';
     setLang(nextLang);
+    setGlobalLang(nextLang);
     persistConfigPatch({ lang: nextLang });
   };
 

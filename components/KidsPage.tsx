@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
+import { getKidsLang, getKidsTheme, setGlobalLang, setGlobalTheme } from '../utils/ecosystemPreferences';
+import AppFooter from './AppFooter';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -70,7 +71,7 @@ const KidsPage: React.FC = () => {
   const handleToggleTheme = () => {
     setTheme((prev) => {
       const next = prev === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('ga_kids_theme', next);
+      setGlobalTheme(next);
       return next;
     });
   };
@@ -78,13 +79,14 @@ const KidsPage: React.FC = () => {
   const handleToggleLang = () => {
     setLang((prev) => {
       const next = prev === 'pt' ? 'en' : 'pt';
-      localStorage.setItem('ga_kids_lang', next);
+      setGlobalLang(next);
       return next;
     });
   };
 
   return (
-    <div className={`min-h-screen relative p-6 md:p-12 transition-colors duration-700 ${isLight ? 'bg-slate-50 text-emerald-900' : 'bg-[#051109] text-emerald-50'}`}>
+    <>
+    <div className={`relative p-6 md:p-12 transition-colors duration-700 ${isLight ? 'bg-slate-50 text-emerald-900' : 'bg-[#051109] text-emerald-50'}`}>
       <div className="relative mx-auto max-w-5xl">
         <header className={`relative flex flex-col items-center text-center mb-12 animate-in fade-in zoom-in-95 duration-1000 ${isLight ? 'rounded-[36px] border border-emerald-200/70 bg-white/75 backdrop-blur-sm px-4 py-8 md:px-8 md:py-10 shadow-[0_20px_50px_rgba(16,185,129,0.08)]' : ''}`}>
           <img src="/gakidslogo.webp" alt="GA Kids" className="w-32 h-32 md:w-48 md:h-48 object-contain mb-6 drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]" />
@@ -307,8 +309,17 @@ const KidsPage: React.FC = () => {
             {copy.backMain}
           </button>
         </div>
+
       </div>
     </div>
+
+    <AppFooter
+      isLight={isLight}
+      lang={lang}
+      logoSrc="/gakidslogo.webp"
+      logoAlt="Guitar Architect Kids"
+    />
+    </>
   );
 };
 

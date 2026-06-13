@@ -3,6 +3,7 @@ import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
+import AppFooter from './AppFooter';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -602,7 +603,8 @@ const TeenBatidasPopularesPage: React.FC = () => {
   }, [currentPhase, handleStrum]);
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 transition-colors duration-300 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-[#050312] text-violet-50'}`}>
+    <>
+    <div className={`relative overflow-hidden p-4 md:p-8 transition-colors duration-300 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-[#050312] text-violet-50'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-7xl">
@@ -926,6 +928,9 @@ const TeenBatidasPopularesPage: React.FC = () => {
         </div>
       </main>
     </div>
+
+    <AppFooter isLight={isLight} lang={lang} logoSrc="/gateenslogo.webp" logoAlt="Guitar Architect Teens" />
+    </>
   );
 };
 

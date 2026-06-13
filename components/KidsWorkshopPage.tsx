@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getKidsLang, getKidsTheme } from '../utils/ecosystemPreferences';
+import AppFooter from './AppFooter';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
@@ -190,6 +191,11 @@ const partHotspots: Record<WorkshopModelKey, Record<PartKey, Hotspot>> = {
   banjo: { body: { left: '19%', top: '18%', width: '36%', height: '64%' }, neck: { left: '52%', top: '45%', width: '30%', height: '11%' }, headstock: { left: '81%', top: '40%', width: '12%', height: '16%' }, details: { left: '26%', top: '35%', width: '20%', height: '28%' } },
 };
 
+const navigateTo = (path: string) => {
+  window.history.pushState(null, '', path);
+  window.dispatchEvent(new Event('ga-route-change'));
+};
+
 const KidsWorkshopPage: React.FC = () => {
   const [theme] = useState(() => getKidsTheme());
   const [lang] = useState(() => getKidsLang());
@@ -209,7 +215,8 @@ const KidsWorkshopPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
+    <>
+    <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={isPt ? 'Voltar ao Kids' : 'Back to Kids'} backPath="/kids" />
         <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={isPt ? 'Descobrindo os Instrumentos' : 'Discovering Instruments'} subtitle={isPt ? 'Escolha instrumentos e veja modelos em detalhes.' : 'Choose instruments and see models in detail.'} />
@@ -273,8 +280,25 @@ const KidsWorkshopPage: React.FC = () => {
             </div>
           </div>
         </section>
+
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <button
+            onClick={() => navigateTo('/kids')}
+            className="rounded-xl border border-emerald-500 bg-emerald-600 px-8 py-4 text-xs font-black uppercase text-white shadow-lg shadow-emerald-900/20 transition-all hover:bg-emerald-500 active:scale-95"
+          >
+            {isPt ? 'Voltar ao Kids' : 'Back to Kids'}
+          </button>
+        </div>
       </main>
     </div>
+
+    <AppFooter
+      isLight={isLight}
+      lang={lang}
+      logoSrc="/gakidslogo.webp"
+      logoAlt="Guitar Architect Kids"
+    />
+    </>
   );
 };
 

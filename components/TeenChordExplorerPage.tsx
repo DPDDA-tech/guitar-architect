@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
+import { getTeensLang, getTeensTheme, setGlobalLang } from '../utils/ecosystemPreferences';
 import ChordDiagramViewer, { type ChordDiagramDisplayMode } from './chords/ChordDiagramViewer';
 import { createChordDiagramDataFromTeenShape } from '../utils/chordDiagram';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
+import AppFooter from './AppFooter';
 import {
   TEEN_CHROMATIC_NOTES,
   getTeenChordExplorerShapes,
@@ -128,7 +129,7 @@ const TeenChordExplorerPage: React.FC = () => {
 
   useEffect(() => {
     (window as any).ga_lang = lang;
-    localStorage.setItem('ga_teens_lang', lang);
+    setGlobalLang(lang);
   }, [lang]);
 
   const getDisplayQualityLabel = (qualityId: TeenChordQuality, fallbackLabel: string) => {
@@ -176,7 +177,8 @@ const TeenChordExplorerPage: React.FC = () => {
   const qualityButtonClass = 'min-h-[38px] min-w-[76px] rounded-xl border px-3 py-1.5 text-[11px] font-black uppercase inline-flex items-center justify-center text-center leading-tight transition-all';
 
   return (
-    <div className={`min-h-screen relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
+    <>
+    <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <main className="relative mx-auto max-w-7xl">
@@ -480,6 +482,9 @@ const TeenChordExplorerPage: React.FC = () => {
         </div>
       </main>
     </div>
+
+    <AppFooter isLight={isLight} lang={lang} logoSrc="/gateenslogo.webp" logoAlt="Guitar Architect Teens" />
+    </>
   );
 };
 
