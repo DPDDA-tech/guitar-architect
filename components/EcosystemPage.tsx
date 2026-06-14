@@ -1,6 +1,7 @@
 ﻿import React, { useState } from 'react';
 import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
+import AppFooter from './AppFooter';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -56,11 +57,12 @@ const EcosystemPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen relative p-6 md:p-12 overflow-hidden ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-white'}`}>
+    <>
+    <div className={`relative p-6 md:p-12 pt-3 md:pt-5 [@media(max-height:800px)]:pt-2 overflow-hidden ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-white'}`}>
       <div className="absolute inset-0 pointer-events-none opacity-50" style={gridStyle} />
 
-      <div className="relative mx-auto max-w-6xl py-12 text-center">
-        <p className="mb-3 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">
+      <div className="relative mx-auto max-w-6xl py-2 md:py-3 text-center">
+        <p className="mb-1 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">
           {lang === 'pt' ? 'Ecossistema Musical' : 'Music Ecosystem'}
         </p>
 
@@ -68,11 +70,11 @@ const EcosystemPage: React.FC = () => {
           Guitar Architect
         </h1>
 
-        <p className="mt-4 mb-16 text-zinc-500 font-bold uppercase text-[14px] tracking-[0.25em]">
-          {lang === 'pt' ? 'Defina sua etapa na construção musical' : 'Choose your stage in the musical journey'}
+        <p className="mt-2 mb-4 text-zinc-500 font-bold uppercase text-[14px] tracking-[0.25em]">
+          {lang === 'pt' ? 'Defina sua etapa na construção musical: descoberta, prática guiada ou ferramentas avançadas.' : 'Choose your stage in the musical journey: discovery, guided practice, or advanced tools.'}
         </p>
 
-        <div className="mb-8 flex items-center justify-end gap-2">
+        <div className="mb-6 flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={handleToggleTheme}
@@ -93,7 +95,7 @@ const EcosystemPage: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-3 mb-10 md:mb-12 [@media(max-height:800px)]:mb-6">
           {[
             {
               id: 'kids',
@@ -134,7 +136,7 @@ const EcosystemPage: React.FC = () => {
               <button
                 key={area.id}
                 onClick={() => navigateTo(area.path)}
-                className={`group p-10 md:p-12 rounded-[64px] border transition-all duration-500 text-center flex flex-col items-center ${
+                className={`group px-10 md:px-12 py-7 md:py-9 [@media(max-height:800px)]:py-6 rounded-[64px] border transition-all duration-500 text-center flex flex-col items-center ${
                   isLight ? 'bg-white/80 border-zinc-200' : 'bg-zinc-900/80 border-zinc-800'
                 } hover:-translate-y-2 shadow-2xl ${
                   isStudio
@@ -167,6 +169,9 @@ const EcosystemPage: React.FC = () => {
         </div>
       </div>
     </div>
+
+    <AppFooter isLight={isLight} lang={lang} logoSrc="/Logo Guitar.webp" logoAlt="Guitar Architect" compact />
+    </>
   );
 };
 

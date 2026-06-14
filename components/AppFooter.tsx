@@ -8,6 +8,7 @@ interface AppFooterProps {
   logoSrc?: string;
   logoAlt?: string;
   logoClassName?: string;
+  compact?: boolean;
 }
 
 const AppFooter: React.FC<AppFooterProps> = ({
@@ -16,18 +17,24 @@ const AppFooter: React.FC<AppFooterProps> = ({
   logoSrc,
   logoAlt = 'Guitar Architect',
   logoClassName = 'h-12 w-12 object-contain',
+  compact = false,
 }) => {
   const [showSupportModal, setShowSupportModal] = useState(false);
 
   return (
     <>
-      <footer className={`border-t py-10 ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-900 bg-zinc-950'}`}>
+      <footer className={`border-t ${compact ? 'py-5 md:py-6' : 'py-10'} ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-900 bg-zinc-950'}`}>
         <div className="mx-auto flex max-w-[1700px] flex-col items-center justify-between gap-6 px-6 md:flex-row md:px-10">
           <div className="flex items-center gap-3">
             {logoSrc ? <img src={logoSrc} alt={logoAlt} className={logoClassName} /> : null}
-            <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-              Guitar Architect • DPDDA-tech
-            </p>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                Guitar Architect<sup aria-label="marca" className="text-[8px]">™</sup> • DPDDA-tech
+              </p>
+              <p className="text-[9px] font-normal uppercase tracking-wide text-zinc-500">
+                INPI — Pedido Nº 944083625
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] font-black uppercase text-zinc-500 md:gap-8">

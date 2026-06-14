@@ -2861,7 +2861,10 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
          <div className="max-w-[1700px] mx-auto px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
                <LogoIcon brand={displayedBrandAssets} variant="footer" />
-               <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Guitar Architect • DPDDA-tech</p>
+               <div>
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Guitar Architect<sup aria-label="marca" className="text-[8px]">™</sup> • DPDDA-tech</p>
+                  <p className="text-[9px] font-normal text-zinc-500 uppercase tracking-wide">INPI — Pedido Nº 944083625</p>
+               </div>
             </div>
             <div className="flex gap-4 md:gap-8 text-[10px] font-black uppercase text-zinc-500">
                <a href="/legal/privacy.html" target="_blank" className="hover:text-blue-600 transition-colors">Privacidade</a>
