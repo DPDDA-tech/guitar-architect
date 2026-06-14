@@ -53,8 +53,6 @@ const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
 const PENDING_FRETBOARD_ACTION_KEY = 'ga_pending_fretboard_action';
 const FRETBOARD_ONBOARDING_DISMISSED_KEY = 'ga_fretboard_onboarding_dismissed';
 const FRETBOARD_ONBOARDING_SEEN_KEY = 'ga_fretboard_onboarding_seen';
-const LOCAL_MIGRATION_DEADLINE_PT = '17/06/2026';
-const LOCAL_MIGRATION_DEADLINE_EN = 'June 17, 2026';
 
 const themeMatchesInstrument = (theme: ThemeCollectionItem, instrumentType: InstrumentType) => {
   if (theme.instrumentFamily === 'special') return true;
@@ -2798,39 +2796,6 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
             }}
           />
         ) : null}
-
-        {!isExporting && (!authUser || localUserOptions.length > 0) && (
-          <div className={`rounded-[24px] border p-4 md:p-5 shadow-xl ${isLight ? 'border-blue-100 bg-white/92 text-zinc-800' : 'border-blue-900/50 bg-[#07111f]/92 text-zinc-100'}`}>
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className={`text-[10px] font-black uppercase tracking-[0.22em] ${isLight ? 'text-blue-600' : 'text-blue-300'}`}>
-                  {lang === 'pt' ? 'Migração de dados locais' : 'Local data migration'}
-                </p>
-                <h2 className="mt-1 text-lg font-black uppercase tracking-tight">
-                  {lang === 'pt'
-                    ? 'Leve seus projetos antigos, desbloqueios, conquistas e instrumentos para a conta sincronizada'
-                    : 'Move your old projects, unlocks, achievements and instruments into your synced account'}
-                </h2>
-                <p className={`mt-2 max-w-4xl text-sm font-semibold leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                  {lang === 'pt'
-                    ? `Se você já usava o Guitar Architect com um nome local, entre ou crie sua conta e use "Migrar dados locais" até ${LOCAL_MIGRATION_DEADLINE_PT}. Depois desse prazo, a migração assistida poderá ser encerrada; o JSON continuará como backup manual.`
-                    : `If you used Guitar Architect with a local name, sign in or create your account and use "Migrate local data" by ${LOCAL_MIGRATION_DEADLINE_EN}. After that date, assisted migration may be discontinued; JSON will remain available as a manual backup.`}
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  refreshLocalUserOptions();
-                  setShowLoginModal(true);
-                }}
-                className="rounded-2xl bg-blue-600 px-5 py-3 text-[10px] font-black uppercase text-white shadow-[0_14px_34px_rgba(37,99,235,0.26)] transition hover:bg-blue-500 active:scale-95"
-              >
-                {authUser
-                  ? (lang === 'pt' ? 'Migrar dados locais' : 'Migrate local data')
-                  : (lang === 'pt' ? 'Entrar / criar conta' : 'Sign in / create account')}
-              </button>
-            </div>
-          </div>
-        )}
 
         {instances.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">

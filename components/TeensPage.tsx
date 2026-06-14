@@ -272,17 +272,17 @@ const TeensPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none" style={gridStyle} />
 
       <div className="relative mx-auto max-w-5xl">
-        <header className={`relative flex flex-col items-center text-center mb-12 animate-in fade-in slide-in-from-top-4 duration-1000 ${isLight ? 'rounded-[36px] border border-violet-200/70 bg-white/75 backdrop-blur-sm px-4 py-8 md:px-8 md:py-10 shadow-[0_20px_50px_rgba(139,92,246,0.08)]' : ''}`}>
-          <div className="relative mb-8 group">
+        <header className={`relative flex flex-col items-center text-center mb-8 animate-in fade-in slide-in-from-top-4 duration-1000 ${isLight ? 'rounded-[36px] border border-violet-200/70 bg-white/75 backdrop-blur-sm px-4 py-5 md:px-8 md:py-7 shadow-[0_20px_50px_rgba(139,92,246,0.08)]' : ''}`}>
+          <div className="relative mb-4 group">
             <div className="absolute inset-0 bg-violet-500 blur-3xl opacity-20 group-hover:opacity-40 transition-opacity" />
             <img src="/gateenslogo.webp" alt="GA Teens" className="relative w-36 h-36 md:w-52 md:h-52 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.5)] transition-transform group-hover:scale-105" />
           </div>
           <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-violet-500">
             {copy.title}
           </h1>
-          <p className="mt-4 max-w-2xl text-sm md:text-base font-bold opacity-80 leading-relaxed italic">{copy.subtitle}</p>
+          <p className="mt-2 max-w-2xl text-sm md:text-base font-bold opacity-80 leading-relaxed italic">{copy.subtitle}</p>
 
-          <div className={`mt-5 w-full max-w-md rounded-xl border px-4 py-3 ${isLight ? 'border-violet-200 bg-violet-50/60' : 'border-violet-700/60 bg-violet-950/35'}`}>
+          <div className={`mt-3 w-full max-w-md rounded-xl border px-4 py-3 ${isLight ? 'border-violet-200 bg-violet-50/60' : 'border-violet-700/60 bg-violet-950/35'}`}>
             <div className="flex items-center justify-between gap-2">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Progressão</p>
               <p className="text-[11px] font-black uppercase">{rankProgress.current.label} · XP {xp}</p>
@@ -319,8 +319,8 @@ const TeensPage: React.FC = () => {
           <button onClick={handleToggleLang} className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}>{lang.toUpperCase()}</button>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-12">
-          {modules.map((module, idx) => {
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+          {modules.slice(0, -1).map((module, idx) => {
             const cardTier = xp >= 620 ? 'tier-neon' : xp >= 320 ? 'tier-pulse' : xp >= 120 ? 'tier-trail' : 'tier-base';
             const tierClass = cardTier === 'tier-neon'
               ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-fuchsia-400/35 before:shadow-[0_0_35px_rgba(217,70,239,0.22)]'
@@ -350,11 +350,46 @@ const TeensPage: React.FC = () => {
               </button>
             );
           })}
+        </div>
+
+        <div className="flex flex-col gap-6 sm:flex-row sm:flex-wrap sm:justify-center mb-12">
+          {(() => {
+            const lastModule = modules[modules.length - 1];
+            const idx = modules.length - 1;
+            const cardTier = xp >= 620 ? 'tier-neon' : xp >= 320 ? 'tier-pulse' : xp >= 120 ? 'tier-trail' : 'tier-base';
+            const tierClass = cardTier === 'tier-neon'
+              ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-fuchsia-400/35 before:shadow-[0_0_35px_rgba(217,70,239,0.22)]'
+              : cardTier === 'tier-pulse'
+                ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-cyan-400/35 before:shadow-[0_0_26px_rgba(34,211,238,0.2)]'
+                : cardTier === 'tier-trail'
+                  ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-violet-400/30'
+                  : '';
+            return (
+              <button
+                key={lastModule.path}
+                type="button"
+                disabled={!lastModule.available}
+                onClick={() => lastModule.available && navigateTo(lastModule.path)}
+                style={{ animationDelay: `${idx * 150}ms` }}
+                className={`group relative overflow-hidden p-7 rounded-[36px] border backdrop-blur-md flex flex-col items-start text-left transition-all animate-in fade-in zoom-in-95 shadow-2xl w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)] ${lastModule.available ? 'hover:border-violet-400 cursor-pointer' : 'cursor-not-allowed opacity-80'} ${isLight ? 'border-violet-200 bg-white/85 hover:bg-white' : 'border-violet-800/40 bg-zinc-950/40 hover:bg-zinc-900/60'} ${tierClass}`}
+              >
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1 w-12 rounded-b-full bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className={`mb-3 w-full rounded-2xl border px-3 py-2 ${isLight ? 'border-violet-200 bg-violet-50/70' : 'border-violet-500/25 bg-violet-900/20'}`}>{lastModule.visual}</div>
+                <h3 className="text-sm font-black uppercase tracking-[0.14em]">{lastModule.title[lang]}</h3>
+                <p className="mt-2 text-[11px] font-bold opacity-70">{lastModule.subtitle}</p>
+                {!lastModule.available && (
+                  <p className="mt-3 text-[9px] font-black opacity-40 tracking-[0.2em] group-hover:text-violet-400 transition-colors uppercase">
+                    {copy.locked}
+                  </p>
+                )}
+              </button>
+            );
+          })()}
           <TeensGarageSection isLight={isLight} lang={lang} />
           <TeensBasicCareSection isLight={isLight} lang={lang} />
         </div>
 
-        <div className="flex flex-col items-center gap-6 mt-16">
+        <div className="flex flex-col items-center gap-2 mt-10 mb-2">
           <button onClick={() => navigateTo('/ecosystem')} className="px-12 py-5 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-black uppercase text-xs shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all active:scale-95">{copy.ecosystem}</button>
           <button onClick={() => navigateTo('/studio')} className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${isLight ? 'text-zinc-500 hover:text-zinc-900' : 'text-zinc-500 hover:text-white'}`}>{copy.studio}</button>
         </div>

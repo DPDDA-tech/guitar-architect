@@ -88,12 +88,12 @@ const KidsPage: React.FC = () => {
     <>
     <div className={`relative p-6 md:p-12 transition-colors duration-700 ${isLight ? 'bg-slate-50 text-emerald-900' : 'bg-[#051109] text-emerald-50'}`}>
       <div className="relative mx-auto max-w-5xl">
-        <header className={`relative flex flex-col items-center text-center mb-12 animate-in fade-in zoom-in-95 duration-1000 ${isLight ? 'rounded-[36px] border border-emerald-200/70 bg-white/75 backdrop-blur-sm px-4 py-8 md:px-8 md:py-10 shadow-[0_20px_50px_rgba(16,185,129,0.08)]' : ''}`}>
-          <img src="/gakidslogo.webp" alt="GA Kids" className="w-32 h-32 md:w-48 md:h-48 object-contain mb-6 drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]" />
+        <header className={`relative flex flex-col items-center text-center mb-8 animate-in fade-in zoom-in-95 duration-1000 ${isLight ? 'rounded-[36px] border border-emerald-200/70 bg-white/75 backdrop-blur-sm px-4 py-5 md:px-8 md:py-7 shadow-[0_20px_50px_rgba(16,185,129,0.08)]' : ''}`}>
+          <img src="/gakidslogo.webp" alt="GA Kids" className="w-32 h-32 md:w-48 md:h-48 object-contain mb-3 drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]" />
           <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-emerald-500">
             Guitar Architect Kids
           </h1>
-          <p className="mt-4 max-w-2xl text-sm md:text-base font-bold opacity-80 leading-relaxed">
+          <p className="mt-2 max-w-2xl text-sm md:text-base font-bold opacity-80 leading-relaxed">
             {copy.subtitle}
           </p>
 
@@ -265,8 +265,9 @@ const KidsPage: React.FC = () => {
                 </svg>
               ),
             },
-          ].map((module, idx) => {
+          ].map((module, idx, arr) => {
             const isAvailable = Boolean(module.path);
+            const isLastAlone = idx === arr.length - 1 && arr.length % 2 === 1;
             return (
               <button
                 key={module.title}
@@ -274,7 +275,7 @@ const KidsPage: React.FC = () => {
                   if (module.path) navigateTo(module.path);
                 }}
                 style={{ animationDelay: `${idx * 100}ms` }}
-                className={`group p-4 md:p-5 rounded-[26px] border flex flex-col items-start text-left transition-all animate-in fade-in slide-in-from-bottom-4 ${isAvailable ? 'opacity-100 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] cursor-pointer' : 'opacity-70 hover:opacity-100 cursor-default'} ${isLight ? 'border-emerald-200 bg-white shadow-md' : 'border-emerald-600/70 bg-emerald-950/70 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.22)]'}`}
+                className={`group p-4 md:p-5 rounded-[26px] border flex flex-col items-start text-left transition-all animate-in fade-in slide-in-from-bottom-4 ${isAvailable ? 'opacity-100 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] cursor-pointer' : 'opacity-70 hover:opacity-100 cursor-default'} ${isLight ? 'border-emerald-200 bg-white shadow-md' : 'border-emerald-600/70 bg-emerald-950/70 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.22)]'} ${isLastAlone ? 'md:col-span-2 md:max-w-[calc(50%-0.75rem)] md:mx-auto md:w-full' : ''}`}
               >
                 <div className={`mb-2 w-full rounded-2xl border px-3 py-2 ${isLight ? 'border-emerald-200 bg-emerald-50/70' : 'border-emerald-500/30 bg-emerald-900/25'}`}>
                   <div className="h-[88px] w-full overflow-hidden">
