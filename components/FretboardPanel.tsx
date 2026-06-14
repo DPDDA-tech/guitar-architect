@@ -570,9 +570,9 @@ const LogoIcon = ({ brand, variant = 'default' }: { brand: BrandAssets; variant?
 
   return (
     <div className={`flex items-center justify-center ${isLarge ? 'mb-6' : ''}`}>
-      <img 
+      <img
         src={brand.logo}
-        alt={`Guitar Architect Logo - ${brand.label}`} 
+        alt={`Guitar Architect Logo - ${brand.label}`}
         className={`
           object-contain transition-transform hover:scale-110
           ${isLarge ? 'w-24 h-24 md:w-32 md:h-32' : (isFooter ? 'w-8 h-8 md:w-10 md:h-10' : 'w-12 h-12 md:w-16 md:h-16')}
@@ -2828,7 +2828,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                <LogoIcon brand={displayedBrandAssets} variant="footer" />
                <div>
                   <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Guitar Architect<sup aria-label="marca" className="text-[8px]">™</sup> • DPDDA-tech</p>
-                  <p className="text-[9px] font-normal text-zinc-500 uppercase tracking-wide">INPI — Pedido Nº 944083625</p>
+                  <p className="text-[9px] font-normal text-zinc-500 uppercase tracking-wide">Pedido de registro no INPI Nº 944083625</p>
                </div>
             </div>
             <div className="flex gap-4 md:gap-8 text-[10px] font-black uppercase text-zinc-500">

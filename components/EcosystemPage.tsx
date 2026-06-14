@@ -58,23 +58,23 @@ const EcosystemPage: React.FC = () => {
 
   return (
     <>
-    <div className={`relative p-6 md:p-12 pt-3 md:pt-5 [@media(max-height:800px)]:pt-2 overflow-hidden ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-white'}`}>
+    <div className={`relative p-6 md:p-12 pt-3 md:pt-5 [@media(max-height:800px)]:pt-2 max-lg:landscape:p-3 max-lg:landscape:pt-2 overflow-hidden overflow-x-hidden ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-white'}`}>
       <div className="absolute inset-0 pointer-events-none opacity-50" style={gridStyle} />
 
-      <div className="relative mx-auto max-w-6xl py-2 md:py-3 text-center">
-        <p className="mb-1 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">
+      <div className="relative mx-auto max-w-6xl py-2 md:py-3 max-lg:landscape:py-0 text-center">
+        <p className="mb-1 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 max-lg:landscape:text-[8px] max-lg:landscape:mb-0.5">
           {lang === 'pt' ? 'Ecossistema Musical' : 'Music Ecosystem'}
         </p>
 
-        <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter">
+        <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter max-lg:landscape:text-2xl">
           Guitar Architect
         </h1>
 
-        <p className="mt-2 mb-4 text-zinc-500 font-bold uppercase text-[14px] tracking-[0.25em]">
+        <p className="mt-2 mb-4 text-zinc-500 font-bold uppercase text-[14px] tracking-[0.25em] max-lg:landscape:mt-1 max-lg:landscape:mb-2 max-lg:landscape:text-[9px] max-lg:landscape:tracking-[0.15em]">
           {lang === 'pt' ? 'Defina sua etapa na construção musical: descoberta, prática guiada ou ferramentas avançadas.' : 'Choose your stage in the musical journey: discovery, guided practice, or advanced tools.'}
         </p>
 
-        <div className="mb-6 flex items-center justify-end gap-2">
+        <div className="mb-6 flex items-center justify-end gap-2 max-lg:landscape:mb-2">
           <button
             type="button"
             onClick={handleToggleTheme}
@@ -95,7 +95,7 @@ const EcosystemPage: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3 mb-10 md:mb-12 [@media(max-height:800px)]:mb-6">
+        <div className="grid gap-8 md:grid-cols-3 mb-10 md:mb-12 [@media(max-height:800px)]:mb-6 max-lg:landscape:grid-cols-3 max-lg:landscape:gap-2 max-lg:landscape:mb-2">
           {[
             {
               id: 'kids',
@@ -136,31 +136,31 @@ const EcosystemPage: React.FC = () => {
               <button
                 key={area.id}
                 onClick={() => navigateTo(area.path)}
-                className={`group px-10 md:px-12 py-7 md:py-9 [@media(max-height:800px)]:py-6 rounded-[64px] border transition-all duration-500 text-center flex flex-col items-center ${
+                className={`group px-10 md:px-12 py-7 md:py-9 [@media(max-height:800px)]:py-6 rounded-[64px] border transition-all duration-500 text-center flex flex-col items-center max-lg:landscape:px-2 max-lg:landscape:py-3 max-lg:landscape:rounded-3xl ${
                   isLight ? 'bg-white/80 border-zinc-200' : 'bg-zinc-900/80 border-zinc-800'
                 } hover:-translate-y-2 shadow-2xl ${
                   isStudio
-                    ? 'scale-[1.03] md:scale-[1.04] border-blue-400/60 shadow-[0_0_35px_rgba(37,99,235,0.28)]'
+                    ? 'scale-[1.03] md:scale-[1.04] border-blue-400/60 shadow-[0_0_35px_rgba(37,99,235,0.28)] max-lg:landscape:scale-100'
                     : ''
                 }`}
               >
-                <div className="w-48 h-48 md:w-64 md:h-64 mb-6 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center">
+                <div className="w-48 h-48 md:w-64 md:h-64 mb-6 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center max-lg:landscape:w-16 max-lg:landscape:h-16 max-lg:landscape:mb-1">
                   <img
                     src={area.logo}
                     alt={area.title}
-                    className="w-full h-full object-contain drop-shadow-2xl"
+                    className="w-full h-full object-contain drop-shadow-2xl max-lg:landscape:max-h-[12vh]"
                   />
                 </div>
 
-                <h2 className={`text-lg md:text-xl font-extrabold uppercase tracking-[0.18em] mb-1 ${isLight ? 'text-zinc-700' : 'text-zinc-200'} drop-shadow-[0_0_8px_rgba(148,163,184,0.15)]`}>
+                <h2 className={`text-lg md:text-xl font-extrabold uppercase tracking-[0.18em] mb-1 ${isLight ? 'text-zinc-700' : 'text-zinc-200'} drop-shadow-[0_0_8px_rgba(148,163,184,0.15)] max-lg:landscape:text-[10px] max-lg:landscape:tracking-[0.1em] max-lg:landscape:mb-0.5`}>
                   {area.title}
                 </h2>
 
-                <p className={`text-[10px] font-semibold mb-7 tracking-[0.12em] uppercase ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                <p className={`text-[10px] font-semibold mb-7 tracking-[0.12em] uppercase ${isLight ? 'text-zinc-500' : 'text-zinc-400'} max-lg:landscape:text-[7px] max-lg:landscape:mb-2 max-lg:landscape:tracking-[0.08em]`}>
                   {area.subtitle}
                 </p>
 
-                <div className={`${ctaOffsetClass} px-8 ${isStudio ? 'py-4 text-[11px]' : 'py-3 text-[10px]'} rounded-xl ${area.btn} text-white font-black uppercase tracking-widest`}>
+                <div className={`${ctaOffsetClass} px-8 ${isStudio ? 'py-4 text-[11px]' : 'py-3 text-[10px]'} rounded-xl ${area.btn} text-white font-black uppercase tracking-widest max-lg:landscape:mt-0 max-lg:landscape:px-3 max-lg:landscape:py-1.5 max-lg:landscape:text-[8px] max-lg:landscape:rounded-lg`}>
                   {area.cta}
                 </div>
               </button>

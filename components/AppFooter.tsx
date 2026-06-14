@@ -32,7 +32,7 @@ const AppFooter: React.FC<AppFooterProps> = ({
                 Guitar Architect<sup aria-label="marca" className="text-[8px]">™</sup> • DPDDA-tech
               </p>
               <p className="text-[9px] font-normal uppercase tracking-wide text-zinc-500">
-                INPI — Pedido Nº 944083625
+                Pedido de registro no INPI Nº 944083625
               </p>
             </div>
           </div>
