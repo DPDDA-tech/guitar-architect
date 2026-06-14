@@ -153,7 +153,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     requirements: { exerciseId: '*', requiredCount: 3 },
     xp: 55,
     hidden: false,
-    asset: { status: 'ready', path: asset(2, 'tier2-ga6-.webp'), slug: 'practice-foundation-common-01' },
+    asset: { status: 'ready', path: asset(2, 'tier2-ga6-exp.webp'), slug: 'practice-foundation-common-01' },
     relatedExerciseIds: [],
     relatedModuleIds: ['practice'],
     rewardIds: ['badge-fretboard-foundation'],

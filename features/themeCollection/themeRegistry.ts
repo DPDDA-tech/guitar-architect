@@ -40,7 +40,7 @@ export const THEME_REGISTRY: ThemeCollectionItem[] = [
   item('apprentice-tele', 'Apprentice Chime', 'tier1', tier(1, 'tier1-ga6-tele.webp'), 'guitar6', 'common', 'A bright identity for open chords, triads and clean rhythm.', 'Study open positions and basic triads.', 'rgba(125,211,252,0.32)'),
   item('apprentice-bass-5c', 'Apprentice Low End', 'tier1', tier(1, 'tier1-gab45-5c.webp'), 'bass5', 'common', 'A first bass identity for pulse, groove and low-register maps.', 'Switch to bass and use the metronome.', 'rgba(52,211,153,0.32)'),
 
-  item('pedreiro-foundation', 'Foundation Builder', 'tier2', tier(2, 'tier2-ga6-.webp'), 'guitar6', 'rare', 'A practical identity for completing the first real exercise cycle.', 'Complete three practical exercises.', 'rgba(148,163,184,0.34)'),
+  item('pedreiro-foundation', 'Foundation Builder', 'tier2', tier(2, 'tier2-ga6-exp.webp'), 'guitar6', 'rare', 'A practical identity for completing the first real exercise cycle.', 'Complete three practical exercises.', 'rgba(148,163,184,0.34)'),
   item('pedreiro-12c', 'Twelve Map', 'tier2', tier(2, 'tier2-ga6-12c.webp'), 'guitar6', 'rare', 'A mapping identity for octave awareness and fretboard geography.', 'Apply scales and map intervals repeatedly.', 'rgba(96,165,250,0.34)'),
   item('pedreiro-dimdar', 'Diminished Frame', 'tier2', tier(2, 'tier2-ga6-dimdar.webp'), 'guitar6', 'rare', 'A harmonic identity for diminished colors and triad structure.', 'Study diminished triads and tetrads.', 'rgba(168,85,247,0.34)'),
   item('pedreiro-fbh70', 'Practice Frame', 'tier2', tier(2, 'tier2-ga6-fbh70.webp'), 'guitar6', 'rare', 'A workbench identity for first completed practice sessions.', 'Complete your first exercise.', 'rgba(59,130,246,0.34)'),

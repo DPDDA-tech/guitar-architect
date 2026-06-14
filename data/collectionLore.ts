@@ -104,7 +104,7 @@ const BASE_COLLECTION_LORE: CollectionLoreItem[] = [
     en: 'A modern five-string bass identity representing low-register extension, rhythmic stability and contemporary language.',
   }, ['bass5', 'modern']),
 
-  lore('lore-tier2-ga6-explorer', 'tier2-ga6-.webp', { pt: 'Angular Explorer', en: 'Angular Explorer' }, 'T2', 'collection', 'classic_headstock', 'premium', {
+  lore('lore-tier2-ga6-explorer', 'tier2-ga6-exp.webp', { pt: 'Angular Explorer', en: 'Angular Explorer' }, 'T2', 'collection', 'classic_headstock', 'premium', {
     pt: 'Silhueta angular inspirada na agressividade clássica do hard rock e metal, com presença visual imediata.',
     en: 'An angular silhouette inspired by the classic aggression of hard rock and metal, with immediate visual presence.',
   }, ['guitar6', 'metal']),
