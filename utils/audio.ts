@@ -92,6 +92,12 @@ export const playFrequencies = async (frequencies: number[], options?: { duratio
   return true;
 };
 
+export const suspendSharedAudioContext = () => {
+  if (sharedContext && sharedContext.state === 'running') {
+    sharedContext.suspend().catch(() => undefined);
+  }
+};
+
 export const playSingleNote = (frequency: number) => playFrequencies([frequency], { duration: 0.55, volume: 0.075 });
 
 export const playChord = (frequencies: number[]) => (

@@ -47,6 +47,7 @@ import TeensGarageEvhPage from './components/TeensGarageEvhPage';
 import { supabase } from './src/lib/supabase';
 import { hydrateSupporterFromServer } from './utils/supporterStorage';
 import { loadConfig } from './utils/persistence';
+import { cleanupStudioRuntime } from './utils/studioRuntime';
 
 const getCurrentPath = () => window.location.pathname;
 
@@ -118,7 +119,13 @@ const App: React.FC = () => {
 
     initAuthSync();
 
-    const syncPath = () => setPath(getCurrentPath());
+    const syncPath = () => {
+      const nextPath = getCurrentPath();
+      setPath(prevPath => {
+        if (nextPath !== prevPath) cleanupStudioRuntime(nextPath);
+        return nextPath;
+      });
+    };
     window.addEventListener('popstate', syncPath);
     window.addEventListener('ga-route-change', syncPath);
     return () => {

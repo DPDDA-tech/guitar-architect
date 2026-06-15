@@ -11,6 +11,7 @@ import { FretboardState, EditorMode, MarkerShape, ThemeMode, StringStatus, Instr
 import NewDiagramWizard from './NewDiagramWizard';
 import { getMusicTip, MusicTip } from '../utils/musicTips';
 import { getFrequencyForNoteName, getFrequencyForPosition, playChord, playFrequencies, playSingleNote } from '../utils/audio';
+import { onStudioCleanup } from '../utils/studioRuntime';
 import {
   CHORD_TYPES,
   ChordType,
@@ -1939,6 +1940,7 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
     setIsControlPanelOpen(true);
   };
   useEffect(() => () => clearCycleFollowTimer(), [clearCycleFollowTimer]);
+  useEffect(() => onStudioCleanup(clearCycleFollowTimer), [clearCycleFollowTimer]);
 
   const guidedStudies = useMemo<GuidedStudy[]>(() => ([
     {
