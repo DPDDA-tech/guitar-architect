@@ -74,14 +74,14 @@ const QuickToolsModal: React.FC<QuickToolsModalProps> = ({ isOpen, initialTool, 
     : INSTRUMENT_PRESETS[toolState.instrumentType].defaultTuning;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-start justify-center px-4 pt-[9rem] pb-6" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[120] flex items-start justify-center px-4 pt-4 pb-4 sm:pt-[9rem] sm:pb-6" role="dialog" aria-modal="true">
       <button
         type="button"
         aria-label={lang === 'pt' ? 'Fechar ferramentas' : 'Close tools'}
         onClick={onClose}
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
       />
-      <section className={`relative max-h-[calc(100vh-10rem)] w-full max-w-5xl overflow-y-auto rounded-2xl border p-4 shadow-2xl ${isLight ? 'border-[#cbd7e6] bg-[#f6f9fd]' : 'border-blue-900/60 bg-[#050914]'}`}>
+      <section className={`relative max-h-[calc(100vh-2rem)] w-full max-w-5xl overflow-y-auto rounded-2xl border p-4 shadow-2xl sm:max-h-[calc(100vh-10rem)] ${isLight ? 'border-[#cbd7e6] bg-[#f6f9fd]' : 'border-blue-900/60 bg-[#050914]'}`}>
         <div className="mb-4 flex items-center justify-between gap-4">
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.22em] text-blue-300">

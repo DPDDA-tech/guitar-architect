@@ -14,7 +14,7 @@ const PracticeStatsPanel: React.FC<PracticeStatsPanelProps> = ({ progress, total
   return (
     <section className={`rounded-2xl border p-5 ${isLight ? 'border-[#d2deeb] bg-white/88 shadow-[0_12px_30px_rgba(71,85,105,0.09)]' : 'border-blue-950/50 bg-[#080d16]/84'}`}>
       <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">Status de treino</p>
-      <div className="mt-4 grid grid-cols-3 gap-3">
+      <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
         <div>
           <p className="text-[9px] font-black uppercase text-zinc-500">Streak</p>
           <p className="mt-1 text-2xl font-black">{progress.streak}</p>

@@ -68,7 +68,7 @@ const PracticeExerciseCard: React.FC<PracticeExerciseCardProps> = ({
           </span>
         ))}
       </div>
-      <div className="mt-5 grid grid-cols-[1fr_1fr] gap-3">
+      <div className="mt-5 grid grid-cols-2 gap-2 sm:gap-3">
         <PracticeTimer minutes={exercise.durationMinutes} isLight={isLight} />
         <div className={`rounded-xl border px-3 py-2 text-center ${isLight ? 'border-blue-100 bg-white text-blue-700' : 'border-blue-900/65 bg-[#0b1424] text-blue-200 shadow-[inset_0_1px_0_rgba(96,165,250,0.05)]'}`}>
           <p className="text-[8px] font-black uppercase tracking-[0.18em] opacity-70">BPM</p>

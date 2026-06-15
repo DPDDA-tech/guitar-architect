@@ -2174,7 +2174,7 @@ const handleReturnToContext = () => {
 
       {isSmallScreen && !isExporting && (
         <div className={`fixed top-0 left-0 w-full z-50 border-b px-3 py-2 backdrop-blur-2xl ${isLight ? 'bg-white/95 border-zinc-200 shadow-sm' : 'bg-zinc-950/95 border-zinc-800'}`}>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <button
               onClick={() => {
                 window.dispatchEvent(new CustomEvent('ga-close-diagram-panels'));
@@ -2212,7 +2212,7 @@ const handleReturnToContext = () => {
               />
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex basis-full flex-wrap items-center justify-center gap-1 sm:basis-auto sm:justify-end">
               <button
                 onClick={() => setTheme(isLight ? 'dark' : 'light')}
                 className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
