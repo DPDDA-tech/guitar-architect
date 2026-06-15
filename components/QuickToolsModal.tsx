@@ -48,10 +48,15 @@ const createDefaultState = (): FretboardState => ({
 
 const QuickToolsModal: React.FC<QuickToolsModalProps> = ({ isOpen, initialTool, isLight, lang, onClose }) => {
   const [toolState, setToolState] = useState<FretboardState>(() => createDefaultState());
+  const [activeTool, setActiveTool] = useState<QuickTool>(initialTool);
 
   useEffect(() => {
     if (isOpen) setToolState(createDefaultState());
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) setActiveTool(initialTool);
+  }, [isOpen, initialTool]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -69,21 +74,21 @@ const QuickToolsModal: React.FC<QuickToolsModalProps> = ({ isOpen, initialTool, 
     : INSTRUMENT_PRESETS[toolState.instrumentType].defaultTuning;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center px-4 py-6" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[120] flex items-start justify-center px-4 pt-[9rem] pb-6" role="dialog" aria-modal="true">
       <button
         type="button"
         aria-label={lang === 'pt' ? 'Fechar ferramentas' : 'Close tools'}
         onClick={onClose}
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
       />
-      <section className={`relative max-h-[88vh] w-full max-w-5xl overflow-y-auto rounded-2xl border p-4 shadow-2xl ${isLight ? 'border-[#cbd7e6] bg-[#f6f9fd]' : 'border-blue-900/60 bg-[#050914]'}`}>
+      <section className={`relative max-h-[calc(100vh-10rem)] w-full max-w-5xl overflow-y-auto rounded-2xl border p-4 shadow-2xl ${isLight ? 'border-[#cbd7e6] bg-[#f6f9fd]' : 'border-blue-900/60 bg-[#050914]'}`}>
         <div className="mb-4 flex items-center justify-between gap-4">
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.22em] text-blue-300">
               {lang === 'pt' ? 'Ferramentas rapidas' : 'Quick tools'}
             </p>
             <h2 className={`mt-1 text-xl font-black uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-              {initialTool === 'metronome'
+              {activeTool === 'metronome'
                 ? lang === 'pt' ? 'Metronomo' : 'Metronome'
                 : lang === 'pt' ? 'Afinador' : 'Tuner'}
             </h2>
@@ -106,6 +111,9 @@ const QuickToolsModal: React.FC<QuickToolsModalProps> = ({ isOpen, initialTool, 
           onHighlightPosition={() => undefined}
           initialTool={initialTool}
           toolScope="quick"
+          onActiveToolChange={tool => {
+            if (tool === 'tuner' || tool === 'metronome') setActiveTool(tool);
+          }}
         />
       </section>
     </div>

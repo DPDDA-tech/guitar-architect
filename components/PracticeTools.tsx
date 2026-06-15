@@ -3,6 +3,7 @@ import { CHROMATIC_SCALE, getNoteAt, normalizeNote } from '../music/musicTheory'
 import { getScaleNotes } from '../music/scales';
 import { generateChordVoicings, type ChordType, type ChordVoicingCandidate } from '../music/chordLibrary';
 import { getFrequencyForNoteName, getFrequencyForPosition, getOpenStringMidi, playFrequencies } from '../utils/audio';
+import { onStudioCleanup } from '../utils/studioRuntime';
 import type { FretboardState, InstrumentType, StringStatus } from '../types';
 import { recordAchievementEvent } from '../utils/achievementEvents';
 
@@ -18,6 +19,7 @@ interface PracticeToolsProps {
   onHighlightPosition: (position: { string: number; fret: number }) => void;
   initialTool?: PracticeToolId;
   toolScope?: 'all' | 'quick';
+  onActiveToolChange?: (tool: PracticeToolId) => void;
 }
 
 type TunerTarget = {
@@ -192,7 +194,7 @@ const detectPitch = (buffer: Float32Array, sampleRate: number) => {
 
 const getCents = (frequency: number, target: number) => Math.round(1200 * Math.log2(frequency / target));
 
-const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, isLight, lang, state, onApplyExample, onHighlightPosition, initialTool, toolScope = 'all' }) => {
+const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, isLight, lang, state, onApplyExample, onHighlightPosition, initialTool, toolScope = 'all', onActiveToolChange }) => {
   const availableTools = useMemo<PracticeToolId[]>(() => (
     toolScope === 'quick' ? ['tuner', 'metronome'] : ['tuner', 'metronome', 'intervals', 'exercises', 'changes']
   ), [toolScope]);
@@ -237,11 +239,21 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
 
   useEffect(() => {
     if (initialTool && availableTools.includes(initialTool)) {
-      setActiveTool(initialTool);
+      setActiveTool(prevTool => {
+        if (prevTool === initialTool) return prevTool;
+        if (prevTool === 'metronome') stopMetronome();
+        if (prevTool === 'tuner') stopTuner();
+        return initialTool;
+      });
       return;
     }
     if (!availableTools.includes(activeTool)) setActiveTool(availableTools[0]);
-  }, [activeTool, availableTools, initialTool]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableTools, initialTool]);
+
+  useEffect(() => {
+    onActiveToolChange?.(activeTool);
+  }, [activeTool, onActiveToolChange]);
 
   const targets = useMemo<TunerTarget[]>(() => tuning.map((note, stringIndex) => ({
     string: stringIndex,
@@ -593,6 +605,13 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
     stopScalePlayback();
   }, []);
 
+  useEffect(() => onStudioCleanup(() => {
+    stopTuner();
+    stopMetronome();
+    stopChangePractice();
+    stopScalePlayback();
+  }), []);
+
   const panelClass = isLight ? 'border-zinc-200 bg-white text-zinc-900' : 'border-zinc-800 bg-zinc-900 text-zinc-100';
   const buttonBase = 'rounded-lg border px-3 py-2 text-[9px] font-black uppercase transition-all active:scale-95';
   const inputClass = 'w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-black text-zinc-900';
@@ -604,6 +623,9 @@ const PracticeTools: React.FC<PracticeToolsProps> = ({ instrumentType, tuning, i
           <button
             key={tool}
             onClick={() => {
+              if (tool === activeTool) return;
+              if (activeTool === 'metronome') stopMetronome();
+              if (activeTool === 'tuner') stopTuner();
               if (tool === 'metronome') recordAchievementEvent({ type: 'exploration', key: 'open_metronome' });
               setActiveTool(tool);
             }}
