@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { Lang } from '../i18n';
-import SupportModal from './SupportModal';
+
+const navigateTo = (path: string) => {
+  window.history.pushState(null, '', path);
+  window.dispatchEvent(new Event('ga-route-change'));
+};
 
 interface AppFooterProps {
   isLight: boolean;
@@ -19,8 +23,6 @@ const AppFooter: React.FC<AppFooterProps> = ({
   logoClassName = 'h-12 w-12 object-contain',
   compact = false,
 }) => {
-  const [showSupportModal, setShowSupportModal] = useState(false);
-
   return (
     <>
       <footer className={`border-t ${compact ? 'py-5 md:py-6' : 'py-10'} ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-900 bg-zinc-950'}`}>
@@ -38,6 +40,16 @@ const AppFooter: React.FC<AppFooterProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] font-black uppercase text-zinc-500 md:gap-8">
+            <a
+              href="/season-1"
+              onClick={event => {
+                event.preventDefault();
+                navigateTo('/season-1');
+              }}
+              className="cursor-pointer transition-colors hover:text-blue-600"
+            >
+              {lang === 'pt' ? 'Temporada 1' : 'Season 1'}
+            </a>
             <a href="/legal/privacy.html" target="_blank" rel="noreferrer" className="transition-colors hover:text-blue-600">
               {lang === 'pt' ? 'Privacidade' : 'Privacy'}
             </a>
@@ -50,13 +62,6 @@ const AppFooter: React.FC<AppFooterProps> = ({
             <a href="/legal/help.html" target="_blank" rel="noreferrer" className="transition-colors hover:text-blue-600">
               {lang === 'pt' ? 'Ajuda' : 'Help'}
             </a>
-            <button
-              type="button"
-              onClick={() => setShowSupportModal(true)}
-              className="cursor-pointer transition-colors hover:text-blue-600"
-            >
-              {lang === 'pt' ? 'Apoie o projeto' : 'Support the project'}
-            </button>
           </div>
 
           <p className={`text-[10px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
@@ -64,13 +69,6 @@ const AppFooter: React.FC<AppFooterProps> = ({
           </p>
         </div>
       </footer>
-
-      <SupportModal
-        isOpen={showSupportModal}
-        onClose={() => setShowSupportModal(false)}
-        isLight={isLight}
-        lang={lang}
-      />
     </>
   );
 };

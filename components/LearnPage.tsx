@@ -6,6 +6,7 @@ import { loadConfig, saveConfig } from '../utils/persistence';
 import { AppState, ThemeMode } from '../types';
 import { recordAchievementEvent } from '../utils/achievementEvents';
 import QuickToolsModal from './QuickToolsModal';
+import AppFooter from './AppFooter';
 import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import type { FretboardIntent, FretboardIntentAction, FretboardIntentTab } from '../types/fretboardIntent';
@@ -446,6 +447,7 @@ const LearnPage: React.FC = () => {
           </div>
         </PanelSurface>
       </main>
+      <AppFooter isLight={isLight} lang={lang} logoSrc="/logogastudio.webp" logoAlt="Guitar Architect Studio" compact />
       <QuickToolsModal
         isOpen={quickTool !== null}
         initialTool={quickTool || 'metronome'}

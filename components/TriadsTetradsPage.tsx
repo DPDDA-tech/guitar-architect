@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { translations, Lang } from '../i18n';
 import { loadConfig, saveConfig } from '../utils/persistence';
 import { AppState, ThemeMode } from '../types';
+import AppFooter from './AppFooter';
 import {
   INVERSION_GROUPS,
   MAJOR_FIELD_TETRADS,
@@ -385,6 +386,7 @@ const TriadsTetradsPage: React.FC<{ openTrainer?: boolean }> = ({ openTrainer = 
           </div>
         </PanelSurface>
       </main>
+      <AppFooter isLight={isLight} lang={lang} logoSrc="/logogastudio.webp" logoAlt="Guitar Architect Studio" compact />
     </div>
   );
 };

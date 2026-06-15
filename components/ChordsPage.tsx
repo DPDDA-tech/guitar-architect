@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { translations, Lang } from '../i18n';
 import { loadConfig, saveConfig } from '../utils/persistence';
 import { AppState, ThemeMode } from '../types';
+import AppFooter from './AppFooter';
 import {
   CHORD_HERO_CHIPS,
   CHORD_LIBRARY_ITEMS,
@@ -305,6 +306,7 @@ const ChordsPage: React.FC = () => {
           </PanelSurface>
         </div>
       </main>
+      <AppFooter isLight={isLight} lang={lang} logoSrc="/logogastudio.webp" logoAlt="Guitar Architect Studio" compact />
     </div>
   );
 };

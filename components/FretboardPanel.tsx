@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import FretboardInstance from './FretboardInstance';
+import AppFooter from './AppFooter';
 import { FretboardState, ThemeMode, Project, InstrumentType, Marker, Line, StringStatus } from '../types';
 import { translations, Lang } from '../i18n';
 import { transposeNote, INSTRUMENT_PRESETS, TUNINGS_PRESETS } from '../music/musicTheory';
@@ -2822,25 +2823,9 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         )}
       </div>
 
-      <footer className={`py-10 border-t ${isExporting ? 'hidden' : 'hidden md:block'} ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-950 border-zinc-900'}`}>
-         <div className="max-w-[1700px] mx-auto px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-               <LogoIcon brand={displayedBrandAssets} variant="footer" />
-               <div>
-                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Guitar Architect<sup aria-label="marca" className="text-[8px]">™</sup> • DPDDA-tech</p>
-                  <p className="text-[9px] font-normal text-zinc-500 uppercase tracking-wide">Pedido de registro no INPI Nº 944083625</p>
-               </div>
-            </div>
-            <div className="flex gap-4 md:gap-8 text-[10px] font-black uppercase text-zinc-500">
-               <a href="/legal/privacy.html" target="_blank" className="hover:text-blue-600 transition-colors">Privacidade</a>
-               <a href="/legal/terms.html" target="_blank" className="hover:text-blue-600 transition-colors">Termos</a>
-               <a href="/legal/license.html" target="_blank" className="hover:text-blue-600 transition-colors">Licença</a>
-               <a href="/legal/help.html" target="_blank" className="hover:text-blue-600 transition-colors">Ajuda</a>
-               <a href="#" onClick={() => setShowSupportModal(true)} className="hover:text-blue-600 transition-colors cursor-pointer">Apoie o projeto</a>
-            </div>
-            <p className={`text-[10px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>© 2026</p>
-         </div>
-      </footer>
+      {!isExporting && (
+        <AppFooter isLight={isLight} lang={lang} logoSrc="/logogastudio.webp" logoAlt="Guitar Architect Studio" compact />
+      )}
 
       {showLoginModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xl">

@@ -15,6 +15,7 @@ import PracticeMissionCard from './practice/PracticeMissionCard';
 import PracticeCategorySection from './practice/PracticeCategorySection';
 import PracticeStatsPanel from './practice/PracticeStatsPanel';
 import QuickToolsModal from './QuickToolsModal';
+import AppFooter from './AppFooter';
 import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import type { FretboardIntent, FretboardIntentAction, FretboardIntentTab } from '../types/fretboardIntent';
@@ -341,6 +342,7 @@ const PracticePage: React.FC = () => {
           </div>
         </section>
       </main>
+      <AppFooter isLight={isLight} lang={lang} logoSrc="/logogastudio.webp" logoAlt="Guitar Architect Studio" compact />
       <QuickToolsModal
         isOpen={quickTool !== null}
         initialTool={quickTool || 'metronome'}

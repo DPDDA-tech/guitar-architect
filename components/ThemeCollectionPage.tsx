@@ -26,6 +26,7 @@ import { getConstancyState, getNextConstancyMilestone } from '../utils/constancy
 import { listUnifiedActiveRewardGrantIds } from '../utils/supabaseRewardGrants';
 import { listStoredAdminRewardGrantIdsByEmail } from '../utils/adminRewardGrantStorage';
 import { getGlobalLang, getGlobalTheme, setGlobalLang, setGlobalTheme } from '../utils/ecosystemPreferences';
+import SupportModal from './SupportModal';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
 
@@ -158,6 +159,7 @@ const getInitialConfig = (): AppState | null => {
 };
 
 const ThemeCollectionPage: React.FC = () => {
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const [config, setConfig] = useState<AppState | null>(() => getInitialConfig());
   const [lang, setLang] = useState<Lang>(() => getGlobalLang());
   const [theme, setTheme] = useState<ThemeMode>(() => getGlobalTheme());
@@ -503,15 +505,7 @@ const ThemeCollectionPage: React.FC = () => {
   };
 
   const handleBecomeSupporter = () => {
-    setSupporterToast(
-      lang === 'pt'
-        ? 'Veja os dados de apoio e envie o comprovante para validação do selo.'
-        : 'Check the support details and send proof for badge validation.'
-    );
-    setTimeout(() => setSupporterToast(null), 3000);
-    setTimeout(() => {
-      document.getElementById('supporter-payment-info')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    setShowSupportModal(true);
   };
 
   return (
@@ -751,7 +745,7 @@ const ThemeCollectionPage: React.FC = () => {
                 </button>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <button type="button" onClick={handleBecomeSupporter} className="rounded-xl border border-amber-300/55 bg-amber-500 px-5 py-3 text-[10px] font-black uppercase text-slate-950 shadow-lg shadow-amber-950/20">
+                <button type="button" onClick={handleBecomeSupporter} className="rounded-xl border border-blue-400/55 bg-blue-600 px-5 py-3 text-[10px] font-black uppercase text-white shadow-lg shadow-blue-950/20 hover:bg-blue-700">
                   {lang === 'pt' ? 'Tornar-se apoiador' : 'Become a supporter'}
                 </button>
                 <button type="button" onClick={() => document.getElementById('supporter-rewards-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className={`rounded-xl border px-5 py-3 text-[10px] font-black uppercase ${isLight ? 'border-slate-200 bg-white text-slate-700' : 'border-slate-700 bg-slate-950/70 text-slate-200'}`}>
@@ -1119,6 +1113,8 @@ const ThemeCollectionPage: React.FC = () => {
           {supporterToast}
         </div>
       )}
+
+      <SupportModal isOpen={showSupportModal} onClose={() => setShowSupportModal(false)} isLight={isLight} lang={lang} />
     </div>
   );
 };

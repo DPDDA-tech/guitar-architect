@@ -5,6 +5,7 @@ import { AppState, ThemeMode } from '../types';
 import { GREEK_MODES, MODAL_BACKING_TRACKS, MODAL_PROGRESSIONS, GreekModeInfo } from '../data/greekModes';
 import { recordAchievementEvent } from '../utils/achievementEvents';
 import QuickToolsModal from './QuickToolsModal';
+import AppFooter from './AppFooter';
 import { returnToFretboard } from '../utils/fretboardNavigation';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import type { FretboardIntent, FretboardIntentAction } from '../types/fretboardIntent';
@@ -470,6 +471,7 @@ const GreekModesPage: React.FC = () => {
           </div>
         </PanelSurface>
       </main>
+      <AppFooter isLight={isLight} lang={lang} logoSrc="/logogastudio.webp" logoAlt="Guitar Architect Studio" compact />
       <QuickToolsModal
         isOpen={quickTool !== null}
         initialTool={quickTool || 'metronome'}

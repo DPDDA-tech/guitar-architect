@@ -11,6 +11,7 @@ import {
 } from '../data/cagedModules';
 import { loadConfig, saveConfig } from '../utils/persistence';
 import { AppState, ThemeMode } from '../types';
+import AppFooter from './AppFooter';
 import { recordAchievementEvent } from '../utils/achievementEvents';
 import { navigateToPath, returnToFretboard } from '../utils/fretboardNavigation';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
@@ -652,6 +653,7 @@ const CagedPage: React.FC = () => {
           </PanelSurface>
         </div>
       </main>
+      <AppFooter isLight={isLight} lang={lang} logoSrc="/logogastudio.webp" logoAlt="Guitar Architect Studio" compact />
     </div>
   );
 };

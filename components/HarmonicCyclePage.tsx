@@ -2,6 +2,7 @@
 import { translations, Lang } from '../i18n';
 import { loadConfig, saveConfig } from '../utils/persistence';
 import { AppState, ThemeMode } from '../types';
+import AppFooter from './AppFooter';
 import {
   FIFTHS_CYCLE,
   HARMONIC_ROOT_OPTIONS,
@@ -721,6 +722,7 @@ const HarmonicCyclePage: React.FC = () => {
           </div>
         </aside>
       </main>
+      <AppFooter isLight={isLight} lang={lang} logoSrc="/logogastudio.webp" logoAlt="Guitar Architect Studio" compact />
     </div>
   );
 };
