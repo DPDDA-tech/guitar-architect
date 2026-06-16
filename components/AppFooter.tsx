@@ -23,18 +23,40 @@ const AppFooter: React.FC<AppFooterProps> = ({
   logoClassName = 'h-12 w-12 object-contain',
   compact = false,
 }) => {
+  const logoHref = logoAlt.includes('Kids') ? '/kids'
+    : logoAlt.includes('Teens') ? '/teens'
+    : logoAlt.includes('Studio') ? '/studio'
+    : '/ecosystem';
+
+  const logoAriaLabel = logoAlt.includes('Kids')
+    ? (lang === 'pt' ? 'Ir para a página inicial Kids' : 'Go to Kids home')
+    : logoAlt.includes('Teens')
+    ? (lang === 'pt' ? 'Ir para a página inicial Teens' : 'Go to Teens home')
+    : logoAlt.includes('Studio')
+    ? (lang === 'pt' ? 'Ir para a página inicial Studio' : 'Go to Studio home')
+    : (lang === 'pt' ? 'Ir para o ecossistema Guitar Architect' : 'Go to Guitar Architect ecosystem');
+
   return (
     <>
       <footer className={`border-t ${compact ? 'py-5 md:py-6' : 'py-10'} ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-900 bg-zinc-950'}`}>
         <div className="mx-auto flex max-w-[1700px] flex-col items-center justify-between gap-6 px-6 md:flex-row md:px-10">
           <div className="flex items-center gap-3">
-            {logoSrc ? <img src={logoSrc} alt={logoAlt} className={logoClassName} /> : null}
+            {logoSrc ? (
+              <a
+                href={logoHref}
+                onClick={e => { e.preventDefault(); navigateTo(logoHref); }}
+                aria-label={logoAriaLabel}
+                className="inline-flex cursor-pointer rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
+                <img src={logoSrc} alt={logoAlt} className={logoClassName} />
+              </a>
+            ) : null}
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
                 Guitar Architect<sup aria-label="marca" className="text-[8px]">™</sup> • DPDDA-tech
               </p>
               <p className="text-[9px] font-normal uppercase tracking-wide text-zinc-500">
-                Pedido de registro no INPI Nº 944083625
+                Marca Mista Depositada no INPI • Processo Nº 944083625
               </p>
             </div>
           </div>

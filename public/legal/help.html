@@ -38,6 +38,16 @@
         html.dark h1, html.dark h2, html.dark h3 { color: #bfdbfe !important; }
         html.dark p, html.dark li { color: #cbd5e1; }
         html.dark section { border-color: rgba(30,64,175,0.35) !important; background-color: rgba(15,23,42,0.45) !important; }
+        html.dark p.text-blue-500 { color: rgb(59 130 246) !important; }
+        html.dark [data-theme-toggle],
+        html.dark [data-lang-toggle] {
+            border-color: #3f3f46;
+            background: #18181b;
+            color: #e4e4e7;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+        }
+        html.dark [data-theme-toggle]:hover,
+        html.dark [data-lang-toggle]:hover { border-color: #3b82f6; }
     </style>
 </head>
 <body class="text-zinc-800 font-sans leading-relaxed">
@@ -56,12 +66,12 @@
       <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] mb-2">Guitar Architect</p>
       <h1 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter mb-3">Ajuda e FAQ</h1>
       <p class="mt-3 text-zinc-500 font-bold uppercase text-[12px] md:text-sm tracking-[0.2em]">Guia Rápido e Dúvidas Frequentes</p>
-      <p class="mt-2 text-xs font-bold text-zinc-500 uppercase tracking-[0.2em]">Última atualização: 15 de junho de 2026</p>
     </div>
 
     <div class="content-card p-8 md:p-12 rounded-[40px] border border-zinc-200 shadow-2xl">
 
       <div class="space-y-8 text-sm md:text-base">
+        <p data-update-date class="text-[11px] text-zinc-400 -mt-2 mb-2">Última atualização: 15 de junho de 2026</p>
         <section>
           <p class="font-medium">
             O Guitar Architect é uma workstation musical para visualizar, estudar, praticar e exportar ideias no braço de guitarras e baixos.
@@ -199,7 +209,9 @@
     <footer class="legal-footer mt-16 border-t pt-8">
       <div class="flex flex-col items-center gap-4 text-center">
         <div class="flex items-center gap-3">
-          <img src="/Logo Guitar.webp" alt="Guitar Architect" class="h-10 w-10 object-contain" />
+          <a href="/ecosystem" aria-label="Ir para o ecossistema Guitar Architect" class="inline-flex cursor-pointer rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+            <img src="/Logo Guitar.webp" alt="Guitar Architect" class="h-10 w-10 object-contain" />
+          </a>
           <p class="text-[10px] font-bold uppercase tracking-widest">
             Guitar Architect<sup class="text-[8px]">™</sup> • DPDDA-tech
           </p>
@@ -211,7 +223,7 @@
           <a href="/legal/license.html">Licença</a>
           <a href="/legal/help.html">Ajuda</a>
         </nav>
-        <p class="w-full text-center text-[9px] font-bold uppercase tracking-widest opacity-80">Pedido de Registro no INPI nº 944083625 • © 2026 Guitar Architect</p>
+        <p class="w-full text-center text-[9px] font-bold uppercase tracking-widest opacity-80">Marca Mista Depositada no INPI • Processo Nº 944083625 • © 2026 Guitar Architect</p>
       </div>
     </footer>
   </div>

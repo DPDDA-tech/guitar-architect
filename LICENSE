@@ -1,0 +1,89 @@
+Business Source License 1.1
+
+Licensor: DÍLIO PROCÓPIO DAYRELL DRUMMOND DE ALVARENGA, desenvolvedor do projeto
+          Guitar Architect sob a denominação DPDDA-tech.
+
+Licensed Work: Guitar Architect
+               Copyright (c) 2026 DÍLIO PROCÓPIO DAYRELL DRUMMOND DE ALVARENGA
+
+Additional Use Grant:
+  O uso pessoal, educacional e não comercial do código-fonte é permitido, desde
+  que sejam mantidos os avisos de copyright e os avisos legais presentes no
+  repositório.
+
+  <!-- TODO (mantenedor): detalhar Additional Use Grant conforme necessário,
+       especificando permissões adicionais, restrições por contexto ou por tipo
+       de integração permitida. -->
+
+Change Date: January 1, 2030
+
+Change License: Apache License, Version 2.0
+
+On the Change Date above, in accordance with the Business Source License,
+the Licensed Work will be made available under the Change License (Apache 2.0).
+Until the Change Date, all commercial rights remain exclusively reserved by the
+Licensor.
+
+-------------------------------------------------------------------------------
+
+RESTRIÇÕES ATÉ A CHANGE DATE
+
+O código-fonte, no todo ou em parte, NÃO PODE ser utilizado para fins
+comerciais, incluindo, mas não se limitando a:
+
+  - Oferecer o software ou obras derivadas como produto pago ou freemium;
+  - Vender acesso, licenças ou assinaturas;
+  - Incorporar o software em serviço ou plataforma comercial;
+  - Redistribuir o software como parte de oferta comercial.
+
+Autorizações para uso comercial poderão ser concedidas por DÍLIO PROCÓPIO
+DAYRELL DRUMMOND DE ALVARENGA, atuando sob a denominação DPDDA-tech.
+Contato: contato@guitararchitect.com.br
+
+-------------------------------------------------------------------------------
+
+ATRIBUIÇÃO
+
+Qualquer uso permitido deste software deve manter o seguinte aviso:
+
+  "Guitar Architect — © 2026 DÍLIO PROCÓPIO DAYRELL DRUMMOND DE ALVARENGA
+  (DPDDA-tech). Disponibilizado sob Business Source License 1.1."
+
+-------------------------------------------------------------------------------
+
+MARCA, IDENTIDADE VISUAL E ATIVOS GRÁFICOS
+
+Esta licença NÃO se estende à marca "Guitar Architect", ao seu logotipo,
+identidade visual, ícones, badges, emblemas, selos colecionáveis, variações
+oficiais (Kids, Teens, Studio), representações alternativas de headstock,
+assets gráficos desbloqueáveis ou quaisquer outros sinais distintivos do
+ecossistema Guitar Architect.
+
+A denominação e a identidade visual principal Guitar Architect são objeto de
+pedido de registro de marca mista perante o Instituto Nacional da Propriedade
+Industrial — INPI, sob o processo nº 944083625. Os direitos decorrentes do
+pedido de registro pertencem ao respectivo depositante, DÍLIO PROCÓPIO DAYRELL
+DRUMMOND DE ALVARENGA.
+
+Forks, redistribuições ou projetos derivados deverão adotar denominação e
+identidade visual próprias, salvo autorização prévia e expressa do titular da
+marca.
+
+  <!-- TODO (mantenedor): confirmar se algum asset gráfico no repositório possui
+       licença distinta e documentá-la individualmente, se aplicável. -->
+
+-------------------------------------------------------------------------------
+
+ISENÇÃO DE GARANTIAS
+
+O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIAS DE QUALQUER TIPO, EXPRESSAS
+OU IMPLÍCITAS, INCLUINDO, MAS NÃO SE LIMITANDO ÀS GARANTIAS DE
+COMERCIALIZAÇÃO, ADEQUAÇÃO A DETERMINADO FIM E NÃO VIOLAÇÃO. EM NENHUM CASO O
+LICENCIANTE SERÁ RESPONSÁVEL POR QUALQUER RECLAMAÇÃO, DANOS OU OUTRA
+RESPONSABILIDADE, SEJA EM AÇÃO CONTRATUAL, ATO ILÍCITO OU OUTRO, DECORRENTE
+DE, OU EM CONEXÃO COM, O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO SOFTWARE.
+
+-------------------------------------------------------------------------------
+
+Para informações completas sobre a Business Source License 1.1, consulte:
+https://mariadb.com/bsl11/

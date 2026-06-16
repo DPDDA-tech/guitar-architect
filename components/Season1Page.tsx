@@ -8,6 +8,19 @@ import SupportModal from './SupportModal';
 type ThemeMode = 'light' | 'dark';
 type AppLang = 'pt' | 'en';
 
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
+  </svg>
+);
+
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
   window.dispatchEvent(new Event('ga-route-change'));
@@ -92,6 +105,12 @@ const Season1Page: React.FC = () => {
           'O Guitar Architect continua utilizável independentemente de apoio.',
           'O apoio é uma forma de participar da construção e evolução do projeto.',
         ],
+        s7Title: '7. Natureza dos Apoios',
+        s7: [
+          'As contribuições realizadas possuem natureza voluntária e destinam-se ao apoio ao desenvolvimento e evolução do projeto Guitar Architect.',
+          'Os apoios não constituem investimento, participação societária, promessa de retorno financeiro, valor mobiliário ou aquisição de funcionalidades específicas do aplicativo.',
+          'Salvo disposição legal em contrário, as contribuições possuem caráter espontâneo e não são reembolsáveis.',
+        ],
         becomeSupporter: 'Tornar-se apoiador',
         viewBadges: 'Ver selos na coleção',
       }
@@ -129,6 +148,12 @@ const Season1Page: React.FC = () => {
           'Guitar Architect remains fully usable regardless of support.',
           'Supporting is a way to take part in the construction and evolution of the project.',
         ],
+        s7Title: '7. Nature of Contributions',
+        s7: [
+          'Contributions are voluntary and intended to support the development and evolution of the Guitar Architect project.',
+          'Contributions do not constitute investment, equity participation, promise of financial return, securities, or acquisition of specific app features.',
+          'Unless otherwise required by law, contributions are spontaneous in nature and are non-refundable.',
+        ],
         becomeSupporter: 'Become a supporter',
         viewBadges: 'View badges in collection',
       });
@@ -154,7 +179,7 @@ const Season1Page: React.FC = () => {
                 className={`flex h-9 w-9 items-center justify-center rounded-xl border text-xs font-black transition-all ${actionClass}`}
                 aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
               >
-                {isLight ? '🌙' : '☀️'}
+                {isLight ? <MoonIcon /> : <SunIcon />}
               </button>
               <button
                 type="button"
@@ -223,6 +248,13 @@ const Season1Page: React.FC = () => {
                 <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s6Title}</h2>
                 <ul className="list-disc ml-5 space-y-2">
                   {t.s6.map(item => <li key={item}>{item}</li>)}
+                </ul>
+              </section>
+
+              <section className="rounded-3xl border border-zinc-200/80 bg-zinc-50/60 p-6 dark:border-zinc-800/60 dark:bg-zinc-900/30">
+                <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s7Title}</h2>
+                <ul className="list-disc ml-5 space-y-2">
+                  {t.s7.map(item => <li key={item}>{item}</li>)}
                 </ul>
               </section>
             </div>

@@ -39,6 +39,16 @@
         html.dark h1, html.dark h2, html.dark h3 { color: #bfdbfe !important; }
         html.dark p, html.dark li { color: #cbd5e1; }
         html.dark section { border-color: rgba(30,64,175,0.35) !important; background-color: rgba(15,23,42,0.45) !important; }
+        html.dark p.text-blue-500 { color: rgb(59 130 246) !important; }
+        html.dark [data-theme-toggle],
+        html.dark [data-lang-toggle] {
+            border-color: #3f3f46;
+            background: #18181b;
+            color: #e4e4e7;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+        }
+        html.dark [data-theme-toggle]:hover,
+        html.dark [data-lang-toggle]:hover { border-color: #3b82f6; }
     </style>
 </head>
 <body class="text-zinc-800 font-sans leading-relaxed">
@@ -57,14 +67,14 @@
             <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] mb-2">Guitar Architect</p>
             <h1 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter mb-3">Política de Privacidade</h1>
             <p class="mt-3 text-zinc-500 font-bold uppercase text-[12px] md:text-sm tracking-[0.2em]">Tratamento de Dados e Privacidade dos Usuários</p>
-            <p class="mt-2 text-xs font-bold text-zinc-500 uppercase tracking-[0.2em]">Última atualização: 15 de junho de 2026</p>
         </div>
 
         <main class="content-card p-8 md:p-12 rounded-[40px] border border-zinc-200 shadow-2xl">
             <div class="space-y-8 text-sm md:text-base">
+                <p data-update-date class="text-[11px] text-zinc-400 -mt-2 mb-2">Última atualização: 15 de junho de 2026</p>
                 <section class="rounded-3xl border border-blue-100 bg-blue-50/70 p-6">
                     <p class="font-semibold text-zinc-900">O Guitar Architect respeita a sua privacidade e trata dados pessoais de acordo com a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018 — LGPD).</p>
-                    <p class="mt-3">Esta política se aplica ao uso do app em <a href="https://www.guitararchitect.app.br" class="text-blue-600 underline font-bold">https://www.guitararchitect.app.br</a>.</p>
+                    <p class="mt-3">Esta política se aplica ao uso do app em <a href="https://guitararchitect.com.br" class="text-blue-600 underline font-bold">https://guitararchitect.com.br</a>.</p>
                 </section>
 
                 <section>
@@ -107,7 +117,26 @@
                 <section>
                     <h2 class="text-lg font-black uppercase tracking-tight text-zinc-900 mb-4">4. Finalidades e bases legais</h2>
                     <p>Tratamos dados para criar conta, autenticar, salvar e sincronizar projetos, instrumentos, perfil e preferências, registrar evolução, liberar conquistas, responder suporte, melhorar segurança e cumprir obrigações legais.</p>
-                    <p class="mt-3">As bases legais podem incluir execução de contrato, consentimento, legítimo interesse, cumprimento de obrigação legal e exercício regular de direitos.</p>
+                    <p class="mt-3">As bases legais aplicáveis, nos termos da LGPD, incluem:</p>
+                    <ul class="list-disc ml-5 space-y-2 mt-3">
+                        <li>
+                            <strong>Execução de contrato</strong> (art. 7º, V, LGPD): autenticação, criação e gestão de conta,
+                            sincronização em nuvem, funcionamento de recursos vinculados ao perfil do usuário.
+                        </li>
+                        <li>
+                            <strong>Legítimo interesse</strong> (art. 7º, IX, LGPD): segurança do sistema, prevenção a fraudes,
+                            detecção de abusos e melhoria contínua do serviço, observados os limites e direitos do titular.
+                        </li>
+                        <li>
+                            <strong>Cumprimento de obrigação legal ou regulatória</strong> (art. 7º, II, LGPD): atendimento a
+                            exigências impostas por lei, regulação ou decisão de autoridade competente.
+                        </li>
+                        <li>
+                            <strong>Consentimento</strong> (art. 7º, I, LGPD): comunicações opcionais, funcionalidades futuras
+                            ou tratamentos que dependam expressamente desta base, nos termos informados ao usuário no momento da
+                            coleta.
+                        </li>
+                    </ul>
                 </section>
 
                 <section>
@@ -166,7 +195,9 @@
         <footer class="legal-footer mt-16 border-t pt-8">
             <div class="flex flex-col items-center gap-4 text-center">
                 <div class="flex items-center gap-3">
-                    <img src="/Logo Guitar.webp" alt="Guitar Architect" class="h-10 w-10 object-contain" />
+                    <a href="/ecosystem" aria-label="Ir para o ecossistema Guitar Architect" class="inline-flex cursor-pointer rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                        <img src="/Logo Guitar.webp" alt="Guitar Architect" class="h-10 w-10 object-contain" />
+                    </a>
                     <p class="text-[10px] font-bold uppercase tracking-widest">
                         Guitar Architect<sup class="text-[8px]">™</sup> • DPDDA-tech
                     </p>
@@ -178,7 +209,7 @@
                     <a href="/legal/license.html">Licença</a>
                     <a href="/legal/help.html">Ajuda</a>
                 </nav>
-                <p class="w-full text-center text-[9px] font-bold uppercase tracking-widest opacity-80">Pedido de Registro no INPI nº 944083625 • © 2026 Guitar Architect</p>
+                <p class="w-full text-center text-[9px] font-bold uppercase tracking-widest opacity-80">Marca Mista Depositada no INPI • Processo Nº 944083625 • © 2026 Guitar Architect</p>
             </div>
         </footer>
     </div>
