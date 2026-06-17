@@ -1,18 +1,4 @@
 (() => {
-  const safeBackToApp = (fallbackPath = '/ecosystem') => {
-    try {
-      const ref = document.referrer;
-      if (ref) {
-        const refUrl = new URL(ref);
-        if (refUrl.origin === window.location.origin && window.history.length > 1) {
-          window.history.back();
-          return;
-        }
-      }
-    } catch {}
-    window.location.href = fallbackPath;
-  };
-
   const readConfig = () => {
     try {
       return JSON.parse(localStorage.getItem('ga_config') || '{}');
@@ -146,10 +132,6 @@
   const backLinks = document.querySelectorAll('[data-back-to-app]');
   backLinks.forEach(link => {
     link.textContent = lang === 'en' ? '← Back to App' : '← Voltar ao App';
-    link.addEventListener('click', event => {
-      event.preventDefault();
-      safeBackToApp(link.getAttribute('href') || '/ecosystem');
-    });
   });
 
   const h1 = document.querySelector('h1');

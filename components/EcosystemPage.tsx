@@ -167,6 +167,14 @@ const EcosystemPage: React.FC = () => {
             );
           })}
         </div>
+
+        <button
+          type="button"
+          onClick={() => navigateTo('/brand')}
+          className={`mx-auto mb-2 inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all max-lg:landscape:hidden ${actionClass}`}
+        >
+          {lang === 'pt' ? 'Conheça nossa marca' : 'Discover our brand'}
+        </button>
       </div>
     </div>
 

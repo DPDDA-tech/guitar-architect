@@ -27,6 +27,7 @@ import { listUnifiedActiveRewardGrantIds } from '../utils/supabaseRewardGrants';
 import { listStoredAdminRewardGrantIdsByEmail } from '../utils/adminRewardGrantStorage';
 import { getGlobalLang, getGlobalTheme, setGlobalLang, setGlobalTheme } from '../utils/ecosystemPreferences';
 import SupportModal from './SupportModal';
+import AppFooter from './AppFooter';
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
 
@@ -1063,6 +1064,9 @@ const ThemeCollectionPage: React.FC = () => {
           </button>
         </div>
       </main>
+
+      <AppFooter isLight={isLight} lang={lang} logoSrc="/logogastudio.webp" logoAlt="Guitar Architect Studio" compact />
+
       {previewTheme && (
         <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/82 p-4 backdrop-blur-xl" onClick={() => setPreviewTheme(null)}>
           <div className={`max-h-[92vh] w-full max-w-5xl overflow-auto rounded-3xl border p-4 shadow-2xl ${isLight ? 'border-slate-200 bg-white' : 'border-blue-900/60 bg-slate-950'}`} onClick={event => event.stopPropagation()}>

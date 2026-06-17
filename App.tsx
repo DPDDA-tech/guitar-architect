@@ -18,6 +18,7 @@ import { DevRewardGrantPanel } from './components/DevRewardGrantPanel';
 import AdminRewardsPage from './components/AdminRewardsPage';
 import EcosystemPage from './components/EcosystemPage';
 import Season1Page from './components/Season1Page';
+import BrandPage from './components/BrandPage';
 import KidsPage from './components/KidsPage';
 import KidsFirstStepsPage from './components/KidsFirstStepsPage';
 import KidsNotesPage from './components/KidsNotesPage';
@@ -172,6 +173,8 @@ const App: React.FC = () => {
       case '/admin/rewards': return <AdminRewardsPage />;
       case '/ecosystem': return <EcosystemPage />;
       case '/season-1': return <Season1Page />;
+      case '/brand': return <BrandPage />;
+      case '/nossa-marca': return <BrandPage />;
       case '/kids': return <KidsPage />;
       case '/kids/first-steps': return <KidsFirstStepsPage />;
       case '/kids/notes': return <KidsNotesPage />;

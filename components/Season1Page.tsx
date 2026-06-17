@@ -67,8 +67,19 @@ const Season1Page: React.FC = () => {
     : 'border-zinc-700 bg-zinc-900 text-zinc-200 shadow-[0_0_0_1px_rgba(255,255,255,0.04)] hover:border-blue-500';
 
   const cardClass = isLight
-    ? 'border-zinc-200 bg-white/85'
-    : 'border-zinc-800 bg-zinc-900/70';
+    ? 'border-zinc-200 bg-white/95 shadow-2xl'
+    : 'border-[rgba(30,64,175,0.45)] bg-[rgba(7,17,31,0.96)] shadow-[0_24px_80px_rgba(0,0,0,0.55)]';
+
+  const panelClass = isLight
+    ? 'border-zinc-200 bg-white'
+    : 'border-[rgba(30,64,175,0.4)] bg-[rgba(10,20,36,0.92)] shadow-[0_12px_40px_rgba(0,0,0,0.45)]';
+
+  const accentPanelClass = isLight
+    ? 'border-blue-200/60 bg-blue-50/60'
+    : 'border-[rgba(30,64,175,0.4)] bg-[rgba(10,20,36,0.92)] shadow-[0_12px_40px_rgba(0,0,0,0.45)]';
+
+  const accentTextClass = isLight ? 'text-blue-700' : 'text-blue-300';
+  const accentValueClass = isLight ? 'text-blue-600' : 'text-blue-400';
 
   const t = (lang === 'pt'
     ? {
@@ -193,7 +204,7 @@ const Season1Page: React.FC = () => {
 
           <div className="text-center mb-10">
             <p className="mb-2 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">
-              {lang === 'pt' ? 'Temporada 1 / Season 1' : 'Season 1 / Temporada 1'}
+              Guitar Architect
             </p>
             <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter">
               {t.title.toUpperCase()}
@@ -203,7 +214,7 @@ const Season1Page: React.FC = () => {
             </p>
           </div>
 
-          <div className={`rounded-[40px] border p-8 md:p-12 shadow-2xl ${cardClass}`}>
+          <div className={`rounded-[40px] border p-8 md:p-12 ${cardClass}`}>
             <div className="space-y-8 text-sm md:text-base">
               <section>
                 <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s1Title}</h2>
@@ -226,8 +237,8 @@ const Season1Page: React.FC = () => {
                 </ol>
               </section>
 
-              <section className="rounded-3xl border border-blue-200/60 bg-blue-50/60 p-6 dark:border-blue-900/40 dark:bg-blue-950/20">
-                <h2 className="text-lg font-black uppercase tracking-tight mb-2 text-blue-700 dark:text-blue-400">{t.s3Title}</h2>
+              <section className={`rounded-3xl border p-6 ${accentPanelClass}`}>
+                <h2 className={`text-lg font-black uppercase tracking-tight mb-2 ${accentTextClass}`}>{t.s3Title}</h2>
                 <p className="font-bold">{t.s3}</p>
               </section>
 
@@ -236,11 +247,11 @@ const Season1Page: React.FC = () => {
                 <p>{t.s4}</p>
               </section>
 
-              <section id="season-1-payment-info" className={`rounded-2xl border p-6 ${cardClass}`}>
+              <section id="season-1-payment-info" className={`rounded-2xl border p-6 ${panelClass}`}>
                 <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s5Title}</h2>
                 <div className="space-y-2 font-bold">
-                  <p>{t.pix} <span className="text-blue-600 dark:text-blue-400">{SUPPORTER_PIX_KEY}</span></p>
-                  <p>{t.contact} <span className="text-blue-600 dark:text-blue-400">{SUPPORTER_CONTACT_EMAIL}</span></p>
+                  <p>{t.pix} <span className={accentValueClass}>{SUPPORTER_PIX_KEY}</span></p>
+                  <p>{t.contact} <span className={accentValueClass}>{SUPPORTER_CONTACT_EMAIL}</span></p>
                 </div>
               </section>
 
@@ -251,7 +262,7 @@ const Season1Page: React.FC = () => {
                 </ul>
               </section>
 
-              <section className="rounded-3xl border border-zinc-200/80 bg-zinc-50/60 p-6 dark:border-zinc-800/60 dark:bg-zinc-900/30">
+              <section className={`rounded-3xl border p-6 ${panelClass}`}>
                 <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s7Title}</h2>
                 <ul className="list-disc ml-5 space-y-2">
                   {t.s7.map(item => <li key={item}>{item}</li>)}
