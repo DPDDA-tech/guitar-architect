@@ -2,6 +2,9 @@
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
+import { getNoteAt } from '../music/musicTheory';
+import { getScaleNotes } from '../music/scales';
+import { getFrequencyForPosition } from '../utils/audio';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 import AppFooter from './AppFooter';
@@ -20,44 +23,70 @@ type PathPattern = {
   sequence: CellId[];
 };
 
+type PathConfig = {
+  id: string;
+  title: string;
+  root: string;
+  scaleType: string;
+};
+
 const STRINGS = ['E', 'A', 'D', 'G', 'B', 'E'];
 const FRETS = [0, 1, 2, 3, 4, 5, 6, 7];
 const NOTE_ORDER = ['C', 'D', 'E', 'F', 'G', 'A', 'B'] as const;
 type ScaleNote = typeof NOTE_ORDER[number];
 
-const NOTE_FREQ: Record<ScaleNote, number> = {
-  C: 261.63,
-  D: 293.66,
-  E: 329.63,
-  F: 349.23,
-  G: 392,
-  A: 440,
-  B: 493.88,
-};
-
-const OPEN_NOTES = ['E', 'A', 'D', 'G', 'B', 'E'] as const;
-const CHROMATIC = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const;
+// Tuning usado para localizar notas reais via music/musicTheory.getNoteAt — fonte única de verdade.
+const OPEN_NOTES = ['E', 'A', 'D', 'G', 'B', 'E'];
 const SCALE_SET = new Set(NOTE_ORDER);
 const REGION_STRINGS = new Set([3, 4, 5]);
 const REGION_FRETS = new Set([1, 2, 3, 4, 5]);
+const REGION_STRING_LIST = Array.from(REGION_STRINGS).sort((a, b) => a - b);
+const REGION_FRET_LIST = Array.from(REGION_FRETS).sort((a, b) => a - b);
 
-const PATHS: PathPattern[] = [
-  {
-    id: 'am-pentatonic',
-    title: 'Am Pentatônica',
-    sequence: ['s3f2', 's4f1', 's4f3', 's4f5', 's5f3', 's5f5', 's4f5', 's4f3'],
-  },
-  {
-    id: 'c-major',
-    title: 'C Maior',
-    sequence: ['s4f1', 's4f3', 's4f5', 's5f1', 's5f3', 's5f5', 's3f4', 's4f1'],
-  },
-  {
-    id: 'am-natural',
-    title: 'Am Natural',
-    sequence: ['s3f2', 's3f4', 's4f1', 's4f3', 's4f5', 's5f1', 's5f3', 's5f5'],
-  },
+// Varre a região (cordas x casas) e mantém apenas as células cuja nota real pertence à escala
+// (music/scales.getScaleNotes), preservando uma ordem pedagógica simples: corda a corda, casa a casa.
+const generateScaleHunterPath = ({
+  root,
+  scaleType,
+  strings,
+  frets,
+}: {
+  root: string;
+  scaleType: string;
+  strings: number[];
+  frets: number[];
+}): CellId[] => {
+  const scaleNotes = new Set(getScaleNotes(root, scaleType));
+  const sequence: CellId[] = [];
+
+  for (const stringIdx of strings) {
+    for (const fret of frets) {
+      const note = getNoteAt(stringIdx, fret, OPEN_NOTES);
+      if (scaleNotes.has(note)) {
+        sequence.push(`s${stringIdx}f${fret}` as CellId);
+      }
+    }
+  }
+
+  return sequence;
+};
+
+const PATH_CONFIGS: PathConfig[] = [
+  { id: 'am-pentatonic', title: 'Am Pentatônica', root: 'A', scaleType: 'Pentatonic Minor' },
+  { id: 'c-major', title: 'C Maior', root: 'C', scaleType: 'Major (Ionian)' },
+  { id: 'am-natural', title: 'Am Natural', root: 'A', scaleType: 'Natural Minor (Aeolian)' },
 ];
+
+const PATHS: PathPattern[] = PATH_CONFIGS.map((config) => ({
+  id: config.id,
+  title: config.title,
+  sequence: generateScaleHunterPath({
+    root: config.root,
+    scaleType: config.scaleType,
+    strings: REGION_STRING_LIST,
+    frets: REGION_FRET_LIST,
+  }),
+}));
 
 const LENGTH_BY_DIFFICULTY: Record<Difficulty, number> = {
   easy: 4,
@@ -71,13 +100,8 @@ const XP_BY_DIFFICULTY: Record<Difficulty, number> = {
   hard: 30,
 };
 
-const getChromaticNote = (open: string, fret: number): string => {
-  const openIndex = CHROMATIC.indexOf(open as (typeof CHROMATIC)[number]);
-  if (openIndex === -1) return open;
-  return CHROMATIC[(openIndex + fret) % CHROMATIC.length];
-};
-
-const normalizeNote = (note: string): ScaleNote | null => {
+// Letra natural exibida na célula (mantém a simplificação visual já existente, sem acidentes).
+const toDisplayLetter = (note: string): ScaleNote | null => {
   const normalized = note.replace('#', '');
   if (!SCALE_SET.has(normalized as ScaleNote)) return null;
   return normalized as ScaleNote;
@@ -116,8 +140,8 @@ const TeenScaleHunterPage: React.FC = () => {
     if (!match) return null;
     const stringIndex = Number(match[1]);
     const fret = Number(match[2]);
-    const chromatic = getChromaticNote(OPEN_NOTES[stringIndex], fret);
-    return normalizeNote(chromatic);
+    const chromatic = getNoteAt(stringIndex, fret, OPEN_NOTES);
+    return toDisplayLetter(chromatic);
   };
 
   const getAudioCtx = async () => {
@@ -129,8 +153,11 @@ const TeenScaleHunterPage: React.FC = () => {
   };
 
   const playCellNote = async (cellId: CellId, duration = 0.2) => {
-    const note = cellToNote(cellId);
-    if (!note) return;
+    const match = cellId.match(/^s(\d+)f(\d+)$/);
+    if (!match) return;
+    const stringIndex = Number(match[1]);
+    const fret = Number(match[2]);
+    const frequency = getFrequencyForPosition('guitar-6', OPEN_NOTES, stringIndex, fret);
     const ctx = await getAudioCtx();
     if (!ctx) return;
 
@@ -139,7 +166,7 @@ const TeenScaleHunterPage: React.FC = () => {
     const gain = ctx.createGain();
 
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(NOTE_FREQ[note], now);
+    osc.frequency.setValueAtTime(frequency, now);
     gain.gain.setValueAtTime(0.0001, now);
     gain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
@@ -304,7 +331,9 @@ const TeenScaleHunterPage: React.FC = () => {
                 <div key={`fret-${fret}`} className="text-center text-[10px] font-black opacity-50">{fret}</div>
               ))}
 
-              {STRINGS.map((label, stringIdx) => (
+              {STRINGS.map((_, displayRow) => STRINGS.length - 1 - displayRow).map((stringIdx) => {
+                const label = STRINGS[stringIdx];
+                return (
                 <React.Fragment key={`string-${label}-${stringIdx}`}>
                   <div className="text-[10px] font-black uppercase opacity-70 self-center">{label}</div>
                   {FRETS.map((fret) => {
@@ -338,7 +367,8 @@ const TeenScaleHunterPage: React.FC = () => {
                     );
                   })}
                 </React.Fragment>
-              ))}
+                );
+              })}
             </div>
           </div>
 
