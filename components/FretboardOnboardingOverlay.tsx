@@ -25,7 +25,7 @@ export const FretboardOnboardingOverlay: React.FC<FretboardOnboardingOverlayProp
     <aside
       className={`
         fixed z-[82] pointer-events-auto
-        right-3 left-3 bottom-3
+        right-3 left-3 bottom-20
         md:left-auto md:right-10 md:bottom-10 md:w-[340px]
         rounded-2xl border p-4
         shadow-[0_16px_36px_rgba(2,6,23,0.22)]

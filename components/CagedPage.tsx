@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { translations, Lang } from '../i18n';
 import {
   CAGED_MODULES,
@@ -405,16 +405,15 @@ const PanelSurface = ({
 const CagedPage: React.FC = () => {
   const [lang, setLang] = useState<Lang>(() => getInitialConfig()?.lang || 'pt');
   const [theme, setTheme] = useState<ThemeMode>(() => getInitialConfig()?.theme || 'dark');
-  const [activeModuleId, setActiveModuleId] = useState(CAGED_MODULES[0].id);
+  const [expandedModuleId, setExpandedModuleId] = useState(CAGED_MODULES[0].id);
   const [activeOverlays, setActiveOverlays] = useState<CagedOverlay[]>(['shape', 'tonic']);
   const isLight = theme === 'light';
   const t = translations[lang].harmonicCycle;
   const copy = cagedCopy[lang];
-  const activeModule = useMemo(
-    () => CAGED_MODULES.find(module => module.id === activeModuleId) || CAGED_MODULES[0],
-    [activeModuleId],
-  );
-  const activeModuleCopy = getCagedModuleCopy(activeModule, lang);
+
+  const toggleModule = (moduleId: string) => {
+    setExpandedModuleId(prev => (prev === moduleId ? '' : moduleId));
+  };
   const pageBackgroundStyle = isLight
     ? {
       backgroundColor: '#edf3f8',
@@ -524,134 +523,153 @@ const CagedPage: React.FC = () => {
       </header>
 
       <main className="mx-auto max-w-[1700px] px-4 py-7">
-        <div className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
-          <PanelSurface isLight={isLight} className="p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{copy.mapTitle}</p>
-                <p className={`mt-2 text-sm font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{copy.mapSubtitle}</p>
-              </div>
-              <span className={`rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-800/60 bg-blue-950/30 text-blue-200'}`}>
-                {CAGED_MODULES.length} {copy.modules}
-              </span>
+        <PanelSurface isLight={isLight} className="p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{copy.mapTitle}</p>
+              <p className={`mt-2 text-sm font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{copy.mapSubtitle}</p>
             </div>
+            <span className={`rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-800/60 bg-blue-950/30 text-blue-200'}`}>
+              {CAGED_MODULES.length} {copy.modules}
+            </span>
+          </div>
 
-            <div className="mt-5 space-y-3">
-              {CAGED_MODULES.map(module => {
-                const active = module.id === activeModule.id;
-                const moduleCopy = getCagedModuleCopy(module, lang);
-                return (
+          <div className="mt-5 space-y-3">
+            {CAGED_MODULES.map(module => {
+              const isExpanded = module.id === expandedModuleId;
+              const moduleCopy = getCagedModuleCopy(module, lang);
+              return (
+                <div
+                  key={module.id}
+                  className={`overflow-hidden rounded-xl border transition duration-300 ${
+                    isExpanded
+                      ? 'border-blue-400'
+                      : isLight
+                        ? 'border-[#d4deea]'
+                        : 'border-blue-950/50'
+                  }`}
+                >
                   <button
-                    key={module.id}
-                    onClick={() => setActiveModuleId(module.id)}
-                    className={`group w-full rounded-xl border p-4 text-left transition duration-300 hover:-translate-y-0.5 ${
-                      active
-                        ? 'border-blue-400 bg-[linear-gradient(135deg,rgba(37,99,235,0.98),rgba(14,165,233,0.72))] text-white shadow-[0_18px_42px_rgba(37,99,235,0.26)]'
+                    type="button"
+                    onClick={() => toggleModule(module.id)}
+                    aria-expanded={isExpanded}
+                    aria-controls={`caged-module-${module.id}-content`}
+                    className={`group w-full p-4 text-left transition duration-300 hover:-translate-y-0.5 ${
+                      isExpanded
+                        ? 'bg-[linear-gradient(135deg,rgba(37,99,235,0.98),rgba(14,165,233,0.72))] text-white shadow-[0_18px_42px_rgba(37,99,235,0.26)]'
                         : isLight
-                          ? 'border-[#d4deea] bg-white/88 text-slate-900 shadow-[0_10px_32px_rgba(71,85,105,0.08)] hover:border-blue-300'
-                          : 'border-blue-950/50 bg-[#080d16]/82 text-slate-100 hover:border-blue-800/80'
+                          ? 'bg-white/88 text-slate-900 shadow-[0_10px_32px_rgba(71,85,105,0.08)] hover:border-blue-300'
+                          : 'bg-[#080d16]/82 text-slate-100 hover:border-blue-800/80'
                     }`}
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <span className={`text-[9px] font-black uppercase tracking-[0.16em] ${active ? 'text-blue-100' : 'text-zinc-500'}`}>
-                          {String(module.order).padStart(2, '0')} - {module.difficulty ? difficultyLabel[lang][module.difficulty] : copy.study}
+                      <div className="flex items-start gap-3">
+                        <span className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-black transition-transform duration-300 ${
+                          isExpanded
+                            ? 'border-white/40 bg-white/14 text-white rotate-180'
+                            : isLight
+                              ? 'border-blue-300 bg-blue-50 text-blue-700'
+                              : 'border-blue-800/60 bg-blue-950/40 text-blue-200'
+                        }`}>
+                          ▾
                         </span>
-                        <h2 className="mt-2 text-base font-black tracking-tight sm:text-lg">{moduleCopy.title}</h2>
-                        <p className={`mt-1.5 text-sm font-semibold leading-relaxed ${active ? 'text-blue-100' : isLight ? 'text-slate-500' : 'text-slate-400'}`}>{moduleCopy.subtitle}</p>
+                        <div>
+                          <span className={`text-[9px] font-black uppercase tracking-[0.16em] ${isExpanded ? 'text-blue-100' : 'text-zinc-500'}`}>
+                            {String(module.order).padStart(2, '0')} - {module.difficulty ? difficultyLabel[lang][module.difficulty] : copy.study}
+                          </span>
+                          <h2 className="mt-2 text-base font-black tracking-tight sm:text-lg">{moduleCopy.title}</h2>
+                          <p className={`mt-1.5 text-sm font-semibold leading-relaxed ${isExpanded ? 'text-blue-100' : isLight ? 'text-slate-500' : 'text-slate-400'}`}>{moduleCopy.subtitle}</p>
+                        </div>
                       </div>
-                      <span className={`w-fit rounded-full border px-2.5 py-1.5 text-[9px] font-black uppercase ${active ? 'border-white/30 bg-white/14 text-white' : isLight ? lightCategoryClasses[module.category] : categoryClasses[module.category]}`}>
+                      <span className={`w-fit rounded-full border px-2.5 py-1.5 text-[9px] font-black uppercase ${isExpanded ? 'border-white/30 bg-white/14 text-white' : isLight ? lightCategoryClasses[module.category] : categoryClasses[module.category]}`}>
                         {categoryLabels[lang][module.category]}
                       </span>
                     </div>
                   </button>
-                );
-              })}
-            </div>
-          </PanelSurface>
 
-          <PanelSurface isLight={isLight} className="p-5 sm:p-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{copy.panelTitle}</p>
-                <h2 className="mt-4 text-3xl font-black tracking-tight">{activeModuleCopy.title}</h2>
-                <p className={`mt-2 text-base font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{activeModuleCopy.subtitle}</p>
-              </div>
-              <span className={`w-fit rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? lightCategoryClasses[activeModule.category] : categoryClasses[activeModule.category]}`}>
-                {categoryLabels[lang][activeModule.category]}
-              </span>
-            </div>
-
-            <div className="mt-6 grid gap-4 lg:grid-cols-3">
-              {activeModule.blocks.map(block => {
-                const blockCopy = getCagedBlockCopy(activeModule.id, block, lang);
-                return (
-                <section key={block.id} className={`rounded-xl border p-5 ${isLight ? 'border-[#d2deeb] bg-white/86' : 'border-blue-950/50 bg-[#080d16]/80'}`}>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-300">{blockCopy.eyebrow}</p>
-                  {blockCopy.title && <h3 className="mt-2 text-lg font-black">{blockCopy.title}</h3>}
-                  <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>{blockCopy.body}</p>
-                  {blockCopy.examples && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {blockCopy.examples.map(example => (
-                        <span key={example} className={`rounded-lg border px-3 py-2 text-xs font-black ${isLight ? 'border-blue-200 bg-white text-blue-700' : 'border-blue-900/50 bg-[#080b11] text-blue-100'}`}>
-                          {example}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </section>
-              )})}
-            </div>
-
-            <div className={`mt-6 rounded-xl border p-5 ${isLight ? 'border-[#d3deeb] bg-[#eef4fb]' : 'border-blue-950/60 bg-blue-950/10'}`}>
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{copy.overlayTitle}</p>
-                  <p className={`mt-2 max-w-2xl text-sm font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                    {copy.overlayBody}
-                  </p>
-                </div>
-                <div className="flex max-w-3xl flex-wrap gap-2">
-                  {CAGED_OVERLAYS.map(overlay => {
-                    const active = activeOverlays.includes(overlay.id);
-                    const overlayCopy = lang === 'pt' ? overlay : { ...overlay, ...overlayTranslations[overlay.id] };
-                    return (
-                      <button
-                        key={overlay.id}
-                        onClick={() => toggleOverlay(overlay.id)}
-                        className={`rounded-lg border px-3 py-2 text-[9px] font-black uppercase transition ${
-                          active
-                            ? 'border-blue-400 bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)]'
-                            : isLight
-                              ? 'border-slate-200 bg-white text-slate-500'
-                              : 'border-blue-950/60 bg-[#070b12] text-slate-400'
-                        }`}
-                        title={overlayCopy.description}
-                      >
-                        {overlayCopy.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            <div className={`mt-6 rounded-xl border p-5 ${isLight ? 'border-[#d3deeb] bg-[#eef4fb]' : 'border-blue-950/60 bg-blue-950/10'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{copy.actionsTitle}</p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {activeModule.actions.map(action => (
-                  <button
-                    key={action.id}
-                    onClick={() => executeCagedAction(action, activeModule)}
-                    className={`${isLight ? 'border border-blue-400/30 bg-[linear-gradient(180deg,#4f8df3,#2563eb)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_12px_24px_rgba(37,99,235,0.22)]' : 'border border-blue-400/22 bg-[linear-gradient(180deg,#2e6af0,#1d4ed8)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_14px_28px_rgba(15,23,42,0.32)]'} rounded-xl px-4 py-3 text-[10px] font-black uppercase text-white transition hover:-translate-y-0.5`}
+                  <div
+                    id={`caged-module-${module.id}-content`}
+                    className={`grid transition-all duration-300 ease-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
                   >
-                    {lang === 'pt' ? action.label : cagedActionTranslations[action.id] || action.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </PanelSurface>
-        </div>
+                    <div className="overflow-hidden">
+                      <div className={`border-t p-4 sm:p-5 ${isLight ? 'border-[#d4deea]' : 'border-blue-950/50'}`}>
+                        <div className="grid gap-4 lg:grid-cols-3">
+                          {module.blocks.map(block => {
+                            const blockCopy = getCagedBlockCopy(module.id, block, lang);
+                            return (
+                              <section key={block.id} className={`rounded-xl border p-5 ${isLight ? 'border-[#d2deeb] bg-white/86' : 'border-blue-950/50 bg-[#080d16]/80'}`}>
+                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-300">{blockCopy.eyebrow}</p>
+                                {blockCopy.title && <h3 className="mt-2 text-lg font-black">{blockCopy.title}</h3>}
+                                <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>{blockCopy.body}</p>
+                                {blockCopy.examples && (
+                                  <div className="mt-4 flex flex-wrap gap-2">
+                                    {blockCopy.examples.map(example => (
+                                      <span key={example} className={`rounded-lg border px-3 py-2 text-xs font-black ${isLight ? 'border-blue-200 bg-white text-blue-700' : 'border-blue-900/50 bg-[#080b11] text-blue-100'}`}>
+                                        {example}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </section>
+                            );
+                          })}
+                        </div>
+
+                        <div className={`mt-6 rounded-xl border p-5 ${isLight ? 'border-[#d3deeb] bg-[#eef4fb]' : 'border-blue-950/60 bg-blue-950/10'}`}>
+                          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{copy.overlayTitle}</p>
+                              <p className={`mt-2 max-w-2xl text-sm font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                                {copy.overlayBody}
+                              </p>
+                            </div>
+                            <div className="flex max-w-3xl flex-wrap gap-2">
+                              {CAGED_OVERLAYS.map(overlay => {
+                                const overlayActive = activeOverlays.includes(overlay.id);
+                                const overlayCopy = lang === 'pt' ? overlay : { ...overlay, ...overlayTranslations[overlay.id] };
+                                return (
+                                  <button
+                                    key={overlay.id}
+                                    onClick={() => toggleOverlay(overlay.id)}
+                                    className={`rounded-lg border px-3 py-2 text-[9px] font-black uppercase transition ${
+                                      overlayActive
+                                        ? 'border-blue-400 bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)]'
+                                        : isLight
+                                          ? 'border-slate-200 bg-white text-slate-500'
+                                          : 'border-blue-950/60 bg-[#070b12] text-slate-400'
+                                    }`}
+                                    title={overlayCopy.description}
+                                  >
+                                    {overlayCopy.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className={`mt-6 rounded-xl border p-5 ${isLight ? 'border-[#d3deeb] bg-[#eef4fb]' : 'border-blue-950/60 bg-blue-950/10'}`}>
+                          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">{copy.actionsTitle}</p>
+                          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                            {module.actions.map(action => (
+                              <button
+                                key={action.id}
+                                onClick={() => executeCagedAction(action, module)}
+                                className={`${isLight ? 'border border-blue-400/30 bg-[linear-gradient(180deg,#4f8df3,#2563eb)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_12px_24px_rgba(37,99,235,0.22)]' : 'border border-blue-400/22 bg-[linear-gradient(180deg,#2e6af0,#1d4ed8)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_14px_28px_rgba(15,23,42,0.32)]'} rounded-xl px-4 py-3 text-[10px] font-black uppercase text-white transition hover:-translate-y-0.5`}
+                              >
+                                {lang === 'pt' ? action.label : cagedActionTranslations[action.id] || action.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </PanelSurface>
       </main>
       <AppFooter isLight={isLight} lang={lang} logoSrc="/logogastudio.webp" logoAlt="Guitar Architect Studio" compact />
     </div>

@@ -1649,6 +1649,14 @@ const handleReturnToContext = () => {
       return;
     }
 
+    const isMobileViewport =
+      window.innerWidth < 1024 ||
+      Boolean(window.matchMedia?.('(pointer: coarse)').matches && window.innerWidth < 1200);
+    if (isMobileViewport) {
+      setActiveOnboardingTip(null);
+      return;
+    }
+
     const hasSeen = window.localStorage.getItem(FRETBOARD_ONBOARDING_SEEN_KEY) === '1';
     const hasGuidedPractice = Boolean(activeGuidedPractice);
     const hasReturnContext = Boolean(returnContext);
@@ -1762,11 +1770,17 @@ const handleReturnToContext = () => {
         instructionTimeoutRef.current = window.setTimeout(() => setInstruction(null), pending.instruction.durationMs);
       }
     }
+    const isMobileViewport = typeof window !== 'undefined' && (
+      window.innerWidth < 1024 ||
+      Boolean(window.matchMedia?.('(pointer: coarse)').matches && window.innerWidth < 1200)
+    );
+    const shouldStartPanelsCollapsedOnMobile = isMobileViewport && (pending.source === 'learn' || pending.source === 'practice');
+
     const nextCoach = buildContextCoach(pending, lang);
     const nextCoachKey = buildContextCoachKey(nextCoach);
     const hasExplicitInstruction = Boolean(pending.instruction?.description);
     const duplicatesInstruction = isEquivalentInstructionAndCoach(pending.instruction || null, nextCoach);
-    if (!nextCoach || hasExplicitInstruction || duplicatesInstruction || (nextCoachKey && nextCoachKey === dismissedCoachKey)) {
+    if (shouldStartPanelsCollapsedOnMobile || !nextCoach || hasExplicitInstruction || duplicatesInstruction || (nextCoachKey && nextCoachKey === dismissedCoachKey)) {
       setActiveContextCoach(null);
     } else {
       setActiveContextCoach(nextCoach);
@@ -1792,7 +1806,7 @@ const handleReturnToContext = () => {
     }
     const isRelevantFeedbackAction = ['scale', 'field', 'triads', 'progression', 'startPractice'].includes(pending.action);
     const shouldSuppressExecutionFeedback = shouldUseGuidedPractice && pending.action === 'startPractice';
-    if (!nextFeedback || !isRelevantFeedbackAction || nextFeedbackKey === dismissedExecutionFeedbackKey || shouldSuppressExecutionFeedback) {
+    if (shouldStartPanelsCollapsedOnMobile || !nextFeedback || !isRelevantFeedbackAction || nextFeedbackKey === dismissedExecutionFeedbackKey || shouldSuppressExecutionFeedback) {
       setActiveExecutionFeedback(null);
       setExecutionFeedbackKey('');
       setExecutionFeedbackStepIndex(0);
@@ -2202,7 +2216,7 @@ const handleReturnToContext = () => {
             </button>
 
             <div className="min-w-0 flex-1 text-center">
-              <div className="truncate text-[12px] font-black italic uppercase tracking-tight text-blue-600">Guitar Architect</div>
+              <div className={`truncate text-[12px] font-black italic uppercase tracking-tight ${titleColorClass}`}>Guitar Architect</div>
               <input
                 value={projectName}
                 onChange={e => setProjectName(e.target.value)}
@@ -2285,8 +2299,8 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         <LogoIcon brand={displayedBrandAssets} />
       </button>
 
-      <div className="min-w-0">
-        <h1 className={`text-[16px] md:text-2xl font-black italic leading-none tracking-tighter uppercase truncate ${titleColorClass}`}>
+      <div className="min-w-[200px] md:min-w-[260px] shrink-0">
+        <h1 className={`text-[16px] md:text-2xl font-black italic leading-none tracking-tighter uppercase whitespace-nowrap ${titleColorClass}`}>
           GUITAR ARCHITECT
         </h1>
 
@@ -2317,7 +2331,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-col items-start gap-2 shrink-0">
+      <div className="hidden lg:flex min-w-0 flex-col items-start gap-2 overflow-hidden">
         {!isGuestMode && <PinnedProfileBadges isLight={isLight} />}
 
         <div className="flex items-center gap-2">
