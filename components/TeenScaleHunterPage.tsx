@@ -14,7 +14,10 @@ const navigateTo = (path: string) => {
   window.dispatchEvent(new Event('ga-route-change'));
 };
 
-type Difficulty = 'easy' | 'medium' | 'hard';
+// Modos de exercício — substituem o antigo corte arbitrário "easy/medium/hard" por algo
+// musicalmente real: subir a escala, descer a escala, subir-e-descer em loop, ou explorar
+// livremente dentro dela.
+type ExerciseMode = 'ascend' | 'descend' | 'roundtrip' | 'free';
 type CellId = `s${number}f${number}`;
 
 type ScaleHunterRegion = {
@@ -29,6 +32,8 @@ type PathPattern = {
   title: string;
   sequence: CellId[];
   region: ScaleHunterRegion;
+  root: string;
+  scaleType: string;
 };
 
 type PathConfig = {
@@ -47,18 +52,20 @@ type ScaleNote = typeof NOTE_ORDER[number];
 const OPEN_NOTES = ['E', 'A', 'D', 'G', 'B', 'E'];
 const SCALE_SET = new Set(NOTE_ORDER);
 
-// Regiões jogáveis (subconjuntos de cordas/casas). A região 1 é a mesma usada desde a Fase 1/2,
-// preservando a experiência atual; a região 2 é liberada a partir do rank Architect.
+// Regiões jogáveis (subconjuntos de cordas/casas). Usam as 6 cordas (braço completo, como no
+// Studio) — a restrição original a 3 cordas era herança das sequências hardcoded do Phase 0,
+// não uma decisão pedagógica. A região 2 é liberada a partir do rank Architect.
 const SCALE_HUNTER_REGIONS: ScaleHunterRegion[] = [
-  { id: 'r1', label: 'Região 1', strings: [3, 4, 5], frets: [1, 2, 3, 4, 5] },
-  { id: 'r2', label: 'Região 2', strings: [3, 4, 5], frets: [3, 4, 5, 6, 7] },
+  { id: 'r1', label: 'Região 1', strings: [0, 1, 2, 3, 4, 5], frets: [1, 2, 3, 4, 5] },
+  { id: 'r2', label: 'Região 2', strings: [0, 1, 2, 3, 4, 5], frets: [3, 4, 5, 6, 7] },
 ];
 const DEFAULT_REGION = SCALE_HUNTER_REGIONS[0];
 const REGION_STRING_LIST = DEFAULT_REGION.strings;
 const REGION_FRET_LIST = DEFAULT_REGION.frets;
 
 // Varre a região (cordas x casas) e mantém apenas as células cuja nota real pertence à escala
-// (music/scales.getScaleNotes), preservando uma ordem pedagógica simples: corda a corda, casa a casa.
+// (music/scales.getScaleNotes). Continua sendo só o coletor de células válidas — a ordem
+// musical (tônica, ascendente) é responsabilidade do pós-processamento abaixo.
 const generateScaleHunterPath = ({
   root,
   scaleType,
@@ -85,6 +92,68 @@ const generateScaleHunterPath = ({
   return sequence;
 };
 
+// Distância em semitons de cada corda em relação à corda 0 (mais grave), derivada do próprio
+// OPEN_NOTES via getNoteAt-equivalente (índice cromático) — sem hardcodar números "5,5,5,4,5".
+const STRING_PITCH_OFFSET: number[] = OPEN_NOTES.reduce<number[]>((offsets, note, index) => {
+  if (index === 0) return [0];
+  const prevIndex = CHROMATIC_SCALE.indexOf(OPEN_NOTES[index - 1]);
+  const currentIndex = CHROMATIC_SCALE.indexOf(note);
+  const step = ((currentIndex - prevIndex) + 12) % 12;
+  offsets.push(offsets[index - 1] + step);
+  return offsets;
+}, []);
+
+const getCellPitch = (cellId: CellId): number => {
+  const match = cellId.match(/^s(\d+)f(\d+)$/);
+  if (!match) return 0;
+  const stringIndex = Number(match[1]);
+  const fret = Number(match[2]);
+  return (STRING_PITCH_OFFSET[stringIndex] ?? 0) + fret;
+};
+
+// Reordena as células por altura musical real (não pela ordem de varredura corda/casa) e
+// remove duplicatas consecutivas de mesmo pitch absoluto (mesma nota, mesma oitava).
+const orderByPitch = (cells: CellId[]): CellId[] => {
+  const sorted = [...cells].sort((a, b) => getCellPitch(a) - getCellPitch(b));
+  const deduped: CellId[] = [];
+  let lastPitch: number | null = null;
+
+  for (const cell of sorted) {
+    const pitch = getCellPitch(cell);
+    if (pitch === lastPitch) continue;
+    deduped.push(cell);
+    lastPitch = pitch;
+  }
+
+  return deduped;
+};
+
+// Identifica se uma célula é a tônica (para dar um pequeno realce visual a ela no braço,
+// sem recortar nenhuma outra nota válida da escala — ver nota abaixo sobre anchorOnTonic).
+const isTonicCell = (cellId: CellId, root: string): boolean => {
+  const match = cellId.match(/^s(\d+)f(\d+)$/);
+  if (!match) return false;
+  return getNoteAt(Number(match[1]), Number(match[2]), OPEN_NOTES) === root;
+};
+
+// Junta o coletor de células (generateScaleHunterPath) com o pós-processamento pedagógico —
+// usado por todos os pontos que montam um caminho jogável (atalhos, sorteio e geração manual).
+//
+// Importante: NÃO recortamos mais o início da lista até a primeira tônica. Cortar ali descartava
+// notas da escala com pitch menor que a primeira tônica na região (ex.: a b7 abaixo da tônica),
+// fazendo-as desaparecer do caminho/realce mesmo sendo notas legítimas da escala — o braço deve
+// mostrar a escala inteira da região, começando na nota mais grave disponível, seja ela qual grau
+// for. A tônica é só marcada visualmente (isTonicCell), nunca usada para cortar a lista.
+const buildScaleHunterSequence = (params: {
+  root: string;
+  scaleType: string;
+  strings: number[];
+  frets: number[];
+}): CellId[] => {
+  const rawCells = generateScaleHunterPath(params);
+  return orderByPitch(rawCells);
+};
+
 // Os 3 caminhos fixos da Fase 1 continuam disponíveis como atalhos do nível inicial,
 // em qualquer rank — "Novo caminho" é quem varia por progressão (ver pools abaixo).
 const STARTER_PATH_CONFIGS: PathConfig[] = [
@@ -97,7 +166,9 @@ const STARTER_PATHS: PathPattern[] = STARTER_PATH_CONFIGS.map((config) => ({
   id: config.id,
   title: config.title,
   region: DEFAULT_REGION,
-  sequence: generateScaleHunterPath({
+  root: config.root,
+  scaleType: config.scaleType,
+  sequence: buildScaleHunterSequence({
     root: config.root,
     scaleType: config.scaleType,
     strings: REGION_STRING_LIST,
@@ -105,16 +176,28 @@ const STARTER_PATHS: PathPattern[] = STARTER_PATH_CONFIGS.map((config) => ({
   }),
 }));
 
-const LENGTH_BY_DIFFICULTY: Record<Difficulty, number> = {
-  easy: 4,
-  medium: 6,
-  hard: 8,
+// XP por modo concluído. Não depende mais de um corte de tamanho — o "tamanho" do exercício
+// é a escala real (curta numa pentatônica, mais longa numa escala de 7 notas), e quem varia é
+// o tipo de percurso: subir, descer, subir-e-descer (loop) ou explorar livremente.
+const XP_BY_MODE: Record<ExerciseMode, number> = {
+  ascend: 24,
+  descend: 24,
+  roundtrip: 32,
+  free: 30,
 };
 
-const XP_BY_DIFFICULTY: Record<Difficulty, number> = {
-  easy: 14,
-  medium: 22,
-  hard: 30,
+const EXERCISE_MODE_LABEL: Record<ExerciseMode, { pt: string; en: string }> = {
+  ascend: { pt: 'Subir', en: 'Ascend' },
+  descend: { pt: 'Descer', en: 'Descend' },
+  roundtrip: { pt: 'Subir e descer', en: 'Up & down' },
+  free: { pt: 'Livre', en: 'Free' },
+};
+
+const EXERCISE_MODE_INTRO: Record<ExerciseMode, { pt: string; en: string }> = {
+  ascend: { pt: 'Suba a escala a partir da nota mais grave da região, casa por casa, no seu instrumento.', en: 'Climb the scale from the lowest note in the region, fret by fret, on your instrument.' },
+  descend: { pt: 'Agora desça a mesma escala, do topo de volta até a base.', en: 'Now descend the same scale, from the top back down to the bottom.' },
+  roundtrip: { pt: 'Suba até o topo da escala e desça de volta, em um único ciclo contínuo.', en: 'Climb to the top of the scale and come back down, in one continuous loop.' },
+  free: { pt: 'Toque livremente dentro da escala destacada — sem ordem fixa.', en: 'Play freely inside the highlighted scale — no fixed order.' },
 };
 
 // Pool de combinações sorteáveis por "Novo caminho", liberado progressivamente por rank.
@@ -126,6 +209,7 @@ type ScalePoolEntry = {
 };
 
 const SCALE_DISPLAY_LABEL: Record<string, string> = {
+  'Pentatonic Major': 'Pentatônica Maior',
   'Pentatonic Minor': 'Pentatônica Menor',
   'Major (Ionian)': 'Maior',
   'Natural Minor (Aeolian)': 'Menor Natural',
@@ -136,6 +220,15 @@ const SCALE_DISPLAY_LABEL: Record<string, string> = {
   Phrygian: 'Phrygian',
   Locrian: 'Locrian',
 };
+
+// Fase 4 — seleção manual controlada: 4 tipos de escala e as 12 tônicas cromáticas,
+// liberadas desde o início (escolha consciente do usuário, não depende de rank).
+const MANUAL_SCALE_TYPES = ['Pentatonic Major', 'Pentatonic Minor', 'Major (Ionian)', 'Natural Minor (Aeolian)'];
+const MANUAL_ROOTS = [...CHROMATIC_SCALE];
+
+// Região continua liberada por rank mesmo na seleção manual: Rookie/Runner só veem Região 1.
+const getAvailableRegionsForRank = (rankId: string): ScaleHunterRegion[] =>
+  rankId === 'architect' || rankId === 'neon' ? SCALE_HUNTER_REGIONS : [DEFAULT_REGION];
 
 const ROOKIE_POOL: ScalePoolEntry[] = [
   { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: ['r1'] },
@@ -189,7 +282,7 @@ const RANK_POOL_SUMMARY: Record<string, { pt: string; en: string }> = {
 };
 
 // Sorteia uma combinação (root + escala + região) dentro do pool liberado pelo rank atual,
-// gera a sequência via generateScaleHunterPath e devolve um PathPattern pronto para jogar.
+// gera a sequência via buildScaleHunterSequence e devolve um PathPattern pronto para jogar.
 const generateRandomScaleHunterPath = (rankId: string): PathPattern => {
   const pool = SCALE_POOL_BY_RANK[rankId] ?? ROOKIE_POOL;
 
@@ -198,7 +291,7 @@ const generateRandomScaleHunterPath = (rankId: string): PathPattern => {
     const root = pickRandomItem(entry.roots);
     const regionId = pickRandomItem(entry.regionIds);
     const region = SCALE_HUNTER_REGIONS.find((candidate) => candidate.id === regionId) ?? DEFAULT_REGION;
-    const sequence = generateScaleHunterPath({
+    const sequence = buildScaleHunterSequence({
       root,
       scaleType: entry.scaleType,
       strings: region.strings,
@@ -211,6 +304,8 @@ const generateRandomScaleHunterPath = (rankId: string): PathPattern => {
         title: buildGeneratedPathTitle(root, entry.scaleType, region),
         sequence,
         region,
+        root,
+        scaleType: entry.scaleType,
       };
     }
   }
@@ -228,15 +323,18 @@ const toDisplayLetter = (note: string): ScaleNote | null => {
 const TeenScaleHunterPage: React.FC = () => {
   const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
   const [lang] = useState<'pt' | 'en'>(() => getTeensLang());
-  const [difficulty, setDifficulty] = useState<Difficulty>('easy');
+  const [mode, setMode] = useState<ExerciseMode>('ascend');
   const [currentPath, setCurrentPath] = useState<PathPattern>(STARTER_PATHS[0]);
   const [activeCell, setActiveCell] = useState<CellId | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [userInput, setUserInput] = useState<CellId[]>([]);
-  const [feedback, setFeedback] = useState(() => (lang === 'pt' ? 'Escolha um caminho e toque em Ouvir sequência.' : 'Choose a path and press Play sequence.'));
+  const [feedback, setFeedback] = useState(() => (lang === 'pt' ? 'Escolha um caminho, ouça a tônica e acompanhe no seu instrumento.' : 'Choose a path, listen for the root note and follow along on your instrument.'));
   const [streak, setStreak] = useState(0);
   const [combo, setCombo] = useState(0);
   const [xp, setXp] = useState<number>(() => getTeensXp());
+  const [manualRoot, setManualRoot] = useState<string>('C');
+  const [manualScaleType, setManualScaleType] = useState<string>(MANUAL_SCALE_TYPES[0]);
+  const [manualRegionId, setManualRegionId] = useState<string>(DEFAULT_REGION.id);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const playTokenRef = useRef(0);
@@ -245,7 +343,24 @@ const TeenScaleHunterPage: React.FC = () => {
   const isPt = lang === 'pt';
   const rankProgress = getRankProgress(xp);
 
-  const targetSequence = currentPath.sequence.slice(0, LENGTH_BY_DIFFICULTY[difficulty]);
+  // A escala completa (ordenada por pitch, começando na nota mais grave da região, seja ela
+  // qual grau for) é o próprio exercício — sem corte arbitrário de tamanho e sem recortar o
+  // início pela tônica. "Descer" é a mesma escala invertida; "Subir e descer" é um ciclo único
+  // (sobe até o topo e desce de volta, sem repetir a nota do topo duas vezes); "Livre" não tem
+  // ordem fixa, mas usa o conjunto ascendente como referência de quais notas pertencem à escala.
+  const ascendSequence = currentPath.sequence;
+  const descendSequence = [...ascendSequence].reverse();
+  const roundtripSequence = [...ascendSequence, ...descendSequence.slice(1)];
+  const targetSequence = mode === 'descend'
+    ? descendSequence
+    : mode === 'roundtrip'
+      ? roundtripSequence
+      : ascendSequence;
+
+  const availableManualRegions = getAvailableRegionsForRank(rankProgress.current.id);
+  const resolvedManualRegionId = availableManualRegions.some((region) => region.id === manualRegionId)
+    ? manualRegionId
+    : availableManualRegions[0].id;
 
   const gridStyle = {
     backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
@@ -311,8 +426,37 @@ const TeenScaleHunterPage: React.FC = () => {
 
     if (playTokenRef.current === token) {
       setIsPlaying(false);
-      setFeedback(isPt ? 'Sua vez: reproduza o caminho no braço.' : 'Your turn: reproduce the path on the fretboard.');
+      setFeedback(isPt ? 'Toque este caminho no seu instrumento e confirme no braço.' : 'Play this path on your instrument and confirm it on the fretboard.');
     }
+  };
+
+  // Modo Livre: não há ordem obrigatória — qualquer nota da escala conta, na ordem que o aluno
+  // quiser. "Concluído" aqui significa ter passado por todas as posições da escala na região.
+  const handleFreePick = (cellId: CellId) => {
+    const isInScale = currentPath.sequence.includes(cellId);
+
+    if (!isInScale) {
+      setCombo(0);
+      setFeedback(isPt ? 'Essa nota está fora da escala. Procure outra dentro do desenho destacado.' : 'That note is outside the scale. Look for one inside the highlighted shape.');
+      return;
+    }
+
+    setUserInput((prev) => {
+      if (prev.includes(cellId)) return prev;
+      const next = [...prev, cellId];
+      setCombo((v) => v + 1);
+
+      if (next.length === currentPath.sequence.length) {
+        const nextXp = addTeensXp(XP_BY_MODE.free);
+        setXp(nextXp);
+        setStreak((v) => v + 1);
+        setFeedback(isPt ? 'Você passou por toda a escala! Novo XP adicionado.' : 'You explored the whole scale! New XP added.');
+      } else {
+        setFeedback(isPt ? 'Boa! Continue explorando as notas da escala no instrumento.' : 'Nice! Keep exploring the scale notes on your instrument.');
+      }
+
+      return next;
+    });
   };
 
   const handlePickCell = async (cellId: CellId) => {
@@ -321,6 +465,11 @@ const TeenScaleHunterPage: React.FC = () => {
     setActiveCell(cellId);
     void playCellNote(cellId, 0.16);
     window.setTimeout(() => setActiveCell(null), 150);
+
+    if (mode === 'free') {
+      handleFreePick(cellId);
+      return;
+    }
 
     setUserInput((prev) => {
       const next = [...prev, cellId].slice(0, targetSequence.length);
@@ -333,13 +482,13 @@ const TeenScaleHunterPage: React.FC = () => {
       }
 
       if (next.length === targetSequence.length) {
-        const nextXp = addTeensXp(XP_BY_DIFFICULTY[difficulty]);
+        const nextXp = addTeensXp(XP_BY_MODE[mode]);
         setXp(nextXp);
         setStreak((v) => v + 1);
         setCombo((v) => v + 1);
         setFeedback(isPt ? 'Caminho concluído! Novo XP adicionado.' : 'Path completed! New XP added.');
       } else {
-        setFeedback('Boa leitura! Continue o caminho...');
+        setFeedback(isPt ? 'Boa! Continue acompanhando a escala no instrumento.' : 'Nice! Keep following the scale on your instrument.');
       }
 
       return next;
@@ -348,7 +497,24 @@ const TeenScaleHunterPage: React.FC = () => {
 
   const resetTry = () => {
     setUserInput([]);
-    setFeedback(isPt ? 'Tentativa limpa. Ouça a sequência novamente.' : 'Attempt cleared. Listen to the sequence again.');
+    setFeedback(isPt ? 'Tentativa limpa. Ouça a tônica e acompanhe de novo no instrumento.' : 'Attempt cleared. Listen for the root note and follow along again on your instrument.');
+  };
+
+  // Troca o caminho ativo E mantém os seletores de "Criar caminho" (Tônica/Escala/Região)
+  // sincronizados com o que está de fato em jogo — inclusive quando o caminho vem de um
+  // atalho fixo ou do sorteio por rank, não só da geração manual. Tônica/Escala só são
+  // sincronizadas quando o tipo sorteado está entre os 4 oferecidos no seletor manual
+  // (Blues/modos, sorteados em ranks mais altos, não têm opção lá — sincronizar geraria
+  // um <select> mostrando um valor que não existe na lista).
+  const applyPath = (path: PathPattern, message: string) => {
+    setCurrentPath(path);
+    if (MANUAL_SCALE_TYPES.includes(path.scaleType)) {
+      setManualRoot(path.root);
+      setManualScaleType(path.scaleType);
+    }
+    setManualRegionId(path.region.id);
+    setUserInput([]);
+    setFeedback(message);
   };
 
   const newChallenge = () => {
@@ -356,9 +522,34 @@ const TeenScaleHunterPage: React.FC = () => {
     if (next.id === currentPath.id) {
       next = generateRandomScaleHunterPath(rankProgress.current.id);
     }
-    setCurrentPath(next);
-    setUserInput([]);
-    setFeedback(isPt ? 'Novo caminho carregado. Ouça e reproduza.' : 'New path loaded. Listen and reproduce it.');
+    applyPath(next, isPt ? 'Novo caminho carregado. Observe a tônica e toque junto no instrumento.' : 'New path loaded. Spot the root note and play along on your instrument.');
+  };
+
+  const generateManualPath = () => {
+    const region = SCALE_HUNTER_REGIONS.find((candidate) => candidate.id === resolvedManualRegionId) ?? DEFAULT_REGION;
+    const sequence = buildScaleHunterSequence({
+      root: manualRoot,
+      scaleType: manualScaleType,
+      strings: region.strings,
+      frets: region.frets,
+    });
+
+    if (sequence.length === 0) {
+      setFeedback(isPt ? 'Essa combinação não tem notas nessa região. Tente outra tônica ou escala.' : 'That combination has no notes in this region. Try another root or scale.');
+      return;
+    }
+
+    applyPath(
+      {
+        id: `manual-${manualScaleType}-${manualRoot}-${region.id}`,
+        title: buildGeneratedPathTitle(manualRoot, manualScaleType, region),
+        sequence,
+        region,
+        root: manualRoot,
+        scaleType: manualScaleType,
+      },
+      isPt ? 'Caminho gerado. Observe a tônica e toque junto no instrumento.' : 'Path generated. Spot the root note and play along on your instrument.',
+    );
   };
 
   return (
@@ -373,8 +564,8 @@ const TeenScaleHunterPage: React.FC = () => {
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-3 md:grid-cols-3">
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Dificuldade</p>
-              <p className="mt-1 text-lg font-black">{difficulty.toUpperCase()} · {targetSequence.length} {isPt ? 'passos' : 'steps'}</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{isPt ? 'Modo' : 'Mode'}</p>
+              <p className="mt-1 text-lg font-black">{EXERCISE_MODE_LABEL[mode][lang]} · {targetSequence.length} {isPt ? 'notas' : 'notes'}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
               <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Caminho</p>
@@ -406,56 +597,97 @@ const TeenScaleHunterPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="mt-4 grid gap-2 sm:flex sm:flex-wrap">
-            {(['easy', 'medium', 'hard'] as Difficulty[]).map((item) => (
-              <button
-                key={item}
-                onClick={() => {
-                  setDifficulty(item);
-                  setUserInput([]);
-                  setFeedback(isPt ? 'Dificuldade ajustada. Ouça e reproduza.' : 'Difficulty adjusted. Listen and reproduce it.');
-                }}
-                className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${
-                  difficulty === item
-                    ? isLight
-                      ? 'border-violet-500 bg-violet-100 text-violet-900'
-                      : 'border-violet-400 bg-violet-500/15 text-violet-50'
-                    : isLight
-                      ? 'border-slate-300 bg-white hover:border-violet-400'
-                      : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-
           <div className="mt-4">
             <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
-              {isPt ? 'Atalhos iniciais' : 'Starter shortcuts'}
+              {isPt ? 'Modo de prática' : 'Practice mode'}
             </p>
             <div className="mt-2 grid gap-2 sm:flex sm:flex-wrap">
-              {STARTER_PATHS.map((path) => (
+              {(['ascend', 'descend', 'roundtrip', 'free'] as ExerciseMode[]).map((item) => (
                 <button
-                  key={path.id}
+                  key={item}
                   onClick={() => {
-                    setCurrentPath(path);
+                    setMode(item);
                     setUserInput([]);
-                    setFeedback(isPt ? 'Caminho selecionado. Ouça e reproduza.' : 'Path selected. Listen and reproduce it.');
+                    setFeedback(EXERCISE_MODE_INTRO[item][lang]);
                   }}
                   className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${
-                    currentPath.id === path.id
+                    mode === item
                       ? isLight
                         ? 'border-violet-500 bg-violet-100 text-violet-900'
-                        : 'border-violet-300 bg-violet-500/25 text-violet-50'
+                        : 'border-violet-400 bg-violet-500/15 text-violet-50'
                       : isLight
                         ? 'border-slate-300 bg-white hover:border-violet-400'
                         : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'
                   }`}
                 >
-                  {path.title}
+                  {EXERCISE_MODE_LABEL[item][lang]}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div className={`mt-4 rounded-2xl border p-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
+            <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
+              {isPt ? 'Criar caminho' : 'Create path'}
+            </p>
+            <p className={`mt-1 text-[10px] font-bold ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>
+              {isPt ? 'Escolha a tônica e a escala para montar seu próprio desafio.' : 'Pick a root and scale to build your own challenge.'}
+            </p>
+            <div className="mt-3 flex flex-wrap items-end gap-2">
+              <label className="flex flex-col gap-1">
+                <span className={`text-[9px] font-black uppercase ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{isPt ? 'Tônica' : 'Root'}</span>
+                <select
+                  value={manualRoot}
+                  onChange={(e) => setManualRoot(e.target.value)}
+                  className={`min-h-[40px] rounded-lg border px-3 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white text-slate-900' : 'border-zinc-700 bg-zinc-950 text-zinc-100'}`}
+                >
+                  {MANUAL_ROOTS.map((note) => (
+                    <option key={note} value={note}>{note}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="flex flex-col gap-1">
+                <span className={`text-[9px] font-black uppercase ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{isPt ? 'Escala' : 'Scale'}</span>
+                <select
+                  value={manualScaleType}
+                  onChange={(e) => setManualScaleType(e.target.value)}
+                  className={`min-h-[40px] rounded-lg border px-3 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white text-slate-900' : 'border-zinc-700 bg-zinc-950 text-zinc-100'}`}
+                >
+                  {MANUAL_SCALE_TYPES.map((scaleType) => (
+                    <option key={scaleType} value={scaleType}>{SCALE_DISPLAY_LABEL[scaleType] ?? scaleType}</option>
+                  ))}
+                </select>
+              </label>
+
+              {availableManualRegions.length > 1 ? (
+                <label className="flex flex-col gap-1">
+                  <span className={`text-[9px] font-black uppercase ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{isPt ? 'Região' : 'Region'}</span>
+                  <select
+                    value={resolvedManualRegionId}
+                    onChange={(e) => setManualRegionId(e.target.value)}
+                    className={`min-h-[40px] rounded-lg border px-3 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white text-slate-900' : 'border-zinc-700 bg-zinc-950 text-zinc-100'}`}
+                  >
+                    {availableManualRegions.map((region) => (
+                      <option key={region.id} value={region.id}>{region.label}</option>
+                    ))}
+                  </select>
+                </label>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  <span className={`text-[9px] font-black uppercase ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{isPt ? 'Região' : 'Region'}</span>
+                  <span className={`min-h-[40px] rounded-lg border px-3 py-2 text-xs font-black uppercase opacity-70 ${isLight ? 'border-slate-300 bg-white text-slate-700' : 'border-zinc-700 bg-zinc-950 text-zinc-300'}`}>
+                    {availableManualRegions[0].label}
+                  </span>
+                </div>
+              )}
+
+              <button
+                onClick={generateManualPath}
+                className={`min-h-[40px] rounded-lg border px-4 text-xs font-black uppercase ${isLight ? 'border-violet-500 bg-violet-100 text-violet-900 hover:bg-violet-200' : 'border-violet-400 bg-violet-500/15 text-violet-50 hover:bg-violet-500/25'}`}
+              >
+                {isPt ? 'Gerar caminho' : 'Generate path'}
+              </button>
             </div>
           </div>
 
@@ -477,10 +709,12 @@ const TeenScaleHunterPage: React.FC = () => {
                     const isTarget = targetSequence.includes(cellId);
                     const isActive = activeCell === cellId;
                     const wasPicked = userInput.includes(cellId);
+                    const isTonic = inRegion && isTonicCell(cellId, currentPath.root);
                     return (
                       <button
                         key={cellId}
                         onClick={() => void handlePickCell(cellId)}
+                        title={isTonic ? (isPt ? 'Tônica' : 'Root note') : undefined}
                         className={`h-10 rounded-lg border text-[9px] font-black transition-all ${
                           isActive
                             ? 'bg-violet-500 text-white border-violet-200 shadow-[0_0_18px_rgba(139,92,246,0.8)]'
@@ -495,7 +729,7 @@ const TeenScaleHunterPage: React.FC = () => {
                                 : isLight
                                   ? 'bg-slate-100 border-slate-200 text-slate-400'
                                   : 'bg-zinc-950 border-zinc-800 text-zinc-600'
-                        }`}
+                        } ${isTonic ? 'ring-2 ring-amber-400' : ''}`}
                       >
                         {inRegion ? cellToNote(cellId) ?? '-' : ''}
                       </button>
