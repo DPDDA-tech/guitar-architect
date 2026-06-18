@@ -1,8 +1,8 @@
-﻿import React, { useMemo, useRef, useState } from 'react';
+﻿import React, { useRef, useState } from 'react';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
-import { getNoteAt } from '../music/musicTheory';
+import { getNoteAt, CHROMATIC_SCALE } from '../music/musicTheory';
 import { getScaleNotes } from '../music/scales';
 import { getFrequencyForPosition } from '../utils/audio';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
@@ -17,10 +17,18 @@ const navigateTo = (path: string) => {
 type Difficulty = 'easy' | 'medium' | 'hard';
 type CellId = `s${number}f${number}`;
 
+type ScaleHunterRegion = {
+  id: string;
+  label: string;
+  strings: number[];
+  frets: number[];
+};
+
 type PathPattern = {
   id: string;
   title: string;
   sequence: CellId[];
+  region: ScaleHunterRegion;
 };
 
 type PathConfig = {
@@ -38,10 +46,16 @@ type ScaleNote = typeof NOTE_ORDER[number];
 // Tuning usado para localizar notas reais via music/musicTheory.getNoteAt — fonte única de verdade.
 const OPEN_NOTES = ['E', 'A', 'D', 'G', 'B', 'E'];
 const SCALE_SET = new Set(NOTE_ORDER);
-const REGION_STRINGS = new Set([3, 4, 5]);
-const REGION_FRETS = new Set([1, 2, 3, 4, 5]);
-const REGION_STRING_LIST = Array.from(REGION_STRINGS).sort((a, b) => a - b);
-const REGION_FRET_LIST = Array.from(REGION_FRETS).sort((a, b) => a - b);
+
+// Regiões jogáveis (subconjuntos de cordas/casas). A região 1 é a mesma usada desde a Fase 1/2,
+// preservando a experiência atual; a região 2 é liberada a partir do rank Architect.
+const SCALE_HUNTER_REGIONS: ScaleHunterRegion[] = [
+  { id: 'r1', label: 'Região 1', strings: [3, 4, 5], frets: [1, 2, 3, 4, 5] },
+  { id: 'r2', label: 'Região 2', strings: [3, 4, 5], frets: [3, 4, 5, 6, 7] },
+];
+const DEFAULT_REGION = SCALE_HUNTER_REGIONS[0];
+const REGION_STRING_LIST = DEFAULT_REGION.strings;
+const REGION_FRET_LIST = DEFAULT_REGION.frets;
 
 // Varre a região (cordas x casas) e mantém apenas as células cuja nota real pertence à escala
 // (music/scales.getScaleNotes), preservando uma ordem pedagógica simples: corda a corda, casa a casa.
@@ -71,15 +85,18 @@ const generateScaleHunterPath = ({
   return sequence;
 };
 
-const PATH_CONFIGS: PathConfig[] = [
+// Os 3 caminhos fixos da Fase 1 continuam disponíveis como atalhos do nível inicial,
+// em qualquer rank — "Novo caminho" é quem varia por progressão (ver pools abaixo).
+const STARTER_PATH_CONFIGS: PathConfig[] = [
   { id: 'am-pentatonic', title: 'Am Pentatônica', root: 'A', scaleType: 'Pentatonic Minor' },
   { id: 'c-major', title: 'C Maior', root: 'C', scaleType: 'Major (Ionian)' },
   { id: 'am-natural', title: 'Am Natural', root: 'A', scaleType: 'Natural Minor (Aeolian)' },
 ];
 
-const PATHS: PathPattern[] = PATH_CONFIGS.map((config) => ({
+const STARTER_PATHS: PathPattern[] = STARTER_PATH_CONFIGS.map((config) => ({
   id: config.id,
   title: config.title,
+  region: DEFAULT_REGION,
   sequence: generateScaleHunterPath({
     root: config.root,
     scaleType: config.scaleType,
@@ -100,6 +117,107 @@ const XP_BY_DIFFICULTY: Record<Difficulty, number> = {
   hard: 30,
 };
 
+// Pool de combinações sorteáveis por "Novo caminho", liberado progressivamente por rank.
+// Não é exibido como lista — apenas usado para sortear root + escala + região.
+type ScalePoolEntry = {
+  scaleType: string;
+  roots: string[];
+  regionIds: string[];
+};
+
+const SCALE_DISPLAY_LABEL: Record<string, string> = {
+  'Pentatonic Minor': 'Pentatônica Menor',
+  'Major (Ionian)': 'Maior',
+  'Natural Minor (Aeolian)': 'Menor Natural',
+  Blues: 'Blues',
+  Dorian: 'Dorian',
+  Mixolydian: 'Mixolydian',
+  Lydian: 'Lydian',
+  Phrygian: 'Phrygian',
+  Locrian: 'Locrian',
+};
+
+const ROOKIE_POOL: ScalePoolEntry[] = [
+  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: ['r1'] },
+];
+
+const RUNNER_POOL: ScalePoolEntry[] = [
+  ...ROOKIE_POOL,
+  { scaleType: 'Major (Ionian)', roots: ['C', 'G'], regionIds: ['r1'] },
+  { scaleType: 'Natural Minor (Aeolian)', roots: ['A', 'E'], regionIds: ['r1'] },
+];
+
+const ARCHITECT_POOL: ScalePoolEntry[] = [
+  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: ['r1', 'r2'] },
+  { scaleType: 'Major (Ionian)', roots: ['C', 'G'], regionIds: ['r1', 'r2'] },
+  { scaleType: 'Natural Minor (Aeolian)', roots: ['A', 'E'], regionIds: ['r1', 'r2'] },
+  { scaleType: 'Blues', roots: ['A', 'E'], regionIds: ['r1', 'r2'] },
+];
+
+// Neon Player libera os modos gregos principais com transposição livre (qualquer fundamental cromática).
+const NEON_PLAYER_POOL: ScalePoolEntry[] = [
+  ...ARCHITECT_POOL,
+  ...['Dorian', 'Mixolydian', 'Lydian', 'Phrygian', 'Locrian'].map((scaleType) => ({
+    scaleType,
+    roots: [...CHROMATIC_SCALE],
+    regionIds: ['r1', 'r2'],
+  })),
+];
+
+const SCALE_POOL_BY_RANK: Record<string, ScalePoolEntry[]> = {
+  rookie: ROOKIE_POOL,
+  runner: RUNNER_POOL,
+  architect: ARCHITECT_POOL,
+  neon: NEON_PLAYER_POOL,
+};
+
+const pickRandomItem = <T,>(items: T[]): T => items[Math.floor(Math.random() * items.length)];
+
+// Caminhos gerados sempre mostram a região no nome (ex.: "C Maior — Região 1"), para deixar
+// claro que vieram do sorteio por rank — diferente dos 3 atalhos fixos, que mantêm título simples.
+const buildGeneratedPathTitle = (root: string, scaleType: string, region: ScaleHunterRegion): string => {
+  const scaleLabel = SCALE_DISPLAY_LABEL[scaleType] ?? scaleType;
+  return `${root} ${scaleLabel} — ${region.label}`;
+};
+
+// Resumo discreto (uma linha) do pool liberado por rank — não lista escalas individualmente.
+const RANK_POOL_SUMMARY: Record<string, { pt: string; en: string }> = {
+  rookie: { pt: 'Rookie: Pentatônica menor', en: 'Rookie: Minor pentatonic' },
+  runner: { pt: 'Runner: Maior e menor natural', en: 'Runner: Major and natural minor' },
+  architect: { pt: 'Architect: Blues e regiões extras', en: 'Architect: Blues and extra regions' },
+  neon: { pt: 'Neon Player: Modos gregos', en: 'Neon Player: Greek modes' },
+};
+
+// Sorteia uma combinação (root + escala + região) dentro do pool liberado pelo rank atual,
+// gera a sequência via generateScaleHunterPath e devolve um PathPattern pronto para jogar.
+const generateRandomScaleHunterPath = (rankId: string): PathPattern => {
+  const pool = SCALE_POOL_BY_RANK[rankId] ?? ROOKIE_POOL;
+
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const entry = pickRandomItem(pool);
+    const root = pickRandomItem(entry.roots);
+    const regionId = pickRandomItem(entry.regionIds);
+    const region = SCALE_HUNTER_REGIONS.find((candidate) => candidate.id === regionId) ?? DEFAULT_REGION;
+    const sequence = generateScaleHunterPath({
+      root,
+      scaleType: entry.scaleType,
+      strings: region.strings,
+      frets: region.frets,
+    });
+
+    if (sequence.length > 0) {
+      return {
+        id: `generated-${entry.scaleType}-${root}-${region.id}`,
+        title: buildGeneratedPathTitle(root, entry.scaleType, region),
+        sequence,
+        region,
+      };
+    }
+  }
+
+  return STARTER_PATHS[0];
+};
+
 // Letra natural exibida na célula (mantém a simplificação visual já existente, sem acidentes).
 const toDisplayLetter = (note: string): ScaleNote | null => {
   const normalized = note.replace('#', '');
@@ -111,7 +229,7 @@ const TeenScaleHunterPage: React.FC = () => {
   const [theme] = useState<'light' | 'dark'>(() => getTeensTheme());
   const [lang] = useState<'pt' | 'en'>(() => getTeensLang());
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
-  const [selectedPathId, setSelectedPathId] = useState<string>(PATHS[0].id);
+  const [currentPath, setCurrentPath] = useState<PathPattern>(STARTER_PATHS[0]);
   const [activeCell, setActiveCell] = useState<CellId | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [userInput, setUserInput] = useState<CellId[]>([]);
@@ -127,8 +245,7 @@ const TeenScaleHunterPage: React.FC = () => {
   const isPt = lang === 'pt';
   const rankProgress = getRankProgress(xp);
 
-  const selectedPath = useMemo(() => PATHS.find((p) => p.id === selectedPathId) ?? PATHS[0], [selectedPathId]);
-  const targetSequence = selectedPath.sequence.slice(0, LENGTH_BY_DIFFICULTY[difficulty]);
+  const targetSequence = currentPath.sequence.slice(0, LENGTH_BY_DIFFICULTY[difficulty]);
 
   const gridStyle = {
     backgroundImage: `linear-gradient(${isLight ? 'rgba(148,163,184,0.35)' : 'rgba(139,92,246,0.18)'} 1px, transparent 1px)`,
@@ -235,9 +352,11 @@ const TeenScaleHunterPage: React.FC = () => {
   };
 
   const newChallenge = () => {
-    const pool = PATHS.filter((item) => item.id !== selectedPathId);
-    const next = pool[Math.floor(Math.random() * pool.length)] ?? PATHS[0];
-    setSelectedPathId(next.id);
+    let next = generateRandomScaleHunterPath(rankProgress.current.id);
+    if (next.id === currentPath.id) {
+      next = generateRandomScaleHunterPath(rankProgress.current.id);
+    }
+    setCurrentPath(next);
     setUserInput([]);
     setFeedback(isPt ? 'Novo caminho carregado. Ouça e reproduza.' : 'New path loaded. Listen and reproduce it.');
   };
@@ -259,7 +378,7 @@ const TeenScaleHunterPage: React.FC = () => {
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
               <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Caminho</p>
-              <p className="mt-1 text-lg font-black">{selectedPath.title}</p>
+              <p className="mt-1 text-lg font-black">{currentPath.title}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
               <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Streak / Combo</p>
@@ -277,6 +396,14 @@ const TeenScaleHunterPage: React.FC = () => {
             <div className={`mt-2 h-2 w-full rounded-full ${isLight ? 'bg-slate-200' : 'bg-zinc-800'}`}>
               <div className="h-2 rounded-full bg-gradient-to-r from-violet-500 via-violet-400 to-fuchsia-500 transition-all" style={{ width: `${rankProgress.percent}%` }} />
             </div>
+            <p className={`mt-2 text-[10px] font-bold uppercase tracking-tight ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
+              {isPt
+                ? RANK_POOL_SUMMARY[rankProgress.current.id]?.pt ?? RANK_POOL_SUMMARY.rookie.pt
+                : RANK_POOL_SUMMARY[rankProgress.current.id]?.en ?? RANK_POOL_SUMMARY.rookie.en}
+              {rankProgress.current.id === 'rookie'
+                ? ` · ${isPt ? 'Suba de rank para liberar novas escalas.' : 'Level up to unlock new scales.'}`
+                : ''}
+            </p>
           </div>
 
           <div className="mt-4 grid gap-2 sm:flex sm:flex-wrap">
@@ -301,34 +428,42 @@ const TeenScaleHunterPage: React.FC = () => {
                 {item}
               </button>
             ))}
-            {PATHS.map((path) => (
-              <button
-                key={path.id}
-                onClick={() => {
-                  setSelectedPathId(path.id);
-                  setUserInput([]);
-                  setFeedback(isPt ? 'Caminho selecionado. Ouça e reproduza.' : 'Path selected. Listen and reproduce it.');
-                }}
-                className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${
-                  selectedPathId === path.id
-                    ? isLight
-                      ? 'border-violet-500 bg-violet-100 text-violet-900'
-                      : 'border-violet-300 bg-violet-500/25 text-violet-50'
-                    : isLight
-                      ? 'border-slate-300 bg-white hover:border-violet-400'
-                      : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'
-                }`}
-              >
-                {path.title}
-              </button>
-            ))}
+          </div>
+
+          <div className="mt-4">
+            <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
+              {isPt ? 'Atalhos iniciais' : 'Starter shortcuts'}
+            </p>
+            <div className="mt-2 grid gap-2 sm:flex sm:flex-wrap">
+              {STARTER_PATHS.map((path) => (
+                <button
+                  key={path.id}
+                  onClick={() => {
+                    setCurrentPath(path);
+                    setUserInput([]);
+                    setFeedback(isPt ? 'Caminho selecionado. Ouça e reproduza.' : 'Path selected. Listen and reproduce it.');
+                  }}
+                  className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${
+                    currentPath.id === path.id
+                      ? isLight
+                        ? 'border-violet-500 bg-violet-100 text-violet-900'
+                        : 'border-violet-300 bg-violet-500/25 text-violet-50'
+                      : isLight
+                        ? 'border-slate-300 bg-white hover:border-violet-400'
+                        : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'
+                  }`}
+                >
+                  {path.title}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className={`mt-4 rounded-2xl border p-3 ${isLight ? 'border-slate-300 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
             <div className="grid gap-2" style={{ gridTemplateColumns: `72px repeat(${FRETS.length}, minmax(0, 1fr))` }}>
-              <div className="text-[10px] font-black uppercase opacity-60 self-center">Cordas</div>
+              <div className="pb-1 text-[10px] font-black uppercase opacity-60 self-center">Cordas</div>
               {FRETS.map((fret) => (
-                <div key={`fret-${fret}`} className="text-center text-[10px] font-black opacity-50">{fret}</div>
+                <div key={`fret-spacer-${fret}`} aria-hidden="true" />
               ))}
 
               {STRINGS.map((_, displayRow) => STRINGS.length - 1 - displayRow).map((stringIdx) => {
@@ -338,7 +473,7 @@ const TeenScaleHunterPage: React.FC = () => {
                   <div className="text-[10px] font-black uppercase opacity-70 self-center">{label}</div>
                   {FRETS.map((fret) => {
                     const cellId = `s${stringIdx}f${fret}` as CellId;
-                    const inRegion = REGION_STRINGS.has(stringIdx) && REGION_FRETS.has(fret);
+                    const inRegion = currentPath.region.strings.includes(stringIdx) && currentPath.region.frets.includes(fret);
                     const isTarget = targetSequence.includes(cellId);
                     const isActive = activeCell === cellId;
                     const wasPicked = userInput.includes(cellId);
@@ -369,6 +504,11 @@ const TeenScaleHunterPage: React.FC = () => {
                 </React.Fragment>
                 );
               })}
+
+              <div className="pt-1 text-[10px] font-black uppercase opacity-60 self-center">Casas</div>
+              {FRETS.map((fret) => (
+                <div key={`fret-${fret}`} className="pt-1 text-center text-[10px] font-black opacity-50">{fret}</div>
+              ))}
             </div>
           </div>
 
@@ -386,13 +526,9 @@ const TeenScaleHunterPage: React.FC = () => {
             </button>
             <button
               onClick={newChallenge}
-              className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${
-                isLight
-                  ? 'border-violet-500 bg-violet-100 text-violet-900 hover:bg-violet-200'
-                  : 'border-violet-300 bg-violet-500/25 text-violet-50 hover:bg-violet-500/35'
-              }`}
+              className="min-h-[44px] rounded-xl border border-violet-400/60 bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2 text-xs font-black uppercase text-center leading-tight text-white shadow-[0_10px_24px_rgba(139,92,246,0.35)] transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95"
             >
-              {isPt ? 'Novo desafio' : 'New challenge'}
+              {isPt ? 'Sortear novo caminho' : 'Roll a new path'}
             </button>
             <button
               onClick={resetTry}
@@ -401,6 +537,12 @@ const TeenScaleHunterPage: React.FC = () => {
               Limpar
             </button>
           </div>
+
+          <p className={`mt-2 text-[10px] font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
+            {isPt
+              ? 'Novos caminhos são sorteados conforme seu rank. O botão "Sortear novo caminho" libera escalas e regiões conforme seu progresso.'
+              : 'New paths are rolled based on your rank. The "Roll a new path" button unlocks scales and regions as you progress.'}
+          </p>
 
           <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-black ${isLight ? 'border-violet-200 bg-violet-50 text-violet-800' : 'border-violet-500/30 bg-violet-500/8 text-violet-200'}`}>
             {feedback}
