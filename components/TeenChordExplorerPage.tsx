@@ -13,6 +13,7 @@ import {
   type TeenChordInstrument,
   type TeenChordQuality,
 } from '../data/teenChordExplorer';
+import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -44,6 +45,10 @@ const TeenChordExplorerPage: React.FC = () => {
   const [quality, setQuality] = useState<TeenChordQuality>('major');
   const [shapeIndex, setShapeIndex] = useState(0);
   const [displayMode, setDisplayMode] = useState<ChordDiagramDisplayMode>('none');
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.CHORD_EXPLORER_USED);
+  }, []);
   const [visibleFrets, setVisibleFrets] = useState(15);
 
   const note = TEEN_CHROMATIC_NOTES[noteIndex];

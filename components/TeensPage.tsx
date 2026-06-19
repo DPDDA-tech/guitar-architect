@@ -1,9 +1,10 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { getTeensLang, getTeensTheme, setGlobalLang, setGlobalTheme } from '../utils/ecosystemPreferences';
 import { getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { TeensGarageSection } from './TeensGarageSection';
 import { TeensBasicCareSection } from './TeensBasicCareSection';
 import AppFooter from './AppFooter';
+import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -46,6 +47,11 @@ const GlobeIcon = () => (
 const TeensPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => getTeensTheme());
   const [lang, setLang] = useState<'pt' | 'en'>(() => getTeensLang());
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.TEENS_ACCESS);
+  }, []);
+
   const isLight = theme === 'light';
   const xp = getTeensXp();
   const rankProgress = getRankProgress(xp);

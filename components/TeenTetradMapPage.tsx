@@ -18,6 +18,7 @@ import {
   type TeenTetradRole,
 } from '../data/teenTetradMap';
 import type { FretboardState, Line, Marker, StringStatus } from '../types';
+import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
 const CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const;
 
@@ -371,6 +372,10 @@ const TeenTetradMapPage: React.FC = () => {
   const [activeGroupId, setActiveGroupId] = useState('all');
   const [highlight, setHighlight] = useState<TeenTetradInversion>('root');
   const [fretCount, setFretCount] = useState(15);
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.TETRAD_MAP_USED);
+  }, []);
   const [visualizationMode, setVisualizationMode] = useState<VisualizationMode>('intervals-shape');
   const [showQualityInfo, setShowQualityInfo] = useState(false);
   const isLight = theme === 'light';

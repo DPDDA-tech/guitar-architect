@@ -50,6 +50,17 @@ import { FretboardGuidedPractice, type FretboardGuidedPracticeData } from './Fre
 import { FretboardOnboardingOverlay, type FretboardOnboardingTip } from './FretboardOnboardingOverlay';
 import { generateChordVoicings, type ChordType } from '../music/chordLibrary';
 import { buildChordRenderState } from '../utils/chordDiagram';
+import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
+
+const PENDING_AUTH_MODE_KEY = 'ga_pending_auth_mode';
+
+const consumePendingOAuthCompletion = (): void => {
+  if (typeof window === 'undefined') return;
+  const pendingMode = window.sessionStorage.getItem(PENDING_AUTH_MODE_KEY);
+  if (!pendingMode) return;
+  window.sessionStorage.removeItem(PENDING_AUTH_MODE_KEY);
+  trackEvent(pendingMode === 'signup' ? AnalyticsEvents.SIGNUP_COMPLETED : AnalyticsEvents.LOGIN_COMPLETED, { method: 'google' });
+};
 import { getGlobalLang, getGlobalTheme, setGlobalLang, setGlobalTheme } from '../utils/ecosystemPreferences';
 
 const RETURN_CONTEXT_KEY = 'ga_fretboard_return_context';
@@ -674,6 +685,10 @@ const FretboardPanel: React.FC = () => {
   const [guidedPracticeKey, setGuidedPracticeKey] = useState('');
   const [guidedPracticeStepIndex, setGuidedPracticeStepIndex] = useState(0);
   const [dismissedGuidedPracticeKey, setDismissedGuidedPracticeKey] = useState('');
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.STUDIO_ACCESS);
+  }, []);
   const [activeOnboardingTip, setActiveOnboardingTip] = useState<FretboardOnboardingTip | null>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
@@ -892,6 +907,7 @@ const handleSupabaseAuth = async () => {
   );
 
   if (result.data.session) {
+    trackEvent(authMode === 'signup' ? AnalyticsEvents.SIGNUP_COMPLETED : AnalyticsEvents.LOGIN_COMPLETED, { method: 'password' });
     setShowLoginModal(false);
   }
 };
@@ -899,6 +915,10 @@ const handleSupabaseAuth = async () => {
 const handleGoogleAuth = async () => {
   setAuthStatus('loading');
   setAuthMessage('');
+
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.setItem(PENDING_AUTH_MODE_KEY, authMode === 'signup' ? 'signup' : 'login');
+  }
 
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -914,6 +934,9 @@ const handleGoogleAuth = async () => {
   if (error) {
     setAuthStatus('error');
     setAuthMessage(error.message);
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem(PENDING_AUTH_MODE_KEY);
+    }
   }
 };
 
@@ -1167,6 +1190,7 @@ useEffect(() => {
       recordAppLoyaltyVisit(new Date(), identity);
       recordAppAnniversaryVisit(new Date(), data.user.created_at, identity);
       void syncSupabaseSnapshot(data.user.id, data.user.id);
+      consumePendingOAuthCompletion();
       setShowLoginModal(false);
     }
   });
@@ -1187,6 +1211,7 @@ useEffect(() => {
         recordAppLoyaltyVisit(new Date(), identity);
         recordAppAnniversaryVisit(new Date(), session.user.created_at, identity);
         void syncSupabaseSnapshot(session.user.id, session.user.id);
+        consumePendingOAuthCompletion();
       }
 
       setShowLoginModal(false);
@@ -1802,6 +1827,9 @@ const handleReturnToContext = () => {
     const shouldUseGuidedPractice = Boolean(nextGuidedPractice && nextGuidedPractice.steps.length > 0 && nextGuidedPracticeKey !== dismissedGuidedPracticeKey);
     if (shouldUseGuidedPractice && nextGuidedPractice) {
       const nextStepIndex = nextGuidedPracticeKey === guidedPracticeKey ? guidedPracticeStepIndex : 0;
+      if (nextGuidedPracticeKey !== guidedPracticeKey) {
+        trackEvent(AnalyticsEvents.GUIDED_PRACTICE_STARTED, { practice_key: nextGuidedPracticeKey });
+      }
       setGuidedPracticeKey(nextGuidedPracticeKey);
       setGuidedPracticeStepIndex(nextStepIndex);
       setActiveGuidedPractice({

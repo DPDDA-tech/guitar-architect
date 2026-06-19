@@ -52,6 +52,7 @@ import { supabase } from './src/lib/supabase';
 import { hydrateSupporterFromServer } from './utils/supporterStorage';
 import { loadConfig } from './utils/persistence';
 import { cleanupStudioRuntime } from './utils/studioRuntime';
+import { initAnalytics, trackPageView } from './src/lib/analytics';
 
 const getCurrentPath = () => window.location.pathname;
 
@@ -59,6 +60,14 @@ const App: React.FC = () => {
   const [path, setPath] = useState(getCurrentPath());
   const [unlockedConstancyReward, setUnlockedConstancyReward] = useState<ConstancyReward | null>(null);
   const [syncTimestamp, setSyncTimestamp] = useState(0);
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
+  useEffect(() => {
+    trackPageView(path);
+  }, [path]);
 
   useEffect(() => {
     try {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getAchievementById, getRewardsForAchievement } from '../utils/achievementUtils';
 import { getTierDisplay } from '../utils/tierNomenclature';
 import type { Achievement } from '../types/achievement';
+import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
 const isTierOthersAsset = (path?: string | null) => Boolean(path?.includes('/tierothers/'));
 
@@ -35,6 +36,9 @@ const AchievementUnlockToast: React.FC = () => {
       if (!first) return;
       setAchievement(first);
       setExtraCount(Math.max(0, ids.length - 1));
+      achievements.forEach(item => {
+        trackEvent(AnalyticsEvents.COLLECTIBLE_UNLOCKED, { achievement_id: item.id });
+      });
       window.setTimeout(() => setAchievement(null), 5600);
     };
 

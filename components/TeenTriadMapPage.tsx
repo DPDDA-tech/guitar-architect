@@ -15,6 +15,7 @@ import {
 } from '../data/teenTriadMap';
 import type { TriadInversion, TriadQuality } from '../utils/triadLogic';
 import type { FretboardState, Line, Marker, StringStatus } from '../types';
+import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
 const CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const;
 
@@ -387,6 +388,10 @@ const TeenTriadMapPage: React.FC = () => {
   const [activeGroupId, setActiveGroupId] = useState('all');
   const [highlight, setHighlight] = useState<TeenTriadHighlight>('root');
   const [fretCount, setFretCount] = useState(15);
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.TRIAD_MAP_USED);
+  }, []);
   const [visualizationMode, setVisualizationMode] = useState<VisualizationMode>('intervals-shape');
   const isLight = theme === 'light';
   const note = CHROMATIC_NOTES[noteIndex];

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getKidsLang, getKidsTheme, setGlobalLang, setGlobalTheme } from '../utils/ecosystemPreferences';
 import AppFooter from './AppFooter';
+import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -31,6 +32,10 @@ const GlobeIcon = () => (
 const KidsPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => getKidsTheme());
   const [lang, setLang] = useState<'pt' | 'en'>(() => getKidsLang());
+
+  useEffect(() => {
+    trackEvent(AnalyticsEvents.KIDS_ACCESS);
+  }, []);
 
   const isLight = theme === 'light';
 
