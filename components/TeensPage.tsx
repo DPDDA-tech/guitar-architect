@@ -168,6 +168,27 @@ const TeensPage: React.FC = () => {
       unlockXp: 260,
     },
     {
+      title: { pt: 'Independência dos Dedos', en: 'Finger Independence' },
+      subtitle: lang === 'pt' ? 'Desenvolva coordenação, independência, alcance e precisão com exercícios progressivos.' : 'Build coordination, independence, reach and precision with progressive exercises.',
+      visual: (
+        <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
+          <path d="M20 14H220" stroke="#334155" strokeOpacity="0.28" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 24H220" stroke="#334155" strokeOpacity="0.24" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 34H220" stroke="#334155" strokeOpacity="0.2" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 44H220" stroke="#334155" strokeOpacity="0.18" strokeWidth="2" strokeLinecap="round" />
+          <path d="M20 54H220" stroke="#334155" strokeOpacity="0.14" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="56" cy="34" r="9" fill="none" stroke="#22d3ee" strokeWidth="2.5" />
+          <circle cx="56" cy="34" r="4" fill="#22d3ee" />
+          <circle cx="98" cy="24" r="4" fill="#a855f7" />
+          <circle cx="140" cy="44" r="4" fill="#f59e0b" />
+          <circle cx="182" cy="34" r="4" fill="#f472b6" />
+        </svg>
+      ),
+      available: true,
+      path: '/teens/independencia-dos-dedos',
+      unlockXp: 300,
+    },
+    {
       title: { pt: 'Mapa de Tétrades', en: 'Tetrad Map' },
       subtitle: lang === 'pt' ? 'Veja tétrades e inversões ligadas pelo braço inteiro.' : 'See tetrads and inversions connected across the full neck.',
       visual: (
@@ -319,8 +340,8 @@ const TeensPage: React.FC = () => {
           <button onClick={handleToggleLang} className={`rounded-xl border px-3 py-2 text-[11px] font-black uppercase ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/70 text-violet-200'}`}>{lang.toUpperCase()}</button>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-          {modules.slice(0, -1).map((module, idx) => {
+        <div className="flex flex-col gap-6 sm:flex-row sm:flex-wrap sm:justify-center mb-12">
+          {modules.map((module, idx) => {
             const cardTier = xp >= 620 ? 'tier-neon' : xp >= 320 ? 'tier-pulse' : xp >= 120 ? 'tier-trail' : 'tier-base';
             const tierClass = cardTier === 'tier-neon'
               ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-fuchsia-400/35 before:shadow-[0_0_35px_rgba(217,70,239,0.22)]'
@@ -336,7 +357,7 @@ const TeensPage: React.FC = () => {
                 disabled={!module.available}
                 onClick={() => module.available && navigateTo(module.path)}
                 style={{ animationDelay: `${idx * 150}ms` }}
-                className={`group relative overflow-hidden p-7 rounded-[36px] border backdrop-blur-md flex flex-col items-start text-left transition-all animate-in fade-in zoom-in-95 shadow-2xl ${module.available ? 'hover:border-violet-400 cursor-pointer' : 'cursor-not-allowed opacity-80'} ${isLight ? 'border-violet-200 bg-white/85 hover:bg-white' : 'border-violet-800/40 bg-zinc-950/40 hover:bg-zinc-900/60'} ${tierClass}`}
+                className={`group relative overflow-hidden p-7 rounded-[36px] border backdrop-blur-md flex flex-col items-start text-left transition-all animate-in fade-in zoom-in-95 shadow-2xl w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)] ${module.available ? 'hover:border-violet-400 cursor-pointer' : 'cursor-not-allowed opacity-80'} ${isLight ? 'border-violet-200 bg-white/85 hover:bg-white' : 'border-violet-800/40 bg-zinc-950/40 hover:bg-zinc-900/60'} ${tierClass}`}
               >
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1 w-12 rounded-b-full bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className={`mb-3 w-full rounded-2xl border px-3 py-2 ${isLight ? 'border-violet-200 bg-violet-50/70' : 'border-violet-500/25 bg-violet-900/20'}`}>{module.visual}</div>
@@ -350,41 +371,6 @@ const TeensPage: React.FC = () => {
               </button>
             );
           })}
-        </div>
-
-        <div className="flex flex-col gap-6 sm:flex-row sm:flex-wrap sm:justify-center mb-12">
-          {(() => {
-            const lastModule = modules[modules.length - 1];
-            const idx = modules.length - 1;
-            const cardTier = xp >= 620 ? 'tier-neon' : xp >= 320 ? 'tier-pulse' : xp >= 120 ? 'tier-trail' : 'tier-base';
-            const tierClass = cardTier === 'tier-neon'
-              ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-fuchsia-400/35 before:shadow-[0_0_35px_rgba(217,70,239,0.22)]'
-              : cardTier === 'tier-pulse'
-                ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-cyan-400/35 before:shadow-[0_0_26px_rgba(34,211,238,0.2)]'
-                : cardTier === 'tier-trail'
-                  ? 'before:absolute before:inset-0 before:rounded-[36px] before:border before:border-violet-400/30'
-                  : '';
-            return (
-              <button
-                key={lastModule.path}
-                type="button"
-                disabled={!lastModule.available}
-                onClick={() => lastModule.available && navigateTo(lastModule.path)}
-                style={{ animationDelay: `${idx * 150}ms` }}
-                className={`group relative overflow-hidden p-7 rounded-[36px] border backdrop-blur-md flex flex-col items-start text-left transition-all animate-in fade-in zoom-in-95 shadow-2xl w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)] ${lastModule.available ? 'hover:border-violet-400 cursor-pointer' : 'cursor-not-allowed opacity-80'} ${isLight ? 'border-violet-200 bg-white/85 hover:bg-white' : 'border-violet-800/40 bg-zinc-950/40 hover:bg-zinc-900/60'} ${tierClass}`}
-              >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1 w-12 rounded-b-full bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className={`mb-3 w-full rounded-2xl border px-3 py-2 ${isLight ? 'border-violet-200 bg-violet-50/70' : 'border-violet-500/25 bg-violet-900/20'}`}>{lastModule.visual}</div>
-                <h3 className="text-sm font-black uppercase tracking-[0.14em]">{lastModule.title[lang]}</h3>
-                <p className="mt-2 text-[11px] font-bold opacity-70">{lastModule.subtitle}</p>
-                {!lastModule.available && (
-                  <p className="mt-3 text-[9px] font-black opacity-40 tracking-[0.2em] group-hover:text-violet-400 transition-colors uppercase">
-                    {copy.locked}
-                  </p>
-                )}
-              </button>
-            );
-          })()}
           <TeensGarageSection isLight={isLight} lang={lang} />
           <TeensBasicCareSection isLight={isLight} lang={lang} />
         </div>
