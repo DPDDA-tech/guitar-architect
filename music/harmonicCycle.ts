@@ -111,7 +111,20 @@ export const getAccidentalPreference = (root: string, mode: HarmonicCycleMode): 
   const definition = MODE_DEFINITIONS[mode];
   if (root.includes('b')) return 'flat';
   if (root.includes('#')) return 'sharp';
-  if (mode === 'minor' || (definition.group === 'modal' && definition.intervals.length === 7)) {
+  // Natural minor roots can't reuse FLAT_KEY_ROOTS/SHARP_KEY_ROOTS directly:
+  // those sets list bare letters (e.g. 'D', 'G') once for the SHARP major key
+  // of that name and again for the FLAT minor key of that same name, so a
+  // plain root lookup collides (D/G minor are flat keys, but 'D'/'G' are also
+  // sharp major roots). The previous code instead respelled the relative
+  // major as a forced sharp before checking the sets, which collided the
+  // other way for C/F/G minor (relative major Eb/Ab/Bb respelled sharp as
+  // D#/G#/A# matched the *minor* sharp-root entries for those names). Natural
+  // minor keys are a fixed, small, well-known table — look them up directly.
+  if (mode === 'minor') {
+    const FLAT_NATURAL_MINOR_ROOTS = new Set(['C', 'D', 'F', 'G']);
+    return FLAT_NATURAL_MINOR_ROOTS.has(root) ? 'flat' : 'sharp';
+  }
+  if (definition.group === 'modal' && definition.intervals.length === 7) {
     const relativeMajor = noteName(transpose(root, 3), 'sharp');
     return FLAT_KEY_ROOTS.has(relativeMajor) && !SHARP_KEY_ROOTS.has(relativeMajor) ? 'flat' : 'sharp';
   }
