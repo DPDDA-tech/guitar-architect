@@ -213,6 +213,23 @@ const TeensPage: React.FC = () => {
       unlockXp: 270,
     },
     {
+      title: { pt: 'GPS dos Acordes', en: 'Chord GPS' },
+      subtitle: lang === 'pt' ? 'Descubra como os acordes se conectam dentro de uma tonalidade.' : 'Discover how chords connect within a key.',
+      visual: (
+        <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
+          <circle cx="120" cy="32" r="26" stroke="#7c3aed" strokeOpacity="0.35" strokeWidth="2" />
+          <circle cx="120" cy="32" r="10" fill="#f59e0b" opacity="0.9" />
+          <circle cx="120" cy="10" r="4" fill="#f59e0b" />
+          <circle cx="142" cy="44" r="4" fill="#ef4444" />
+          <circle cx="98" cy="44" r="4" fill="#8b5cf6" />
+          <path d="M120 14V24M138 41L128 36M102 41L112 36" stroke="#475569" strokeOpacity="0.5" strokeWidth="2" />
+        </svg>
+      ),
+      available: true,
+      path: '/teens/gps-dos-acordes',
+      unlockXp: 275,
+    },
+    {
       title: { pt: 'Construtor de Acordes', en: 'Chord Builder' },
       subtitle: lang === 'pt' ? 'Monte blocos harmônicos por sensação.' : 'Build harmonic blocks by feel.',
       visual: (
