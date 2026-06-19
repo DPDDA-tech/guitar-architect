@@ -16,6 +16,8 @@ import {
 } from '../utils/persistence';
 import { buildProjectFileName, parseProjectFile, serializeProjectFile } from '../utils/projectFile';
 import SupportModal from './SupportModal';
+import LogoutConfirmModal from './LogoutConfirmModal';
+import { useLogoutConfirm } from '../utils/useLogoutConfirm';
 import { BrandAssets, getBrandAssets } from '../utils/brandAssets';
 import MyInstruments from './MyInstruments';
 import { recordAchievementEvent, recordAppAnniversaryVisit, recordAppLoyaltyVisit } from '../utils/achievementEvents';
@@ -1299,6 +1301,13 @@ const handleLogout = async () => {
   }
 };
 
+const {
+  isOpen: showLogoutConfirm,
+  requestLogout,
+  cancelLogout,
+  confirmLogout,
+} = useLogoutConfirm(handleLogout);
+
 const handleReturnToContext = () => {
   if (!returnContext) return;
   const targetPath = returnContext.path;
@@ -2112,9 +2121,9 @@ const handleReturnToContext = () => {
         lang === 'pt' ? 'Conta' : 'Account',
         <div className={isMobileMenu ? 'space-y-2' : 'grid grid-cols-2 gap-2'}>
           <button onClick={() => openModulePage('/profile')} className={menuBtnClass}>{lang === 'pt' ? 'Perfil' : 'Profile'}</button>
-          <button onClick={() => { setShowProjectMenu(false); void handleLogout(); }} className={menuBtnClass}>{lang === 'pt' ? 'Trocar Conta' : 'Switch Account'}</button>
+          <button onClick={() => { setShowProjectMenu(false); requestLogout(); }} className={menuBtnClass}>{lang === 'pt' ? 'Trocar Conta' : 'Switch Account'}</button>
           {authUser ? (
-            <button onClick={handleLogout} className={`${menuBtnClass} ${!isMobileMenu ? 'col-span-2' : ''} ${isLight ? 'border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50' : 'border-red-950/70 text-red-300 hover:border-red-700 hover:bg-red-950/20'}`}>
+            <button onClick={requestLogout} className={`${menuBtnClass} ${!isMobileMenu ? 'col-span-2' : ''} ${isLight ? 'border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50' : 'border-red-950/70 text-red-300 hover:border-red-700 hover:bg-red-950/20'}`}>
               {lang === 'pt' ? 'Sair da Conta' : 'Log Out'}
             </button>
           ) : (
@@ -2203,7 +2212,7 @@ const handleReturnToContext = () => {
             <button
               onClick={() => {
                 if (authUser) {
-                  void handleLogout();
+                  requestLogout();
                 } else {
                   setShowLoginModal(true);
                 }
@@ -2348,7 +2357,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
           </span>
           {authUser ? (
             <button
-              onClick={handleLogout}
+              onClick={requestLogout}
               className={`text-[8px] md:text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tight active:scale-95 transition-all border ${isLight ? 'border-zinc-200 text-zinc-500 hover:border-red-300 hover:text-red-600' : 'border-zinc-700 text-zinc-400 hover:border-red-500 hover:text-red-400'}`}
             >
               LOGOFF
@@ -3119,6 +3128,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 )}
 
 <SupportModal isOpen={showSupportModal} onClose={() => setShowSupportModal(false)} isLight={theme === 'light'} lang={lang} />
+<LogoutConfirmModal isOpen={showLogoutConfirm} onConfirm={confirmLogout} onCancel={cancelLogout} isLight={isLight} lang={lang} />
 <MyInstruments
   isOpen={showMyInstruments}
   onClose={closeMyInstruments}

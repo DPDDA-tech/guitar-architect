@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../src/lib/supabase';
+import LogoutConfirmModal from './LogoutConfirmModal';
+import { useLogoutConfirm } from '../utils/useLogoutConfirm';
 import { isAdminEmail } from '../utils/adminAccess';
 import { getStoredAdminRewardGrants, type AdminRewardGrant } from '../utils/adminRewardGrantStorage';
 import { grantRewardToEmail, revokeRewardFromEmail } from '../utils/adminRewardActions';
@@ -275,6 +277,13 @@ const AdminRewardsPage: React.FC = () => {
     }
   };
 
+  const {
+    isOpen: showLogoutConfirm,
+    requestLogout,
+    cancelLogout,
+    confirmLogout,
+  } = useLogoutConfirm(handleLogout);
+
   if (loading || adminRoleLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-400 font-black uppercase tracking-widest">
       Verificando Credenciais...
@@ -306,7 +315,7 @@ const AdminRewardsPage: React.FC = () => {
             <h1 className="mt-2 text-3xl font-black italic uppercase tracking-tighter text-white">Reward Management</h1>
           </div>
           <div className="flex gap-2">
-            <button onClick={handleLogout} className="w-fit rounded-xl border border-red-900/50 bg-red-950/20 px-5 py-3 text-[10px] font-black uppercase text-red-400 hover:bg-red-900/40 transition-colors">
+            <button onClick={requestLogout} className="w-fit rounded-xl border border-red-900/50 bg-red-950/20 px-5 py-3 text-[10px] font-black uppercase text-red-400 hover:bg-red-900/40 transition-colors">
               Logoff
             </button>
             <button onClick={navigateHome} className="w-fit rounded-xl border border-zinc-700 px-5 py-3 text-[10px] font-black uppercase hover:bg-zinc-900 transition-colors">
@@ -563,6 +572,12 @@ const AdminRewardsPage: React.FC = () => {
           </section>
         )}
       </main>
+
+      <LogoutConfirmModal
+        isOpen={showLogoutConfirm}
+        onConfirm={confirmLogout}
+        onCancel={cancelLogout}
+      />
     </div>
   );
 };
