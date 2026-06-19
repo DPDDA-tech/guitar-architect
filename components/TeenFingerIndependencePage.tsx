@@ -70,20 +70,23 @@ const buildFretboardState = (
 ): { fretboardState: FretboardState; feedbackNote: { string: number; fret: number } | null } => {
   const markerMap = new Map<string, Marker>();
 
-  // Resting markers render as outline-only (transparent fill, FretboardSVG's
-  // hardcoded white stroke) so only the current BPM step reads as "lit".
-  // FretboardSVG already treats 'transparent' as a valid fill and falls back
-  // to a readable text color for the finger label, so no shared-component
-  // change is needed.
+  // Resting markers use a faint tint of the finger's own color (same `${hex}33`
+  // dimming convention as Triad/Tetrad Map) instead of a fully transparent
+  // fill. FretboardSVG always draws marker strokes in solid white — paired
+  // with a literally transparent fill, that white rim cuts a hard, empty gap
+  // into the string line in light mode (reads as a hole/break). A faint tint
+  // still reads as "resting", but keeps the rim looking like the edge of a
+  // soft dot instead of a void cut into the line.
   baseSteps.forEach((step) => {
     const key = `${step.string}:${step.fret}`;
     const isActive = !!activeStep && step.string === activeStep.string && step.fret === activeStep.fret;
+    const fingerColor = FINGER_COLORS[step.finger] ?? '#94a3b8';
     markerMap.set(key, {
       id: key,
       string: step.string,
       fret: step.fret,
       shape: 'circle',
-      color: isActive ? (FINGER_COLORS[step.finger] ?? '#94a3b8') : 'transparent',
+      color: isActive ? fingerColor : `${fingerColor}33`,
       finger: String(step.finger),
     });
   });
