@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   getHarmonicKeyInfo,
   getSuggestedProgressions,
+  getShortestFifthsSteps,
   resolveProgression,
   HARMONIC_ROOT_OPTIONS,
   type HarmonicDegree,
@@ -22,6 +23,18 @@ import type { FretboardState, Line, Marker, StringStatus } from '../types';
 
 type ChordGpsMode = 'major' | 'minor';
 
+// Mesma paleta semantica T/3/5/7 usada em Triades e Tetrades (vermelho/laranja/azul/roxo),
+// reaproveitada aqui para Tonica/Subdominante/Dominante/Relativa no GPS dos Acordes.
+const CHORD_INTERVAL_COLORS = {
+  T: '#dc2626',
+  '3': '#d97706',
+  b3: '#d97706',
+  '5': '#2563eb',
+  b5: '#2563eb',
+  '7M': '#a855f7',
+  b7: '#a855f7',
+} as const;
+
 interface HarmonicGpsCircleProps {
   tonicValue: string;
   tonicLabel: string;
@@ -32,12 +45,17 @@ interface HarmonicGpsCircleProps {
   relativeValue: string;
   relativeLabel: string;
   isLight: boolean;
+  /** Cumulative angle (deg) — positive = clockwise/up a fifth, negative = anticlockwise/up a fourth. */
+  orbitRotation: number;
+  /** Bumped (not the angle itself) on a mode-only change, to replay a one-shot pulse instead of rotating. */
+  tonicPulseKey: number;
 }
 
 // Purely presentational "GPS" compass — only positions four already-computed
-// labels around a circle. No harmonic-theory logic lives here, so the visual
-// can evolve later (radius, styling, animation) without touching the page's
-// data/state logic above.
+// labels on a functional map (tonica no centro, subdominante/dominante como
+// polos opostos no topo, relativa abaixo). No harmonic-theory logic lives
+// here, so the visual can evolve later (radius, styling, animation) without
+// touching the page's data/state logic above.
 const HarmonicGpsCircle: React.FC<HarmonicGpsCircleProps> = ({
   tonicValue,
   tonicLabel,
@@ -48,55 +66,151 @@ const HarmonicGpsCircle: React.FC<HarmonicGpsCircleProps> = ({
   relativeValue,
   relativeLabel,
   isLight,
+  orbitRotation,
+  tonicPulseKey,
 }) => {
-  const size = 240;
-  const center = size / 2;
-  const radius = 86;
+  const nodeRadius = 44; // ~88px de diametro — tamanho preservado (nao reduzir)
+  const tonicRadius = 66; // ~132px de diametro — tamanho preservado (nao reduzir)
 
-  const points = [
-    { label: subdominantLabel, value: subdominantValue, angle: -90, color: '#f59e0b' },
-    { label: dominantLabel, value: dominantValue, angle: 30, color: '#ef4444' },
-    { label: relativeLabel, value: relativeValue, angle: 150, color: '#8b5cf6' },
+  // Posicoes dos satelites como deslocamento (dx, dy) a partir da tonica — fixas,
+  // independentes da tonalidade selecionada. Subdominante/Dominante abertos em
+  // ~55° a partir do eixo vertical (evita o efeito "orelhas de Mickey Mouse");
+  // Relativa fica deliberadamente mais proxima da tonica que os outros dois.
+  const pointDefs = [
+    {
+      key: 'subdominant' as const,
+      label: subdominantLabel,
+      value: subdominantValue,
+      dx: -111,
+      dy: -77,
+      color: CHORD_INTERVAL_COLORS['3'],
+      bgLight: '#ffedd5',
+      bgDark: '#431407',
+    },
+    {
+      key: 'dominant' as const,
+      label: dominantLabel,
+      value: dominantValue,
+      dx: 111,
+      dy: -77,
+      color: CHORD_INTERVAL_COLORS['5'],
+      bgLight: '#dbeafe',
+      bgDark: '#172554',
+    },
+    {
+      key: 'relative' as const,
+      label: relativeLabel,
+      value: relativeValue,
+      dx: 0,
+      dy: 125,
+      color: CHORD_INTERVAL_COLORS['7M'],
+      bgLight: '#f3e8ff',
+      bgDark: '#3b0764',
+    },
   ];
 
-  const toXY = (angleDeg: number) => {
-    const rad = (angleDeg * Math.PI) / 180;
-    return { x: center + radius * Math.cos(rad), y: center + radius * Math.sin(rad) };
-  };
+  const distances = pointDefs.map(p => Math.hypot(p.dx, p.dy));
+  const orbitRadius = distances.reduce((sum, d) => sum + d, 0) / distances.length;
+
+  // A orbita gira rigidamente, entao a distancia de cada satelite a tonica nao
+  // muda com o angulo — o alcance maximo do giro (em qualquer direcao) e
+  // sempre maxDistance + nodeRadius: nesse raio o satelite mais distante fica
+  // exatamente tangente a borda, em qualquer angulo, sem nunca ser cortado.
+  // Uma pequena folga (fracao do raio do satelite, nao um nodeRadius inteiro)
+  // evita que o traco fique colado na borda sem inflar a area com respiro vazio.
+  const maxOrbitReach = Math.max(...distances) + nodeRadius;
+  const safetyMargin = nodeRadius * 0.2;
+  const safeRadius = maxOrbitReach + safetyMargin;
+
+  // Area util dinamica: quadrado de lado 2x o raio seguro, com a tonica
+  // centralizada — margem identica e minima nas 4 direcoes, sem respiro extra.
+  const width = safeRadius * 2;
+  const height = safeRadius * 2;
+  const tonicCenter = { x: safeRadius, y: safeRadius };
+
+  const points = pointDefs.map(point => ({
+    ...point,
+    x: tonicCenter.x + point.dx,
+    y: tonicCenter.y + point.dy,
+  }));
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto h-56 w-56 sm:h-60 sm:w-60">
-      <circle
-        cx={center}
-        cy={center}
-        r={radius}
-        fill="none"
-        stroke={isLight ? '#cbd5e1' : '#3f3f5c'}
-        strokeWidth={2}
-        strokeDasharray="4 6"
-      />
-      {points.map((point) => {
-        const { x, y } = toXY(point.angle);
-        return (
-          <g key={point.label}>
-            <line x1={center} y1={center} x2={x} y2={y} stroke={point.color} strokeOpacity={0.35} strokeWidth={2} />
-            <circle cx={x} cy={y} r={27} fill={point.color} fillOpacity={isLight ? 0.16 : 0.22} stroke={point.color} strokeWidth={2} />
-            <text x={x} y={y - 2} textAnchor="middle" fontSize="13" fontWeight={900} fill={isLight ? '#1f2937' : '#f4f4f5'}>
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      width={width}
+      height={height}
+      style={{ maxWidth: '100%', height: 'auto' }}
+      className="mx-auto block"
+    >
+      <style>{`
+        @keyframes gpsTonicPulse {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.06); opacity: 0.85; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .gps-tonic-pulse {
+          animation: gpsTonicPulse 0.5s ease-in-out;
+        }
+      `}</style>
+      <g
+        style={{
+          transform: `rotate(${orbitRotation}deg)`,
+          transformOrigin: `${tonicCenter.x}px ${tonicCenter.y}px`,
+          transition: 'transform 0.6s ease-in-out',
+        }}
+      >
+        <circle
+          cx={tonicCenter.x}
+          cy={tonicCenter.y}
+          r={orbitRadius}
+          fill="none"
+          stroke={isLight ? '#94a3b8' : '#6b7280'}
+          strokeOpacity={0.55}
+          strokeWidth={1.25}
+          strokeDasharray="4 6"
+        />
+        {points.map((point) => (
+          <line
+            key={`line-${point.key}`}
+            x1={tonicCenter.x}
+            y1={tonicCenter.y}
+            x2={point.x}
+            y2={point.y}
+            stroke={point.color}
+            strokeOpacity={0.3}
+            strokeWidth={1.5}
+          />
+        ))}
+        {points.map((point) => (
+          // Contra-rotaciona o conteudo do nó para que o acorde/rotulo continue
+          // legivel (em pe) enquanto a posicao do nó acompanha o giro da orbita.
+          <g
+            key={point.key}
+            style={{
+              transform: `rotate(${-orbitRotation}deg)`,
+              transformOrigin: `${point.x}px ${point.y}px`,
+              transition: 'transform 0.6s ease-in-out',
+            }}
+          >
+            <circle cx={point.x} cy={point.y} r={nodeRadius} fill={isLight ? point.bgLight : point.bgDark} stroke={point.color} strokeWidth={2} />
+            <text x={point.x} y={point.y - 2} textAnchor="middle" fontSize="17" fontWeight={900} fill={isLight ? '#1f2937' : '#f4f4f5'}>
               {point.value}
             </text>
-            <text x={x} y={y + 13} textAnchor="middle" fontSize="7" fontWeight={700} letterSpacing="0.05em" fill={point.color} className="uppercase">
+            <text x={point.x} y={point.y + 17} textAnchor="middle" fontSize="8" fontWeight={700} letterSpacing="0.04em" fill={point.color} className="uppercase">
               {point.label}
             </text>
           </g>
-        );
-      })}
-      <circle cx={center} cy={center} r={36} fill={isLight ? '#fef3c7' : '#451a03'} stroke="#f59e0b" strokeWidth={2.5} />
-      <text x={center} y={center - 2} textAnchor="middle" fontSize="16" fontWeight={900} fill={isLight ? '#92400e' : '#fde68a'}>
-        {tonicValue}
-      </text>
-      <text x={center} y={center + 14} textAnchor="middle" fontSize="7" fontWeight={700} letterSpacing="0.08em" fill={isLight ? '#92400e' : '#fcd34d'} className="uppercase">
-        {tonicLabel}
-      </text>
+        ))}
+      </g>
+      <g key={tonicPulseKey} className="gps-tonic-pulse" style={{ transformOrigin: `${tonicCenter.x}px ${tonicCenter.y}px` }}>
+        <circle cx={tonicCenter.x} cy={tonicCenter.y} r={tonicRadius} fill={isLight ? '#fee2e2' : '#450a0a'} stroke={CHORD_INTERVAL_COLORS.T} strokeWidth={3} />
+        <text x={tonicCenter.x} y={tonicCenter.y - 4} textAnchor="middle" fontSize="24" fontWeight={900} fill={isLight ? '#991b1b' : '#fecaca'}>
+          {tonicValue}
+        </text>
+        <text x={tonicCenter.x} y={tonicCenter.y + 18} textAnchor="middle" fontSize="9" fontWeight={700} letterSpacing="0.08em" fill={isLight ? '#991b1b' : '#fca5a5'} className="uppercase">
+          {tonicLabel}
+        </text>
+      </g>
     </svg>
   );
 };
@@ -143,16 +257,6 @@ const PROGRESSION_ROLE_EXPLANATION: Record<HarmonicDegree['role'], { pt: string;
 };
 
 const GPS_TUNING = ['E', 'B', 'G', 'D', 'A', 'E'];
-
-const CHORD_INTERVAL_COLORS = {
-  T: '#dc2626',
-  '3': '#d97706',
-  b3: '#d97706',
-  '5': '#2563eb',
-  b5: '#2563eb',
-  '7M': '#a855f7',
-  b7: '#a855f7',
-} as const;
 
 const ROOT_ROLE_ORDER: TeenTetradRole[] = ['T', '3', '5', '7'];
 
@@ -231,10 +335,29 @@ const TeenChordGpsPage: React.FC = () => {
   const [selectedDegreeIndex, setSelectedDegreeIndex] = useState<number | null>(null);
   const [selectedProgression, setSelectedProgression] = useState<string | null>(null);
   const [progressionStepIndex, setProgressionStepIndex] = useState(0);
+  // Orbita pedagogica: trocar a tonica gira o sistema pelo caminho mais curto no
+  // circulo das quintas (horario = quinta acima, anti-horario = quarta acima).
+  // Trocar so o modo (Maior <-> Menor) nao gira nada — apenas um pulso leve,
+  // porque a posicao da tonica no circulo nao muda.
+  const [orbitRotation, setOrbitRotation] = useState(0);
+  const [tonicPulseKey, setTonicPulseKey] = useState(0);
+  const previousRootRef = useRef(root);
+  const previousModeRef = useRef(mode);
   const isLight = theme === 'light';
 
   const keyInfo = useMemo(() => getHarmonicKeyInfo(root, mode), [root, mode]);
   const progressions = useMemo(() => getSuggestedProgressions(mode), [mode]);
+
+  useEffect(() => {
+    if (previousRootRef.current !== root) {
+      const steps = getShortestFifthsSteps(previousRootRef.current, root);
+      setOrbitRotation(angle => angle + steps * 30);
+    } else if (previousModeRef.current !== mode) {
+      setTonicPulseKey(key => key + 1);
+    }
+    previousRootRef.current = root;
+    previousModeRef.current = mode;
+  }, [root, mode]);
 
   useEffect(() => {
     setSelectedDegreeIndex(null);
@@ -319,6 +442,8 @@ const TeenChordGpsPage: React.FC = () => {
         subdominantPoint: 'Subdominante',
         dominantPoint: 'Dominante',
         relativePoint: 'Relativa',
+        gpsPanelTitle: 'GPS HARMÔNICO',
+        gpsPanelSubtitle: 'Toda a tonalidade gira em torno da tônica.',
         diminishedPoint: 'Diminuto',
         neighborPoint: 'Acorde de apoio',
         infoTitle: 'Informações da tonalidade',
@@ -346,6 +471,11 @@ const TeenChordGpsPage: React.FC = () => {
           `${info.keyName} é a tônica desta tonalidade. ${info.subdominant} atua como subdominante, ${info.dominant} como dominante, e ${info.relative} é a relativa.`,
         progressionExplanation: (progression: string) =>
           `A progressão ${progression} aparece em milhares de músicas populares nesta tonalidade.`,
+        conceptsTitle: 'O que cada função significa',
+        tonicConcept: 'É o centro tonal: todas as outras funções existem em relação a ela.',
+        subdominantConcept: 'Prepara o caminho: é a ponte entre a estabilidade da tônica e a tensão da dominante.',
+        dominantConcept: 'Cria tensão: pede para resolver de volta para a tônica.',
+        relativeConcept: 'Tonalidade vizinha: usa as mesmas notas, mas gira em torno de outro centro.',
       }
     : {
         title: 'Chord GPS',
@@ -359,6 +489,8 @@ const TeenChordGpsPage: React.FC = () => {
         subdominantPoint: 'Subdominant',
         dominantPoint: 'Dominant',
         relativePoint: 'Relative',
+        gpsPanelTitle: 'HARMONIC GPS',
+        gpsPanelSubtitle: 'The whole key revolves around the tonic.',
         diminishedPoint: 'Diminished',
         neighborPoint: 'Supporting chord',
         infoTitle: 'Key information',
@@ -386,6 +518,11 @@ const TeenChordGpsPage: React.FC = () => {
           `${info.keyName} is the tonic of this key. ${info.subdominant} acts as the subdominant, ${info.dominant} as the dominant, and ${info.relative} is the relative.`,
         progressionExplanation: (progression: string) =>
           `The ${progression} progression appears in thousands of popular songs in this key.`,
+        conceptsTitle: 'What each function means',
+        tonicConcept: 'It is the tonal center: every other function exists in relation to it.',
+        subdominantConcept: 'Prepares the move: a bridge between the tonic’s stability and the dominant’s tension.',
+        dominantConcept: 'Creates tension: it pulls toward resolving back to the tonic.',
+        relativeConcept: 'A neighboring key: shares the same notes but orbits a different center.',
       };
 
   const signatureText = keyInfo.keySignature.type === 'none'
@@ -451,53 +588,62 @@ const TeenChordGpsPage: React.FC = () => {
 
           {/* Bloco 1 — GPS Harmônico */}
           <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-center">
-              <label className="flex flex-col gap-1 text-xs font-black uppercase tracking-wide">
-                {copy.tonicSelector}
-                <select
-                  value={root}
-                  onChange={(event) => setRoot(event.target.value)}
-                  className={`min-h-[44px] rounded-xl border px-3 py-2 text-sm font-bold ${isLight ? 'border-slate-300 bg-white text-zinc-900' : 'border-zinc-700 bg-zinc-900 text-zinc-100'}`}
-                >
-                  {HARMONIC_ROOT_OPTIONS.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </label>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr] lg:items-start">
+              <div className="text-left">
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-violet-400">{copy.gpsPanelTitle}</h2>
+                <p className="mt-1 text-[11px] font-bold opacity-70">{copy.gpsPanelSubtitle}</p>
 
-              <div className="flex flex-col gap-1 text-xs font-black uppercase tracking-wide">
-                {copy.modeSelector}
-                <div className="flex gap-2">
-                  {(['major', 'minor'] as ChordGpsMode[]).map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setMode(option)}
-                      className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase transition-all ${
-                        mode === option
-                          ? isLight ? 'border-violet-500 bg-violet-100 text-violet-900' : 'border-violet-400 bg-violet-500/20 text-violet-50'
-                          : isLight ? 'border-slate-300 bg-white text-slate-700' : 'border-zinc-700 bg-zinc-950 text-zinc-200'
-                      }`}
+                <div className="mt-5 flex flex-col gap-4">
+                  <label className="flex flex-col gap-1 text-xs font-black uppercase tracking-wide">
+                    {copy.tonicSelector}
+                    <select
+                      value={root}
+                      onChange={(event) => setRoot(event.target.value)}
+                      className={`min-h-[44px] rounded-xl border px-3 py-2 text-sm font-bold ${isLight ? 'border-slate-300 bg-white text-zinc-900' : 'border-zinc-700 bg-zinc-900 text-zinc-100'}`}
                     >
-                      {option === 'major' ? copy.major : copy.minor}
-                    </button>
-                  ))}
+                      {HARMONIC_ROOT_OPTIONS.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <div className="flex flex-col gap-1 text-xs font-black uppercase tracking-wide">
+                    {copy.modeSelector}
+                    <div className="flex gap-2">
+                      {(['major', 'minor'] as ChordGpsMode[]).map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => setMode(option)}
+                          className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase transition-all ${
+                            mode === option
+                              ? isLight ? 'border-violet-500 bg-violet-100 text-violet-900' : 'border-violet-400 bg-violet-500/20 text-violet-50'
+                              : isLight ? 'border-slate-300 bg-white text-slate-700' : 'border-zinc-700 bg-zinc-950 text-zinc-200'
+                          }`}
+                        >
+                          {option === 'major' ? copy.major : copy.minor}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-4">
-              <HarmonicGpsCircle
-                tonicValue={keyInfo.keyName}
-                tonicLabel={copy.tonicPoint}
-                subdominantValue={keyInfo.subdominant}
-                subdominantLabel={copy.subdominantPoint}
-                dominantValue={keyInfo.dominant}
-                dominantLabel={copy.dominantPoint}
-                relativeValue={keyInfo.relative}
-                relativeLabel={copy.relativePoint}
-                isLight={isLight}
-              />
+              <div>
+                <HarmonicGpsCircle
+                  tonicValue={keyInfo.keyName}
+                  tonicLabel={copy.tonicPoint}
+                  subdominantValue={keyInfo.subdominant}
+                  subdominantLabel={copy.subdominantPoint}
+                  dominantValue={keyInfo.dominant}
+                  dominantLabel={copy.dominantPoint}
+                  relativeValue={keyInfo.relative}
+                  relativeLabel={copy.relativePoint}
+                  isLight={isLight}
+                  orbitRotation={orbitRotation}
+                  tonicPulseKey={tonicPulseKey}
+                />
+              </div>
             </div>
           </section>
 
@@ -638,6 +784,26 @@ const TeenChordGpsPage: React.FC = () => {
           <section className={`mt-6 rounded-3xl border p-4 md:p-6 ${isLight ? 'border-cyan-200 bg-cyan-50' : 'border-cyan-500/30 bg-cyan-500/10'}`}>
             <h2 className={`text-xs font-black uppercase tracking-[0.2em] ${isLight ? 'text-cyan-700' : 'text-cyan-300'}`}>{copy.explanationTitle}</h2>
             <p className={`mt-2 text-sm font-bold ${isLight ? 'text-cyan-900' : 'text-cyan-100'}`}>{explanationText}</p>
+
+            <h3 className={`mt-4 text-[10px] font-black uppercase tracking-[0.18em] ${isLight ? 'text-cyan-700' : 'text-cyan-300'}`}>{copy.conceptsTitle}</h3>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { label: copy.tonicPoint, chord: keyInfo.keyName, text: copy.tonicConcept, color: CHORD_INTERVAL_COLORS.T },
+                { label: copy.subdominantPoint, chord: keyInfo.subdominant, text: copy.subdominantConcept, color: CHORD_INTERVAL_COLORS['3'] },
+                { label: copy.dominantPoint, chord: keyInfo.dominant, text: copy.dominantConcept, color: CHORD_INTERVAL_COLORS['5'] },
+                { label: copy.relativePoint, chord: keyInfo.relative, text: copy.relativeConcept, color: CHORD_INTERVAL_COLORS['7M'] },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className={`rounded-xl border-l-4 p-3 ${isLight ? 'bg-white/70' : 'bg-zinc-950/40'}`}
+                  style={{ borderColor: item.color }}
+                >
+                  <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: item.color }}>{item.label}</p>
+                  <p className={`text-lg font-black ${isLight ? 'text-cyan-950' : 'text-white'}`}>{item.chord}</p>
+                  <p className={`mt-1 text-xs font-bold ${isLight ? 'text-cyan-900' : 'text-cyan-100'}`}>{item.text}</p>
+                </div>
+              ))}
+            </div>
           </section>
         </main>
       </div>

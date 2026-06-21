@@ -229,6 +229,21 @@ export const getHarmonicKeyInfo = (root: string, mode: HarmonicCycleMode): Harmo
   };
 };
 
+// Pure helpers for the GPS dos Acordes orbit animation — find a note's slot in
+// FIFTHS_CYCLE and the shortest signed step count between two notes (positive
+// = clockwise/up a fifth, negative = anticlockwise/up a fourth). Does not
+// affect dominant/subdominant/relative calculation, only used for the visual.
+export const getFifthsCycleIndex = (note: string): number =>
+  FIFTHS_CYCLE.findIndex(entry => entry.split('/').includes(note.trim()));
+
+export const getShortestFifthsSteps = (fromNote: string, toNote: string): number => {
+  const fromIndex = getFifthsCycleIndex(fromNote);
+  const toIndex = getFifthsCycleIndex(toNote);
+  if (fromIndex === -1 || toIndex === -1) return 0;
+  const normalized = ((toIndex - fromIndex) % 12 + 12) % 12;
+  return normalized > 6 ? normalized - 12 : normalized;
+};
+
 export const getCycleDisplayNote = (cycleItem: string, accidental: AccidentalPreference) => {
   const [first, second] = cycleItem.split('/');
   if (!second) return first;
