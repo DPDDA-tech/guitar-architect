@@ -6,6 +6,13 @@ import { getNoteAt, CHROMATIC_SCALE } from '../music/musicTheory';
 import { getScaleNotes } from '../music/scales';
 import { getAccidentalPreference, type HarmonicCycleMode } from '../music/harmonicCycle';
 import { getFrequencyForPosition } from '../utils/audio';
+import {
+  MINOR_PENTATONIC_SHAPES,
+  CAGED_LETTER_BY_SHAPE_ID,
+  isPentatonicScaleType,
+  resolvePentatonicShape,
+  type PentatonicShapeDefinition,
+} from '../data/teenScalePentatonicShapes';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 import AppFooter from './AppFooter';
@@ -27,7 +34,10 @@ type ScaleHunterRegion = {
   id: string;
   label: string;
   strings: number[];
-  frets: number[];
+  frets: number[]; // legado: janela genérica, mesmas casas em toda corda (Major/Menor Natural/modos)
+  // Shapes reais (pentatônica): casas diferentes por corda — quando presente, vence `frets`
+  // para aquela corda. Ausente = comportamento 100% igual ao das janelas genéricas de antes.
+  perStringFrets?: Partial<Record<number, number[]>>;
 };
 
 type PathPattern = {
@@ -94,8 +104,6 @@ const SCALE_HUNTER_REGIONS: ScaleHunterRegion[] = [
   { id: 'r6', label: 'Região 6', strings: [0, 1, 2, 3, 4, 5], frets: [11, 12, 13, 14, 15] },
 ];
 const DEFAULT_REGION = SCALE_HUNTER_REGIONS[0];
-const REGION_STRING_LIST = DEFAULT_REGION.strings;
-const REGION_FRET_LIST = DEFAULT_REGION.frets;
 
 // Varre a região (cordas x casas) e mantém apenas as células cuja nota real pertence à escala
 // (music/scales.getScaleNotes). Continua sendo só o coletor de células válidas — a ordem
@@ -105,17 +113,20 @@ const generateScaleHunterPath = ({
   scaleType,
   strings,
   frets,
+  perStringFrets,
 }: {
   root: string;
   scaleType: string;
   strings: number[];
   frets: number[];
+  perStringFrets?: Partial<Record<number, number[]>>;
 }): CellId[] => {
   const scaleNotes = new Set(getScaleNotes(root, scaleType));
   const sequence: CellId[] = [];
 
   for (const stringIdx of strings) {
-    for (const fret of frets) {
+    const fretsForString = perStringFrets?.[stringIdx] ?? frets;
+    for (const fret of fretsForString) {
       const note = getNoteAt(stringIdx, fret, OPEN_NOTES);
       if (scaleNotes.has(note)) {
         sequence.push(`s${stringIdx}f${fret}` as CellId);
@@ -183,32 +194,68 @@ const buildScaleHunterSequence = (params: {
   scaleType: string;
   strings: number[];
   frets: number[];
+  perStringFrets?: Partial<Record<number, number[]>>;
 }): CellId[] => {
   const rawCells = generateScaleHunterPath(params);
   return orderByPitch(rawCells);
 };
 
+// Converte as posições já resolvidas de um shape (geometria validada em
+// data/teenScalePentatonicShapes.ts) numa ScaleHunterRegion — só agrupa por corda, sem
+// nenhuma lógica musical nova, pra reaproveitar o resto do pipeline (markers, startFret/
+// endFret, sequência) sem duplicar código entre região genérica e shape real.
+const buildRegionFromShapePositions = (
+  id: string,
+  label: string,
+  positions: Array<{ string: number; fret: number }>,
+): ScaleHunterRegion => {
+  const perStringFrets: Record<number, number[]> = {};
+  for (const { string, fret } of positions) {
+    perStringFrets[string] = perStringFrets[string] ? [...perStringFrets[string], fret] : [fret];
+  }
+  const strings = Object.keys(perStringFrets).map(Number).sort((a, b) => a - b);
+  return { id, label, strings, frets: [], perStringFrets };
+};
+
+// Ponto único que resolve um "id de área" (região genérica OU shape real) para uma
+// ScaleHunterRegion pronta pro resto do pipeline (markers, sequência, startFret/endFret) —
+// quem chama nem precisa saber se é região ou shape, só passa scaleType+areaId.
+const resolveScaleHunterArea = (root: string, scaleType: string, areaId: string): ScaleHunterRegion => {
+  if (isPentatonicScaleType(scaleType)) {
+    const shape = MINOR_PENTATONIC_SHAPES.find((candidate) => candidate.id === areaId) ?? MINOR_PENTATONIC_SHAPES[0];
+    const resolved = resolvePentatonicShape(root, scaleType, shape, OPEN_NOTES);
+    return buildRegionFromShapePositions(shape.id, shape.label, resolved);
+  }
+  return SCALE_HUNTER_REGIONS.find((candidate) => candidate.id === areaId) ?? DEFAULT_REGION;
+};
+
 // Os 3 caminhos fixos da Fase 1 continuam disponíveis como atalhos do nível inicial,
 // em qualquer rank — "Novo caminho" é quem varia por progressão (ver pools abaixo).
-const STARTER_PATH_CONFIGS: PathConfig[] = [
-  { id: 'am-pentatonic', title: 'Am Pentatônica', root: 'A', scaleType: 'Pentatonic Minor' },
-  { id: 'c-major', title: 'C Maior', root: 'C', scaleType: 'Major (Ionian)' },
-  { id: 'am-natural', title: 'Am Natural', root: 'A', scaleType: 'Natural Minor (Aeolian)' },
+// areaId default é 'r1' (região genérica) pros dois caminhos fora do escopo desta etapa
+// (Maior, Menor Natural); o atalho de pentatônica usa 'shape-1', já no shape real.
+const STARTER_PATH_CONFIGS: Array<PathConfig & { areaId: string }> = [
+  { id: 'am-pentatonic', title: 'Am Pentatônica', root: 'A', scaleType: 'Pentatonic Minor', areaId: 'shape-1' },
+  { id: 'c-major', title: 'C Maior', root: 'C', scaleType: 'Major (Ionian)', areaId: 'r1' },
+  { id: 'am-natural', title: 'Am Natural', root: 'A', scaleType: 'Natural Minor (Aeolian)', areaId: 'r1' },
 ];
 
-const STARTER_PATHS: PathPattern[] = STARTER_PATH_CONFIGS.map((config) => ({
-  id: config.id,
-  title: config.title,
-  region: DEFAULT_REGION,
-  root: config.root,
-  scaleType: config.scaleType,
-  sequence: buildScaleHunterSequence({
+const STARTER_PATHS: PathPattern[] = STARTER_PATH_CONFIGS.map((config) => {
+  const region = resolveScaleHunterArea(config.root, config.scaleType, config.areaId);
+  return {
+    id: config.id,
+    title: config.title,
+    region,
     root: config.root,
     scaleType: config.scaleType,
-    strings: REGION_STRING_LIST,
-    frets: REGION_FRET_LIST,
-  }),
-}));
+    sequence: buildScaleHunterSequence({
+      root: config.root,
+      scaleType: config.scaleType,
+      strings: region.strings,
+      frets: region.frets,
+      perStringFrets: region.perStringFrets,
+    }),
+  };
+});
 
 // XP por modo concluído. Não depende mais de um corte de tamanho — o "tamanho" do exercício
 // é a escala real (curta numa pentatônica, mais longa numa escala de 7 notas), e quem varia é
@@ -275,31 +322,49 @@ const SCALE_REGION_IDS_BY_RANK: Record<string, string[]> = {
   neon: NEON_REGION_IDS,
 };
 
+// Shapes liberados por rank — só 5 shapes no total (não 6, como as regiões genéricas), por
+// isso é uma tabela própria, não reaproveita SCALE_REGION_IDS_BY_RANK.
+const PENTATONIC_SHAPE_IDS_BY_RANK: Record<string, string[]> = {
+  rookie: ['shape-1'],
+  runner: ['shape-1', 'shape-2'],
+  architect: ['shape-1', 'shape-2', 'shape-3', 'shape-4'],
+  neon: ['shape-1', 'shape-2', 'shape-3', 'shape-4', 'shape-5'],
+};
+
 // Ordem de progressão dos ranks (mesma ordem de TEEN_RANKS) — usada só para achar o
-// primeiro rank que libera cada região, para a dica de "bloqueada" no seletor.
+// primeiro rank que libera cada região/shape, para a dica de "bloqueada" no seletor.
 const RANK_ORDER = ['rookie', 'runner', 'architect', 'neon'];
 
-const getRequiredRankForRegion = (regionId: string) =>
-  RANK_ORDER.find((rankId) => SCALE_REGION_IDS_BY_RANK[rankId]?.includes(regionId))
-    ?? RANK_ORDER[RANK_ORDER.length - 1];
+// Região genérica (Major/Menor Natural/modos) e shape real (Pentatônica Menor/Maior) têm
+// tabelas de gate diferentes — esta função decide qual usar a partir do scaleType atual,
+// pra não duplicar a lógica de "achar o primeiro rank que libera este id" em dois lugares.
+const getRequiredRankForArea = (areaId: string, isPentatonic: boolean) => {
+  const table = isPentatonic ? PENTATONIC_SHAPE_IDS_BY_RANK : SCALE_REGION_IDS_BY_RANK;
+  return RANK_ORDER.find((rankId) => table[rankId]?.includes(areaId)) ?? RANK_ORDER[RANK_ORDER.length - 1];
+};
 
 const getAvailableRegionsForRank = (rankId: string): ScaleHunterRegion[] => {
   const allowedIds = SCALE_REGION_IDS_BY_RANK[rankId] ?? ROOKIE_REGION_IDS;
   return SCALE_HUNTER_REGIONS.filter((region) => allowedIds.includes(region.id));
 };
 
+const getAvailableShapesForRank = (rankId: string): PentatonicShapeDefinition[] => {
+  const allowedIds = PENTATONIC_SHAPE_IDS_BY_RANK[rankId] ?? PENTATONIC_SHAPE_IDS_BY_RANK.rookie;
+  return MINOR_PENTATONIC_SHAPES.filter((shape) => allowedIds.includes(shape.id));
+};
+
 const ROOKIE_POOL: ScalePoolEntry[] = [
-  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: ROOKIE_REGION_IDS },
+  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: PENTATONIC_SHAPE_IDS_BY_RANK.rookie },
 ];
 
 const RUNNER_POOL: ScalePoolEntry[] = [
-  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: RUNNER_REGION_IDS },
+  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: PENTATONIC_SHAPE_IDS_BY_RANK.runner },
   { scaleType: 'Major (Ionian)', roots: ['C', 'G'], regionIds: RUNNER_REGION_IDS },
   { scaleType: 'Natural Minor (Aeolian)', roots: ['A', 'E'], regionIds: RUNNER_REGION_IDS },
 ];
 
 const ARCHITECT_POOL: ScalePoolEntry[] = [
-  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: ARCHITECT_REGION_IDS },
+  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: PENTATONIC_SHAPE_IDS_BY_RANK.architect },
   { scaleType: 'Major (Ionian)', roots: ['C', 'G'], regionIds: ARCHITECT_REGION_IDS },
   { scaleType: 'Natural Minor (Aeolian)', roots: ['A', 'E'], regionIds: ARCHITECT_REGION_IDS },
   { scaleType: 'Blues', roots: ['A', 'E'], regionIds: ARCHITECT_REGION_IDS },
@@ -307,7 +372,7 @@ const ARCHITECT_POOL: ScalePoolEntry[] = [
 
 // Neon Player libera os modos gregos principais com transposição livre (qualquer fundamental cromática).
 const NEON_PLAYER_POOL: ScalePoolEntry[] = [
-  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: NEON_REGION_IDS },
+  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: PENTATONIC_SHAPE_IDS_BY_RANK.neon },
   { scaleType: 'Major (Ionian)', roots: ['C', 'G'], regionIds: NEON_REGION_IDS },
   { scaleType: 'Natural Minor (Aeolian)', roots: ['A', 'E'], regionIds: NEON_REGION_IDS },
   { scaleType: 'Blues', roots: ['A', 'E'], regionIds: NEON_REGION_IDS },
@@ -350,13 +415,14 @@ const generateRandomScaleHunterPath = (rankId: string): PathPattern => {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const entry = pickRandomItem(pool);
     const root = pickRandomItem(entry.roots);
-    const regionId = pickRandomItem(entry.regionIds);
-    const region = SCALE_HUNTER_REGIONS.find((candidate) => candidate.id === regionId) ?? DEFAULT_REGION;
+    const areaId = pickRandomItem(entry.regionIds);
+    const region = resolveScaleHunterArea(root, entry.scaleType, areaId);
     const sequence = buildScaleHunterSequence({
       root,
       scaleType: entry.scaleType,
       strings: region.strings,
       frets: region.frets,
+      perStringFrets: region.perStringFrets,
     });
 
     if (sequence.length > 0) {
@@ -442,7 +508,16 @@ const TeenScaleHunterPage: React.FC = () => {
       ? roundtripSequence
       : ascendSequence;
 
-  const availableManualRegions = getAvailableRegionsForRank(rankProgress.current.id);
+  // "Região" cobre tanto as janelas genéricas (r1-r6, fora do escopo desta etapa) quanto os
+  // shapes reais (shape-1..shape-5, Pentatônica Menor/Maior) — qual delas depende só do
+  // scaleType selecionado no momento. Mantive os nomes de variável genéricos de propósito.
+  const isManualPentatonic = isPentatonicScaleType(manualScaleType);
+  const availableManualRegions: Array<{ id: string; label: string }> = isManualPentatonic
+    ? getAvailableShapesForRank(rankProgress.current.id)
+    : getAvailableRegionsForRank(rankProgress.current.id);
+  const allManualAreaOptions: Array<{ id: string; label: string }> = isManualPentatonic
+    ? MINOR_PENTATONIC_SHAPES
+    : SCALE_HUNTER_REGIONS;
   const resolvedManualRegionId = availableManualRegions.some((region) => region.id === manualRegionId)
     ? manualRegionId
     : availableManualRegions[0].id;
@@ -468,7 +543,8 @@ const TeenScaleHunterPage: React.FC = () => {
   // igual ao padrao ja usado por TeenFingerIndependencePage.
   const scaleHunterMarkers: Marker[] = [];
   for (const stringIdx of currentPath.region.strings) {
-    for (const fret of currentPath.region.frets) {
+    const fretsForString = currentPath.region.perStringFrets?.[stringIdx] ?? currentPath.region.frets;
+    for (const fret of fretsForString) {
       const cellId = `s${stringIdx}f${fret}` as CellId;
       const isTarget = currentPath.sequence.includes(cellId);
       const wasPicked = userInput.includes(cellId);
@@ -497,6 +573,12 @@ const TeenScaleHunterPage: React.FC = () => {
 
   const scaleHunterStringStatuses: StringStatus[] = OPEN_NOTES.map(() => 'normal');
 
+  // Shapes reais têm casas diferentes por corda (perStringFrets) em vez de uma janela única
+  // (frets) — para achar startFret/endFret precisamos olhar todas as casas envolvidas, não só `frets`.
+  const scaleHunterAllRegionFrets = currentPath.region.perStringFrets
+    ? Object.values(currentPath.region.perStringFrets).filter((frets): frets is number[] => Array.isArray(frets)).flat()
+    : currentPath.region.frets;
+
   // FretboardSVG centra o marcador de cada casa no espaco ANTES da sua propria
   // trastinha — por isso todo outro consumidor (Triad/Tetrad Map, GPS, Finger
   // Independence) nunca usa startFret igual a casa do primeiro marcador real,
@@ -507,8 +589,8 @@ const TeenScaleHunterPage: React.FC = () => {
     title: '',
     subtitle: '',
     notes: '',
-    startFret: Math.max(0, Math.min(...currentPath.region.frets) - 1),
-    endFret: Math.max(...currentPath.region.frets) + 1,
+    startFret: Math.max(0, Math.min(...scaleHunterAllRegionFrets) - 1),
+    endFret: Math.max(...scaleHunterAllRegionFrets) + 1,
     isLeftHanded: handedness === 'left',
     root: currentPath.root,
     scaleType: currentPath.scaleType,
@@ -677,12 +759,13 @@ const TeenScaleHunterPage: React.FC = () => {
   };
 
   const generateManualPath = () => {
-    const region = SCALE_HUNTER_REGIONS.find((candidate) => candidate.id === resolvedManualRegionId) ?? DEFAULT_REGION;
+    const region = resolveScaleHunterArea(manualRoot, manualScaleType, resolvedManualRegionId);
     const sequence = buildScaleHunterSequence({
       root: manualRoot,
       scaleType: manualScaleType,
       strings: region.strings,
       frets: region.frets,
+      perStringFrets: region.perStringFrets,
     });
 
     if (sequence.length === 0) {
@@ -802,7 +885,10 @@ const TeenScaleHunterPage: React.FC = () => {
                 <span className={`text-[9px] font-black uppercase ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{isPt ? 'Escala' : 'Scale'}</span>
                 <select
                   value={manualScaleType}
-                  onChange={(e) => setManualScaleType(e.target.value)}
+                  onChange={(e) => {
+                    setManualScaleType(e.target.value);
+                    setLockedRegionHintId(null);
+                  }}
                   className={`min-h-[40px] rounded-lg border px-3 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white text-slate-900' : 'border-zinc-700 bg-zinc-950 text-zinc-100'}`}
                 >
                   {MANUAL_SCALE_TYPES.map((scaleType) => (
@@ -812,12 +898,14 @@ const TeenScaleHunterPage: React.FC = () => {
               </label>
 
               <div className="flex flex-col gap-1">
-                <span className={`text-[9px] font-black uppercase ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{isPt ? 'Região' : 'Region'}</span>
+                <span className={`text-[9px] font-black uppercase ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>
+                  {isManualPentatonic ? 'Shape' : (isPt ? 'Região' : 'Region')}
+                </span>
                 <div className="flex flex-wrap gap-2">
-                  {SCALE_HUNTER_REGIONS.map((region) => {
-                    const isUnlocked = availableManualRegions.some((available) => available.id === region.id);
-                    const isSelected = isUnlocked && resolvedManualRegionId === region.id;
-                    const requiredRank = TEEN_RANKS.find((rank) => rank.id === getRequiredRankForRegion(region.id));
+                  {allManualAreaOptions.map((area) => {
+                    const isUnlocked = availableManualRegions.some((available) => available.id === area.id);
+                    const isSelected = isUnlocked && resolvedManualRegionId === area.id;
+                    const requiredRank = TEEN_RANKS.find((rank) => rank.id === getRequiredRankForArea(area.id, isManualPentatonic));
                     const lockHint = requiredRank
                       ? (isPt
                           ? `Desbloqueia com rank ${requiredRank.label} (${requiredRank.minXp} XP)`
@@ -825,17 +913,17 @@ const TeenScaleHunterPage: React.FC = () => {
                       : undefined;
                     return (
                       <button
-                        key={region.id}
+                        key={area.id}
                         type="button"
                         title={isUnlocked ? undefined : lockHint}
                         aria-disabled={!isUnlocked}
                         onClick={() => {
                           if (!isUnlocked) {
-                            setLockedRegionHintId(region.id);
+                            setLockedRegionHintId(area.id);
                             return;
                           }
                           setLockedRegionHintId(null);
-                          setManualRegionId(region.id);
+                          setManualRegionId(area.id);
                         }}
                         className={`min-h-[40px] rounded-lg border px-3 text-xs font-black uppercase transition-all ${
                           !isUnlocked
@@ -851,7 +939,9 @@ const TeenScaleHunterPage: React.FC = () => {
                                 : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-violet-500'
                         }`}
                       >
-                        {region.label}{!isUnlocked ? ' 🔒' : ''}
+                        {area.label}
+                        {isManualPentatonic ? ` • ${CAGED_LETTER_BY_SHAPE_ID[area.id as keyof typeof CAGED_LETTER_BY_SHAPE_ID]}` : ''}
+                        {!isUnlocked ? ' 🔒' : ''}
                       </button>
                     );
                   })}
@@ -859,7 +949,7 @@ const TeenScaleHunterPage: React.FC = () => {
                 {lockedRegionHintId && !availableManualRegions.some((available) => available.id === lockedRegionHintId) ? (
                   <p className={`text-[10px] font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
                     {(() => {
-                      const requiredRank = TEEN_RANKS.find((rank) => rank.id === getRequiredRankForRegion(lockedRegionHintId));
+                      const requiredRank = TEEN_RANKS.find((rank) => rank.id === getRequiredRankForArea(lockedRegionHintId, isManualPentatonic));
                       if (!requiredRank) return null;
                       return isPt
                         ? `Desbloqueia com rank ${requiredRank.label} (${requiredRank.minXp} XP)`
@@ -868,9 +958,18 @@ const TeenScaleHunterPage: React.FC = () => {
                   </p>
                 ) : (
                   <p className={`text-[10px] font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
-                    {isPt ? 'Novas regiões são liberadas conforme seu XP no Teens.' : 'New regions unlock as your Teens XP grows.'}
+                    {isManualPentatonic
+                      ? (isPt ? 'Novos shapes são liberados conforme seu XP no Teens.' : 'New shapes unlock as your Teens XP grows.')
+                      : (isPt ? 'Novas regiões são liberadas conforme seu XP no Teens.' : 'New regions unlock as your Teens XP grows.')}
                   </p>
                 )}
+                {isManualPentatonic ? (
+                  <p className={`text-[9px] font-bold italic ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>
+                    {isPt
+                      ? 'E → D → C → A → G (ordem dos shapes no sistema CAGED)'
+                      : 'E → D → C → A → G (shape order in the CAGED system)'}
+                  </p>
+                ) : null}
               </div>
 
               <button
