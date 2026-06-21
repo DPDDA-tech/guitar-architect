@@ -8,6 +8,8 @@ import { getFrequencyForPosition } from '../utils/audio';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 import AppFooter from './AppFooter';
+import FretboardSVG from './FretboardSVG';
+import type { FretboardState, Marker, StringStatus } from '../types';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -43,8 +45,6 @@ type PathConfig = {
   scaleType: string;
 };
 
-const STRINGS = ['E', 'A', 'D', 'G', 'B', 'E'];
-const FRETS = [0, 1, 2, 3, 4, 5, 6, 7];
 const NOTE_ORDER = ['C', 'D', 'E', 'F', 'G', 'A', 'B'] as const;
 type ScaleNote = typeof NOTE_ORDER[number];
 
@@ -376,6 +376,69 @@ const TeenScaleHunterPage: React.FC = () => {
     return toDisplayLetter(chromatic);
   };
 
+  // Migração da grade HTML para o FretboardSVG compartilhado (mesmo componente de
+  // Triades/Tetrades/GPS/Independencia dos Dedos): nota-alvo, acerto e tonica viram
+  // markers; a regiao jogavel vira startFret/endFret (fora dela o FretboardSVG nem
+  // desenha a casa). Layers automaticos ficam desligados — cor e 100% via markers,
+  // igual ao padrao ja usado por TeenFingerIndependencePage.
+  const scaleHunterMarkers: Marker[] = [];
+  for (const stringIdx of currentPath.region.strings) {
+    for (const fret of currentPath.region.frets) {
+      const cellId = `s${stringIdx}f${fret}` as CellId;
+      const isTarget = currentPath.sequence.includes(cellId);
+      const wasPicked = userInput.includes(cellId);
+      const isTonic = isTarget && isTonicCell(cellId, currentPath.root);
+      const color = wasPicked ? '#34d399' : isTarget ? '#8b5cf6' : (isLight ? '#cbd5e1' : '#52525b');
+      scaleHunterMarkers.push({
+        id: cellId,
+        string: stringIdx,
+        fret,
+        shape: isTonic ? 'triangle' : 'circle',
+        color,
+        finger: cellToNote(cellId) ?? '-',
+      });
+    }
+  }
+
+  const activeCellPosition = (() => {
+    if (!activeCell) return null;
+    const match = activeCell.match(/^s(\d+)f(\d+)$/);
+    if (!match) return null;
+    return { string: Number(match[1]), fret: Number(match[2]) };
+  })();
+
+  const scaleHunterStringStatuses: StringStatus[] = OPEN_NOTES.map(() => 'normal');
+
+  // FretboardSVG centra o marcador de cada casa no espaco ANTES da sua propria
+  // trastinha — por isso todo outro consumidor (Triad/Tetrad Map, GPS, Finger
+  // Independence) nunca usa startFret igual a casa do primeiro marcador real,
+  // sempre subtraindo 1 (ver buildChordGpsFretboardState, etc.) — sem essa folga
+  // a primeira coluna da regiao fica fora da area visivel do SVG.
+  const scaleHunterFretboardState: FretboardState = {
+    id: 'scale-hunter',
+    title: '',
+    subtitle: '',
+    notes: '',
+    startFret: Math.max(0, Math.min(...currentPath.region.frets) - 1),
+    endFret: Math.max(...currentPath.region.frets) + 1,
+    isLeftHanded: false,
+    root: currentPath.root,
+    scaleType: currentPath.scaleType,
+    instrumentType: 'guitar-6',
+    tuning: 'Custom',
+    customTuning: OPEN_NOTES,
+    stringStatuses: scaleHunterStringStatuses,
+    labelMode: 'fingering',
+    harmonyMode: 'OFF',
+    chordQuality: 'DIATONIC',
+    chordDegree: 0,
+    inversion: 0,
+    colorMode: 'SINGLE',
+    layers: { showInlays: true, showAllNotes: false, showScale: false, showTonic: false },
+    markers: scaleHunterMarkers,
+    lines: [],
+  };
+
   const getAudioCtx = async () => {
     const AudioCtx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtx) return null;
@@ -692,57 +755,27 @@ const TeenScaleHunterPage: React.FC = () => {
           </div>
 
           <div className={`mt-4 rounded-2xl border p-3 ${isLight ? 'border-slate-300 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
-            <div className="grid gap-2" style={{ gridTemplateColumns: `72px repeat(${FRETS.length}, minmax(0, 1fr))` }}>
-              <div className="pb-1 text-[10px] font-black uppercase opacity-60 self-center">Cordas</div>
-              {FRETS.map((fret) => (
-                <div key={`fret-spacer-${fret}`} aria-hidden="true" />
-              ))}
-
-              {STRINGS.map((_, displayRow) => STRINGS.length - 1 - displayRow).map((stringIdx) => {
-                const label = STRINGS[stringIdx];
-                return (
-                <React.Fragment key={`string-${label}-${stringIdx}`}>
-                  <div className="text-[10px] font-black uppercase opacity-70 self-center">{label}</div>
-                  {FRETS.map((fret) => {
-                    const cellId = `s${stringIdx}f${fret}` as CellId;
-                    const inRegion = currentPath.region.strings.includes(stringIdx) && currentPath.region.frets.includes(fret);
-                    const isTarget = targetSequence.includes(cellId);
-                    const isActive = activeCell === cellId;
-                    const wasPicked = userInput.includes(cellId);
-                    const isTonic = inRegion && isTonicCell(cellId, currentPath.root);
-                    return (
-                      <button
-                        key={cellId}
-                        onClick={() => void handlePickCell(cellId)}
-                        title={isTonic ? (isPt ? 'Tônica' : 'Root note') : undefined}
-                        className={`h-10 rounded-lg border text-[9px] font-black transition-all ${
-                          isActive
-                            ? 'bg-violet-500 text-white border-violet-200 shadow-[0_0_18px_rgba(139,92,246,0.8)]'
-                            : wasPicked
-                              ? 'bg-emerald-500/25 border-emerald-300 text-emerald-100'
-                              : inRegion
-                                ? isTarget
-                                  ? 'bg-violet-500/20 border-violet-400/70 text-violet-100'
-                                  : isLight
-                                    ? 'bg-white border-slate-300 text-slate-700'
-                                    : 'bg-zinc-900 border-zinc-700 text-zinc-300'
-                                : isLight
-                                  ? 'bg-slate-100 border-slate-200 text-slate-400'
-                                  : 'bg-zinc-950 border-zinc-800 text-zinc-600'
-                        } ${isTonic ? 'ring-2 ring-amber-400' : ''}`}
-                      >
-                        {inRegion ? cellToNote(cellId) ?? '-' : ''}
-                      </button>
-                    );
-                  })}
-                </React.Fragment>
-                );
-              })}
-
-              <div className="pt-1 text-[10px] font-black uppercase opacity-60 self-center">Casas</div>
-              {FRETS.map((fret) => (
-                <div key={`fret-${fret}`} className="pt-1 text-center text-[10px] font-black opacity-50">{fret}</div>
-              ))}
+            {/* FretboardSVG escala altura proporcionalmente a largura (viewBox fixo). Em telas
+                estreitas isso espreme demais o espaco entre cordas para um toque confortavel.
+                Sem alterar o FretboardSVG: forcamos uma largura minima aqui (min-w) e deixamos
+                o scroll horizontal (overflow-x-auto) absorver o excesso em mobile — a altura
+                sobe junto, proporcional, sem distorcer nada. */}
+            <div className="overflow-x-auto">
+              <div className="min-w-[880px]">
+                <FretboardSVG
+                  state={scaleHunterFretboardState}
+                  editorMode="view"
+                  onEvent={(event) => {
+                    if (isPlaying || event?.type !== 'note') return;
+                    void handlePickCell(`s${event.string}f${event.fret}` as CellId);
+                  }}
+                  selectedColor="#8b5cf6"
+                  selectedShape="circle"
+                  theme={theme}
+                  isActive={false}
+                  feedbackNote={activeCellPosition}
+                />
+              </div>
             </div>
           </div>
 
