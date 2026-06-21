@@ -1,9 +1,10 @@
-﻿import React, { useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
-import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
+import { addTeensXp, getRankProgress, getTeensXp, TEEN_RANKS } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import { getNoteAt, CHROMATIC_SCALE } from '../music/musicTheory';
 import { getScaleNotes } from '../music/scales';
+import { getAccidentalPreference, type HarmonicCycleMode } from '../music/harmonicCycle';
 import { getFrequencyForPosition } from '../utils/audio';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
@@ -45,19 +46,52 @@ type PathConfig = {
   scaleType: string;
 };
 
-const NOTE_ORDER = ['C', 'D', 'E', 'F', 'G', 'A', 'B'] as const;
-type ScaleNote = typeof NOTE_ORDER[number];
-
 // Tuning usado para localizar notas reais via music/musicTheory.getNoteAt — fonte única de verdade.
+// Indice 0 = corda grossa (6a, E baixo) ... indice 5 = corda fina (1a, E alto). Toda a logica de
+// jogo (CellId, region.strings, STRING_PITCH_OFFSET, isTonicCell etc.) usa essa ordem.
 const OPEN_NOTES = ['E', 'A', 'D', 'G', 'B', 'E'];
-const SCALE_SET = new Set(NOTE_ORDER);
+
+// FretboardSVG desenha customTuning[0] na linha de cima e customTuning[last] na de baixo (getY
+// cresce com o indice). O padrao visual do site é a corda fina (1a) em cima e a grossa (6a) embaixo
+// — ver TUNING/STRINGS em TeenFingerIndependencePage.tsx. Como toda a logica do Caça às Escalas usa
+// OPEN_NOTES na ordem grossa->fina, só invertemos a fronteira com o FretboardSVG: a tuning enviada
+// e o indice de corda de cada marker/clique, nunca os indices internos do jogo.
+const FRETBOARD_TUNING = [...OPEN_NOTES].reverse();
+const toFretboardStringIndex = (logicalStringIdx: number) => OPEN_NOTES.length - 1 - logicalStringIdx;
+
+// Grafia cromática real (com sustenido ou bemol) para cada índice de CHROMATIC_SCALE —
+// usadas pelo rótulo do marcador, que nunca deve remover o acidente (ver toDisplayLetter).
+const SHARP_SPELLING = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const FLAT_SPELLING = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+// Mapeia o scaleType (vocabulário do Caça às Escalas, ver music/scales.ts) para o
+// HarmonicCycleMode equivalente, só para reaproveitar getAccidentalPreference —
+// já testada e usada em GPS dos Acordes para decidir bemol x sustenido por tonalidade.
+const SCALE_TYPE_TO_HARMONIC_MODE: Record<string, HarmonicCycleMode> = {
+  'Pentatonic Major': 'pentatonic-major',
+  'Pentatonic Minor': 'pentatonic-minor',
+  'Major (Ionian)': 'major',
+  'Natural Minor (Aeolian)': 'minor',
+  Blues: 'blues',
+  Dorian: 'dorian',
+  Mixolydian: 'mixolydian',
+  Lydian: 'lydian',
+  Phrygian: 'phrygian',
+  Locrian: 'locrian',
+};
 
 // Regiões jogáveis (subconjuntos de cordas/casas). Usam as 6 cordas (braço completo, como no
 // Studio) — a restrição original a 3 cordas era herança das sequências hardcoded do Phase 0,
-// não uma decisão pedagógica. A região 2 é liberada a partir do rank Architect.
+// não uma decisão pedagógica. Janelas genéricas de 5 casas, deslocando 2 casas por região —
+// mesmo padrão de r1/r2 original, só estendido até cobrir o braço inteiro (até a casa 15).
+// Não são boxes CAGED nem dependem de tônica/escala — isso é decisão deliberada (ver auditoria).
 const SCALE_HUNTER_REGIONS: ScaleHunterRegion[] = [
   { id: 'r1', label: 'Região 1', strings: [0, 1, 2, 3, 4, 5], frets: [1, 2, 3, 4, 5] },
   { id: 'r2', label: 'Região 2', strings: [0, 1, 2, 3, 4, 5], frets: [3, 4, 5, 6, 7] },
+  { id: 'r3', label: 'Região 3', strings: [0, 1, 2, 3, 4, 5], frets: [5, 6, 7, 8, 9] },
+  { id: 'r4', label: 'Região 4', strings: [0, 1, 2, 3, 4, 5], frets: [7, 8, 9, 10, 11] },
+  { id: 'r5', label: 'Região 5', strings: [0, 1, 2, 3, 4, 5], frets: [9, 10, 11, 12, 13] },
+  { id: 'r6', label: 'Região 6', strings: [0, 1, 2, 3, 4, 5], frets: [11, 12, 13, 14, 15] },
 ];
 const DEFAULT_REGION = SCALE_HUNTER_REGIONS[0];
 const REGION_STRING_LIST = DEFAULT_REGION.strings;
@@ -226,34 +260,61 @@ const SCALE_DISPLAY_LABEL: Record<string, string> = {
 const MANUAL_SCALE_TYPES = ['Pentatonic Major', 'Pentatonic Minor', 'Major (Ionian)', 'Natural Minor (Aeolian)'];
 const MANUAL_ROOTS = [...CHROMATIC_SCALE];
 
-// Região continua liberada por rank mesmo na seleção manual: Rookie/Runner só veem Região 1.
-const getAvailableRegionsForRank = (rankId: string): ScaleHunterRegion[] =>
-  rankId === 'architect' || rankId === 'neon' ? SCALE_HUNTER_REGIONS : [DEFAULT_REGION];
+// Regiões liberadas por rank — progressão gradual sobre as 6 regiões agora disponíveis
+// (era só Rookie/Runner = r1, Architect/Neon = r1+r2; mantém a mesma forma de gate, só
+// com mais passos). Usada tanto pelo sorteio ("Novo caminho") quanto pelo seletor manual.
+const ROOKIE_REGION_IDS = ['r1'];
+const RUNNER_REGION_IDS = ['r1', 'r2'];
+const ARCHITECT_REGION_IDS = ['r1', 'r2', 'r3', 'r4'];
+const NEON_REGION_IDS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6'];
+
+const SCALE_REGION_IDS_BY_RANK: Record<string, string[]> = {
+  rookie: ROOKIE_REGION_IDS,
+  runner: RUNNER_REGION_IDS,
+  architect: ARCHITECT_REGION_IDS,
+  neon: NEON_REGION_IDS,
+};
+
+// Ordem de progressão dos ranks (mesma ordem de TEEN_RANKS) — usada só para achar o
+// primeiro rank que libera cada região, para a dica de "bloqueada" no seletor.
+const RANK_ORDER = ['rookie', 'runner', 'architect', 'neon'];
+
+const getRequiredRankForRegion = (regionId: string) =>
+  RANK_ORDER.find((rankId) => SCALE_REGION_IDS_BY_RANK[rankId]?.includes(regionId))
+    ?? RANK_ORDER[RANK_ORDER.length - 1];
+
+const getAvailableRegionsForRank = (rankId: string): ScaleHunterRegion[] => {
+  const allowedIds = SCALE_REGION_IDS_BY_RANK[rankId] ?? ROOKIE_REGION_IDS;
+  return SCALE_HUNTER_REGIONS.filter((region) => allowedIds.includes(region.id));
+};
 
 const ROOKIE_POOL: ScalePoolEntry[] = [
-  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: ['r1'] },
+  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: ROOKIE_REGION_IDS },
 ];
 
 const RUNNER_POOL: ScalePoolEntry[] = [
-  ...ROOKIE_POOL,
-  { scaleType: 'Major (Ionian)', roots: ['C', 'G'], regionIds: ['r1'] },
-  { scaleType: 'Natural Minor (Aeolian)', roots: ['A', 'E'], regionIds: ['r1'] },
+  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: RUNNER_REGION_IDS },
+  { scaleType: 'Major (Ionian)', roots: ['C', 'G'], regionIds: RUNNER_REGION_IDS },
+  { scaleType: 'Natural Minor (Aeolian)', roots: ['A', 'E'], regionIds: RUNNER_REGION_IDS },
 ];
 
 const ARCHITECT_POOL: ScalePoolEntry[] = [
-  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: ['r1', 'r2'] },
-  { scaleType: 'Major (Ionian)', roots: ['C', 'G'], regionIds: ['r1', 'r2'] },
-  { scaleType: 'Natural Minor (Aeolian)', roots: ['A', 'E'], regionIds: ['r1', 'r2'] },
-  { scaleType: 'Blues', roots: ['A', 'E'], regionIds: ['r1', 'r2'] },
+  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: ARCHITECT_REGION_IDS },
+  { scaleType: 'Major (Ionian)', roots: ['C', 'G'], regionIds: ARCHITECT_REGION_IDS },
+  { scaleType: 'Natural Minor (Aeolian)', roots: ['A', 'E'], regionIds: ARCHITECT_REGION_IDS },
+  { scaleType: 'Blues', roots: ['A', 'E'], regionIds: ARCHITECT_REGION_IDS },
 ];
 
 // Neon Player libera os modos gregos principais com transposição livre (qualquer fundamental cromática).
 const NEON_PLAYER_POOL: ScalePoolEntry[] = [
-  ...ARCHITECT_POOL,
+  { scaleType: 'Pentatonic Minor', roots: ['A'], regionIds: NEON_REGION_IDS },
+  { scaleType: 'Major (Ionian)', roots: ['C', 'G'], regionIds: NEON_REGION_IDS },
+  { scaleType: 'Natural Minor (Aeolian)', roots: ['A', 'E'], regionIds: NEON_REGION_IDS },
+  { scaleType: 'Blues', roots: ['A', 'E'], regionIds: NEON_REGION_IDS },
   ...['Dorian', 'Mixolydian', 'Lydian', 'Phrygian', 'Locrian'].map((scaleType) => ({
     scaleType,
     roots: [...CHROMATIC_SCALE],
-    regionIds: ['r1', 'r2'],
+    regionIds: NEON_REGION_IDS,
   })),
 ];
 
@@ -313,11 +374,15 @@ const generateRandomScaleHunterPath = (rankId: string): PathPattern => {
   return STARTER_PATHS[0];
 };
 
-// Letra natural exibida na célula (mantém a simplificação visual já existente, sem acidentes).
-const toDisplayLetter = (note: string): ScaleNote | null => {
-  const normalized = note.replace('#', '');
-  if (!SCALE_SET.has(normalized as ScaleNote)) return null;
-  return normalized as ScaleNote;
+// Grafia real da nota (com o acidente correto para a tonalidade), nunca removida — ex.: A#/Bb
+// nunca aparece como "A", C#/Db nunca aparece como "C". A escolha entre sustenido e bemol segue
+// a mesma convenção de tonalidade já usada em GPS dos Acordes (getAccidentalPreference).
+const toDisplayLetter = (chromaticNote: string, root: string, scaleType: string): string => {
+  const index = CHROMATIC_SCALE.indexOf(chromaticNote);
+  if (index === -1) return chromaticNote;
+  const mode = SCALE_TYPE_TO_HARMONIC_MODE[scaleType];
+  const accidental = mode ? getAccidentalPreference(root, mode) : 'sharp';
+  return accidental === 'flat' ? FLAT_SPELLING[index] : SHARP_SPELLING[index];
 };
 
 const TeenScaleHunterPage: React.FC = () => {
@@ -337,7 +402,25 @@ const TeenScaleHunterPage: React.FC = () => {
   const [manualRoot, setManualRoot] = useState<string>(STARTER_PATHS[0].root);
   const [manualScaleType, setManualScaleType] = useState<string>(STARTER_PATHS[0].scaleType);
   const [manualRegionId, setManualRegionId] = useState<string>(DEFAULT_REGION.id);
+  // Mesmo estado/label/prop de Tríades e Tétrades (handedness -> FretboardState.isLeftHanded),
+  // sem nenhuma lógica nova: o espelhamento é todo feito pelo FretboardSVG.
+  const [handedness, setHandedness] = useState<'right' | 'left'>('right');
+  // Dica da região bloqueada tocada por último — title já cobre hover no desktop, mas toque
+  // no mobile não dispara :hover, então guardamos a última região bloqueada tocada para
+  // mostrar a mesma dica em texto, sem precisar de uma lib de tooltip nova.
+  const [lockedRegionHintId, setLockedRegionHintId] = useState<string | null>(null);
 
+  // O wrapper min-w-[880px] (ajuste de ergonomia de toque no mobile) abre com scrollLeft=0,
+  // que mostra a borda esquerda do SVG. Em modo destro essa borda é o nut — certo por padrão.
+  // Em canhoto o FretboardSVG espelha o eixo X e o nut passa para a direita, então sem isso o
+  // aluno cairia numa área vazia (padding) e precisaria rolar manualmente para achar a região.
+  useEffect(() => {
+    const node = fretboardScrollRef.current;
+    if (!node) return;
+    node.scrollLeft = handedness === 'left' ? node.scrollWidth : 0;
+  }, [handedness]);
+
+  const fretboardScrollRef = useRef<HTMLDivElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const playTokenRef = useRef(0);
 
@@ -369,13 +452,13 @@ const TeenScaleHunterPage: React.FC = () => {
     backgroundSize: '100% 30px',
   };
 
-  const cellToNote = (cellId: CellId): ScaleNote | null => {
+  const cellToNote = (cellId: CellId): string | null => {
     const match = cellId.match(/^s(\d+)f(\d+)$/);
     if (!match) return null;
     const stringIndex = Number(match[1]);
     const fret = Number(match[2]);
     const chromatic = getNoteAt(stringIndex, fret, OPEN_NOTES);
-    return toDisplayLetter(chromatic);
+    return toDisplayLetter(chromatic, currentPath.root, currentPath.scaleType);
   };
 
   // Migração da grade HTML para o FretboardSVG compartilhado (mesmo componente de
@@ -396,7 +479,7 @@ const TeenScaleHunterPage: React.FC = () => {
       const color = wasPicked ? '#34d399' : isTonic ? '#ef4444' : isTarget ? '#8b5cf6' : (isLight ? '#cbd5e1' : '#52525b');
       scaleHunterMarkers.push({
         id: cellId,
-        string: stringIdx,
+        string: toFretboardStringIndex(stringIdx),
         fret,
         shape: 'circle',
         color,
@@ -409,7 +492,7 @@ const TeenScaleHunterPage: React.FC = () => {
     if (!activeCell) return null;
     const match = activeCell.match(/^s(\d+)f(\d+)$/);
     if (!match) return null;
-    return { string: Number(match[1]), fret: Number(match[2]) };
+    return { string: toFretboardStringIndex(Number(match[1])), fret: Number(match[2]) };
   })();
 
   const scaleHunterStringStatuses: StringStatus[] = OPEN_NOTES.map(() => 'normal');
@@ -426,12 +509,12 @@ const TeenScaleHunterPage: React.FC = () => {
     notes: '',
     startFret: Math.max(0, Math.min(...currentPath.region.frets) - 1),
     endFret: Math.max(...currentPath.region.frets) + 1,
-    isLeftHanded: false,
+    isLeftHanded: handedness === 'left',
     root: currentPath.root,
     scaleType: currentPath.scaleType,
     instrumentType: 'guitar-6',
     tuning: 'Custom',
-    customTuning: OPEN_NOTES,
+    customTuning: FRETBOARD_TUNING,
     stringStatuses: scaleHunterStringStatuses,
     labelMode: 'fingering',
     harmonyMode: 'OFF',
@@ -728,27 +811,67 @@ const TeenScaleHunterPage: React.FC = () => {
                 </select>
               </label>
 
-              {availableManualRegions.length > 1 ? (
-                <label className="flex flex-col gap-1">
-                  <span className={`text-[9px] font-black uppercase ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{isPt ? 'Região' : 'Region'}</span>
-                  <select
-                    value={resolvedManualRegionId}
-                    onChange={(e) => setManualRegionId(e.target.value)}
-                    className={`min-h-[40px] rounded-lg border px-3 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white text-slate-900' : 'border-zinc-700 bg-zinc-950 text-zinc-100'}`}
-                  >
-                    {availableManualRegions.map((region) => (
-                      <option key={region.id} value={region.id}>{region.label}</option>
-                    ))}
-                  </select>
-                </label>
-              ) : (
-                <div className="flex flex-col gap-1">
-                  <span className={`text-[9px] font-black uppercase ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{isPt ? 'Região' : 'Region'}</span>
-                  <span className={`min-h-[40px] rounded-lg border px-3 py-2 text-xs font-black uppercase opacity-70 ${isLight ? 'border-slate-300 bg-white text-slate-700' : 'border-zinc-700 bg-zinc-950 text-zinc-300'}`}>
-                    {availableManualRegions[0].label}
-                  </span>
+              <div className="flex flex-col gap-1">
+                <span className={`text-[9px] font-black uppercase ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{isPt ? 'Região' : 'Region'}</span>
+                <div className="flex flex-wrap gap-2">
+                  {SCALE_HUNTER_REGIONS.map((region) => {
+                    const isUnlocked = availableManualRegions.some((available) => available.id === region.id);
+                    const isSelected = isUnlocked && resolvedManualRegionId === region.id;
+                    const requiredRank = TEEN_RANKS.find((rank) => rank.id === getRequiredRankForRegion(region.id));
+                    const lockHint = requiredRank
+                      ? (isPt
+                          ? `Desbloqueia com rank ${requiredRank.label} (${requiredRank.minXp} XP)`
+                          : `Unlocks at ${requiredRank.label} rank (${requiredRank.minXp} XP)`)
+                      : undefined;
+                    return (
+                      <button
+                        key={region.id}
+                        type="button"
+                        title={isUnlocked ? undefined : lockHint}
+                        aria-disabled={!isUnlocked}
+                        onClick={() => {
+                          if (!isUnlocked) {
+                            setLockedRegionHintId(region.id);
+                            return;
+                          }
+                          setLockedRegionHintId(null);
+                          setManualRegionId(region.id);
+                        }}
+                        className={`min-h-[40px] rounded-lg border px-3 text-xs font-black uppercase transition-all ${
+                          !isUnlocked
+                            ? isLight
+                              ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
+                              : 'cursor-not-allowed border-zinc-800 bg-zinc-900/40 text-zinc-600'
+                            : isSelected
+                              ? isLight
+                                ? 'border-violet-500 bg-violet-100 text-violet-900'
+                                : 'border-violet-300 bg-violet-500/25 text-violet-50'
+                              : isLight
+                                ? 'border-slate-300 bg-white text-slate-700 hover:border-violet-400'
+                                : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-violet-500'
+                        }`}
+                      >
+                        {region.label}{!isUnlocked ? ' 🔒' : ''}
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
+                {lockedRegionHintId && !availableManualRegions.some((available) => available.id === lockedRegionHintId) ? (
+                  <p className={`text-[10px] font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
+                    {(() => {
+                      const requiredRank = TEEN_RANKS.find((rank) => rank.id === getRequiredRankForRegion(lockedRegionHintId));
+                      if (!requiredRank) return null;
+                      return isPt
+                        ? `Desbloqueia com rank ${requiredRank.label} (${requiredRank.minXp} XP)`
+                        : `Unlocks at ${requiredRank.label} rank (${requiredRank.minXp} XP)`;
+                    })()}
+                  </p>
+                ) : (
+                  <p className={`text-[10px] font-bold ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
+                    {isPt ? 'Novas regiões são liberadas conforme seu XP no Teens.' : 'New regions unlock as your Teens XP grows.'}
+                  </p>
+                )}
+              </div>
 
               <button
                 onClick={generateManualPath}
@@ -756,6 +879,27 @@ const TeenScaleHunterPage: React.FC = () => {
               >
                 {isPt ? 'Gerar caminho' : 'Generate path'}
               </button>
+
+              <div className="flex flex-col gap-1">
+                <span className={`text-[9px] font-black uppercase ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{isPt ? 'Modo do braço' : 'Neck mode'}</span>
+                <div className="flex gap-2">
+                  {(['right', 'left'] as const).map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => setHandedness(item)}
+                      className={`min-h-[40px] rounded-lg border px-4 text-xs font-black uppercase ${handedness === item
+                        ? isLight
+                          ? 'border-violet-500 bg-violet-100 text-violet-900'
+                          : 'border-violet-300 bg-violet-500/25 text-violet-50'
+                        : isLight
+                          ? 'border-slate-300 bg-white text-slate-700 hover:border-violet-400'
+                          : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-violet-500'}`}
+                    >
+                      {item === 'right' ? (isPt ? 'Destro' : 'Right') : (isPt ? 'Canhoto' : 'Left')}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -765,14 +909,14 @@ const TeenScaleHunterPage: React.FC = () => {
                 Sem alterar o FretboardSVG: forcamos uma largura minima aqui (min-w) e deixamos
                 o scroll horizontal (overflow-x-auto) absorver o excesso em mobile — a altura
                 sobe junto, proporcional, sem distorcer nada. */}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto" ref={fretboardScrollRef}>
               <div className="min-w-[880px]">
                 <FretboardSVG
                   state={scaleHunterFretboardState}
                   editorMode="view"
                   onEvent={(event) => {
                     if (isPlaying || event?.type !== 'note') return;
-                    void handlePickCell(`s${event.string}f${event.fret}` as CellId);
+                    void handlePickCell(`s${toFretboardStringIndex(event.string)}f${event.fret}` as CellId);
                   }}
                   selectedColor="#8b5cf6"
                   selectedShape="circle"
