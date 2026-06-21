@@ -67,7 +67,7 @@
 }
 </script>
 <link rel="stylesheet" href="/index.css">
-<!-- TEMP: snippet oficial GA4 para isolar problema de /g/collect. Remover apos validacao. -->
+<!-- GA4: inicializacao oficial. src/lib/analytics.ts usa o window.gtag definido aqui para enviar page_view e eventos customizados; nao reinjeta script nem reenvia consent/config. -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1P55PY0KFE"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
