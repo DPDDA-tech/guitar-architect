@@ -81,6 +81,10 @@ function loadGtagScript(): Promise<void> {
 
   isScriptLoaded = true;
   setupGtagStub();
+  window.gtag('consent', 'default', {
+    analytics_storage: 'granted',
+    ad_storage: 'denied',
+  });
   window.gtag('js', new Date());
   window.gtag('config', GA_MEASUREMENT_ID, { send_page_view: false });
 
