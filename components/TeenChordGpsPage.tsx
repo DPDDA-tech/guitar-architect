@@ -335,6 +335,8 @@ const TeenChordGpsPage: React.FC = () => {
   const [selectedDegreeIndex, setSelectedDegreeIndex] = useState<number | null>(null);
   const [selectedProgression, setSelectedProgression] = useState<string | null>(null);
   const [progressionStepIndex, setProgressionStepIndex] = useState(0);
+  // Mesmo estado/label/prop de Tríades e Tétrades (handedness -> FretboardState.isLeftHanded).
+  const [handedness, setHandedness] = useState<'right' | 'left'>('right');
   // Orbita pedagogica: trocar a tonica gira o sistema pelo caminho mais curto no
   // circulo das quintas (horario = quinta acima, anti-horario = quarta acima).
   // Trocar so o modo (Maior <-> Menor) nao gira nada — apenas um pulso leve,
@@ -425,8 +427,8 @@ const TeenChordGpsPage: React.FC = () => {
   }, [activeChordContext.degree, activeQuality]);
 
   const chordGpsFretboardState = useMemo(
-    () => (activeShape ? buildChordGpsFretboardState(activeShape, false) : null),
-    [activeShape],
+    () => (activeShape ? buildChordGpsFretboardState(activeShape, handedness === 'left') : null),
+    [activeShape, handedness],
   );
 
   const copy = lang === 'pt'
@@ -461,6 +463,9 @@ const TeenChordGpsPage: React.FC = () => {
         progressionsTitle: 'Progressões populares',
         progressionsHint: 'Clique numa progressão para destacar os acordes envolvidos.',
         fretboardTitle: 'Geometria no Braço',
+        handedness: 'Modo do braço',
+        right: 'Destro',
+        left: 'Canhoto',
         fretboardPlaceholder: 'Não foi possível montar uma forma para este acorde nesta região do braço.',
         currentChordLabel: 'Acorde atual',
         degreeLabel: 'Grau',
@@ -508,6 +513,9 @@ const TeenChordGpsPage: React.FC = () => {
         progressionsTitle: 'Popular progressions',
         progressionsHint: 'Click a progression to highlight the chords involved.',
         fretboardTitle: 'Neck Geometry',
+        handedness: 'Neck mode',
+        right: 'Right',
+        left: 'Left',
         fretboardPlaceholder: 'Could not build a shape for this chord in this neck region.',
         currentChordLabel: 'Current chord',
         degreeLabel: 'Degree',
@@ -710,7 +718,29 @@ const TeenChordGpsPage: React.FC = () => {
 
           {/* Bloco 5 — Geometria física */}
           <section className={`mt-6 rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
-            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-violet-400">{copy.fretboardTitle}</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-xs font-black uppercase tracking-[0.2em] text-violet-400">{copy.fretboardTitle}</h2>
+              <div className="flex flex-col gap-1">
+                <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{copy.handedness}</span>
+                <div className="flex gap-2">
+                  {(['right', 'left'] as const).map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => setHandedness(item)}
+                      className={`min-h-[40px] rounded-lg border px-4 text-xs font-black uppercase ${handedness === item
+                        ? isLight
+                          ? 'border-violet-500 bg-violet-100 text-violet-900'
+                          : 'border-violet-300 bg-violet-500/25 text-violet-50'
+                        : isLight
+                          ? 'border-slate-300 bg-white text-slate-700 hover:border-violet-400'
+                          : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-violet-500'}`}
+                    >
+                      {item === 'right' ? copy.right : copy.left}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
             {chordGpsFretboardState && activeChordContext.degree && gpsChordLabel && activeDegreeRole ? (
               <>

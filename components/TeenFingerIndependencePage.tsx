@@ -67,6 +67,7 @@ const buildFretboardState = (
   baseSteps: FingerExerciseStep[],
   heldSteps: FingerExerciseStep[],
   activeStep: FingerExerciseStep | undefined,
+  isLeftHanded: boolean,
 ): { fretboardState: FretboardState; feedbackNote: { string: number; fret: number } | null } => {
   const markerMap = new Map<string, Marker>();
 
@@ -115,7 +116,7 @@ const buildFretboardState = (
     // wire just before the first playable fret of the region must be in view.
     startFret: region.startFret - 1,
     endFret: region.endFret,
-    isLeftHanded: false,
+    isLeftHanded,
     root: 'C',
     scaleType: 'Major (Ionian)',
     instrumentType: 'guitar-6',
@@ -157,6 +158,8 @@ const TeenFingerIndependencePage: React.FC = () => {
   const [startFret, setStartFret] = useState(DEFAULT_START_FRET);
   const [autoShift, setAutoShift] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  // Mesmo estado/label/prop de Tríades e Tétrades (handedness -> FretboardState.isLeftHanded).
+  const [handedness, setHandedness] = useState<'right' | 'left'>('right');
 
   const indexRef = useRef(0);
   const [, forceRender] = useState(0);
@@ -171,6 +174,9 @@ const TeenFingerIndependencePage: React.FC = () => {
         mode: 'Modo',
         loop: 'Loop',
         startingFret: 'Casa inicial',
+        handedness: 'Modo do braço',
+        right: 'Destro',
+        left: 'Canhoto',
         autoShift: 'Deslocamento automático',
         region: 'Região',
         start: 'Iniciar',
@@ -195,6 +201,9 @@ const TeenFingerIndependencePage: React.FC = () => {
         mode: 'Mode',
         loop: 'Loop',
         startingFret: 'Starting fret',
+        handedness: 'Neck mode',
+        right: 'Right',
+        left: 'Left',
         autoShift: 'Auto-shift neck',
         region: 'Region',
         start: 'Start',
@@ -284,8 +293,8 @@ const TeenFingerIndependencePage: React.FC = () => {
   const activeStep = sequence[indexRef.current];
 
   const { fretboardState, feedbackNote } = useMemo(
-    () => buildFretboardState(region, sequence, heldSteps, activeStep),
-    [region, sequence, heldSteps, activeStep]
+    () => buildFretboardState(region, sequence, heldSteps, activeStep, handedness === 'left'),
+    [region, sequence, heldSteps, activeStep, handedness]
   );
 
   useEffect(() => {
@@ -396,6 +405,19 @@ const TeenFingerIndependencePage: React.FC = () => {
                   >
                     +
                   </button>
+                </div>
+
+                <p className="mt-3 text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.handedness}</p>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {(['right', 'left'] as const).map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => setHandedness(item)}
+                      className={`${toolbarButtonClass(handedness === item)} inline-flex items-center justify-center text-center`}
+                    >
+                      {item === 'right' ? copy.right : copy.left}
+                    </button>
+                  ))}
                 </div>
 
                 <p className="mt-3 text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{copy.loop}</p>
