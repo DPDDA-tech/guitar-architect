@@ -25,6 +25,9 @@ export const AnalyticsEvents = {
 export type AnalyticsEventName = typeof AnalyticsEvents[keyof typeof AnalyticsEvents] | string;
 
 let isScriptLoaded = false;
+let gtagLoadPromise: Promise<void> | null = null;
+let gtagLoadResolver: (() => void) | null = null;
+let gtagLoadRejecter: ((error: unknown) => void) | null = null;
 
 const isBrowserEnv = (): boolean => typeof window !== 'undefined' && typeof document !== 'undefined';
 
@@ -36,32 +39,75 @@ const isLocalHost = (): boolean => {
 
 const canTrack = (): boolean => isBrowserEnv() && !isLocalHost();
 
-function loadGtagScript(): void {
-  if (!isBrowserEnv() || isScriptLoaded) return;
-  isScriptLoaded = true;
+function createGtagLoadPromise(): Promise<void> {
+  if (!gtagLoadPromise) {
+    gtagLoadPromise = new Promise((resolve, reject) => {
+      gtagLoadResolver = resolve;
+      gtagLoadRejecter = reject;
+    });
+  }
 
+  return gtagLoadPromise;
+}
+
+function resolveGtagLoad(): void {
+  if (!gtagLoadResolver) return;
+  gtagLoadResolver();
+  gtagLoadResolver = null;
+  gtagLoadRejecter = null;
+}
+
+function rejectGtagLoad(error: unknown): void {
+  if (!gtagLoadRejecter) return;
+  gtagLoadRejecter(error);
+  gtagLoadPromise = null;
+  gtagLoadResolver = null;
+  gtagLoadRejecter = null;
+}
+
+function setupGtagStub(): void {
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag(...args: unknown[]) {
+  const stub = function gtag(...args: unknown[]) {
     window.dataLayer.push(args);
   };
+  (stub as unknown as { q?: unknown; l?: number }).q = window.dataLayer;
+  (stub as unknown as { q?: unknown; l?: number }).l = Date.now();
+  window.gtag = stub as unknown as GtagFunction;
+}
 
+function loadGtagScript(): Promise<void> {
+  if (!isBrowserEnv()) return Promise.resolve();
+  if (isScriptLoaded) return createGtagLoadPromise();
+
+  isScriptLoaded = true;
+  setupGtagStub();
   window.gtag('js', new Date());
   window.gtag('config', GA_MEASUREMENT_ID, { send_page_view: false });
 
+  const promise = createGtagLoadPromise();
   const script = document.createElement('script');
   script.async = true;
   script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-  document.head.appendChild(script);
+  script.onload = () => {
+    resolveGtagLoad();
+  };
+  script.onerror = () => {
+    isScriptLoaded = false;
+    rejectGtagLoad(new Error(`Failed to load gtag.js from ${script.src}`));
+  };
+  (document.head || document.getElementsByTagName('head')[0]).appendChild(script);
+
+  return promise;
 }
 
 export function initAnalytics(): void {
   if (!canTrack()) return;
-  loadGtagScript();
+  void loadGtagScript();
 }
 
 export function trackPageView(path: string): void {
   if (!canTrack()) return;
-  loadGtagScript();
+  void loadGtagScript().catch(() => undefined);
   window.gtag('event', 'page_view', {
     page_path: path,
     page_location: window.location.href,
@@ -72,6 +118,6 @@ export function trackPageView(path: string): void {
 
 export function trackEvent(name: AnalyticsEventName, params: Record<string, unknown> = {}): void {
   if (!canTrack()) return;
-  loadGtagScript();
+  void loadGtagScript().catch(() => undefined);
   window.gtag('event', name, params);
 }
