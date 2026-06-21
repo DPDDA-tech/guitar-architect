@@ -15,11 +15,17 @@ import {
   type TeenTetradRole,
 } from '../data/teenTetradMap';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
+import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 import AppFooter from './AppFooter';
 import FretboardSVG from './FretboardSVG';
 import type { FretboardState, Line, Marker, StringStatus } from '../types';
+
+const navigateTo = (path: string) => {
+  window.history.pushState(null, '', path);
+  window.dispatchEvent(new Event('ga-route-change'));
+};
 
 type ChordGpsMode = 'major' | 'minor';
 
@@ -835,6 +841,32 @@ const TeenChordGpsPage: React.FC = () => {
               ))}
             </div>
           </section>
+
+          <div className="mt-6 flex justify-center gap-3">
+            <button
+              onClick={() => navigateTo('/teens')}
+              className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(139,92,246,0.3)] transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95"
+            >
+              {lang === 'pt' ? 'Voltar ao Teens' : 'Back to Teens'}
+            </button>
+            <button
+              onClick={() => sendFretboardIntent({
+                source: 'teens-chord',
+                action: 'field',
+                root,
+                scaleType: mode === 'major' ? 'Major (Ionian)' : 'Natural Minor (Aeolian)',
+                harmonyMode: 'TRIADS',
+                instruction: {
+                  title: lang === 'pt' ? 'Do GPS ao Campo Harmônico' : 'From GPS to Harmonic Field',
+                  description: lang === 'pt' ? 'Você navegou pelo campo harmônico aqui. Agora explore os graus completos no Studio.' : 'You navigated the harmonic field here. Now explore the full degrees in the Studio.',
+                  persistent: true,
+                },
+              })}
+              className="rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-500 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_30px_rgba(8,145,178,0.3)] transition-all hover:from-cyan-500 hover:to-sky-400 active:scale-95"
+            >
+              {lang === 'pt' ? 'Ir para Studio' : 'Go to Studio'}
+            </button>
+          </div>
         </main>
       </div>
       <AppFooter isLight={isLight} lang={lang} logoSrc="/gateenslogo.webp" logoAlt="Guitar Architect Teens" />
