@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
-import { addTeensXp, getRankProgress, getTeensXp, TEEN_RANKS } from '../utils/teenProgress';
+import { addTeensXpOnce, getRankProgress, getTeensXp, TEEN_RANKS } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import { getNoteAt, CHROMATIC_SCALE } from '../music/musicTheory';
 import { getScaleNotes } from '../music/scales';
@@ -663,6 +663,13 @@ const TeenScaleHunterPage: React.FC = () => {
     }
   };
 
+  // Chave de conclusão por combinação real (tônica+escala+área+modo) — a primeira vez que o
+  // aluno completa essa combinação específica dá XP cheio; repetições da mesma combinação
+  // (inclusive vindas do sorteio "Novo caminho", que pode repetir a mesma área) dão 0 XP.
+  // Subir/Descer/Subir-e-descer/Livre contam como conquistas separadas (modo entra na chave).
+  const buildScaleHunterAwardKey = (mode: ExerciseMode) =>
+    `scaleHunter:${currentPath.root}:${currentPath.scaleType}:${currentPath.region.id}:${mode}`;
+
   // Modo Livre: não há ordem obrigatória — qualquer nota da escala conta, na ordem que o aluno
   // quiser. "Concluído" aqui significa ter passado por todas as posições da escala na região.
   const handleFreePick = (cellId: CellId) => {
@@ -680,10 +687,14 @@ const TeenScaleHunterPage: React.FC = () => {
       setCombo((v) => v + 1);
 
       if (next.length === currentPath.sequence.length) {
-        const nextXp = addTeensXp(XP_BY_MODE.free);
-        setXp(nextXp);
+        const { total, firstTime } = addTeensXpOnce(buildScaleHunterAwardKey('free'), XP_BY_MODE.free);
+        setXp(total);
         setStreak((v) => v + 1);
-        setFeedback(isPt ? 'Você passou por toda a escala! Novo XP adicionado.' : 'You explored the whole scale! New XP added.');
+        setFeedback(
+          firstTime
+            ? (isPt ? 'Você passou por toda a escala! Novo XP adicionado.' : 'You explored the whole scale! New XP added.')
+            : (isPt ? 'Você passou por toda a escala! Já dominada — sem XP adicional.' : 'You explored the whole scale! Already mastered — no extra XP.'),
+        );
       } else {
         setFeedback(isPt ? 'Boa! Continue explorando as notas da escala no instrumento.' : 'Nice! Keep exploring the scale notes on your instrument.');
       }
@@ -715,11 +726,15 @@ const TeenScaleHunterPage: React.FC = () => {
       }
 
       if (next.length === targetSequence.length) {
-        const nextXp = addTeensXp(XP_BY_MODE[mode]);
-        setXp(nextXp);
+        const { total, firstTime } = addTeensXpOnce(buildScaleHunterAwardKey(mode), XP_BY_MODE[mode]);
+        setXp(total);
         setStreak((v) => v + 1);
         setCombo((v) => v + 1);
-        setFeedback(isPt ? 'Caminho concluído! Novo XP adicionado.' : 'Path completed! New XP added.');
+        setFeedback(
+          firstTime
+            ? (isPt ? 'Caminho concluído! Novo XP adicionado.' : 'Path completed! New XP added.')
+            : (isPt ? 'Caminho concluído! Já dominado — sem XP adicional.' : 'Path completed! Already mastered — no extra XP.'),
+        );
       } else {
         setFeedback(isPt ? 'Boa! Continue acompanhando a escala no instrumento.' : 'Nice! Keep following the scale on your instrument.');
       }

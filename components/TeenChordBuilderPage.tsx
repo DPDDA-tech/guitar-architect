@@ -1,6 +1,6 @@
 ﻿import React, { useMemo, useRef, useState } from 'react';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
-import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
+import { addTeensXpOnce, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import { teenChordChallenges, teenChordStacks, type TeenChordNote } from '../data/teenChordData';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
@@ -162,11 +162,15 @@ const TeenChordBuilderPage: React.FC = () => {
     }
 
     if (sortedSelected === sortedTarget) {
-      const nextXp = addTeensXp(activeChallenge.xp);
-      setXp(nextXp);
+      const { xp: earnedXp, total, firstTime } = addTeensXpOnce(`chordBuilder:${activeChallenge.id}`, activeChallenge.xp);
+      setXp(total);
       setCombo((v) => v + 1);
       setStreak((v) => v + 1);
-      setFeedback(isPt ? `Perfeito! Bloco correto. +${activeChallenge.xp} XP` : `Perfect! Correct block. +${activeChallenge.xp} XP`);
+      setFeedback(
+        firstTime
+          ? (isPt ? `Perfeito! Bloco correto. +${earnedXp} XP` : `Perfect! Correct block. +${earnedXp} XP`)
+          : (isPt ? 'Perfeito! Bloco correto. Desafio já dominado — sem XP adicional.' : 'Perfect! Correct block. Challenge already mastered — no extra XP.'),
+      );
       return;
     }
 

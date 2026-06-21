@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
-import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
+import { addTeensXpOnce, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
@@ -358,9 +358,13 @@ const TeenBlueprintReadingPage: React.FC = () => {
     if (locked) return;
     setLocked(true);
     if (choice === quiz.answer) {
-      const nextXp = addTeensXp(quiz.xp);
-      setXp(nextXp);
-      setFeedback(`Acertou! +${quiz.xp} XP`);
+      const { xp: earnedXp, total, firstTime } = addTeensXpOnce(`blueprint:${quiz.id}`, quiz.xp);
+      setXp(total);
+      setFeedback(
+        firstTime
+          ? `Acertou! +${earnedXp} XP`
+          : (isPt ? 'Acertou! Pergunta já dominada — sem XP adicional.' : 'Correct! Question already mastered — no extra XP.'),
+      );
     } else {
       setFeedback(isPt ? `Quase! Resposta certa: ${quiz.answer}` : `Almost! Correct answer: ${quiz.answer}`);
     }

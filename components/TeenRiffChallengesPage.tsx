@@ -1,7 +1,7 @@
 ﻿import React, { useMemo, useRef, useState } from 'react';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
 import { teenRiffChallenges, type TeenRiffChallenge, type TeenRiffDifficulty, type TeenRiffNote } from '../data/teenRiffData';
-import { addTeensXp, getRankProgress, getTeensXp } from '../utils/teenProgress';
+import { addTeensXpOnce, getRankProgress, getTeensXp } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
@@ -171,13 +171,17 @@ const TeenRiffChallengesPage: React.FC = () => {
 
       if (next.length === selectedRiff.notes.length) {
         if (JSON.stringify(next) === JSON.stringify(selectedRiff.notes)) {
-          const earnedXp = selectedRiff.difficulty === 'hard' ? 30 : selectedRiff.difficulty === 'medium' ? 22 : 16;
-          const nextXp = addTeensXp(earnedXp);
-          setFeedback(isPt ? 'Riff concluído!' : 'Riff completed!');
+          const baseXp = selectedRiff.difficulty === 'hard' ? 30 : selectedRiff.difficulty === 'medium' ? 22 : 16;
+          const { total, firstTime } = addTeensXpOnce(`riff:${selectedRiff.id}`, baseXp);
+          setFeedback(
+            firstTime
+              ? (isPt ? 'Riff concluído!' : 'Riff completed!')
+              : (isPt ? 'Riff concluído! Já dominado — sem XP adicional.' : 'Riff completed! Already mastered — no extra XP.'),
+          );
           setStreak((value) => value + 1);
           setCombo((value) => value + 1);
           setLastResult('success');
-          setXp(nextXp);
+          setXp(total);
           setShowAchievement(true);
           window.setTimeout(() => setShowAchievement(false), 1400);
           unlockNextRiff(selectedIndex);
