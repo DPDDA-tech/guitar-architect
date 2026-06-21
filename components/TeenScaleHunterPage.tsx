@@ -332,8 +332,10 @@ const TeenScaleHunterPage: React.FC = () => {
   const [streak, setStreak] = useState(0);
   const [combo, setCombo] = useState(0);
   const [xp, setXp] = useState<number>(() => getTeensXp());
-  const [manualRoot, setManualRoot] = useState<string>('C');
-  const [manualScaleType, setManualScaleType] = useState<string>(MANUAL_SCALE_TYPES[0]);
+  // Espelha o currentPath inicial (STARTER_PATHS[0]) para os seletores manuais nao
+  // mostrarem um rascunho diferente do caminho de fato ativo no primeiro render.
+  const [manualRoot, setManualRoot] = useState<string>(STARTER_PATHS[0].root);
+  const [manualScaleType, setManualScaleType] = useState<string>(STARTER_PATHS[0].scaleType);
   const [manualRegionId, setManualRegionId] = useState<string>(DEFAULT_REGION.id);
 
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -388,12 +390,15 @@ const TeenScaleHunterPage: React.FC = () => {
       const isTarget = currentPath.sequence.includes(cellId);
       const wasPicked = userInput.includes(cellId);
       const isTonic = isTarget && isTonicCell(cellId, currentPath.root);
-      const color = wasPicked ? '#34d399' : isTarget ? '#8b5cf6' : (isLight ? '#cbd5e1' : '#52525b');
+      // Tonica usa vermelho (#ef4444), a mesma cor do intervalo "1" no resto do GA
+      // (ver colors.intervals['1'] em FretboardSVG.tsx) — sem triangulo, so cor, para
+      // nao precisar de um shape novo nem tocar no FretboardSVG.
+      const color = wasPicked ? '#34d399' : isTonic ? '#ef4444' : isTarget ? '#8b5cf6' : (isLight ? '#cbd5e1' : '#52525b');
       scaleHunterMarkers.push({
         id: cellId,
         string: stringIdx,
         fret,
-        shape: isTonic ? 'triangle' : 'circle',
+        shape: 'circle',
         color,
         finger: cellToNote(cellId) ?? '-',
       });
