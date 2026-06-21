@@ -52,7 +52,8 @@ import { supabase } from './src/lib/supabase';
 import { hydrateSupporterFromServer } from './utils/supporterStorage';
 import { loadConfig } from './utils/persistence';
 import { cleanupStudioRuntime } from './utils/studioRuntime';
-import { initAnalytics, trackPageView } from './src/lib/analytics';
+// TEMP: import desativado junto com a inicializacao abaixo. Reativar apos validacao do snippet oficial.
+// import { initAnalytics, trackPageView } from './src/lib/analytics';
 
 const getCurrentPath = () => window.location.pathname;
 
@@ -61,13 +62,14 @@ const App: React.FC = () => {
   const [unlockedConstancyReward, setUnlockedConstancyReward] = useState<ConstancyReward | null>(null);
   const [syncTimestamp, setSyncTimestamp] = useState(0);
 
-  useEffect(() => {
-    initAnalytics();
-  }, []);
+  // TEMP: desativado para isolar problema de /g/collect com o snippet oficial em index.html. Reativar apos validacao.
+  // useEffect(() => {
+  //   initAnalytics();
+  // }, []);
 
-  useEffect(() => {
-    trackPageView(path);
-  }, [path]);
+  // useEffect(() => {
+  //   trackPageView(path);
+  // }, [path]);
 
   useEffect(() => {
     try {
