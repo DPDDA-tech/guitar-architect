@@ -1342,6 +1342,14 @@ const handleReturnToContext = () => {
   window.dispatchEvent(new Event('ga-route-change'));
 };
 
+// Só dispensa o banner (sem navegar) — o usuário pode continuar no Studio sem
+// voltar para a sessão de estudo/prática. Remove do localStorage também, senão
+// o banner reaparece no próximo reload.
+const handleDismissReturnContext = () => {
+  window.localStorage.removeItem(RETURN_CONTEXT_KEY);
+  setReturnContext(null);
+};
+
   const handleGlobalTranspose = (semitones: number) => {
     if (semitones === 0) {
       const diff = -globalTranspose;
@@ -2749,12 +2757,23 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                 </h3>
               </div>
             </div>
-            <button
-              onClick={handleReturnToContext}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase shadow-lg shadow-blue-600/20 transition-all active:scale-95"
-            >
-              {lang === 'pt' ? 'Voltar' : 'Return'}
-            </button>
+            <div className="flex w-full sm:w-auto items-center gap-2">
+              <button
+                onClick={handleReturnToContext}
+                className="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+              >
+                {lang === 'pt' ? 'Voltar' : 'Return'}
+              </button>
+              <button
+                type="button"
+                onClick={handleDismissReturnContext}
+                aria-label={lang === 'pt' ? 'Cancelar e dispensar' : 'Cancel and dismiss'}
+                title={lang === 'pt' ? 'Cancelar e dispensar' : 'Cancel and dismiss'}
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-sm font-black transition-all active:scale-95 ${isLight ? 'border-blue-200 bg-white text-blue-600 hover:bg-blue-50' : 'border-blue-500/30 bg-blue-950/40 text-blue-300 hover:bg-blue-900/40'}`}
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
 
