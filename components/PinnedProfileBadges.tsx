@@ -13,7 +13,6 @@ export const PinnedProfileBadges: React.FC<PinnedProfileBadgesProps> = ({ isLigh
   const [badges, setBadges] = useState<RewardMetadata[]>([]);
   const [previewBadge, setPreviewBadge] = useState<RewardMetadata | null>(null);
   const visibleBadges = badges.slice(0, MAX_VISIBLE_HEADER_BADGES);
-  const hiddenBadgeCount = Math.max(0, badges.length - MAX_VISIBLE_HEADER_BADGES);
 
   const refreshBadges = () => {
     const pinnedIds = getPinnedProfileBadges();
@@ -55,16 +54,6 @@ export const PinnedProfileBadges: React.FC<PinnedProfileBadgesProps> = ({ isLigh
                 <img src={badge.image} alt={badge.title} className="w-full h-full object-contain" />
               </button>
             ))}
-            {hiddenBadgeCount > 0 && (
-              <span
-                className={`flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-lg border text-[9px] font-black ${
-                  isLight ? 'bg-white border-zinc-200 text-zinc-500' : 'bg-zinc-800 border-zinc-700 text-zinc-400'
-                }`}
-                title={`+${hiddenBadgeCount}`}
-              >
-                +{hiddenBadgeCount}
-              </span>
-            )}
           </div>
         )}
       </div>
