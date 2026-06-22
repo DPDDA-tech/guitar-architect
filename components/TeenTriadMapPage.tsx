@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import FretboardSVG from './FretboardSVG';
 import { getIntervalName, getNoteAt } from '../music/musicTheory';
+import { INTERVAL_COLORS } from '../data/fretboardVisualTheme';
 import { getTeensLang, getTeensTheme, setGlobalLang, setGlobalTheme } from '../utils/ecosystemPreferences';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
@@ -211,20 +212,7 @@ const buildChromaticNeckMarkers = (
 ): Marker[] => {
   const showNotes = visualizationMode === 'notes-neck';
   const triadNotes = getTeenTriadNotes(root, quality);
-  const intervalColors: Record<string, string> = {
-    '1': '#dc2626',
-    'b2': '#f97316',
-    '2': '#fb923c',
-    'b3': '#d97706',
-    '3': '#d97706',
-    '4': '#22c55e',
-    'b5': '#2563eb',
-    '5': '#2563eb',
-    'b6': '#8b5cf6',
-    '6': '#a855f7',
-    'b7': '#ec4899',
-    '7': '#f43f5e',
-  };
+  const intervalColors = INTERVAL_COLORS;
   const neutralColor = '#cbd5e1';
 
   const markers: Marker[] = [];

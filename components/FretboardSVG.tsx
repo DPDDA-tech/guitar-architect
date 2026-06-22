@@ -549,11 +549,12 @@ const renderBrushPaths = () => {
           const x = getNoteX(m.fret); const y = getY(m.string);
           const note = getNoteAt(m.string, m.fret, currentTuning);
           const label = labelMode === 'note' ? note : (labelMode === 'interval' ? getIntervalName(root, note) : (labelMode === 'fingering' ? m.finger || '' : ''));
+          const strokeOpacity = m.strokeOpacity ?? 1;
           return (
             <g key={m.id}>
-              {m.shape === 'circle' && <circle cx={x} cy={y} r={markerRadius} fill={m.color} stroke="#fff" strokeWidth="2.5" />}
-              {m.shape === 'square' && <rect x={x - markerRadius} y={y - markerRadius} width={markerRadius*2} height={markerRadius*2} fill={m.color} stroke="#fff" strokeWidth="2.5" />}
-              {m.shape === 'triangle' && <path d={`M ${x} ${y - markerRadius} L ${x + markerRadius} ${y + markerRadius} L ${x - markerRadius} ${y + markerRadius} Z`} fill={m.color} stroke="#fff" strokeWidth="2.5" />}
+              {m.shape === 'circle' && <circle cx={x} cy={y} r={markerRadius} fill={m.color} stroke="#fff" strokeWidth="2.5" strokeOpacity={strokeOpacity} />}
+              {m.shape === 'square' && <rect x={x - markerRadius} y={y - markerRadius} width={markerRadius*2} height={markerRadius*2} fill={m.color} stroke="#fff" strokeWidth="2.5" strokeOpacity={strokeOpacity} />}
+              {m.shape === 'triangle' && <path d={`M ${x} ${y - markerRadius} L ${x + markerRadius} ${y + markerRadius} L ${x - markerRadius} ${y + markerRadius} Z`} fill={m.color} stroke="#fff" strokeWidth="2.5" strokeOpacity={strokeOpacity} />}
               {label && (
                 <text
                   x={x}

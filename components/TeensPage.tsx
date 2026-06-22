@@ -126,6 +126,19 @@ const TeensPage: React.FC = () => {
       unlockXp: 220,
     },
     {
+      title: { pt: 'Radar de Intervalos', en: 'Interval Radar' },
+      subtitle: lang === 'pt' ? 'Ouça, identifique e veja intervalos ganharem forma no braço.' : 'Listen, identify and see intervals take shape on the neck.',
+      visual: (
+        <svg viewBox="0 0 240 64" className="h-16 w-full" fill="none">
+          <path d="M56 40L184 24" stroke="#a78bfa" strokeWidth="2.5" strokeLinecap="round" />
+          <circle cx="56" cy="40" r="9" fill="#dc2626" />
+          <circle cx="184" cy="24" r="9" fill="#2563eb" />
+        </svg>
+      ),
+      available: true,
+      path: '/teens/radar-de-intervalos',
+    },
+    {
       title: { pt: 'Explorador de Acordes', en: 'Chord Explorer' },
       subtitle: lang === 'pt' ? 'Descubra os acordes essenciais e seus formatos mais usados.' : 'Discover essential chords and their most common shapes.',
       visual: (

@@ -44,6 +44,7 @@ import TeenTetradMapPage from './components/TeenTetradMapPage';
 import TeenChordGpsPage from './components/TeenChordGpsPage';
 import TeenFingerIndependencePage from './components/TeenFingerIndependencePage';
 import TeenScaleHunterPage from './components/TeenScaleHunterPage';
+import TeenIntervalRadarPage from './components/TeenIntervalRadarPage';
 import TeenChordBuilderPage from './components/TeenChordBuilderPage';
 import TeenBlueprintReadingPage from './components/TeenBlueprintReadingPage';
 import TeensGarageHubPage from './components/TeensGarageHubPage';
@@ -210,6 +211,7 @@ const App: React.FC = () => {
       case '/teens/gps-dos-acordes': return <TeenChordGpsPage />;
       case '/teens/independencia-dos-dedos': return <TeenFingerIndependencePage />;
       case '/teens/scale-hunter': return <TeenScaleHunterPage />;
+      case '/teens/radar-de-intervalos': return <TeenIntervalRadarPage />;
       case '/teens/chord-builder': return <TeenChordBuilderPage />;
       case '/teens/blueprint-reading': return <TeenBlueprintReadingPage />;
       case '/studio': return <FretboardPanel />;

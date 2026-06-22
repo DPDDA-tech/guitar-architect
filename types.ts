@@ -30,6 +30,9 @@ export interface Marker {
   shape: MarkerShape;
   color: string;
   finger?: string;
+  // Opcional, aditivo: opacidade do contorno (stroke) deste marcador, 0 a 1.
+  // Quando omitido, mantém o comportamento atual (contorno branco 100%).
+  strokeOpacity?: number;
 }
 
 export interface Line {
