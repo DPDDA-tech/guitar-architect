@@ -1,7 +1,8 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
 import AppFooter from './AppFooter';
+import { getDailyInstructorSpotlightGroup } from '../data/instructors';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -28,6 +29,7 @@ const EcosystemPage: React.FC = () => {
   const [theme, setTheme] = useState<ThemeMode>(() => getGlobalTheme());
   const [lang, setLang] = useState<AppLang>(() => getGlobalLang());
   const isLight = theme === 'light';
+  const spotlightInstructors = useMemo(() => getDailyInstructorSpotlightGroup(), []);
 
   const actionClass = isLight
     ? 'border-zinc-300 bg-white text-zinc-700 shadow-[0_8px_20px_rgba(15,23,42,0.08)] hover:border-blue-400'
@@ -218,6 +220,43 @@ const EcosystemPage: React.FC = () => {
             className={`inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all ${actionClass}`}
           >
             {lang === 'pt' ? 'Conheça nossa marca' : 'Meet our brand'}
+          </button>
+        </div>
+
+        <div className="mx-auto mt-10 mb-2 max-w-2xl text-center max-lg:landscape:hidden">
+          <p className={`text-base md:text-xl font-extrabold tracking-tight ${isLight ? 'text-zinc-800' : 'text-white'}`}>
+            {lang === 'pt' ? 'Conheça seus Arquitetos Musicais Virtuais' : 'Meet your Virtual Music Architects'}
+          </p>
+          <p className={`mt-2 text-sm md:text-base leading-relaxed ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+            {lang === 'pt'
+              ? 'Conheça alguns dos personagens-instrutores criados para orientar sua jornada em teoria, ritmo, percepção, rock, blues, metal, baixo, harmonia e prática guiada.'
+              : 'Meet some of the instructor characters created to guide your journey through theory, rhythm, perception, rock, blues, metal, bass, harmony and guided practice.'}
+          </p>
+
+          <div className="mt-5 flex items-center justify-center gap-4">
+            {spotlightInstructors.map(instructor => (
+              <button
+                key={instructor.id}
+                type="button"
+                onClick={() => navigateTo(`/instructors/${instructor.id}`)}
+                className="flex flex-col items-center gap-1.5"
+              >
+                <span className={`h-14 w-14 overflow-hidden rounded-full border-2 transition-transform hover:scale-110 md:h-16 md:w-16 ${isLight ? 'border-white shadow-md' : 'border-zinc-800'}`}>
+                  <img src={instructor.cardImage} alt={instructor.name} className="h-full w-full object-cover object-top" />
+                </span>
+                <span className={`text-[10px] font-bold uppercase tracking-wide ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                  {instructor.name}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigateTo('/instructors')}
+            className={`mt-5 inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all ${actionClass}`}
+          >
+            {lang === 'pt' ? 'Ver Arquitetos Musicais' : 'See Music Architects'}
           </button>
         </div>
       </div>

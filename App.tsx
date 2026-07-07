@@ -20,6 +20,8 @@ import EcosystemPage from './components/EcosystemPage';
 import Season1Page from './components/Season1Page';
 import BrandPage from './components/BrandPage';
 import AboutPage from './components/AboutPage';
+import InstructorsGalleryPage from './components/InstructorsGalleryPage';
+import InstructorProfilePage from './components/InstructorProfilePage';
 import KidsPage from './components/KidsPage';
 import KidsFirstStepsPage from './components/KidsFirstStepsPage';
 import KidsNotesPage from './components/KidsNotesPage';
@@ -168,6 +170,11 @@ const App: React.FC = () => {
       return <AdminRewardsPage />;
     }
 
+    if (currentPath.startsWith('/instructors/')) {
+      const instructorId = currentPath.split('/instructors/')[1]?.split('/')[0] ?? '';
+      return <InstructorProfilePage instructorId={instructorId} />;
+    }
+
     switch (path) {
       case '/harmonic-cycle': return <HarmonicCyclePage />;
       case '/learn': return <LearnPage />;
@@ -185,6 +192,7 @@ const App: React.FC = () => {
       case '/brand': return <BrandPage />;
       case '/nossa-marca': return <BrandPage />;
       case '/about': return <AboutPage />;
+      case '/instructors': return <InstructorsGalleryPage />;
       case '/kids': return <KidsPage />;
       case '/kids/first-steps': return <KidsFirstStepsPage />;
       case '/kids/notes': return <KidsNotesPage />;
