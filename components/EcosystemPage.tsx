@@ -62,16 +62,28 @@ const EcosystemPage: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none opacity-50" style={gridStyle} />
 
       <div className="relative mx-auto max-w-6xl py-2 md:py-3 max-lg:landscape:py-0 text-center">
-        <p className="mb-1 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 max-lg:landscape:text-[8px] max-lg:landscape:mb-0.5">
-          {lang === 'pt' ? 'Ecossistema Musical' : 'Music Ecosystem'}
+        <p className="mb-2 text-xs md:text-sm font-black uppercase tracking-[0.3em] text-blue-500 max-lg:landscape:text-[8px] max-lg:landscape:mb-0.5">
+          Guitar Architect
         </p>
 
-        <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter max-lg:landscape:text-2xl">
-          Guitar Architect
+        <h1 className="text-3xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-normal leading-tight max-lg:landscape:text-lg">
+          {lang === 'pt' ? (
+            <>
+              <span className="block">Construa sua jornada musical,</span>
+              <span className="block">etapa por etapa</span>
+            </>
+          ) : (
+            <>
+              <span className="block">Build your musical journey,</span>
+              <span className="block">step by step</span>
+            </>
+          )}
         </h1>
 
-        <p className="mt-2 mb-4 text-zinc-500 font-bold uppercase text-[14px] tracking-[0.25em] max-lg:landscape:mt-1 max-lg:landscape:mb-2 max-lg:landscape:text-[9px] max-lg:landscape:tracking-[0.15em]">
-          {lang === 'pt' ? 'Defina sua etapa na construção musical: descoberta, prática guiada ou ferramentas avançadas.' : 'Choose your stage in the musical journey: discovery, guided practice, or advanced tools.'}
+        <p className={`mt-3 mb-4 max-w-3xl mx-auto font-semibold text-base md:text-lg leading-relaxed tracking-normal normal-case max-lg:landscape:mt-1 max-lg:landscape:mb-2 max-lg:landscape:text-[9px] ${isLight ? 'text-zinc-600' : 'text-zinc-300'}`}>
+          {lang === 'pt'
+            ? 'Do primeiro contato com os sons às ferramentas avançadas para guitarra e baixo, o Guitar Architect guia sua evolução musical com descoberta, prática, mapas visuais e construção harmônica.'
+            : 'From the first contact with sounds to advanced tools for guitar and bass, Guitar Architect guides your musical growth through discovery, practice, visual maps and harmonic construction.'}
         </p>
 
         <div className="mb-6 flex items-center justify-end gap-2 max-lg:landscape:mb-2">
@@ -100,7 +112,9 @@ const EcosystemPage: React.FC = () => {
             {
               id: 'kids',
               title: 'KIDS',
-              subtitle: lang === 'pt' ? 'Descoberta musical' : 'Musical discovery',
+              subtitle: lang === 'pt'
+                ? 'Primeiros contatos com sons, instrumentos e conceitos básicos.\nUm espaço visual e divertido para crianças e iniciantes descobrirem o universo da música.'
+                : 'First contact with sounds, instruments and basic concepts.\nA visual, fun space for children and beginners to discover the world of music.',
               logo: '/gakidslogo.webp',
               path: '/kids',
               btn: 'bg-emerald-600',
@@ -109,7 +123,9 @@ const EcosystemPage: React.FC = () => {
             {
               id: 'teens',
               title: 'TEENS',
-              subtitle: lang === 'pt' ? 'Riffs e desafios' : 'Riffs and challenges',
+              subtitle: lang === 'pt'
+                ? 'Desafios, prática guiada e evolução progressiva no braço do instrumento.\nExplore escalas, intervalos, independência dos dedos, riffs e exercícios interativos.'
+                : 'Challenges, guided practice and progressive growth across the instrument fretboard.\nExplore scales, intervals, finger independence, riffs and interactive exercises.',
               logo: '/gateenslogo.webp',
               path: '/teens',
               btn: 'bg-violet-600',
@@ -118,11 +134,13 @@ const EcosystemPage: React.FC = () => {
             {
               id: 'studio',
               title: 'STUDIO',
-              subtitle: lang === 'pt' ? 'Ferramentas avançadas' : 'Advanced tools',
+              subtitle: lang === 'pt'
+                ? 'Ferramentas avançadas para visualizar harmonia, acordes, tríades e tétrades.\nUm espaço para estudantes, guitarristas e professores aprofundarem a construção musical.'
+                : 'Advanced tools to visualize harmony, chords, triads and seventh chords.\nA space for students, guitarists and teachers to deepen their musical construction.',
               logo: '/logogastudio.webp',
               path: '/studio',
               btn: 'bg-blue-600',
-              cta: lang === 'pt' ? 'Abrir Studio' : 'Open Studio',
+              cta: lang === 'pt' ? 'Entrar no Studio' : 'Enter Studio',
             },
           ].map(area => {
             const isStudio = area.id === 'studio';
@@ -156,7 +174,7 @@ const EcosystemPage: React.FC = () => {
                   {area.title}
                 </h2>
 
-                <p className={`text-[10px] font-semibold mb-7 tracking-[0.12em] uppercase ${isLight ? 'text-zinc-500' : 'text-zinc-400'} max-lg:landscape:text-[7px] max-lg:landscape:mb-2 max-lg:landscape:tracking-[0.08em]`}>
+                <p className={`text-[12px] font-medium leading-relaxed mb-7 normal-case whitespace-pre-line ${isLight ? 'text-zinc-500' : 'text-zinc-400'} max-lg:landscape:text-[7px] max-lg:landscape:mb-2 max-lg:landscape:leading-tight`}>
                   {area.subtitle}
                 </p>
 
@@ -166,6 +184,17 @@ const EcosystemPage: React.FC = () => {
               </button>
             );
           })}
+        </div>
+
+        <div className="mx-auto mb-8 max-w-2xl max-lg:landscape:hidden">
+          <p className={`text-base md:text-xl font-extrabold tracking-tight ${isLight ? 'text-zinc-800' : 'text-white'}`}>
+            {lang === 'pt' ? 'Música também se constrói.' : 'Music is also built.'}
+          </p>
+          <p className={`mt-2 text-sm md:text-base leading-relaxed ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+            {lang === 'pt'
+              ? 'O Guitar Architect transforma sons, instrumentos, escalas, acordes e ideias musicais em uma jornada visual — do primeiro contato à construção harmônica.'
+              : 'Guitar Architect turns sounds, instruments, scales, chords and musical ideas into a visual journey — from first discovery to harmonic construction.'}
+          </p>
         </div>
 
         <button
