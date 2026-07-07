@@ -118,7 +118,7 @@ const EcosystemPage: React.FC = () => {
               logo: '/gakidslogo.webp',
               path: '/kids',
               btn: 'bg-emerald-600',
-              cta: lang === 'pt' ? 'Entrar no Kids' : 'Enter Kids',
+              cta: lang === 'pt' ? 'Explorar Kids' : 'Explore Kids',
             },
             {
               id: 'teens',
@@ -129,7 +129,7 @@ const EcosystemPage: React.FC = () => {
               logo: '/gateenslogo.webp',
               path: '/teens',
               btn: 'bg-violet-600',
-              cta: lang === 'pt' ? 'Entrar no Teens' : 'Enter Teens',
+              cta: lang === 'pt' ? 'Explorar Teens' : 'Explore Teens',
             },
             {
               id: 'studio',
@@ -140,7 +140,7 @@ const EcosystemPage: React.FC = () => {
               logo: '/logogastudio.webp',
               path: '/studio',
               btn: 'bg-blue-600',
-              cta: lang === 'pt' ? 'Entrar no Studio' : 'Enter Studio',
+              cta: lang === 'pt' ? 'Explorar Studio' : 'Explore Studio',
             },
           ].map(area => {
             const isStudio = area.id === 'studio';
@@ -185,6 +185,12 @@ const EcosystemPage: React.FC = () => {
             );
           })}
         </div>
+
+        <p className={`mx-auto mb-8 max-w-2xl text-xs md:text-sm font-semibold leading-relaxed max-lg:landscape:hidden ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+          {lang === 'pt'
+            ? 'Explore livremente. Para salvar evolução, instrumentos, colecionáveis e projetos, faça login pelo Studio.'
+            : 'Explore freely. To save progress, instruments, collectibles and projects, sign in through Studio.'}
+        </p>
 
         <div className="mx-auto mb-8 max-w-2xl max-lg:landscape:hidden">
           <p className={`text-base md:text-xl font-extrabold tracking-tight ${isLight ? 'text-zinc-800' : 'text-white'}`}>

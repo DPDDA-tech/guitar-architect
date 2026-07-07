@@ -92,6 +92,10 @@ const AboutPage: React.FC = () => {
           'No Guitar Architect, aprender música não é apenas memorizar desenhos ou repetir exercícios.',
           'A ideia é construir entendimento: reconhecer sons, visualizar relações, praticar com propósito e compreender como cada nota, intervalo e acorde participa da arquitetura musical.',
         ],
+        accountTitle: 'Preciso criar conta para usar?',
+        account: [
+          'Não para começar. Boa parte do Guitar Architect pode ser explorada sem login, especialmente os ambientes Kids e Teens. O login é feito pelo Studio e permite salvar evolução, instrumentos, colecionáveis, projetos e preferências vinculadas à sua conta.',
+        ],
         s5Title: 'O que o Guitar Architect não é',
         s5: [
           'O Guitar Architect não é um plugin de efeitos, simulador de amplificador, DAW, banco de cifras ou simples coleção de exercícios.',
@@ -130,6 +134,10 @@ const AboutPage: React.FC = () => {
         s4: [
           'In Guitar Architect, learning music is not just about memorizing shapes or repeating exercises.',
           'The idea is to build understanding: recognize sounds, visualize relationships, practice with purpose and understand how each note, interval and chord takes part in musical architecture.',
+        ],
+        accountTitle: 'Do I need an account to use it?',
+        account: [
+          'Not to get started. Much of Guitar Architect can be explored without signing in, especially the Kids and Teens environments. Sign-in is available through Studio and lets you save progress, instruments, collectibles, projects and preferences linked to your account.',
         ],
         s5Title: 'What Guitar Architect is not',
         s5: [
@@ -238,6 +246,15 @@ const AboutPage: React.FC = () => {
                 <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s4Title}</h2>
                 <div className="space-y-3">
                   {t.s4.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+                </div>
+              </section>
+
+              <hr className={isLight ? 'border-zinc-100' : 'border-zinc-800'} />
+
+              <section>
+                <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.accountTitle}</h2>
+                <div className="space-y-3">
+                  {t.account.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
                 </div>
               </section>
 
