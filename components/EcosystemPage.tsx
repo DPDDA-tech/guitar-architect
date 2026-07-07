@@ -197,13 +197,23 @@ const EcosystemPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => navigateTo('/brand')}
-          className={`mx-auto mb-2 inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all max-lg:landscape:hidden ${actionClass}`}
-        >
-          {lang === 'pt' ? 'Conheça nossa marca' : 'Discover our brand'}
-        </button>
+        <div className="mx-auto mb-2 flex flex-wrap items-center justify-center gap-3 max-lg:landscape:hidden">
+          <button
+            type="button"
+            onClick={() => navigateTo('/about')}
+            style={{ backgroundImage: 'linear-gradient(90deg, #009B66 0%, #7F3FE7 50%, #1E61E6 100%)' }}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white shadow-[0_8px_20px_rgba(30,97,230,0.35)] transition-all hover:brightness-110"
+          >
+            {lang === 'pt' ? 'Entenda o Guitar Architect' : 'Understand Guitar Architect'}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigateTo('/brand')}
+            className={`inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all ${actionClass}`}
+          >
+            {lang === 'pt' ? 'Conheça nossa marca' : 'Meet our brand'}
+          </button>
+        </div>
       </div>
     </div>
 

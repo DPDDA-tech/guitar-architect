@@ -19,6 +19,7 @@ import AdminRewardsPage from './components/AdminRewardsPage';
 import EcosystemPage from './components/EcosystemPage';
 import Season1Page from './components/Season1Page';
 import BrandPage from './components/BrandPage';
+import AboutPage from './components/AboutPage';
 import KidsPage from './components/KidsPage';
 import KidsFirstStepsPage from './components/KidsFirstStepsPage';
 import KidsNotesPage from './components/KidsNotesPage';
@@ -183,6 +184,7 @@ const App: React.FC = () => {
       case '/season-1': return <Season1Page />;
       case '/brand': return <BrandPage />;
       case '/nossa-marca': return <BrandPage />;
+      case '/about': return <AboutPage />;
       case '/kids': return <KidsPage />;
       case '/kids/first-steps': return <KidsFirstStepsPage />;
       case '/kids/notes': return <KidsNotesPage />;

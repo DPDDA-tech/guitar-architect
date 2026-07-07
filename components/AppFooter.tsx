@@ -72,6 +72,16 @@ const AppFooter: React.FC<AppFooterProps> = ({
             >
               {lang === 'pt' ? 'Temporada 1' : 'Season 1'}
             </a>
+            <a
+              href="/about"
+              onClick={event => {
+                event.preventDefault();
+                navigateTo('/about');
+              }}
+              className="cursor-pointer transition-colors hover:text-blue-600"
+            >
+              {lang === 'pt' ? 'Sobre' : 'About'}
+            </a>
             <a href="/legal/privacy.html" target="_blank" rel="noreferrer" className="transition-colors hover:text-blue-600">
               {lang === 'pt' ? 'Privacidade' : 'Privacy'}
             </a>
