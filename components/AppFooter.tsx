@@ -56,7 +56,9 @@ const AppFooter: React.FC<AppFooterProps> = ({
                 Guitar Architect<sup aria-label="marca" className="text-[8px]">™</sup> • DPDDA-tech
               </p>
               <p className="text-[9px] font-normal uppercase tracking-wide text-zinc-500">
-                Marca Mista Depositada no INPI • Processo Nº 944083625
+                {lang === 'pt'
+                  ? 'Marca Mista Depositada no INPI • Processo Nº 944083625'
+                  : 'Mixed Trademark Application Filed with the Brazilian INPI • Case No. 944083625'}
               </p>
             </div>
           </div>

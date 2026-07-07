@@ -2085,7 +2085,7 @@ const handleDismissReturnContext = () => {
         'explore',
         lang === 'pt' ? 'Explorar' : 'Explore',
         <div className={isMobileMenu ? 'space-y-2' : 'grid grid-cols-2 gap-2'}>
-          <button onClick={() => openModulePage('/ecosystem')} className={`${menuBtnClass} ${ecosystemBtnClass} ${!isMobileMenu ? 'col-span-2' : ''}`}>{lang === 'pt' ? 'Ecossistema' : 'Ecosystem'}</button>
+          <button onClick={() => openModulePage('/ecosystem')} className={`${menuBtnClass} ${ecosystemBtnClass} ${!isMobileMenu ? 'col-span-2' : ''}`}>{lang === 'pt' ? 'Início' : 'Home'}</button>
           <button onClick={() => openModulePage('/learn')} className={menuBtnClass}>{lang === 'pt' ? 'Aprender' : 'Learn'}</button>
           <button onClick={() => openModulePage('/practice')} className={menuBtnClass}>{lang === 'pt' ? 'Praticar' : 'Practice'}</button>
           <button onClick={() => openModulePage('/chords')} className={menuBtnClass}>{lang === 'pt' ? 'Acordes' : 'Chords'}</button>
@@ -2448,7 +2448,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  </div>
                  <div className="grid grid-cols-3 gap-1.5">
                     <button onClick={() => openModulePage('/ecosystem')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${ecosystemBtnClass}`}>
-                     {lang === 'pt' ? 'Ecossistema' : 'Ecosystem'}
+                     {lang === 'pt' ? 'Início' : 'Home'}
                    </button>
                     <button onClick={() => openModulePage('/theme-collection')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${collectiblesBtnClass}`}>
                      {lang === 'pt' ? 'Colecionáveis' : 'Collectibles'}

@@ -82,8 +82,8 @@ const EcosystemPage: React.FC = () => {
 
         <p className={`mt-3 mb-4 max-w-3xl mx-auto font-semibold text-base md:text-lg leading-relaxed tracking-normal normal-case max-lg:landscape:mt-1 max-lg:landscape:mb-2 max-lg:landscape:text-[9px] ${isLight ? 'text-zinc-600' : 'text-zinc-300'}`}>
           {lang === 'pt'
-            ? 'Do primeiro contato com os sons às ferramentas avançadas para guitarra e baixo, o Guitar Architect guia sua evolução musical com descoberta, prática, mapas visuais e construção harmônica.'
-            : 'From the first contact with sounds to advanced tools for guitar and bass, Guitar Architect guides your musical growth through discovery, practice, visual maps and harmonic construction.'}
+            ? 'Do primeiro contato com os instrumentos, notas e sons às ferramentas avançadas para guitarra e baixo, o Guitar Architect guia sua evolução musical com descoberta, prática, mapas visuais e construção harmônica.'
+            : 'From the first contact with instruments, notes and sounds to advanced tools for guitar and bass, Guitar Architect guides your musical growth through discovery, practice, visual maps and harmonic construction.'}
         </p>
 
         <div className="mb-6 flex items-center justify-end gap-2 max-lg:landscape:mb-2">
