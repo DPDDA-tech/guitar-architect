@@ -134,6 +134,33 @@
     link.textContent = lang === 'en' ? '← Back to App' : '← Voltar ao App';
   });
 
+  const aboutLink = document.querySelector('[data-about-link]');
+  if (aboutLink) aboutLink.textContent = lang === 'en' ? 'About' : 'Sobre';
+
+  const enNotice = document.querySelector('[data-en-notice]');
+  if (enNotice) enNotice.hidden = lang !== 'en';
+
+  const footerLabels = {
+    season1: ['Temporada 1', 'Season 1'],
+    privacy: ['Privacidade', 'Privacy'],
+    terms: ['Termos', 'Terms'],
+    license: ['Licença', 'License'],
+    help: ['Ajuda', 'Help'],
+  };
+  document.querySelectorAll('[data-footer-link]').forEach(link => {
+    const labels = footerLabels[link.getAttribute('data-footer-link')];
+    if (labels) link.textContent = labels[slot];
+  });
+
+  const footerTagline = document.querySelector('[data-footer-tagline]');
+  if (footerTagline) {
+    const taglines = [
+      'Marca Mista Depositada no INPI • Processo Nº 944083625 • © 2026 Guitar Architect',
+      'Mixed trademark application filed with the Brazilian INPI • Case no. 944083625 • © 2026 Guitar Architect',
+    ];
+    footerTagline.textContent = taglines[slot];
+  }
+
   const h1 = document.querySelector('h1');
   if (h1) {
     const eyebrow = h1.previousElementSibling;
