@@ -2,9 +2,20 @@ import React from 'react';
 import type { InstructorProfile } from '../data/instructors';
 import { instructorCategoryLabels } from '../data/instructors';
 
+const GALLERY_SCROLL_KEY = 'ga_instructors_gallery_scroll';
+
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
   window.dispatchEvent(new Event('ga-route-change'));
+};
+
+const navigateToInstructor = (path: string) => {
+  try {
+    sessionStorage.setItem(GALLERY_SCROLL_KEY, String(window.scrollY));
+  } catch {
+    // sessionStorage indisponível (ex.: modo privado) — segue sem restaurar posição.
+  }
+  navigateTo(path);
 };
 
 interface InstructorCardProps {
@@ -14,6 +25,7 @@ interface InstructorCardProps {
 }
 
 const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, lang }) => {
+  const isAmbassador = instructor.id === 'monique';
   const panelClass = isLight
     ? 'border-zinc-200 bg-white shadow-lg'
     : 'border-[rgba(30,64,175,0.4)] bg-[rgba(10,20,36,0.92)] shadow-[0_12px_40px_rgba(0,0,0,0.45)]';
@@ -26,7 +38,7 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
   return (
     <button
       type="button"
-      onClick={() => navigateTo(`/instructors/${instructor.id}`)}
+      onClick={() => navigateToInstructor(`/instructors/${instructor.id}`)}
       className={`flex flex-col overflow-hidden rounded-3xl border text-left transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${panelClass}`}
     >
       <div className="relative h-48 w-full overflow-hidden bg-zinc-100 md:h-56">
@@ -72,7 +84,9 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
               {lang === 'pt' ? 'Perfil disponível' : 'Profile available'}
             </p>
             <p className={`text-[9px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>
-              {lang === 'pt' ? instructor.unlockLabel : 'Mentorship coming soon'}
+              {isAmbassador
+                ? (lang === 'pt' ? 'Guia da jornada' : 'Journey guide')
+                : (lang === 'pt' ? instructor.unlockLabel : 'Mentorship coming soon')}
             </p>
           </div>
           <span className="whitespace-nowrap text-[10px] font-black uppercase tracking-widest text-blue-500">

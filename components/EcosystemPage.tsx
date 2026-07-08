@@ -225,12 +225,12 @@ const EcosystemPage: React.FC = () => {
 
         <div className="mx-auto mt-10 mb-2 max-w-2xl text-center max-lg:landscape:hidden">
           <p className={`text-base md:text-xl font-extrabold tracking-tight ${isLight ? 'text-zinc-800' : 'text-white'}`}>
-            {lang === 'pt' ? 'Conheça seus Arquitetos Musicais Virtuais' : 'Meet your Virtual Music Architects'}
+            {lang === 'pt' ? 'Conheça nossos Arquitetos Musicais' : 'Meet our Music Architects'}
           </p>
           <p className={`mt-2 text-sm md:text-base leading-relaxed ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
             {lang === 'pt'
-              ? 'Conheça alguns dos personagens-instrutores criados para orientar sua jornada em teoria, ritmo, percepção, rock, blues, metal, baixo, harmonia e prática guiada.'
-              : 'Meet some of the instructor characters created to guide your journey through theory, rhythm, perception, rock, blues, metal, bass, harmony and guided practice.'}
+              ? 'Personagens virtuais criados para orientar sua jornada em teoria, ritmo, percepção, rock, blues, metal, baixo, harmonia e prática guiada.'
+              : 'Virtual characters created to guide your journey through theory, rhythm, ear training, rock, blues, metal, bass, harmony and guided practice.'}
           </p>
 
           <div className="mt-5 flex items-center justify-center gap-4">

@@ -1,4 +1,10 @@
 export type InstructorCategory =
+  | 'institutional'
+  | 'communication'
+  | 'journey'
+  | 'luthiery'
+  | 'gear'
+  | 'maintenance'
   | 'beginner'
   | 'theory'
   | 'practice'
@@ -29,11 +35,19 @@ export interface InstructorProfile {
   relatedModules: string[];
   unlockLabel: string;
   cardImage: string;
+  /** Optional hero/profile image for the individual architect page (e.g. character with instrument or in practice). Falls back to cardImage when absent. */
+  heroImage?: string;
   quote: string;
   imageFit?: InstructorImageFit;
 }
 
 export const instructorCategoryLabels: Record<InstructorCategory, string> = {
+  institutional: 'Institucional',
+  communication: 'Comunicação',
+  journey: 'Jornada',
+  luthiery: 'Luthieria',
+  gear: 'Equipamentos',
+  maintenance: 'Manutenção',
   beginner: 'Iniciantes',
   theory: 'Teoria',
   practice: 'Prática',
@@ -48,6 +62,7 @@ export const instructorCategoryLabels: Record<InstructorCategory, string> = {
 };
 
 const instructorCardPath = (id: string) => `/instructors/1000/${id}-card-instructor.webp`;
+const instructorProfilePath = (id: string) => `/instructors/1400/${id}-profile.webp`;
 
 export const instructors: InstructorProfile[] = [
   {
@@ -62,6 +77,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Kids', 'Aprender'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('alice'),
+    heroImage: instructorProfilePath('alice'),
     quote: 'Todo mundo começa do mesmo lugar: pelo primeiro som.',
   },
   {
@@ -76,6 +92,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Aprender', 'Ciclo Harmônico'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('arthur'),
+    heroImage: instructorProfilePath('arthur'),
     quote: 'Teoria não é obstáculo. É o mapa que você usa para não se perder.',
   },
   {
@@ -90,6 +107,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Praticar', 'Acordes'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('bill'),
+    heroImage: instructorProfilePath('bill'),
     quote: 'Uma nota bem sentida vale mais que dez notas apressadas.',
   },
   {
@@ -104,6 +122,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Praticar', 'Aprender'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('clara'),
+    heroImage: instructorProfilePath('clara'),
     quote: 'Progresso não é sobre intensidade. É sobre continuar.',
   },
   {
@@ -118,6 +137,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Praticar', 'Acordes'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('dean'),
+    heroImage: instructorProfilePath('dean'),
     quote: 'Um bom riff diz tudo antes mesmo do vocal entrar.',
   },
   {
@@ -132,6 +152,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Praticar', 'Ciclo Harmônico'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('erika'),
+    heroImage: instructorProfilePath('erika'),
     quote: 'A base não aparece — ela sustenta tudo o que aparece.',
   },
   {
@@ -146,6 +167,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Tríades e Tétrades', 'Ciclo Harmônico'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('fred'),
+    heroImage: instructorProfilePath('fred'),
     quote: 'Todo acorde tem uma planta baixa. Basta aprender a lê-la.',
   },
   {
@@ -160,6 +182,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Praticar', 'CAGED'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('hiroshi'),
+    heroImage: instructorProfilePath('hiroshi'),
     quote: 'Precisão primeiro. Velocidade é consequência.',
   },
   {
@@ -174,6 +197,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Praticar', 'Acordes'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('jax'),
+    heroImage: instructorProfilePath('jax'),
     quote: 'O riff certo não é só tocado — é sentido no peito.',
   },
   {
@@ -188,6 +212,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Praticar', 'Radar de Intervalos'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('juan'),
+    heroImage: instructorProfilePath('juan'),
     quote: 'Groove não se força. Se sente e se repete.',
   },
   {
@@ -202,6 +227,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Praticar', 'CAGED'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('kael'),
+    heroImage: instructorProfilePath('kael'),
     quote: 'Intensidade sem controle é ruído. Com técnica, é impacto.',
   },
   {
@@ -216,6 +242,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Aprender', 'Praticar'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('leo'),
+    heroImage: instructorProfilePath('leo'),
     quote: 'Aprender uma música inteira ensina mais do que dez exercícios soltos.',
   },
   {
@@ -230,21 +257,23 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Radar de Intervalos', 'Praticar'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('mel'),
+    heroImage: instructorProfilePath('mel'),
     quote: 'Antes de tocar a nota certa, é preciso ouvi-la de verdade.',
   },
   {
     id: 'monique',
     name: 'Monique',
-    title: 'Prática Guiada Avançada',
-    shortDescription: 'Coach de prática avançada, com desafios e aplicação real para quem busca evolução consistente.',
-    longDescription: 'Monique conduz estudantes avançados por desafios estruturados, sempre conectando técnica a aplicação musical real. Sua trilha é voltada a quem já tem base e quer transformar prática em evolução mensurável.',
-    personality: ['Exigente', 'Motivadora', 'Estratégica'],
-    strengths: ['Desafios avançados', 'Aplicação prática', 'Evolução consistente'],
-    categories: ['practice', 'advanced'],
-    relatedModules: ['Praticar', 'Tríades e Tétrades'],
+    title: 'Embaixadora do GA',
+    shortDescription: 'Porta-voz virtual do GA, apresenta a jornada, comunica novidades e conecta o usuário aos ambientes do ecossistema.',
+    longDescription: 'Monique é a Embaixadora do GA. Ela apresenta o ecossistema, conecta Kids, Teens, Studio e os Arquitetos Musicais, comunica novidades e ajuda o usuário a entender como teoria, prática e percepção se transformam em uma construção musical estruturada. Sua presença representa a visão institucional do GA: aprender música com direção, identidade e progressão.',
+    personality: ['Acolhedora', 'Motivadora', 'Estratégica'],
+    strengths: ['Apresentação da jornada', 'Comunicação institucional', 'Conexão entre ambientes do ecossistema'],
+    categories: ['institutional', 'communication', 'journey'],
+    relatedModules: ['Ecossistema', 'Kids', 'Teens', 'Studio'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('monique'),
-    quote: 'Evolução real acontece na repetição com propósito.',
+    heroImage: instructorProfilePath('monique'),
+    quote: 'Uma boa jornada musical não começa no improviso. Ela começa com direção.',
   },
   {
     id: 'morena',
@@ -258,6 +287,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Acordes', 'Praticar'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('morena'),
+    heroImage: instructorProfilePath('morena'),
     quote: 'O mesmo acorde pode dizer coisas diferentes, dependendo de como você o toca.',
   },
   {
@@ -272,6 +302,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Praticar', 'Radar de Intervalos'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('nina'),
+    heroImage: instructorProfilePath('nina'),
     quote: 'Ritmo bom é aquele que faz o corpo responder antes da mente.',
   },
   {
@@ -286,6 +317,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Praticar', 'Aprender'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('rick'),
+    heroImage: instructorProfilePath('rick'),
     quote: 'Ritmo se treina todo dia, um pouco de cada vez.',
   },
   {
@@ -300,21 +332,28 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Teens', 'Praticar'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('roxie'),
+    heroImage: instructorProfilePath('roxie'),
     quote: 'Seu jeito de tocar também é sua assinatura.',
   },
   {
     id: 'tom',
     name: 'Tom',
-    title: 'Rock de Garagem',
-    shortDescription: 'Ensina rock clássico com acordes, riffs e repertório de garagem, direto ao ponto.',
-    longDescription: 'Tom representa o espírito do rock de garagem: acordes abertos, riffs simples e repertório que soa bem desde a primeira tentativa. Sua trilha é ótima para quem quer tocar música de verdade logo no início da jornada.',
+    title: 'Luthieria e Setup',
+    shortDescription: 'Especialista em regulagem, conservação, manutenção e ajustes práticos para manter o instrumento confortável, estável e pronto para tocar.',
+    longDescription: 'Tom cuida da parte física da jornada musical: instrumentos, regulagens, conservação, pequenos reparos, timbres e escolhas de equipamento. Sua função é ajudar o usuário a entender que tocar melhor também depende de um instrumento confortável, estável e bem cuidado.',
     personality: ['Descontraído', 'Direto', 'Acolhedor'],
-    strengths: ['Rock clássico', 'Acordes e riffs', 'Repertório acessível'],
-    categories: ['rock', 'beginner', 'practice'],
-    relatedModules: ['Aprender', 'Acordes'],
+    strengths: [
+      'Regulagem básica e conforto do instrumento',
+      'Conservação, limpeza e troca de cordas',
+      'Timbres, captadores e equipamentos',
+      'Customização e cultura de instrumentos',
+    ],
+    categories: ['luthiery', 'gear', 'maintenance'],
+    relatedModules: ['Custom Shop', 'Manutenção do Instrumento', 'Equipamentos e Timbres', 'EVH / Frankenstrat'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('tom'),
-    quote: 'Três acordes bem tocados já fazem uma música de verdade.',
+    heroImage: instructorProfilePath('tom'),
+    quote: 'Instrumento bem cuidado responde melhor, afina melhor e inspira mais.',
   },
   {
     id: 'victor',
@@ -328,6 +367,7 @@ export const instructors: InstructorProfile[] = [
     relatedModules: ['Ciclo Harmônico', 'Tríades e Tétrades'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('victor'),
+    heroImage: instructorProfilePath('victor'),
     quote: 'Harmonia sofisticada não é sobre complicar — é sobre enxergar mais opções.',
   },
 ];
