@@ -141,6 +141,21 @@ export const instructors: InstructorProfile[] = [
     quote: 'Um bom riff diz tudo antes mesmo do vocal entrar.',
   },
   {
+    id: 'diana',
+    name: 'Diana',
+    title: 'Embaixadora do GA',
+    shortDescription: 'Porta-voz virtual do GA, apresenta a jornada, comunica novidades e conecta o usuário aos ambientes do ecossistema.',
+    longDescription: 'Diana é a Embaixadora do GA. Ela apresenta o ecossistema, conecta Kids, Teens, Studio e os Arquitetos Musicais, comunica novidades e ajuda o usuário a entender como teoria, prática e percepção se transformam em uma construção musical estruturada. Sua presença representa a visão institucional do GA: aprender música com direção, identidade e progressão.',
+    personality: ['Acolhedora', 'Motivadora', 'Estratégica'],
+    strengths: ['Apresentação da jornada', 'Comunicação institucional', 'Conexão entre ambientes do ecossistema'],
+    categories: ['institutional', 'communication', 'journey'],
+    relatedModules: ['Ecossistema', 'Kids', 'Teens', 'Studio'],
+    unlockLabel: 'Mentoria em breve',
+    cardImage: instructorCardPath('diana'),
+    heroImage: instructorProfilePath('diana'),
+    quote: 'Uma boa jornada musical não começa no improviso. Ela começa com direção.',
+  },
+  {
     id: 'erika',
     name: 'Erika',
     title: 'Baixo & Bases',
@@ -261,21 +276,6 @@ export const instructors: InstructorProfile[] = [
     quote: 'Antes de tocar a nota certa, é preciso ouvi-la de verdade.',
   },
   {
-    id: 'monique',
-    name: 'Monique',
-    title: 'Embaixadora do GA',
-    shortDescription: 'Porta-voz virtual do GA, apresenta a jornada, comunica novidades e conecta o usuário aos ambientes do ecossistema.',
-    longDescription: 'Monique é a Embaixadora do GA. Ela apresenta o ecossistema, conecta Kids, Teens, Studio e os Arquitetos Musicais, comunica novidades e ajuda o usuário a entender como teoria, prática e percepção se transformam em uma construção musical estruturada. Sua presença representa a visão institucional do GA: aprender música com direção, identidade e progressão.',
-    personality: ['Acolhedora', 'Motivadora', 'Estratégica'],
-    strengths: ['Apresentação da jornada', 'Comunicação institucional', 'Conexão entre ambientes do ecossistema'],
-    categories: ['institutional', 'communication', 'journey'],
-    relatedModules: ['Ecossistema', 'Kids', 'Teens', 'Studio'],
-    unlockLabel: 'Mentoria em breve',
-    cardImage: instructorCardPath('monique'),
-    heroImage: instructorProfilePath('monique'),
-    quote: 'Uma boa jornada musical não começa no improviso. Ela começa com direção.',
-  },
-  {
     id: 'morena',
     name: 'Morena',
     title: 'Acordes e Expressividade',
@@ -376,7 +376,7 @@ export const getInstructorById = (id: string): InstructorProfile | undefined =>
   instructors.find(instructor => instructor.id === id);
 
 export const instructorSpotlightGroups: string[][] = [
-  ['monique', 'nina', 'victor', 'bill'],
+  ['diana', 'nina', 'victor', 'bill'],
   ['alice', 'rick', 'hiroshi', 'roxie'],
   ['erika', 'kael', 'mel', 'arthur'],
   ['morena', 'juan', 'fred', 'dean'],

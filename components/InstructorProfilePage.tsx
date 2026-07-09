@@ -78,7 +78,7 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
     : 'border-[rgba(30,64,175,0.4)] bg-[rgba(10,20,36,0.92)] text-blue-200';
 
   const instructor = getInstructorById(instructorId);
-  const isAmbassador = instructor?.id === 'monique';
+  const isAmbassador = instructor?.id === 'diana';
 
   const t = lang === 'pt'
     ? {
@@ -110,8 +110,8 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
     t.personalityTitle = lang === 'pt' ? 'Personalidade e estilo de comunicação' : 'Personality and communication style';
     t.noticeTitle = lang === 'pt' ? 'Guia da jornada em construção' : 'Journey guide in progress';
     t.noticeBody = lang === 'pt'
-      ? 'Em breve, Monique ajudará a apresentar novidades, orientar caminhos dentro do ecossistema e conectar conteúdos, trilhas e desafios do Guitar Architect.'
-      : 'Soon, Monique will help introduce updates, guide paths through the ecosystem, and connect Guitar Architect content, tracks, and challenges.';
+      ? 'Em breve, Diana ajudará a apresentar novidades, orientar caminhos dentro do ecossistema e conectar conteúdos, trilhas e desafios do Guitar Architect.'
+      : 'Soon, Diana will help introduce updates, guide paths through the ecosystem, and connect Guitar Architect content, tracks, and challenges.';
   }
 
   if (!instructor) {

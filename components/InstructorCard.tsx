@@ -25,7 +25,7 @@ interface InstructorCardProps {
 }
 
 const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, lang }) => {
-  const isAmbassador = instructor.id === 'monique';
+  const isAmbassador = instructor.id === 'diana';
   const panelClass = isLight
     ? 'border-zinc-200 bg-white shadow-lg'
     : 'border-[rgba(30,64,175,0.4)] bg-[rgba(10,20,36,0.92)] shadow-[0_12px_40px_rgba(0,0,0,0.45)]';
