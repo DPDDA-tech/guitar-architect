@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
 import AppFooter from './AppFooter';
@@ -28,6 +28,10 @@ const AboutPage: React.FC = () => {
   const [theme, setTheme] = useState<ThemeMode>(() => getGlobalTheme());
   const [lang, setLang] = useState<AppLang>(() => getGlobalLang());
   const isLight = theme === 'light';
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleToggleTheme = () => {
     const current = loadConfig();
