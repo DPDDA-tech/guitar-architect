@@ -28,7 +28,7 @@ const SunIcon = () => (
 );
 
 const filterOrder: FilterValue[] = [
-  'all', 'beginner', 'theory', 'rhythm', 'earTraining', 'rock', 'metal', 'blues', 'jazz', 'bass', 'advanced',
+  'all', 'beginner', 'theory', 'harmony', 'rhythm', 'earTraining', 'rock', 'metal', 'blues', 'jazz', 'bass', 'advanced',
 ];
 
 const GALLERY_SCROLL_KEY = 'ga_instructors_gallery_scroll';

@@ -5,6 +5,7 @@ export type InstructorCategory =
   | 'luthiery'
   | 'gear'
   | 'maintenance'
+  | 'harmony'
   | 'beginner'
   | 'theory'
   | 'practice'
@@ -48,6 +49,7 @@ export const instructorCategoryLabels: Record<InstructorCategory, string> = {
   luthiery: 'Luthieria',
   gear: 'Equipamentos',
   maintenance: 'Manutenção',
+  harmony: 'Harmonia',
   beginner: 'Iniciantes',
   theory: 'Teoria',
   practice: 'Prática',
@@ -276,21 +278,6 @@ export const instructors: InstructorProfile[] = [
     quote: 'Antes de tocar a nota certa, é preciso ouvi-la de verdade.',
   },
   {
-    id: 'morena',
-    name: 'Morena',
-    title: 'Acordes e Expressividade',
-    shortDescription: 'Trabalha acordes, acompanhamento e expressividade com foco em repertório.',
-    longDescription: 'Morena mostra como acordes vão muito além de shapes fixos: dinâmica, articulação e expressividade transformam o mesmo acorde em algo único. Sua trilha conecta harmonia a musicalidade real.',
-    personality: ['Expressiva', 'Sensível', 'Musical'],
-    strengths: ['Acordes e acompanhamento', 'Expressividade', 'Repertório musical'],
-    categories: ['blues', 'practice'],
-    relatedModules: ['Acordes', 'Praticar'],
-    unlockLabel: 'Mentoria em breve',
-    cardImage: instructorCardPath('morena'),
-    heroImage: instructorProfilePath('morena'),
-    quote: 'O mesmo acorde pode dizer coisas diferentes, dependendo de como você o toca.',
-  },
-  {
     id: 'nina',
     name: 'Nina',
     title: 'Groove & Ritmo',
@@ -336,6 +323,21 @@ export const instructors: InstructorProfile[] = [
     quote: 'Seu jeito de tocar também é sua assinatura.',
   },
   {
+    id: 'sofia',
+    name: 'Sofia',
+    title: 'Acordes e Expressividade',
+    shortDescription: 'Trabalha harmonia aplicada, acompanhamento e expressividade com foco em repertório.',
+    longDescription: 'Sofia mostra como acordes vão muito além de shapes fixos: harmonia aplicada, condução harmônica, acompanhamento e articulação transformam o mesmo acorde em algo único. Sua trilha conecta a teoria a uma aplicação prática real no repertório.',
+    personality: ['Acolhedora', 'Clara', 'Expressiva'],
+    strengths: ['Harmonia aplicada ao repertório', 'Acordes e acompanhamento', 'Condução harmônica', 'Expressividade musical'],
+    categories: ['harmony', 'practice'],
+    relatedModules: ['Acordes', 'Tríades e Tétrades', 'Studio', 'Praticar'],
+    unlockLabel: 'Mentoria em breve',
+    cardImage: instructorCardPath('sofia'),
+    heroImage: instructorProfilePath('sofia'),
+    quote: 'Um bom acorde não é apenas uma forma no braço: é uma escolha de cor, movimento e expressão.',
+  },
+  {
     id: 'tom',
     name: 'Tom',
     title: 'Luthieria e Setup',
@@ -363,7 +365,7 @@ export const instructors: InstructorProfile[] = [
     longDescription: 'Victor conduz o estudante por harmonias mais sofisticadas: acordes estendidos, substituições e condução musical típicas do jazz. Sua trilha é voltada a quem já domina o básico e quer aprofundar a compreensão harmônica.',
     personality: ['Sofisticado', 'Reflexivo', 'Refinado'],
     strengths: ['Harmonia avançada', 'Acordes sofisticados', 'Condução musical'],
-    categories: ['jazz', 'theory', 'advanced'],
+    categories: ['jazz', 'harmony', 'theory', 'advanced'],
     relatedModules: ['Ciclo Harmônico', 'Tríades e Tétrades'],
     unlockLabel: 'Mentoria em breve',
     cardImage: instructorCardPath('victor'),
@@ -379,7 +381,7 @@ export const instructorSpotlightGroups: string[][] = [
   ['diana', 'nina', 'victor', 'bill'],
   ['alice', 'rick', 'hiroshi', 'roxie'],
   ['erika', 'kael', 'mel', 'arthur'],
-  ['morena', 'juan', 'fred', 'dean'],
+  ['sofia', 'juan', 'fred', 'dean'],
   ['clara', 'jax', 'leo', 'tom'],
 ];
 
