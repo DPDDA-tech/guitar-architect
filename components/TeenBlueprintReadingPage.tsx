@@ -381,7 +381,7 @@ const TeenBlueprintReadingPage: React.FC = () => {
 
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
-        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Leitura de Partitura + TAB" subtitle="Partitura como mapa musical: altura no eixo Y, tempo no eixo X, com apoio da TAB." />
+        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title={isPt ? "Leitura de Partitura + TAB" : "Standard Notation + TAB Reading"} subtitle={isPt ? "Partitura como mapa musical: altura no eixo Y, tempo no eixo X, com apoio da TAB." : "Standard notation as a musical map: pitch on the Y axis, time on the X axis, with TAB support."} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>

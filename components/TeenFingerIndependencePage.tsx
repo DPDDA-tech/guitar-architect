@@ -370,7 +370,7 @@ const TeenFingerIndependencePage: React.FC = () => {
                       onClick={() => setExerciseId(item.id)}
                       className={`${toolbarButtonClass(exerciseId === item.id)} inline-flex items-center justify-center text-center`}
                     >
-                      {item.name}
+                      {item.name[lang]}
                     </button>
                   ))}
                 </div>

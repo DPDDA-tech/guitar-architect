@@ -176,7 +176,7 @@ const KidsFirstStepsPage: React.FC = () => {
     <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={copy.backKids} backPath="/kids" />
-        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="Primeiros Passos" subtitle="Pinte as figuras dos instrumentos." />
+        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={isPt ? "Primeiros Passos" : "First Steps"} subtitle={isPt ? "Pinte as figuras dos instrumentos." : "Color the instrument shapes."} />
 
         <section className="grid gap-6 lg:grid-cols-[360px_1fr]">
           <aside className={`rounded-3xl border p-4 md:p-5 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>

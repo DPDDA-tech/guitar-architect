@@ -3203,7 +3203,10 @@ const FretboardInstance: React.FC<FretboardInstanceProps> = ({
             <div className="space-y-2">
               <span className="text-[8px] font-black uppercase text-zinc-400 tracking-[0.25em]">{t.inversion}</span>
               <select value={state.inversion} onChange={e => recordAction({...state, inversion: Number(e.target.value)})} className={controlInputClass}>
-                <option value="0">Root</option><option value="1">1Âª Inv</option><option value="2">2Âª Inv</option><option value="3">3Âª Inv</option>
+                <option value="0">Root</option>
+                <option value="1">{lang === 'pt' ? '1ª Inv' : '1st Inv'}</option>
+                <option value="2">{lang === 'pt' ? '2ª Inv' : '2nd Inv'}</option>
+                <option value="3">{lang === 'pt' ? '3ª Inv' : '3rd Inv'}</option>
               </select>
             </div>
           </div>

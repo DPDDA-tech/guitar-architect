@@ -293,11 +293,11 @@ const TeensGarageEvhPage: React.FC = () => {
 
       <div className="relative mx-auto max-w-6xl">
           <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
-        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="EVH Frankenstein Tribute" subtitle="Como criar uma réplica visual inspirada na fase Red • White • Black da guitarra Frankenstein." />
+        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="EVH Frankenstein Tribute" subtitle={isPt ? "Como criar uma réplica visual inspirada na fase Red • White • Black da guitarra Frankenstein." : "How to create a visual replica inspired by the Red • White • Black phase of the Frankenstein guitar."} />
 
         <div className="mt-4 flex flex-wrap gap-3">
           <button type="button" onClick={() => navigateTo('/teens/garage')} className={`rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] ${isLight ? 'border-violet-300 bg-white text-violet-700' : 'border-violet-700 bg-violet-950/60 text-violet-200'}`}>
-            Voltar à Garagem
+            {isPt ? 'Voltar à Garagem' : 'Back to Garage'}
           </button>
         </div>
 
@@ -364,7 +364,7 @@ const TeensGarageEvhPage: React.FC = () => {
                       onClick={() => toggleCompleted(chapter.id)}
                       className={`rounded-xl border px-3 py-2 text-[10px] font-black uppercase tracking-[0.1em] ${completed[chapter.id] ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-300' : isLight ? 'border-zinc-300 bg-white text-zinc-500' : 'border-zinc-700 bg-zinc-900 text-zinc-400'}`}
                     >
-                      {completed[chapter.id] ? 'Concluída' : 'Marcar etapa'}
+                      {completed[chapter.id] ? (isPt ? 'Concluída' : 'Completed') : (isPt ? 'Marcar etapa' : 'Mark step')}
                     </button>
                   </div>
                   <div id={`${chapter.id}-content`} className={`grid transition-all duration-300 ease-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
@@ -397,8 +397,8 @@ const TeensGarageEvhPage: React.FC = () => {
       </div>
 
       {activeImage && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-4" role="dialog" aria-modal="true" aria-label="Visualização ampliada de imagem" onClick={() => setActiveImage(null)}>
-          <button type="button" className="absolute right-4 top-4 rounded-full bg-white px-3 py-2 text-xs font-black uppercase text-zinc-900" onClick={() => setActiveImage(null)} aria-label="Fechar imagem ampliada">Fechar</button>
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-4" role="dialog" aria-modal="true" aria-label={isPt ? "Visualização ampliada de imagem" : "Enlarged image view"} onClick={() => setActiveImage(null)}>
+          <button type="button" className="absolute right-4 top-4 rounded-full bg-white px-3 py-2 text-xs font-black uppercase text-zinc-900" onClick={() => setActiveImage(null)} aria-label={isPt ? "Fechar imagem ampliada" : "Close enlarged image"}>{isPt ? 'Fechar' : 'Close'}</button>
           <img src={activeImage.src} alt={activeImage.alt} className="max-h-[90vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl" onClick={(event) => event.stopPropagation()} />
         </div>
       )}

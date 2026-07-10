@@ -3,6 +3,7 @@ import { getAchievementById, getRewardsForAchievement } from '../utils/achieveme
 import { getTierDisplay } from '../utils/tierNomenclature';
 import type { Achievement } from '../types/achievement';
 import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
+import { getGlobalLang } from '../utils/ecosystemPreferences';
 
 const isTierOthersAsset = (path?: string | null) => Boolean(path?.includes('/tierothers/'));
 
@@ -23,6 +24,8 @@ const isSpecialSeal = (achievement: Achievement) => (
 const AchievementUnlockToast: React.FC = () => {
   const [achievement, setAchievement] = useState<Achievement | null>(null);
   const [extraCount, setExtraCount] = useState(0);
+  const [lang] = useState(() => getGlobalLang());
+  const isPt = lang === 'pt';
 
   useEffect(() => {
     const handleUnlock = (event: Event) => {
@@ -56,7 +59,9 @@ const AchievementUnlockToast: React.FC = () => {
   const glowClass = specialSeal
     ? 'bg-[radial-gradient(circle_at_16%_0%,rgba(251,191,36,0.30),transparent_38%),radial-gradient(circle_at_88%_18%,rgba(253,224,71,0.18),transparent_34%)]'
     : 'bg-[radial-gradient(circle_at_15%_0%,rgba(96,165,250,0.24),transparent_36%)]';
-  const eyebrow = specialSeal ? 'Selo colecionavel liberado' : 'Conquista desbloqueada';
+  const eyebrow = specialSeal
+    ? (isPt ? 'Selo colecionavel liberado' : 'Collectible seal unlocked')
+    : (isPt ? 'Conquista desbloqueada' : 'Achievement unlocked');
 
   return (
     <div className={`fixed bottom-5 right-5 z-[160] max-w-sm rounded-2xl border p-4 text-white backdrop-blur-xl ${shellClass}`}>
@@ -74,12 +79,12 @@ const AchievementUnlockToast: React.FC = () => {
           <p className={`text-[9px] font-black uppercase tracking-[0.22em] ${specialSeal ? 'text-amber-200' : 'text-blue-200'}`}>{eyebrow}</p>
           <h3 className="mt-1 text-base font-black">{achievement.title}</h3>
           <p className="mt-1 text-xs font-bold text-slate-300">
-            {getTierDisplay(achievement.tier, 'pt')}
+            {getTierDisplay(achievement.tier, lang)}
             {extraCount > 0 ? ` +${extraCount}` : ''}
           </p>
           {specialSeal && (
             <p className="mt-2 text-[10px] font-black uppercase tracking-[0.16em] text-amber-100/80">
-              Item adicionado a Colecao da Obra
+              {isPt ? 'Item adicionado a Colecao da Obra' : 'Item added to the Collection'}
             </p>
           )}
         </div>

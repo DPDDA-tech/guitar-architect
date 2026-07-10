@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import type { Lang } from '../i18n';
-import { SUPPORTER_PIX_KEY, SUPPORTER_WISE_DETAILS } from '../utils/supporterConstants';
+import {
+  SUPPORTER_PIX_KEY,
+  SUPPORTER_WISE_ACCOUNTS,
+  WISE_CURRENCY_ORDER,
+  type WiseCurrencyCode,
+} from '../utils/supporterConstants';
 
 interface SupportModalProps {
   isOpen: boolean;
@@ -10,16 +15,6 @@ interface SupportModalProps {
 }
 
 type SupportMethod = 'pix' | 'wise';
-type WiseField = keyof typeof SUPPORTER_WISE_DETAILS;
-
-const wiseFieldOrder: WiseField[] = ['accountHolder', 'accountNumber', 'routingNumber', 'swiftBic'];
-
-const wiseFieldLabels: Record<WiseField, { pt: string; en: string }> = {
-  accountHolder: { pt: 'Titular da conta', en: 'Account holder' },
-  accountNumber: { pt: 'Número da conta', en: 'Account number' },
-  routingNumber: { pt: 'Routing number', en: 'Routing number' },
-  swiftBic: { pt: 'SWIFT/BIC', en: 'SWIFT/BIC' },
-};
 
 const copyToClipboard = async (value: string): Promise<boolean> => {
   if (navigator.clipboard?.writeText) {
@@ -49,7 +44,8 @@ const copyToClipboard = async (value: string): Promise<boolean> => {
 const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, isLight, lang }) => {
   const [copied, setCopied] = useState(false);
   const [method, setMethod] = useState<SupportMethod>('pix');
-  const [copiedWiseField, setCopiedWiseField] = useState<WiseField | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState<WiseCurrencyCode>('USD');
+  const [copiedWiseFieldId, setCopiedWiseFieldId] = useState<string | null>(null);
 
   const handleCopy = async () => {
     try {
@@ -61,12 +57,19 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, isLight, l
     }
   };
 
-  const handleCopyWiseField = async (field: WiseField) => {
-    const succeeded = await copyToClipboard(SUPPORTER_WISE_DETAILS[field]);
-    if (!succeeded) return;
-    setCopiedWiseField(field);
-    setTimeout(() => setCopiedWiseField(prev => (prev === field ? null : prev)), 1500);
+  const handleSelectCurrency = (currency: WiseCurrencyCode) => {
+    setSelectedCurrency(currency);
+    setCopiedWiseFieldId(null);
   };
+
+  const handleCopyWiseField = async (fieldId: string, value: string) => {
+    const succeeded = await copyToClipboard(value);
+    if (!succeeded) return;
+    setCopiedWiseFieldId(fieldId);
+    setTimeout(() => setCopiedWiseFieldId(prev => (prev === fieldId ? null : prev)), 1500);
+  };
+
+  const selectedAccount = SUPPORTER_WISE_ACCOUNTS[selectedCurrency];
 
   if (!isOpen) return null;
 
@@ -86,7 +89,7 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, isLight, l
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
       <div
-        className={`w-full max-w-md rounded-2xl border p-6 shadow-2xl ${
+        className={`max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border p-6 shadow-2xl ${
           isLight ? 'border-zinc-200 bg-white' : 'border-zinc-800 bg-zinc-900'
         }`}
       >
@@ -146,7 +149,7 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, isLight, l
                 method === 'wise' ? tabActiveClass : tabInactiveClass
               }`}
             >
-              {lang === 'pt' ? 'Wise Internacional' : 'Wise (International)'}
+              {lang === 'pt' ? 'Wise — Internacional' : 'Wise — International'}
             </button>
           </div>
 
@@ -194,43 +197,74 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, isLight, l
             <div className="space-y-4">
               <div>
                 <div className="text-xs uppercase tracking-wider text-zinc-400">
-                  {lang === 'pt' ? 'Apoio internacional via Wise' : 'International support via Wise'}
+                  {lang === 'pt' ? 'Wise — Internacional' : 'Wise — International'}
                 </div>
                 <p className={`mt-1 text-xs leading-relaxed ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
                   {lang === 'pt'
-                    ? 'Para contribuições em USD, utilize os dados bancários abaixo.'
-                    : 'To support Guitar Architect in USD, use the banking details below.'}
+                    ? 'O Guitar Architect aceita contribuições internacionais via Wise em diversas moedas.'
+                    : 'Guitar Architect accepts international contributions through Wise in multiple currencies.'}
+                </p>
+                <p className={`mt-1 text-xs leading-relaxed ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                  {lang === 'pt'
+                    ? 'Selecione a moeda desejada para visualizar os dados bancários correspondentes.'
+                    : 'Select your preferred currency to view the corresponding banking details.'}
                 </p>
               </div>
 
-              {wiseFieldOrder.map(field => (
-                <div key={field}>
-                  <div className="mb-1 text-xs uppercase tracking-wider text-zinc-400">
-                    {wiseFieldLabels[field][lang]}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`select-all flex-1 rounded-xl border p-3 font-mono text-sm tracking-wide ${fieldBoxClass}`}
-                    >
-                      {SUPPORTER_WISE_DETAILS[field]}
+              <div
+                className="grid grid-cols-4 gap-1.5"
+                role="group"
+                aria-label={lang === 'pt' ? 'Selecionar moeda' : 'Select currency'}
+              >
+                {WISE_CURRENCY_ORDER.map(currency => (
+                  <button
+                    key={currency}
+                    type="button"
+                    onClick={() => handleSelectCurrency(currency)}
+                    aria-pressed={selectedCurrency === currency}
+                    className={`rounded-lg border py-1.5 text-xs font-black tracking-wide transition-colors ${
+                      selectedCurrency === currency
+                        ? tabActiveClass
+                        : isLight
+                        ? 'border-zinc-300 bg-white text-zinc-600 hover:border-blue-400'
+                        : 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-blue-500'
+                    }`}
+                  >
+                    {currency}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-2.5">
+                {selectedAccount.fields.map(field => (
+                  <div key={field.id}>
+                    <div className="mb-0.5 text-xs uppercase tracking-wider text-zinc-400">
+                      {field.label[lang]}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleCopyWiseField(field)}
-                      aria-label={
-                        lang === 'pt'
-                          ? `Copiar ${wiseFieldLabels[field].pt}`
-                          : `Copy ${wiseFieldLabels[field].en}`
-                      }
-                      className={`shrink-0 rounded-xl border px-3 py-3 text-[11px] font-black uppercase tracking-wide transition-colors ${fieldCopyBtnClass}`}
-                    >
-                      {copiedWiseField === field
-                        ? (lang === 'pt' ? 'Copiado' : 'Copied')
-                        : (lang === 'pt' ? 'Copiar' : 'Copy')}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`select-all flex-1 rounded-xl border p-2.5 font-mono text-sm tracking-wide ${fieldBoxClass}`}
+                      >
+                        {field.value}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyWiseField(field.id, field.value)}
+                        aria-label={
+                          lang === 'pt'
+                            ? `Copiar ${field.label.pt}`
+                            : `Copy ${field.label.en}`
+                        }
+                        className={`shrink-0 rounded-xl border px-3 py-2.5 text-[11px] font-black uppercase tracking-wide transition-colors ${fieldCopyBtnClass}`}
+                      >
+                        {copiedWiseFieldId === field.id
+                          ? (lang === 'pt' ? 'Copiado' : 'Copied')
+                          : (lang === 'pt' ? 'Copiar' : 'Copy')}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
 
               <p className={`text-center text-sm ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
                 {lang === 'pt' ? 'Projeto criado e mantido por ' : 'Project created and maintained by '}

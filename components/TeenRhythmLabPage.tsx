@@ -868,7 +868,7 @@ const TeenRhythmLabPage: React.FC = () => {
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-3 md:grid-cols-4">
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Fase</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{isPt ? 'Fase' : 'Phase'}</p>
               <p className="mt-1 text-lg font-black">{currentPhase}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
@@ -876,7 +876,7 @@ const TeenRhythmLabPage: React.FC = () => {
               <p className="mt-1 text-lg font-black">{selectedPattern.title}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">BPM / Compasso</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">BPM / {isPt ? 'Compasso' : 'Meter'}</p>
               <p className="mt-1 text-lg font-black">{selectedPattern.bpm} · {timeSignature}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
@@ -897,7 +897,9 @@ const TeenRhythmLabPage: React.FC = () => {
             </div>
             {rankProgress.next && (
               <p className={`mt-2 text-[11px] font-bold ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
-                Falta {Math.max(0, rankProgress.next.minXp - xp)} XP para {rankProgress.next.label}.
+                {isPt
+                  ? `Falta ${Math.max(0, rankProgress.next.minXp - xp)} XP para ${rankProgress.next.label}.`
+                  : `${Math.max(0, rankProgress.next.minXp - xp)} XP to go until ${rankProgress.next.label}.`}
               </p>
             )}
           </div>
@@ -922,7 +924,7 @@ const TeenRhythmLabPage: React.FC = () => {
 
           {currentPhase === 'REPRODUCE' && completedLoops > 0 && (
             <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-violet-200 bg-violet-50' : 'border-violet-500/30 bg-violet-500/10'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Progresso</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{isPt ? 'Progresso' : 'Progress'}</p>
               <p className={`mt-1 text-sm font-bold ${isLight ? 'text-violet-800' : 'text-violet-200'}`}>
                 {isPt ? 'Loops completados' : 'Completed loops'}: {completedLoops} · {isPt ? 'Modo Timing' : 'Timing Mode'}: {timingModeActive ? (isPt ? '✅ ATIVO' : '✅ ACTIVE') : (isPt ? '⏳ Aguardando' : '⏳ Waiting')}
               </p>

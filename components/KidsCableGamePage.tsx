@@ -6,18 +6,18 @@ import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 
 type CableInstrument = {
   id: string;
-  label: string;
+  label: { pt: string; en: string };
   image: string;
-  description: string;
+  description: { pt: string; en: string };
 };
 
 const INSTRUMENTS_POOL: CableInstrument[] = [
-  { id: 'contrabaixo', label: 'Contrabaixo', image: '/kids/workshop/contrabaixo.webp', description: 'Faz os sons graves da banda.' },
-  { id: 'violao', label: 'Violão', image: '/kids/workshop/violao.webp', description: 'Acompanha músicas e canções.' },
-  { id: 'banjo', label: 'Banjo', image: '/kids/workshop/banjo.webp', description: 'Tem som brilhante e divertido.' },
-  { id: 'flyingv', label: 'Flying V', image: '/kids/workshop/flyingv.webp', description: 'Tem visual radical do rock.' },
-  { id: 'classic-s', label: 'Classic S', image: '/kids/workshop/classic-s.webp', description: 'Guitarra versátil para vários estilos.' },
-  { id: 'semi-acustica', label: 'Semi-acústica', image: '/kids/workshop/semi-acustica.webp', description: 'Mistura guitarra elétrica e violão.' },
+  { id: 'contrabaixo', label: { pt: 'Contrabaixo', en: 'Bass' }, image: '/kids/workshop/contrabaixo.webp', description: { pt: 'Faz os sons graves da banda.', en: 'Makes the band\'s low sounds.' } },
+  { id: 'violao', label: { pt: 'Violão', en: 'Acoustic Guitar' }, image: '/kids/workshop/violao.webp', description: { pt: 'Acompanha músicas e canções.', en: 'Accompanies songs and tunes.' } },
+  { id: 'banjo', label: { pt: 'Banjo', en: 'Banjo' }, image: '/kids/workshop/banjo.webp', description: { pt: 'Tem som brilhante e divertido.', en: 'Has a bright, fun sound.' } },
+  { id: 'flyingv', label: { pt: 'Flying V', en: 'Flying V' }, image: '/kids/workshop/flyingv.webp', description: { pt: 'Tem visual radical do rock.', en: 'Has a radical rock look.' } },
+  { id: 'classic-s', label: { pt: 'Classic S', en: 'Classic S' }, image: '/kids/workshop/classic-s.webp', description: { pt: 'Guitarra versátil para vários estilos.', en: 'A versatile guitar for many styles.' } },
+  { id: 'semi-acustica', label: { pt: 'Semi-acústica', en: 'Semi-Acoustic' }, image: '/kids/workshop/semi-acustica.webp', description: { pt: 'Mistura guitarra elétrica e violão.', en: 'Blends electric guitar and acoustic guitar.' } },
 ];
 
 const navigateTo = (path: string) => {
@@ -40,13 +40,14 @@ const createRound = () => {
   return { selected, descriptions };
 };
 
+
 const KidsCableGamePage: React.FC = () => {
   const [theme] = useState(() => getKidsTheme());
   const [lang] = useState(() => getKidsLang());
   const [roundData, setRoundData] = useState(() => createRound());
   const [selectedInstrumentId, setSelectedInstrumentId] = useState<string | null>(null);
   const [matches, setMatches] = useState<Record<string, string>>({});
-  const [feedback, setFeedback] = useState('');
+  const [feedback, setFeedback] = useState<'connected' | 'complete' | 'incorrect' | null>(null);
   const [gameCompleted, setGameCompleted] = useState(false);
 
   const isLight = theme === 'light';
@@ -59,7 +60,7 @@ const KidsCableGamePage: React.FC = () => {
     setRoundData(createRound());
     setSelectedInstrumentId(null);
     setMatches({});
-    setFeedback('');
+    setFeedback(null);
     setGameCompleted(false);
   };
 
@@ -69,15 +70,15 @@ const KidsCableGamePage: React.FC = () => {
     if (descriptionId === selectedInstrumentId) {
       const nextMatches = { ...matches, [selectedInstrumentId]: descriptionId };
       setMatches(nextMatches);
-    setFeedback('Boa conexão! Cabo ligado.');
+      setFeedback('connected');
       setSelectedInstrumentId(null);
 
       if (Object.keys(nextMatches).length === roundData.selected.length) {
         setGameCompleted(true);
-    setFeedback('VocÉ ligou todos os cabos!');
+        setFeedback('complete');
       }
     } else {
-    setFeedback('Quase! Tente ligar em outra descrição.');
+      setFeedback('incorrect');
       setSelectedInstrumentId(null);
     }
   };
@@ -89,12 +90,11 @@ const KidsCableGamePage: React.FC = () => {
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={isPt ? "Voltar ao Kids" : "Back to Kids"} backPath="/kids" />
         <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={isPt ? "Ligue os Cabos" : "Connect the Cables"} subtitle={isPt ? "Ligue cada instrumento à descrição correta." : "Match each instrument to the correct description."} />
-            Ligue cada instrumento á descrição correta.
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-amber-500">Instrumentos</p>
+              <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-amber-500">{isPt ? 'Instrumentos' : 'Instruments'}</p>
               <div className="space-y-3">
                 {roundData.selected.map((instrument) => {
                   const isMatched = Boolean(matches[instrument.id]);
@@ -108,10 +108,10 @@ const KidsCableGamePage: React.FC = () => {
                       className={`w-full rounded-2xl border p-3 text-left transition-all ${isMatched ? 'border-emerald-500 bg-emerald-500/15' : isSelected ? 'border-amber-500 bg-amber-500/15' : isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}
                     >
                       <div className="flex items-center gap-3">
-                        <img src={instrument.image} alt={instrument.label} className="h-14 w-14 rounded-lg object-contain bg-white/80 p-1" />
+                        <img src={instrument.image} alt={instrument.label[lang]} className="h-14 w-14 rounded-lg object-contain bg-white/80 p-1" />
                         <div className="min-w-0">
-                          <p className="text-sm font-black uppercase">{instrument.label}</p>
-                          <p className="text-[11px] font-bold opacity-70">{isMatched ? 'Cabo ligado' : 'Clique para selecionar'}</p>
+                          <p className="text-sm font-black uppercase">{instrument.label[lang]}</p>
+                          <p className="text-[11px] font-bold opacity-70">{isMatched ? (isPt ? 'Cabo ligado' : 'Cable connected') : (isPt ? 'Clique para selecionar' : 'Click to select')}</p>
                         </div>
                       </div>
                     </button>
@@ -121,7 +121,7 @@ const KidsCableGamePage: React.FC = () => {
             </div>
 
             <div>
-              <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-amber-500">Descrições</p>
+              <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-amber-500">{isPt ? 'Descrições' : 'Descriptions'}</p>
               <div className="space-y-3">
                 {roundData.descriptions.map((desc) => {
                   const isUsed = usedDescriptionIds.includes(desc.id);
@@ -132,8 +132,8 @@ const KidsCableGamePage: React.FC = () => {
                       disabled={isUsed || !selectedInstrumentId || gameCompleted}
                       className={`w-full rounded-2xl border px-3 py-4 text-left transition-all ${isUsed ? 'border-emerald-500 bg-emerald-500/15' : isLight ? 'border-slate-300 bg-white hover:border-amber-400' : 'border-zinc-700 bg-zinc-950 hover:border-amber-500'} disabled:opacity-70`}
                     >
-                      <p className="text-xs font-bold leading-relaxed">{desc.text}</p>
-                      {isUsed && <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-emerald-500">Cabo conectado</p>}
+                      <p className="text-xs font-bold leading-relaxed">{desc.text[lang]}</p>
+                      {isUsed && <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-emerald-500">{isPt ? 'Cabo conectado' : 'Cable connected'}</p>}
                     </button>
                   );
                 })}
@@ -142,14 +142,16 @@ const KidsCableGamePage: React.FC = () => {
           </div>
 
           {feedback && (
-            <div className={`mt-4 rounded-xl border px-3 py-3 text-sm font-black ${feedback.startsWith('Quase') ? (isLight ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-amber-500/30 bg-amber-500/10 text-amber-200') : (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200')}`}>
-              {feedback}
+            <div className={`mt-4 rounded-xl border px-3 py-3 text-sm font-black ${feedback === 'incorrect' ? (isLight ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-amber-500/30 bg-amber-500/10 text-amber-200') : (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200')}`}>
+              {feedback === 'connected' && (isPt ? 'Boa conexão! Cabo ligado.' : 'Good connection! Cable linked.')}
+              {feedback === 'complete' && (isPt ? 'Você ligou todos os cabos!' : 'You connected all the cables!')}
+              {feedback === 'incorrect' && (isPt ? 'Quase! Tente ligar em outra descrição.' : 'Almost! Try connecting to another description.')}
             </div>
           )}
 
           <div className="mt-5 flex flex-col items-center gap-2 sm:flex-row sm:justify-center">
             <button onClick={resetGame} className="rounded-xl border border-amber-500 bg-amber-500 px-4 py-2 text-xs font-black uppercase text-white hover:bg-amber-400">
-              Novo jogo
+              {isPt ? 'Novo jogo' : 'New game'}
             </button>
             <button onClick={() => navigateTo('/kids/games')} className={`rounded-xl border px-4 py-2 text-xs font-black uppercase ${isLight ? 'border-slate-300 bg-white' : 'border-zinc-700 bg-zinc-950'}`}>
               {isPt ? 'Voltar aos Jogos' : 'Back to Games'}

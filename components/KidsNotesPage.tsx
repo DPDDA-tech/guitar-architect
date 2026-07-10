@@ -32,14 +32,14 @@ type NoteLetterChallenge = {
   options: string[];
 };
 
-const NOTES: Array<{ id: NoteId; color: string; glow: string; curiosity: string; colorName: string }> = [
-  { id: 'DO',  color: 'bg-red-500',    glow: 'shadow-red-500/35',    curiosity: 'A nota DO abre muitas músicas infantis.',  colorName: 'vermelha' },
-  { id: 'RE', color: 'bg-orange-500', glow: 'shadow-orange-500/35', curiosity: 'A nota RE ajuda a melodia a caminhar.', colorName: 'laranja' },
-  { id: 'MI', color: 'bg-yellow-400', glow: 'shadow-yellow-400/35', curiosity: 'A nota MI aparece em varias cancoes alegres.', colorName: 'amarela' },
-  { id: 'FA',  color: 'bg-green-500',  glow: 'shadow-green-500/35',  curiosity: 'A nota FA traz um brilho especial para a música.',  colorName: 'verde' },
-  { id: 'SOL', color: 'bg-blue-500',   glow: 'shadow-blue-500/35',   curiosity: 'A nota SOL é fácil de lembrar por ser o nome de uma estrela.', colorName: 'azul' },
-  { id: 'LA',  color: 'bg-violet-500', glow: 'shadow-violet-500/35', curiosity: 'A nota LA está em muitas melodias conhecidas.', colorName: 'roxa' },
-  { id: 'SI',  color: 'bg-pink-500',   glow: 'shadow-pink-500/35',   curiosity: 'A nota SI prepara o retorno para o DO.', colorName: 'rosa' },
+const NOTES: Array<{ id: NoteId; color: string; glow: string; curiosity: { pt: string; en: string }; colorName: string }> = [
+  { id: 'DO',  color: 'bg-red-500',    glow: 'shadow-red-500/35',    curiosity: { pt: 'A nota DO abre muitas músicas infantis.', en: 'The note DO opens many children\'s songs.' },  colorName: 'vermelha' },
+  { id: 'RE', color: 'bg-orange-500', glow: 'shadow-orange-500/35', curiosity: { pt: 'A nota RE ajuda a melodia a caminhar.', en: 'The note RE helps the melody move forward.' }, colorName: 'laranja' },
+  { id: 'MI', color: 'bg-yellow-400', glow: 'shadow-yellow-400/35', curiosity: { pt: 'A nota MI aparece em varias cancoes alegres.', en: 'The note MI appears in many cheerful songs.' }, colorName: 'amarela' },
+  { id: 'FA',  color: 'bg-green-500',  glow: 'shadow-green-500/35',  curiosity: { pt: 'A nota FA traz um brilho especial para a música.', en: 'The note FA brings a special sparkle to the music.' },  colorName: 'verde' },
+  { id: 'SOL', color: 'bg-blue-500',   glow: 'shadow-blue-500/35',   curiosity: { pt: 'A nota SOL é fácil de lembrar por ser o nome de uma estrela.', en: 'The note SOL is easy to remember since it shares a name with a star.' }, colorName: 'azul' },
+  { id: 'LA',  color: 'bg-violet-500', glow: 'shadow-violet-500/35', curiosity: { pt: 'A nota LA está em muitas melodias conhecidas.', en: 'The note LA is found in many well-known melodies.' }, colorName: 'roxa' },
+  { id: 'SI',  color: 'bg-pink-500',   glow: 'shadow-pink-500/35',   curiosity: { pt: 'A nota SI prepara o retorno para o DO.', en: 'The note SI prepares the return to DO.' }, colorName: 'rosa' },
 ];
 
 const CHALLENGES: Challenge[] = [
@@ -180,7 +180,7 @@ const KidsNotesPage: React.FC = () => {
   const [lang] = useState(() => getKidsLang());
   const [selectedNote, setSelectedNote] = useState<NoteId | null>(null);
   const [challengeIndex, setChallengeIndex] = useState(0);
-  const [challengeFeedback, setChallengeFeedback] = useState('');
+  const [challengeStatus, setChallengeStatus] = useState<'correct' | 'incorrect' | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   const [noteSequence, setNoteSequence] = useState<NoteId[]>([]);
@@ -190,6 +190,7 @@ const KidsNotesPage: React.FC = () => {
   const [selectedMelodyId, setSelectedMelodyId] = useState<string>(MELODY_CHALLENGES[0].id);
   const [userMelodySequence, setUserMelodySequence] = useState<NoteId[]>([]);
   const [melodyFeedback, setMelodyFeedback] = useState('');
+  const [melodyMatched, setMelodyMatched] = useState(false);
   const [isPlayingModel, setIsPlayingModel] = useState(false);
   const [isPlayingUserVersion, setIsPlayingUserVersion] = useState(false);
   const [playingModelIndex, setPlayingModelIndex] = useState<number | null>(null);
@@ -201,7 +202,7 @@ const KidsNotesPage: React.FC = () => {
   const [memoryFeedback, setMemoryFeedback] = useState('');
   const [memoryPlayingIndex, setMemoryPlayingIndex] = useState<number | null>(null);
   const [letterChallenge, setLetterChallenge] = useState<NoteLetterChallenge | null>(null);
-  const [letterFeedback, setLetterFeedback] = useState('');
+  const [letterStatus, setLetterStatus] = useState<'correct' | 'incorrect' | null>(null);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const sequencePlayIdRef = useRef(0);
@@ -281,13 +282,13 @@ const KidsNotesPage: React.FC = () => {
 
   const handleChallengeAnswer = (note: NoteId) => {
     if (note === currentChallenge.answer) {
-      setChallengeFeedback('Boa! Voce acertou.');
+      setChallengeStatus('correct');
       window.setTimeout(() => {
         setChallengeIndex((prev) => (prev + 1) % CHALLENGES.length);
-        setChallengeFeedback('');
+        setChallengeStatus(null);
       }, 700);
     } else {
-      setChallengeFeedback('Quase! Tente outra nota.');
+      setChallengeStatus('incorrect');
     }
   };
 
@@ -379,10 +380,11 @@ const KidsNotesPage: React.FC = () => {
     const isEqual = userMelodySequence.length === selectedMelody.notes.length
       && userMelodySequence.every((note, index) => note === selectedMelody.notes[index]);
 
+    setMelodyMatched(isEqual);
     setMelodyFeedback(
       isEqual
-        ? 'Você encontrou o caminho da música!'
-        : 'Ouça de novo e compare com o modelo.'
+        ? (isPt ? 'Você encontrou o caminho da música!' : 'You found the song\'s path!')
+        : (isPt ? 'Ouça de novo e compare com o modelo.' : 'Listen again and compare with the model.')
     );
   };
 
@@ -479,15 +481,11 @@ const KidsNotesPage: React.FC = () => {
 
   const handleLetterAnswer = (option: string) => {
     if (!letterChallenge) return;
-    if (option === letterChallenge.correctLetter) {
-      setLetterFeedback('Boa! Você encontrou a letra da nota.');
-    } else {
-      setLetterFeedback(`Quase! A letra da nota ${letterChallenge.note} é ${letterChallenge.correctLetter}. Tente de novo!`);
-    }
+    setLetterStatus(option === letterChallenge.correctLetter ? 'correct' : 'incorrect');
 
     window.setTimeout(() => {
       setLetterChallenge(randomLetterChallenge());
-      setLetterFeedback('');
+      setLetterStatus(null);
     }, 900);
   };
 
@@ -523,8 +521,8 @@ const KidsNotesPage: React.FC = () => {
 
           {selectedNoteData && (
             <div className={`mt-4 rounded-xl border px-3 py-3 text-sm font-black animate-in fade-in slide-in-from-top-1 duration-300 ${isLight ? 'border-cyan-200 bg-cyan-50 text-cyan-800' : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'}`}>
-              Voce encontrou a nota {selectedNoteData.id}!
-              <p className="mt-1 text-xs font-semibold opacity-90">{selectedNoteData.curiosity}</p>
+              {isPt ? `Voce encontrou a nota ${selectedNoteData.id}!` : `You found the note ${selectedNoteData.id}!`}
+              <p className="mt-1 text-xs font-semibold opacity-90">{selectedNoteData.curiosity[lang]}</p>
             </div>
           )}
         </section>
@@ -553,9 +551,11 @@ const KidsNotesPage: React.FC = () => {
             ))}
           </div>
 
-          {challengeFeedback && (
-            <div className={`mt-3 rounded-xl border px-3 py-2 text-sm font-black ${challengeFeedback.startsWith('Boa') ? (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200') : (isLight ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-amber-500/30 bg-amber-500/10 text-amber-200')}`}>
-              {challengeFeedback}
+          {challengeStatus && (
+            <div className={`mt-3 rounded-xl border px-3 py-2 text-sm font-black ${challengeStatus === 'correct' ? (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200') : (isLight ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-amber-500/30 bg-amber-500/10 text-amber-200')}`}>
+              {challengeStatus === 'correct'
+                ? (isPt ? 'Boa! Voce acertou.' : 'Nice! You got it.')
+                : (isPt ? 'Quase! Tente outra nota.' : 'Almost! Try another note.')}
             </div>
           )}
         </section>
@@ -607,7 +607,7 @@ const KidsNotesPage: React.FC = () => {
               disabled={noteSequence.length === 0 || isPlayingSequence}
               className="min-h-[44px] rounded-xl border border-cyan-500 bg-cyan-600 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-white hover:bg-cyan-500 disabled:opacity-50"
             >
-              {isPlayingSequence ? 'Tocando...' : 'Play'}
+              {isPlayingSequence ? (isPt ? 'Tocando...' : 'Playing...') : (isPt ? 'Tocar' : 'Play')}
             </button>
             <button
               onClick={removeLastSequenceNote}
@@ -744,7 +744,7 @@ const KidsNotesPage: React.FC = () => {
           </div>
 
           {melodyFeedback && (
-            <div className={`mt-4 rounded-xl border px-3 py-3 text-sm font-black ${melodyFeedback.startsWith('Voce encontrou') ? (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200') : (isLight ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-amber-500/30 bg-amber-500/10 text-amber-200')}`}>
+            <div className={`mt-4 rounded-xl border px-3 py-3 text-sm font-black ${melodyMatched ? (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200') : (isLight ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-amber-500/30 bg-amber-500/10 text-amber-200')}`}>
               {melodyFeedback}
             </div>
           )}
@@ -796,9 +796,15 @@ const KidsNotesPage: React.FC = () => {
             </>
           )}
 
-          {letterFeedback && (
-            <div className={`mt-3 rounded-xl border px-3 py-2 text-sm font-black ${letterFeedback.startsWith('Boa') ? (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200') : (isLight ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-amber-500/30 bg-amber-500/10 text-amber-200')}`}>
-              {letterFeedback}
+          {letterStatus && (
+            <div className={`mt-3 rounded-xl border px-3 py-2 text-sm font-black ${letterStatus === 'correct' ? (isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200') : (isLight ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-amber-500/30 bg-amber-500/10 text-amber-200')}`}>
+              {letterStatus === 'correct'
+                ? (isPt ? 'Boa! Você encontrou a letra da nota.' : 'Nice! You found the note letter.')
+                : (letterChallenge
+                  ? (isPt
+                    ? `Quase! A letra da nota ${letterChallenge.note} é ${letterChallenge.correctLetter}. Tente de novo!`
+                    : `Almost! The letter for note ${letterChallenge.note} is ${letterChallenge.correctLetter}. Try again!`)
+                  : '')}
             </div>
           )}
         </section>

@@ -891,7 +891,7 @@ const MyInstruments: React.FC<MyInstrumentsProps> = ({ isOpen, onClose, onToggle
                         <h3 className="text-lg font-black">{display(item.brand)}</h3>
                         <p className={`mt-1 text-sm font-bold ${accent.muted}`}>{[item.model, item.version].filter(Boolean).join(' - ') || '-'}</p>
                         <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase">
-                          <span className={`rounded-full px-2 py-1 ${accent.badge}`}>{display(item.strings)} cordas</span>
+                          <span className={`rounded-full px-2 py-1 ${accent.badge}`}>{display(item.strings)} {lang === 'pt' ? 'cordas' : 'strings'}</span>
                           {item.lastStringChange && <span className="rounded-full bg-white/15 px-2 py-1 text-white">{lang === 'pt' ? 'Cordas' : 'Strings'}: {item.lastStringChange}</span>}
                         </div>
                       </div>

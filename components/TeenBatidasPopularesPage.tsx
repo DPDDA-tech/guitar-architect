@@ -252,10 +252,10 @@ const PATTERNS: StrummingPattern[] = [
   },
 ];
 
-const PHASE_LABELS: Record<Phase, string> = {
-  LISTEN: 'OUVIR',
-  UNDERSTAND: 'ENTENDER',
-  PLAY: 'TOCAR',
+const PHASE_LABELS: Record<Phase, { pt: string; en: string }> = {
+  LISTEN: { pt: 'OUVIR', en: 'LISTEN' },
+  UNDERSTAND: { pt: 'ENTENDER', en: 'UNDERSTAND' },
+  PLAY: { pt: 'TOCAR', en: 'PLAY' },
 };
 
 const STRUM_FREQUENCIES = [110, 146.83, 196, 246.94, 293.66, 369.99];
@@ -609,13 +609,13 @@ const TeenBatidasPopularesPage: React.FC = () => {
 
       <main className="relative mx-auto max-w-7xl">
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
-        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Batidas Populares" subtitle="Aprenda batidas com setas tradicionais de cifra: OUVIR → ENTENDER → TOCAR" />
+        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title={isPt ? "Batidas Populares" : "Popular Strumming Patterns"} subtitle={isPt ? "Aprenda batidas com setas tradicionais de cifra: OUVIR → ENTENDER → TOCAR" : "Learn strumming with traditional chord-chart arrows: LISTEN → UNDERSTAND → PLAY"} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-3 md:grid-cols-4">
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
               <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Fase</p>
-              <p className="mt-2 text-2xl font-black uppercase">{PHASE_LABELS[currentPhase]}</p>
+              <p className="mt-2 text-2xl font-black uppercase">{PHASE_LABELS[currentPhase][lang]}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
               <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-400">Padrão</p>
@@ -734,7 +734,7 @@ const TeenBatidasPopularesPage: React.FC = () => {
                         : 'border-zinc-700 bg-zinc-950 text-zinc-500'
                   }`}
                 >
-                  {PHASE_LABELS[phase]}
+                  {PHASE_LABELS[phase][lang]}
                 </div>
               ))}
             </div>

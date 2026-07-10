@@ -341,7 +341,7 @@ const TeensPage: React.FC = () => {
 
           <div className={`mt-3 w-full max-w-md rounded-xl border px-4 py-3 ${isLight ? 'border-violet-200 bg-violet-50/60' : 'border-violet-700/60 bg-violet-950/35'}`}>
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Progressão</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">{lang === 'pt' ? 'Progressão' : 'Progress'}</p>
               <p className="text-[11px] font-black uppercase">{rankProgress.current.label} · XP {xp}</p>
             </div>
             <div className={`mt-2 h-2 w-full rounded-full ${isLight ? 'bg-violet-100' : 'bg-zinc-800'}`}>
@@ -349,7 +349,9 @@ const TeensPage: React.FC = () => {
             </div>
             {rankProgress.next && (
               <p className={`mt-2 text-[11px] font-bold ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                {Math.max(0, rankProgress.next.minXp - xp)} XP para {rankProgress.next.label}
+                {lang === 'pt'
+                  ? `${Math.max(0, rankProgress.next.minXp - xp)} XP para ${rankProgress.next.label}`
+                  : `${Math.max(0, rankProgress.next.minXp - xp)} XP to ${rankProgress.next.label}`}
               </p>
             )}
           </div>

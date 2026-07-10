@@ -332,7 +332,7 @@ const KidsLightHuntPage: React.FC = () => {
     <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <main className="relative mx-auto max-w-5xl">
         <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={copy.backKids} backPath="/kids" />
-        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="Caça às Luzes" subtitle="Siga as luzes pelo braço musical." />
+        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={isPt ? "Caça às Luzes" : "Light Hunt"} subtitle={isPt ? "Siga as luzes pelo braço musical." : "Follow the lights across the musical fretboard."} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
           <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">

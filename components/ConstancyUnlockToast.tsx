@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { getGlobalLang } from '../utils/ecosystemPreferences';
 
 interface ConstancyUnlockToastProps {
   rewardTitle: string;
@@ -13,6 +14,9 @@ export const ConstancyUnlockToast: React.FC<ConstancyUnlockToastProps> = ({
   rewardImage,
   onClose
 }) => {
+  const [lang] = useState(() => getGlobalLang());
+  const isPt = lang === 'pt';
+
   useEffect(() => {
     const timeout = window.setTimeout(onClose, 6000);
     return () => window.clearTimeout(timeout);
@@ -31,7 +35,7 @@ export const ConstancyUnlockToast: React.FC<ConstancyUnlockToastProps> = ({
 
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-black uppercase tracking-[0.25em] text-blue-400">
-            Constância desbloqueada
+            {isPt ? 'Constância desbloqueada' : 'Constancy unlocked'}
           </p>
 
           <h3 className="mt-1 text-sm font-black text-white">
@@ -46,7 +50,7 @@ export const ConstancyUnlockToast: React.FC<ConstancyUnlockToastProps> = ({
             onClick={onClose}
             className="mt-3 text-[10px] font-black uppercase tracking-[0.18em] text-blue-300 hover:text-blue-200"
           >
-            Fechar
+            {isPt ? 'Fechar' : 'Close'}
           </button>
         </div>
       </div>

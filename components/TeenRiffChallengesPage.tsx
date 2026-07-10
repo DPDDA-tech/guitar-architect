@@ -56,7 +56,7 @@ const TeenRiffChallengesPage: React.FC = () => {
   });
   const [selectedRiffId, setSelectedRiffId] = useState<string>(() => teenRiffChallenges[0]?.id ?? '');
   const [userNotes, setUserNotes] = useState<TeenRiffNote[]>([]);
-  const [feedback, setFeedback] = useState('Selecione um riff e toque em Ouvir desafio.');
+  const [feedback, setFeedback] = useState(() => (getTeensLang() === 'pt' ? 'Selecione um riff e toque em Ouvir desafio.' : 'Select a riff and tap Listen to challenge.'));
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeNote, setActiveNote] = useState<TeenRiffNote | null>(null);
   const [streak, setStreak] = useState(0);
@@ -232,12 +232,12 @@ const TeenRiffChallengesPage: React.FC = () => {
               <p className="mt-1 text-lg font-black">{selectedRiff.title}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Dificuldade</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{isPt ? 'Dificuldade' : 'Difficulty'}</p>
               <p className="mt-1 text-lg font-black">{difficultyBadge[selectedRiff.difficulty]}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
               <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">BPM</p>
-              <p className="mt-1 text-lg font-black">{selectedRiff.bpm} | Progresso {progressText}</p>
+              <p className="mt-1 text-lg font-black">{selectedRiff.bpm} | {isPt ? 'Progresso' : 'Progress'} {progressText}</p>
             </div>
           </div>
 
@@ -251,7 +251,7 @@ const TeenRiffChallengesPage: React.FC = () => {
               <p className="mt-1 text-lg font-black">{combo}</p>
             </div>
             <div className={`rounded-xl border px-4 py-3 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Trilha</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">{isPt ? 'Trilha' : 'Track'}</p>
               <p className="mt-1 text-lg font-black">{unlockedRiffIds.length}/{teenRiffChallenges.length}</p>
             </div>
           </div>
@@ -268,7 +268,9 @@ const TeenRiffChallengesPage: React.FC = () => {
             </div>
             {rankProgress.next && (
               <p className={`mt-2 text-[11px] font-bold ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
-                Falta {Math.max(0, rankProgress.next.minXp - xp)} XP para {rankProgress.next.label}.
+                {isPt
+                  ? `Falta ${Math.max(0, rankProgress.next.minXp - xp)} XP para ${rankProgress.next.label}.`
+                  : `${Math.max(0, rankProgress.next.minXp - xp)} XP to go until ${rankProgress.next.label}.`}
               </p>
             )}
           </div>
@@ -325,7 +327,7 @@ const TeenRiffChallengesPage: React.FC = () => {
               onClick={clearUser}
               className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'}`}
             >
-              Limpar
+              {isPt ? 'Limpar' : 'Clear'}
             </button>
             <button
               onClick={goNextChallenge}

@@ -110,7 +110,7 @@ const Season1Page: React.FC = () => {
         s5PixLabel: 'Pix — Brasil',
         pix: 'Chave Pix:',
         s5WiseLabel: 'Wise — Internacional',
-        s5WiseText: 'Para contribuições internacionais em USD, consulte os dados bancários na área de apoio do aplicativo.',
+        s5WiseText: 'O Guitar Architect disponibiliza apoio internacional via Wise em diversas moedas.',
         contact: 'Contato:',
         s6Title: '6. Avisos importantes',
         s6: [
@@ -156,7 +156,7 @@ const Season1Page: React.FC = () => {
         s5PixLabel: 'Pix — Brazil',
         pix: 'Pix key:',
         s5WiseLabel: 'Wise — International',
-        s5WiseText: "For international contributions in USD, see the banking details in the app's support area.",
+        s5WiseText: 'Guitar Architect offers international support options through Wise in multiple currencies.',
         contact: 'Contact:',
         s6Title: '6. Important notices',
         s6: [

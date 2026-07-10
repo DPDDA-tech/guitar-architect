@@ -67,7 +67,7 @@ const TeensGarageHubPage: React.FC = () => {
           <article className={`rounded-3xl border p-5 md:p-6 ${isLight ? 'border-violet-200 bg-violet-50/60' : 'border-violet-600/35 bg-violet-950/20'}`}>
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(420px,0.9fr)] lg:items-center xl:grid-cols-[minmax(0,1.35fr)_minmax(460px,0.85fr)]">
               <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-400">Projeto 001 · {copy.projectStatus}</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-400">{lang === 'pt' ? 'Projeto' : 'Project'} 001 · {copy.projectStatus}</p>
                 <h2 className="mt-2 max-w-[12ch] text-3xl font-black md:text-4xl">{copy.projectTitle}</h2>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {projectBadges.map((badge) => (
@@ -103,7 +103,7 @@ const TeensGarageHubPage: React.FC = () => {
                 <p className="text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400">{copy.soon}</p>
                 <h3 className="mt-2 text-lg font-black">{title}</h3>
                 <p className={`mt-3 text-sm leading-6 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                  Builds em preparação para os próximos capítulos da Garagem.
+                  {lang === 'pt' ? 'Builds em preparação para os próximos capítulos da Garagem.' : 'Builds in preparation for the next chapters of the Garage.'}
                 </p>
               </article>
             ))}

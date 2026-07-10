@@ -89,12 +89,12 @@ const SONGS: KidsRhythmSong[] = [
 const BEAT_ICONS = ['🎸', '⭐', '🎵', '🎶', '🌟', '🎹'];
 
 const POSITIVE_FEEDBACK = [
-  { text: '🌟 Boa!', color: 'text-emerald-500' },
-  { text: '✨ Demais!', color: 'text-amber-500' },
-  { text: '🎵 Incrível!', color: 'text-cyan-500' },
-  { text: '🎸 Perfeito!', color: 'text-violet-500' },
-  { text: '⭐ Show!', color: 'text-pink-500' },
-  { text: '🎶 Mandou bem!', color: 'text-lime-500' },
+  { text: { pt: '🌟 Boa!', en: '🌟 Nice!' }, color: 'text-emerald-500' },
+  { text: { pt: '✨ Demais!', en: '✨ Awesome!' }, color: 'text-amber-500' },
+  { text: { pt: '🎵 Incrível!', en: '🎵 Amazing!' }, color: 'text-cyan-500' },
+  { text: { pt: '🎸 Perfeito!', en: '🎸 Perfect!' }, color: 'text-violet-500' },
+  { text: { pt: '⭐ Show!', en: '⭐ Great job!' }, color: 'text-pink-500' },
+  { text: { pt: '🎶 Mandou bem!', en: '🎶 Well done!' }, color: 'text-lime-500' },
 ];
 
 const NOTES = {
@@ -280,7 +280,7 @@ const KidsRhythmGamePage: React.FC = () => {
     setTotalHits((prev) => prev + 1);
 
     const randomFeedback = POSITIVE_FEEDBACK[Math.floor(Math.random() * POSITIVE_FEEDBACK.length)];
-    setFeedback(randomFeedback.text);
+    setFeedback(randomFeedback.text[isPt ? 'pt' : 'en']);
     setFeedbackColor(randomFeedback.color);
 
     setCharacterHit(true);

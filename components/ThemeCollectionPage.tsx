@@ -585,21 +585,21 @@ const ThemeCollectionPage: React.FC = () => {
                     <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-400 mt-1">{lang === 'pt' ? 'Prévia de apoiador' : 'Supporter Preview'}</p>
                   </div>
                   <span className={`rounded-full border px-2.5 py-1 text-[8px] font-black uppercase ${isLight ? 'border-amber-300/50 bg-amber-300/20 text-amber-700' : 'border-amber-700/60 bg-amber-900/30 text-amber-300'}`}>
-                    MODO DEV
+                    {lang === 'pt' ? 'MODO DEV' : 'DEV MODE'}
                   </span>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3 mb-4">
                   <div className={`rounded-xl border p-3 ${isLight ? 'border-amber-100/60 bg-white/50' : 'border-amber-900/40 bg-slate-950/30'}`}>
-                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">Total Acumulado</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">{lang === 'pt' ? 'Total Acumulado' : 'Total Accumulated'}</p>
                     <p className="text-xl font-black mt-1 text-amber-700 dark:text-amber-300">R$ {supporterTotal}</p>
                   </div>
-                  
+
                   {(() => {
                     const tierInfo = getSupporterTierInfo(supporterTotal, lang);
                     return (
                       <div className={`rounded-xl border p-3 ${isLight ? 'border-amber-100/60 bg-white/50' : 'border-amber-900/40 bg-slate-950/30'}`}>
-                        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">Tier Atual</p>
+                        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">{lang === 'pt' ? 'Tier Atual' : 'Current Tier'}</p>
                         <p className="text-lg font-black mt-1 text-amber-700 dark:text-amber-300">{tierInfo.currentTier ? formatTierName(tierInfo.currentTier.title) : (lang === 'pt' ? 'Nenhum' : 'None')}</p>
                       </div>
                     );
@@ -610,12 +610,12 @@ const ThemeCollectionPage: React.FC = () => {
                     const remaining = tierInfo.remaining;
                     return (
                       <div className={`rounded-xl border p-3 ${isLight ? 'border-amber-100/60 bg-white/50' : 'border-amber-900/40 bg-slate-950/30'}`}>
-                        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">Próximo Tier</p>
+                        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">{lang === 'pt' ? 'Próximo Tier' : 'Next Tier'}</p>
                         {tierInfo.isMaxTier ? (
                           <p className="text-base font-black mt-1 text-amber-600 dark:text-amber-400">{lang === 'pt' ? 'Máx ✓' : 'Max ✓'}</p>
                         ) : (
                           <p className="text-sm font-black mt-1 text-amber-700 dark:text-amber-300">
-                            Faltam <span className="text-amber-600 dark:text-amber-400">R$ {remaining}</span>
+                            {lang === 'pt' ? 'Faltam' : 'Remaining'} <span className="text-amber-600 dark:text-amber-400">R$ {remaining}</span>
                           </p>
                         )}
                       </div>
@@ -737,8 +737,23 @@ const ThemeCollectionPage: React.FC = () => {
                 <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-300">
                   {lang === 'pt' ? 'Dados de apoio' : 'Support details'}
                 </p>
-                <div className={`mt-2 space-y-2 text-sm font-black ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                  <p>{lang === 'pt' ? 'Chave PIX:' : 'PIX key:'} <span className="text-amber-300">{SUPPORTER_PIX_KEY}</span></p>
+                <div className={`mt-2 space-y-4 text-sm font-black ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-300/80">
+                      {lang === 'pt' ? 'Pix — Brasil' : 'Pix — Brazil'}
+                    </p>
+                    <p>{lang === 'pt' ? 'Chave Pix:' : 'Pix key:'} <span className="text-amber-300">{SUPPORTER_PIX_KEY}</span></p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-300/80">
+                      {lang === 'pt' ? 'Wise — Internacional' : 'Wise — International'}
+                    </p>
+                    <p className={`text-xs font-bold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                      {lang === 'pt'
+                        ? 'Contribuições internacionais podem ser realizadas através da Wise em diversas moedas. Utilize o botão "Tornar-se apoiador" para visualizar os dados bancários correspondentes.'
+                        : 'International contributions can be made through Wise using multiple currencies. Use the "Become a supporter" button to view the corresponding banking details.'}
+                    </p>
+                  </div>
                   <p>{lang === 'pt' ? 'Contato:' : 'Contact:'} <span className="text-amber-300">{SUPPORTER_CONTACT_EMAIL}</span></p>
                 </div>
                 <button type="button" onClick={handleCopyPixKey} className="mt-3 w-full rounded-xl border border-amber-300/50 bg-amber-500/20 px-4 py-2.5 text-[10px] font-black uppercase text-amber-300 transition-colors hover:bg-amber-500/30">
@@ -1054,7 +1069,7 @@ const ThemeCollectionPage: React.FC = () => {
             onToggle={() => setOpenCollectionPanels(prev => ({ ...prev, achievements: !prev.achievements }))}
           />
           <div className={`${openCollectionPanels.achievements ? 'block' : 'hidden'}`}>
-            <AchievementsPanel isLight={isLight} />
+            <AchievementsPanel isLight={isLight} lang={lang} />
           </div>
         </section>
 

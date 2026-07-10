@@ -27,6 +27,7 @@ import { loadConfig } from '../utils/persistence';
 
 interface AchievementsPanelProps {
   isLight: boolean;
+  lang?: 'pt' | 'en';
 }
 
 const CORE_ACHIEVEMENT_ID = 'core-enter-architect';
@@ -49,7 +50,8 @@ const lightRarityClass: Record<Achievement['rarity'], string> = {
   guitar_hero: 'border-cyan-200 text-cyan-700 bg-cyan-50',
 };
 
-const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
+const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight, lang = 'pt' }) => {
+  const isPt = lang === 'pt';
   const [unlockedIds, setUnlockedIds] = useState<string[]>(() => getUnlockedAchievementIds());
   const [progressState, setProgressState] = useState(() => getAchievementProgressState());
   const [isAdmin, setIsAdmin] = useState(false);
@@ -114,14 +116,16 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.26em] text-blue-300">Achievements / Rewards</p>
-          <h2 className="mt-2 text-2xl font-black tracking-tight">Conquistas, tiers e logos desbloqueaveis</h2>
+          <h2 className="mt-2 text-2xl font-black tracking-tight">{isPt ? 'Conquistas, tiers e logos desbloqueaveis' : 'Achievements, tiers and unlockable logos'}</h2>
           <p className={`mt-2 max-w-4xl text-sm font-bold ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-            Catalogo local com tiers, XP, criterios e assets. O localStorage guarda apenas o estado do usuario; tiers sem imagem permanecem em preparacao.
+            {isPt
+              ? 'Catalogo local com tiers, XP, criterios e assets. O localStorage guarda apenas o estado do usuario; tiers sem imagem permanecem em preparacao.'
+              : 'Local catalog with tiers, XP, criteria and assets. localStorage only stores the user\'s state; tiers without an image remain in progress.'}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <span className={`rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-800/60 bg-blue-950/30 text-blue-200'}`}>
-            {overallProgress}% progresso
+            {overallProgress}% {isPt ? 'progresso' : 'progress'}
           </span>
           <span className={`rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-emerald-800/60 bg-emerald-950/24 text-emerald-200'}`}>
             {totalXp} XP
@@ -134,7 +138,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
               onClick={reset}
               className={`rounded-full border px-3 py-2 text-[10px] font-black uppercase ${isLight ? 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50' : 'border-blue-900/55 bg-[#050914] text-slate-400 hover:bg-blue-950/40'}`}
             >
-              Reset dev
+              {isPt ? 'Reset dev' : 'Dev reset'}
             </button>
           )}
         </div>
@@ -145,9 +149,9 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
           const count = visibleAchievements.filter(achievement => achievement.tier === tier.tier).length;
           return (
             <div key={tier.tier} className={`rounded-xl border p-3 ${isLight ? 'border-[#d4dfeb] bg-[#f8fbff]' : 'border-blue-900/45 bg-[#050914]'}`}>
-              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-300">{getTierDisplay(tier.tier, 'pt')}</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-300">{getTierDisplay(tier.tier, lang)}</p>
               <h3 className="mt-1 text-sm font-black">{tier.title}</h3>
-              <p className={`mt-1 text-xs font-semibold ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>{count} conquistas</p>
+              <p className={`mt-1 text-xs font-semibold ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>{count} {isPt ? 'conquistas' : 'achievements'}</p>
             </div>
           );
         })}
@@ -176,7 +180,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
                 {!unlocked && (
                   <div className={`absolute inset-0 flex items-center justify-center ${isLight ? 'bg-white/12' : 'bg-black/14'}`}>
                     <span className={`rounded-full border px-3 py-1.5 text-[9px] font-black uppercase ${isLight ? 'border-slate-300/80 bg-white/70 text-slate-700 shadow-[0_10px_28px_rgba(71,85,105,0.18)]' : 'border-white/20 bg-black/50 text-white shadow-[0_0_22px_rgba(37,99,235,0.16)]'}`}>
-                      Bloqueado
+                      {isPt ? 'Bloqueado' : 'Locked'}
                     </span>
                   </div>
                 )}
@@ -184,22 +188,22 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className={`text-[9px] font-black uppercase tracking-[0.16em] ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>
-                    {unlocked ? 'Desbloqueada' : hiddenLocked ? 'Oculta' : 'Bloqueada'} / {getTierDisplay(achievement.tier, 'pt')}
+                    {unlocked ? (isPt ? 'Desbloqueada' : 'Unlocked') : hiddenLocked ? (isPt ? 'Oculta' : 'Hidden') : (isPt ? 'Bloqueada' : 'Locked')} / {getTierDisplay(achievement.tier, lang)}
                   </p>
-                  <h3 className="mt-2 text-lg font-black">{hiddenLocked ? 'Conquista secreta' : achievement.title}</h3>
+                  <h3 className="mt-2 text-lg font-black">{hiddenLocked ? (isPt ? 'Conquista secreta' : 'Secret achievement') : achievement.title}</h3>
                 </div>
                 <span className={`rounded-full border px-2.5 py-1.5 text-[8px] font-black uppercase ${isLight ? lightRarityClass[achievement.rarity] : rarityClass[achievement.rarity]}`}>
-                  {getTierName(achievement.tier, 'pt')}
+                  {getTierName(achievement.tier, lang)}
                 </span>
               </div>
               <p className={`mt-3 text-sm font-semibold leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                {hiddenLocked ? 'Continue praticando para revelar esta conquista.' : achievement.description}
+                {hiddenLocked ? (isPt ? 'Continue praticando para revelar esta conquista.' : 'Keep practicing to reveal this achievement.') : achievement.description}
               </p>
               {!hiddenLocked && (
                 <div className={`mt-3 rounded-lg border px-3 py-2 ${isLight ? 'border-blue-100 bg-blue-50/70' : 'border-blue-900/30 bg-blue-950/20'}`}>
-                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-blue-300">Critério</p>
+                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-blue-300">{isPt ? 'Critério' : 'Criteria'}</p>
                   <p className={`mt-1 text-xs font-bold leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                    {getAchievementCriteriaText(achievement, 'pt')}
+                    {getAchievementCriteriaText(achievement, lang)}
                   </p>
                 </div>
               )}
@@ -216,9 +220,9 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
               )}
               {!hiddenLocked && (
                 <div className="mt-4 rounded-lg border border-blue-900/30 px-3 py-2">
-                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-blue-300">{achievement.asset.status === 'ready' ? 'Asset oficial' : 'Asset em breve'}</p>
+                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-blue-300">{achievement.asset.status === 'ready' ? (isPt ? 'Asset oficial' : 'Official asset') : (isPt ? 'Asset em breve' : 'Asset coming soon')}</p>
                   <p className={`mt-1 text-xs font-black ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                    {achievement.asset.status === 'ready' ? achievement.asset.slug : 'Imagem ainda nao disponivel. Aguarde para concluir este desbloqueio.'}
+                    {achievement.asset.status === 'ready' ? achievement.asset.slug : (isPt ? 'Imagem ainda nao disponivel. Aguarde para concluir este desbloqueio.' : 'Image not available yet. Wait to complete this unlock.')}
                   </p>
                 </div>
               )}
@@ -226,7 +230,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
                 <div className="mt-4 flex flex-wrap gap-2">
                   {rewards.map(reward => (
                     <span key={reward.id} className={`rounded-lg border px-2.5 py-1.5 text-[9px] font-black uppercase ${isLight ? 'border-blue-200 bg-white text-blue-700' : 'border-blue-900/60 bg-[#050914] text-blue-200'}`}>
-                      {reward.type}: {reward.asset.status === 'ready' ? reward.asset.slug : 'asset em breve'}
+                      {reward.type}: {reward.asset.status === 'ready' ? reward.asset.slug : (isPt ? 'asset em breve' : 'asset coming soon')}
                     </span>
                   ))}
                 </div>
@@ -236,7 +240,7 @@ const AchievementsPanel: React.FC<AchievementsPanelProps> = ({ isLight }) => {
                   onClick={() => toggleAchievement(achievement.id)}
                   className="mt-4 w-full cursor-pointer rounded-xl border border-blue-400/30 bg-blue-600 px-3 py-2 text-[9px] font-black uppercase text-white"
                 >
-                  {unlocked ? 'Bloquear dev' : 'Desbloquear dev'}
+                  {unlocked ? (isPt ? 'Bloquear dev' : 'Dev lock') : (isPt ? 'Desbloquear dev' : 'Dev unlock')}
                 </button>
               )}
             </article>

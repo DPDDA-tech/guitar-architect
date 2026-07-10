@@ -81,7 +81,7 @@ const TeenBasicCarePage: React.FC = () => {
 
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
-        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Cuidados Básicos" subtitle="Pequenos cuidados que fazem seu instrumento durar muito mais." />
+        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title={isPt ? "Cuidados Básicos" : "Basic Care"} subtitle={isPt ? "Pequenos cuidados que fazem seu instrumento durar muito mais." : "Simple habits that make your instrument last much longer."} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">

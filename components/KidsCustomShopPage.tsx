@@ -374,7 +374,7 @@ const KidsCustomShopPage: React.FC = () => {
             {/* action buttons */}
             <div className="mt-6 flex flex-col items-center gap-3">
               <button onClick={handleExportPng} disabled={isExporting} className={btnPrimary}>
-                {isExporting ? '⏳ Exportando...' : copy.exportPng}
+                {isExporting ? (isPt ? '⏳ Exportando...' : '⏳ Exporting...') : copy.exportPng}
               </button>
               <button onClick={handleNewGuitar} className={btnSecondary}>
                 {copy.newGuitar}

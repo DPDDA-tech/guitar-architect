@@ -33,7 +33,7 @@ type CellId = `s${number}f${number}`;
 
 type ScaleHunterRegion = {
   id: string;
-  label: string;
+  label: { pt: string; en: string };
   strings: number[];
   frets: number[]; // legado: janela genérica, mesmas casas em toda corda (Major/Menor Natural/modos)
   // Shapes reais (pentatônica): casas diferentes por corda — quando presente, vence `frets`
@@ -97,12 +97,12 @@ const SCALE_TYPE_TO_HARMONIC_MODE: Record<string, HarmonicCycleMode> = {
 // mesmo padrão de r1/r2 original, só estendido até cobrir o braço inteiro (até a casa 15).
 // Não são boxes CAGED nem dependem de tônica/escala — isso é decisão deliberada (ver auditoria).
 const SCALE_HUNTER_REGIONS: ScaleHunterRegion[] = [
-  { id: 'r1', label: 'Região 1', strings: [0, 1, 2, 3, 4, 5], frets: [1, 2, 3, 4, 5] },
-  { id: 'r2', label: 'Região 2', strings: [0, 1, 2, 3, 4, 5], frets: [3, 4, 5, 6, 7] },
-  { id: 'r3', label: 'Região 3', strings: [0, 1, 2, 3, 4, 5], frets: [5, 6, 7, 8, 9] },
-  { id: 'r4', label: 'Região 4', strings: [0, 1, 2, 3, 4, 5], frets: [7, 8, 9, 10, 11] },
-  { id: 'r5', label: 'Região 5', strings: [0, 1, 2, 3, 4, 5], frets: [9, 10, 11, 12, 13] },
-  { id: 'r6', label: 'Região 6', strings: [0, 1, 2, 3, 4, 5], frets: [11, 12, 13, 14, 15] },
+  { id: 'r1', label: { pt: 'Região 1', en: 'Region 1' }, strings: [0, 1, 2, 3, 4, 5], frets: [1, 2, 3, 4, 5] },
+  { id: 'r2', label: { pt: 'Região 2', en: 'Region 2' }, strings: [0, 1, 2, 3, 4, 5], frets: [3, 4, 5, 6, 7] },
+  { id: 'r3', label: { pt: 'Região 3', en: 'Region 3' }, strings: [0, 1, 2, 3, 4, 5], frets: [5, 6, 7, 8, 9] },
+  { id: 'r4', label: { pt: 'Região 4', en: 'Region 4' }, strings: [0, 1, 2, 3, 4, 5], frets: [7, 8, 9, 10, 11] },
+  { id: 'r5', label: { pt: 'Região 5', en: 'Region 5' }, strings: [0, 1, 2, 3, 4, 5], frets: [9, 10, 11, 12, 13] },
+  { id: 'r6', label: { pt: 'Região 6', en: 'Region 6' }, strings: [0, 1, 2, 3, 4, 5], frets: [11, 12, 13, 14, 15] },
 ];
 const DEFAULT_REGION = SCALE_HUNTER_REGIONS[0];
 
@@ -207,7 +207,7 @@ const buildScaleHunterSequence = (params: {
 // endFret, sequência) sem duplicar código entre região genérica e shape real.
 const buildRegionFromShapePositions = (
   id: string,
-  label: string,
+  label: { pt: string; en: string },
   positions: Array<{ string: number; fret: number }>,
 ): ScaleHunterRegion => {
   const perStringFrets: Record<number, number[]> = {};
@@ -225,7 +225,7 @@ const resolveScaleHunterArea = (root: string, scaleType: string, areaId: string)
   if (isPentatonicScaleType(scaleType)) {
     const shape = MINOR_PENTATONIC_SHAPES.find((candidate) => candidate.id === areaId) ?? MINOR_PENTATONIC_SHAPES[0];
     const resolved = resolvePentatonicShape(root, scaleType, shape, OPEN_NOTES);
-    return buildRegionFromShapePositions(shape.id, shape.label, resolved);
+    return buildRegionFromShapePositions(shape.id, { pt: shape.label, en: shape.label }, resolved);
   }
   return SCALE_HUNTER_REGIONS.find((candidate) => candidate.id === areaId) ?? DEFAULT_REGION;
 };
@@ -395,9 +395,9 @@ const pickRandomItem = <T,>(items: T[]): T => items[Math.floor(Math.random() * i
 
 // Caminhos gerados sempre mostram a região no nome (ex.: "C Maior — Região 1"), para deixar
 // claro que vieram do sorteio por rank — diferente dos 3 atalhos fixos, que mantêm título simples.
-const buildGeneratedPathTitle = (root: string, scaleType: string, region: ScaleHunterRegion): string => {
+const buildGeneratedPathTitle = (root: string, scaleType: string, region: ScaleHunterRegion, lang: 'pt' | 'en'): string => {
   const scaleLabel = SCALE_DISPLAY_LABEL[scaleType] ?? scaleType;
-  return `${root} ${scaleLabel} — ${region.label}`;
+  return `${root} ${scaleLabel} — ${region.label[lang]}`;
 };
 
 // Resumo discreto (uma linha) do pool liberado por rank — não lista escalas individualmente.
@@ -410,7 +410,7 @@ const RANK_POOL_SUMMARY: Record<string, { pt: string; en: string }> = {
 
 // Sorteia uma combinação (root + escala + região) dentro do pool liberado pelo rank atual,
 // gera a sequência via buildScaleHunterSequence e devolve um PathPattern pronto para jogar.
-const generateRandomScaleHunterPath = (rankId: string): PathPattern => {
+const generateRandomScaleHunterPath = (rankId: string, lang: 'pt' | 'en'): PathPattern => {
   const pool = SCALE_POOL_BY_RANK[rankId] ?? ROOKIE_POOL;
 
   for (let attempt = 0; attempt < 8; attempt += 1) {
@@ -429,7 +429,7 @@ const generateRandomScaleHunterPath = (rankId: string): PathPattern => {
     if (sequence.length > 0) {
       return {
         id: `generated-${entry.scaleType}-${root}-${region.id}`,
-        title: buildGeneratedPathTitle(root, entry.scaleType, region),
+        title: buildGeneratedPathTitle(root, entry.scaleType, region, lang),
         sequence,
         region,
         root,
@@ -514,12 +514,14 @@ const TeenScaleHunterPage: React.FC = () => {
   // sempre o rank mais alto — não afeta XP real, rank exibido ou progressão em produção.
   const unlockRankId = getUnlockRankId(rankProgress.current.id);
   const isManualPentatonic = isPentatonicScaleType(manualScaleType);
-  const availableManualRegions: Array<{ id: string; label: string }> = isManualPentatonic
+  const availableManualRegions: Array<{ id: string; label: string | { pt: string; en: string } }> = isManualPentatonic
     ? getAvailableShapesForRank(unlockRankId)
     : getAvailableRegionsForRank(unlockRankId);
-  const allManualAreaOptions: Array<{ id: string; label: string }> = isManualPentatonic
+  const allManualAreaOptions: Array<{ id: string; label: string | { pt: string; en: string } }> = isManualPentatonic
     ? MINOR_PENTATONIC_SHAPES
     : SCALE_HUNTER_REGIONS;
+  const resolveAreaLabel = (label: string | { pt: string; en: string }): string =>
+    typeof label === 'string' ? label : label[lang];
   const resolvedManualRegionId = availableManualRegions.some((region) => region.id === manualRegionId)
     ? manualRegionId
     : availableManualRegions[0].id;
@@ -768,9 +770,9 @@ const TeenScaleHunterPage: React.FC = () => {
   };
 
   const newChallenge = () => {
-    let next = generateRandomScaleHunterPath(unlockRankId);
+    let next = generateRandomScaleHunterPath(unlockRankId, lang);
     if (next.id === currentPath.id) {
-      next = generateRandomScaleHunterPath(unlockRankId);
+      next = generateRandomScaleHunterPath(unlockRankId, lang);
     }
     applyPath(next, isPt ? 'Novo caminho carregado. Observe a tônica e toque junto no instrumento.' : 'New path loaded. Spot the root note and play along on your instrument.');
   };
@@ -793,7 +795,7 @@ const TeenScaleHunterPage: React.FC = () => {
     applyPath(
       {
         id: `manual-${manualScaleType}-${manualRoot}-${region.id}`,
-        title: buildGeneratedPathTitle(manualRoot, manualScaleType, region),
+        title: buildGeneratedPathTitle(manualRoot, manualScaleType, region, lang),
         sequence,
         region,
         root: manualRoot,
@@ -810,7 +812,7 @@ const TeenScaleHunterPage: React.FC = () => {
 
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
-        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Caça às Escalas" subtitle="Caçe padrões no braço e reproduza caminhos musicais por região." />
+        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title={isPt ? "Caça às Escalas" : "Scale Hunter"} subtitle={isPt ? "Caçe padrões no braço e reproduza caminhos musicais por região." : "Hunt for fretboard patterns and play musical paths by region."} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-3 md:grid-cols-3">
@@ -956,7 +958,7 @@ const TeenScaleHunterPage: React.FC = () => {
                                 : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-violet-500'
                         }`}
                       >
-                        {area.label}
+                        {resolveAreaLabel(area.label)}
                         {isManualPentatonic ? ` • ${CAGED_LETTER_BY_SHAPE_ID[area.id as keyof typeof CAGED_LETTER_BY_SHAPE_ID]}` : ''}
                         {!isUnlocked ? ' 🔒' : ''}
                       </button>
@@ -1066,7 +1068,7 @@ const TeenScaleHunterPage: React.FC = () => {
               onClick={resetTry}
               className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'}`}
             >
-              Limpar
+              {isPt ? 'Limpar' : 'Clear'}
             </button>
           </div>
 

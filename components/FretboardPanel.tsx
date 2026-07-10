@@ -670,7 +670,7 @@ const DEFAULT_FRETBOARD = (lang: Lang, instrumentType: InstrumentType = 'guitar-
 
 const FretboardPanel: React.FC = () => {
   const [instances, setInstances] = useState<FretboardState[]>([]);
-  const [projectName, setProjectName] = useState('Novo Projeto');
+  const [projectName, setProjectName] = useState(() => (getGlobalLang() === 'pt' ? 'Novo Projeto' : 'New Project'));
   const [projectId, setProjectId] = useState<string>(crypto.randomUUID());
   const [globalTranspose, setGlobalTranspose] = useState(0);
   const [theme, setTheme] = useState<ThemeMode>(() => {
@@ -788,7 +788,7 @@ const switchUserSession = (newUserId: string, displayName: string) => {
   // ============================
 
   setInstances([]);
-  setProjectName('Novo Projeto');
+  setProjectName(lang === 'pt' ? 'Novo Projeto' : 'New Project');
   setProjectId(crypto.randomUUID());
   setGlobalTranspose(0);
 
@@ -1086,7 +1086,7 @@ useEffect(() => {
       setUser('');
       setUserLogo(undefined);
       setInstances([DEFAULT_FRETBOARD((config?.lang as Lang) || 'pt', config?.defaultInstrument || 'guitar-6')]);
-      setProjectName('Novo Projeto');
+      setProjectName(((config?.lang as Lang) || 'pt') === 'pt' ? 'Novo Projeto' : 'New Project');
       setProjectId(crypto.randomUUID());
       setGlobalTranspose(0);
       setShowLoginModal(false);
@@ -1384,7 +1384,7 @@ const handleDismissReturnContext = () => {
       const data = JSON.parse(importText);
       if (data.diagram_id || data.theory) {
          const newInst = DEFAULT_FRETBOARD(lang, data.meta?.instrument || 'guitar-6');
-         newInst.title = data.meta?.title || "Importado";
+         newInst.title = data.meta?.title || (lang === 'pt' ? "Importado" : "Imported");
          newInst.root = data.theory?.root || "C";
          newInst.scaleType = data.theory?.scale || "Major (Ionian)";
          newInst.tuning = data.tuning?.label || "Standard";
@@ -2897,7 +2897,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  boxShadow: `0 18px 46px ${displayedBrandAssets.accentShadow}`,
                }}
              >
-               Criar Primeiro Diagrama
+               {lang === 'pt' ? 'Criar Primeiro Diagrama' : 'Create First Diagram'}
              </button>
           </div>
         ) : (
@@ -3058,7 +3058,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                <div className="relative mb-8">
                <input 
                  autoFocus 
-                 placeholder="Nome do Autor (ex: Prof. Jimmy H)..." 
+                 placeholder={lang === 'pt' ? "Nome do Autor (ex: Prof. Jimmy H)..." : "Author name (e.g. Prof. Jimmy H)..."}
                  value={user} 
                  onChange={e => setUser(e.target.value)} 
  onKeyDown={e => {
@@ -3076,7 +3076,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  className={`w-full p-4 rounded-2xl font-bold outline-none border transition-all text-center text-sm md:text-base placeholder:text-zinc-400 placeholder:font-normal placeholder:opacity-50 ${isLight ? 'bg-zinc-100 border-zinc-200 text-zinc-900 focus:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:border-blue-500'}`} 
                />
                {!user && (
-                 <p className="absolute -bottom-5 left-0 w-full text-center text-[9px] font-black uppercase text-zinc-400 tracking-tighter opacity-40">Apenas sugestão. Digite o que desejar.</p>
+                 <p className="absolute -bottom-5 left-0 w-full text-center text-[9px] font-black uppercase text-zinc-400 tracking-tighter opacity-40">{lang === 'pt' ? 'Apenas sugestão. Digite o que desejar.' : 'Just a suggestion. Type whatever you like.'}</p>
                )}
               </div>
               )}
@@ -3099,7 +3099,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
   }`}
 >
-  Confirmar Identidade
+  {lang === 'pt' ? 'Confirmar Identidade' : 'Confirm Identity'}
 </button>
               )}
 
@@ -3128,8 +3128,8 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  className={`w-full h-64 p-4 rounded-2xl mb-6 font-mono text-[10px] outline-none border transition-all ${isLight ? 'bg-zinc-50 border-zinc-200 text-zinc-800 focus:border-blue-500' : 'bg-zinc-800 border-zinc-700 text-zinc-300 focus:border-blue-500'}`}
               />
               <div className="flex gap-4">
-                 <button onClick={() => setShowImportModal(false)} className={`flex-1 py-4 rounded-xl font-black uppercase text-[11px] transition-colors ${isLight ? 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}>Sair</button>
-                 <button onClick={handleImport} className="flex-2 py-4 px-12 bg-blue-600 text-white rounded-xl font-black uppercase text-[11px] shadow-xl hover:bg-blue-700 transition-colors">Importar Dados</button>
+                 <button onClick={() => setShowImportModal(false)} className={`flex-1 py-4 rounded-xl font-black uppercase text-[11px] transition-colors ${isLight ? 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}>{lang === 'pt' ? 'Sair' : 'Cancel'}</button>
+                 <button onClick={handleImport} className="flex-2 py-4 px-12 bg-blue-600 text-white rounded-xl font-black uppercase text-[11px] shadow-xl hover:bg-blue-700 transition-colors">{lang === 'pt' ? 'Importar Dados' : 'Import Data'}</button>
               </div>
            </div>
         </div>
@@ -3141,13 +3141,13 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-black italic text-blue-500 uppercase tracking-tighter">
-          Projetos
+          {lang === 'pt' ? 'Projetos' : 'Projects'}
         </h2>
         <button
           onClick={() => setShowLoadModal(false)}
           className="text-zinc-500 font-black text-[11px] uppercase hover:text-blue-500 transition-colors"
         >
-          Fechar
+          {lang === 'pt' ? 'Fechar' : 'Close'}
         </button>
       </div>
 
@@ -3181,7 +3181,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
 
         {userLibrary.length === 0 && (
           <p className="text-center py-12 font-black text-zinc-400 uppercase text-[10px]">
-            Vazio
+            {lang === 'pt' ? 'Vazio' : 'Empty'}
           </p>
         )}
 

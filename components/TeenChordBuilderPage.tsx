@@ -34,33 +34,33 @@ const noteColor: Record<TeenChordNote, string> = {
 
 type ChordIntervalCard = {
   id: string;
-  title: string;
+  title: { pt: string; en: string };
   pair: [TeenChordNote, TeenChordNote];
   type: '3a' | '5a' | '8a';
-  description: string;
+  description: { pt: string; en: string };
 };
 
 const chordIntervalCards: ChordIntervalCard[] = [
   {
     id: 'ci-1',
-    title: 'Terça',
+    title: { pt: 'Terça', en: 'Third' },
     pair: ['DO', 'MI'],
     type: '3a',
-    description: 'A terça muda o humor do acorde: maior (brilho) ou menor (tensão).',
+    description: { pt: 'A terça muda o humor do acorde: maior (brilho) ou menor (tensão).', en: 'The third changes the mood of the chord: major (bright) or minor (tense).' },
   },
   {
     id: 'ci-2',
-    title: 'Quinta',
+    title: { pt: 'Quinta', en: 'Fifth' },
     pair: ['SOL', 'RE'],
     type: '5a',
-    description: 'A quinta traz estabilidade estrutural e peso para a base.',
+    description: { pt: 'A quinta traz estabilidade estrutural e peso para a base.', en: 'The fifth brings structural stability and weight to the base.' },
   },
   {
     id: 'ci-3',
-    title: 'Oitava',
+    title: { pt: 'Oitava', en: 'Octave' },
     pair: ['LA', 'LA'],
     type: '8a',
-    description: 'A oitava reforça a identidade da nota em outro registro.',
+    description: { pt: 'A oitava reforça a identidade da nota em outro registro.', en: 'The octave reinforces the note\'s identity in another register.' },
   },
 ];
 
@@ -157,7 +157,7 @@ const TeenChordBuilderPage: React.FC = () => {
 
   const checkBuild = () => {
     if (selectedNotes.length !== requiredNotes) {
-      setFeedback(`Escolha ${requiredNotes} notas para validar o bloco.`);
+      setFeedback(isPt ? `Escolha ${requiredNotes} notas para validar o bloco.` : `Choose ${requiredNotes} notes to validate the block.`);
       return;
     }
 
@@ -193,12 +193,12 @@ const TeenChordBuilderPage: React.FC = () => {
 
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="teens" isLight={isLight} backLabel={isPt ? "Voltar ao Teens" : "Back to Teens"} backPath="/teens" />
-        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title="Construtor de Acordes" subtitle="Monte blocos harmônicos por sensação e prepare o caminho para tríades, tétrades e inversões." />
+        <InternalEcosystemHeader ecosystem="teens" isLight={isLight} title={isPt ? "Construtor de Acordes" : "Chord Builder"} subtitle={isPt ? "Monte blocos harmônicos por sensação e prepare o caminho para tríades, tétrades e inversões." : "Build harmonic blocks by feel and prepare for triads, tetrads, and inversions."} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-violet-800/60 bg-zinc-950/80'}`}>
           <div className="grid gap-3 md:grid-cols-3">
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">Desafio</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{isPt ? 'Desafio' : 'Challenge'}</p>
               <p className="mt-1 text-lg font-black">{activeChallenge.title}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
@@ -206,15 +206,17 @@ const TeenChordBuilderPage: React.FC = () => {
               <p className="mt-1 text-lg font-black">{streak} / {combo}</p>
             </div>
             <div className={`rounded-2xl border p-4 ${isLight ? 'border-slate-200 bg-slate-50' : 'border-violet-800/50 bg-zinc-900/60'}`}>
-              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">XP por acerto</p>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-violet-400">{isPt ? 'XP por acerto' : 'XP per correct answer'}</p>
               <p className="mt-1 text-lg font-black">{activeChallenge.xp}</p>
             </div>
           </div>
 
           <div className={`mt-3 rounded-xl border px-4 py-3 ${isLight ? 'border-violet-200 bg-violet-50' : 'border-violet-500/30 bg-violet-500/10'}`}>
-            <p className={`text-[10px] font-black uppercase tracking-[0.22em] ${isLight ? 'text-violet-700' : 'text-violet-300'}`}>Arquitetura Do Som</p>
+            <p className={`text-[10px] font-black uppercase tracking-[0.22em] ${isLight ? 'text-violet-700' : 'text-violet-300'}`}>{isPt ? 'Arquitetura Do Som' : 'Architecture of Sound'}</p>
             <p className={`mt-1 text-xs font-bold ${isLight ? 'text-slate-700' : 'text-zinc-200'}`}>
-              Tijolos: intervalos. Estrutura: tríade (1, 3, 5). Acabamento: tétrades (7). Engenharia: mover formas no braço.
+              {isPt
+                ? 'Tijolos: intervalos. Estrutura: tríade (1, 3, 5). Acabamento: tétrades (7). Engenharia: mover formas no braço.'
+                : 'Bricks: intervals. Structure: triad (1, 3, 5). Finish: tetrads (7). Engineering: moving shapes across the neck.'}
             </p>
           </div>
 
@@ -269,7 +271,7 @@ const TeenChordBuilderPage: React.FC = () => {
           </div>
 
           <div className={`mt-4 rounded-2xl border p-4 ${isLight ? 'border-fuchsia-200 bg-fuchsia-50/80' : 'border-fuchsia-500/30 bg-fuchsia-500/10'}`}>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-400">Intervalos na Arquitetura do Acorde</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-400">{isPt ? 'Intervalos na Arquitetura do Acorde' : 'Intervals in Chord Architecture'}</p>
             <div className="mt-3 grid gap-3 md:grid-cols-3">
               {chordIntervalCards.map((card) => {
                 const active = selectedIntervalId === card.id;
@@ -279,18 +281,18 @@ const TeenChordBuilderPage: React.FC = () => {
                     onClick={() => setSelectedIntervalId(card.id)}
                     className={`rounded-xl border p-3 text-left ${active ? 'border-fuchsia-300 bg-fuchsia-500/20' : ''}`}
                   >
-                    <p className="text-xs font-black uppercase">{card.title}</p>
+                    <p className="text-xs font-black uppercase">{card.title[lang]}</p>
                     <div className="mt-2 flex items-center gap-2">
                       <span className={`h-8 w-8 rounded-full ${noteColor[card.pair[0]]} text-white flex items-center justify-center text-xs font-black`}>{card.pair[0]}</span>
                       <span className="text-fuchsia-300 font-black">→</span>
                       <span className={`h-8 w-8 rounded-full ${noteColor[card.pair[1]]} text-white flex items-center justify-center text-xs font-black`}>{card.pair[1]}</span>
                     </div>
-                    <p className="mt-2 text-[11px] font-black opacity-85">Intervalo: {card.type}</p>
+                    <p className="mt-2 text-[11px] font-black opacity-85">{isPt ? 'Intervalo' : 'Interval'}: {card.type}</p>
                   </button>
                 );
               })}
             </div>
-            <p className="mt-3 text-xs font-bold opacity-90">{selectedInterval.description}</p>
+            <p className="mt-3 text-xs font-bold opacity-90">{selectedInterval.description[lang]}</p>
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
@@ -335,13 +337,13 @@ const TeenChordBuilderPage: React.FC = () => {
                   : 'border-violet-300 bg-violet-500/25 text-violet-50 hover:bg-violet-500/35'
               }`}
             >
-              Ouvir seu bloco
+              {isPt ? 'Ouvir seu bloco' : 'Play your block'}
             </button>
             <button
               onClick={checkBuild}
               className="min-h-[44px] rounded-xl border border-emerald-400 bg-emerald-500/20 px-4 py-2 text-xs font-black uppercase text-center leading-tight text-emerald-100 hover:bg-emerald-500/30"
             >
-              Validar
+              {isPt ? 'Validar' : 'Check'}
             </button>
             <button
               onClick={nextChallenge}
@@ -357,7 +359,7 @@ const TeenChordBuilderPage: React.FC = () => {
               onClick={clearBuild}
               className={`min-h-[44px] rounded-xl border px-4 py-2 text-xs font-black uppercase text-center leading-tight ${isLight ? 'border-slate-300 bg-white hover:border-violet-400' : 'border-zinc-700 bg-zinc-950 hover:border-violet-500'}`}
             >
-              Limpar
+              {isPt ? 'Limpar' : 'Clear'}
             </button>
           </div>
 

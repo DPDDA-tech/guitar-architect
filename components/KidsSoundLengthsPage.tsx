@@ -285,7 +285,7 @@ const KidsSoundLengthsPage: React.FC = () => {
     <div className={`relative overflow-hidden p-4 md:p-8 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-zinc-950 text-zinc-100'}`}>
       <main className="relative mx-auto max-w-6xl">
         <EcosystemPageActions ecosystem="kids" isLight={isLight} backLabel={copy.backKids} backPath="/kids" />
-        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title="O Tamanho dos Sons" subtitle="Descubra sons rápidos, longos e pausas musicais." />
+        <InternalEcosystemHeader ecosystem="kids" isLight={isLight} title={isPt ? "O Tamanho dos Sons" : "Sound Lengths"} subtitle={isPt ? "Descubra sons rápidos, longos e pausas musicais." : "Discover short sounds, long sounds, and musical rests."} />
 
         <section className={`rounded-3xl border p-4 md:p-6 ${isLight ? 'border-slate-200 bg-white/90' : 'border-zinc-800 bg-zinc-900/80'}`}>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

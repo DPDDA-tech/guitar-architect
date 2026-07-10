@@ -3,7 +3,7 @@ export type FingerExerciseCategory = 'chromatic' | 'pairs' | 'triads' | 'spider'
 export interface FingerExerciseDefinition {
   id: string;
   category: FingerExerciseCategory;
-  name: string;
+  name: { pt: string; en: string };
   description: { pt: string; en: string };
   fingerOrder: number[];
   fretOffsets?: number[];
@@ -45,7 +45,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'chromatic-1234',
     category: 'chromatic',
-    name: '1-2-3-4',
+    name: { pt: '1-2-3-4', en: '1-2-3-4' },
     description: {
       pt: 'Sequência ascendente clássica. Trabalha coordenação e consistência rítmica entre os quatro dedos.',
       en: 'Classic ascending sequence. Builds coordination and rhythmic consistency across all four fingers.',
@@ -56,7 +56,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'chromatic-4321',
     category: 'chromatic',
-    name: '4-3-2-1',
+    name: { pt: '4-3-2-1', en: '4-3-2-1' },
     description: {
       pt: 'Sequência descendente. Inverte o padrão para reforçar independência do mínimo e do anelar.',
       en: 'Descending sequence. Reverses the pattern to reinforce independence of the pinky and ring finger.',
@@ -67,7 +67,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'chromatic-1324',
     category: 'chromatic',
-    name: '1-3-2-4',
+    name: { pt: '1-3-2-4', en: '1-3-2-4' },
     description: {
       pt: 'Padrão alternado que exige mais controle e antecipação entre os dedos.',
       en: 'Alternating pattern that demands more control and anticipation between fingers.',
@@ -78,7 +78,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'chromatic-1423',
     category: 'chromatic',
-    name: '1-4-2-3',
+    name: { pt: '1-4-2-3', en: '1-4-2-3' },
     description: {
       pt: 'Padrão alternado avançado, ótimo para quebrar movimentos automáticos e treinar independência real.',
       en: 'Advanced alternating pattern, great for breaking automatic movement and training real independence.',
@@ -91,7 +91,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'pairs-12',
     category: 'pairs',
-    name: '1-2',
+    name: { pt: '1-2', en: '1-2' },
     description: {
       pt: 'Fortalece a abertura e a independência entre indicador e médio.',
       en: 'Strengthens the opening and independence between index and middle finger.',
@@ -102,7 +102,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'pairs-13',
     category: 'pairs',
-    name: '1-3',
+    name: { pt: '1-3', en: '1-3' },
     description: {
       pt: 'Trabalha o salto entre indicador e anelar, pulando o médio.',
       en: 'Trains the jump between index and ring finger, skipping the middle finger.',
@@ -113,7 +113,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'pairs-14',
     category: 'pairs',
-    name: '1-4',
+    name: { pt: '1-4', en: '1-4' },
     description: {
       pt: 'Maior abertura entre indicador e mínimo. Bom para alcance e estabilidade.',
       en: 'Wider stretch between index and pinky. Good for reach and stability.',
@@ -124,7 +124,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'pairs-23',
     category: 'pairs',
-    name: '2-3',
+    name: { pt: '2-3', en: '2-3' },
     description: {
       pt: 'Independência entre médio e anelar, um dos pares mais difíceis de separar.',
       en: 'Independence between middle and ring finger, one of the hardest pairs to separate.',
@@ -135,7 +135,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'pairs-24',
     category: 'pairs',
-    name: '2-4',
+    name: { pt: '2-4', en: '2-4' },
     description: {
       pt: 'Fortalece o médio em conjunto com o mínimo.',
       en: 'Strengthens the middle finger together with the pinky.',
@@ -146,7 +146,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'pairs-34',
     category: 'pairs',
-    name: '3-4',
+    name: { pt: '3-4', en: '3-4' },
     description: {
       pt: 'Independência entre anelar e mínimo, par naturalmente mais conectado.',
       en: 'Independence between ring finger and pinky, a naturally more connected pair.',
@@ -159,7 +159,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'triads-123',
     category: 'triads',
-    name: '1-2-3',
+    name: { pt: '1-2-3', en: '1-2-3' },
     description: {
       pt: 'Controle de grupo com os três primeiros dedos, preparando o mínimo para entrar depois.',
       en: 'Group control with the first three fingers, preparing the pinky to join afterwards.',
@@ -170,7 +170,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'triads-124',
     category: 'triads',
-    name: '1-2-4',
+    name: { pt: '1-2-4', en: '1-2-4' },
     description: {
       pt: 'Pula o anelar, exigindo mais precisão do mínimo dentro do grupo.',
       en: 'Skips the ring finger, demanding more precision from the pinky within the group.',
@@ -181,7 +181,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'triads-134',
     category: 'triads',
-    name: '1-3-4',
+    name: { pt: '1-3-4', en: '1-3-4' },
     description: {
       pt: 'Pula o médio, trabalhando coordenação entre indicador, anelar e mínimo.',
       en: 'Skips the middle finger, training coordination between index, ring finger and pinky.',
@@ -192,7 +192,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'triads-234',
     category: 'triads',
-    name: '2-3-4',
+    name: { pt: '2-3-4', en: '2-3-4' },
     description: {
       pt: 'Grupo dos três últimos dedos, o trio mais difícil de controlar de forma independente.',
       en: 'The last three fingers as a group, the hardest trio to control independently.',
@@ -205,7 +205,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'spider-1234-basic',
     category: 'spider',
-    name: '1-2-3-4 (básico)',
+    name: { pt: '1-2-3-4 (básico)', en: '1-2-3-4 (basic)' },
     description: {
       pt: 'Versão básica do clássico exercício spider: percorre o padrão 1-2-3-4 corda a corda, treinando troca de cordas e limpeza de execução.',
       en: 'Basic version of the classic spider exercise: walks the 1-2-3-4 pattern string by string, training string changes and clean execution.',
@@ -218,7 +218,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'fixed-move12-hold34',
     category: 'fixed',
-    name: 'Mover 1-2 mantendo 3-4',
+    name: { pt: 'Mover 1-2 mantendo 3-4', en: 'Move 1-2 holding 3-4' },
     description: {
       pt: 'Mantenha os dedos 3 e 4 pressionados enquanto os dedos 1 e 2 se movem. Trabalha independência real e reduz movimentos involuntários.',
       en: 'Keep fingers 3 and 4 pressed down while fingers 1 and 2 move. Trains real independence and reduces involuntary movement.',
@@ -230,7 +230,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'fixed-move23-hold14',
     category: 'fixed',
-    name: 'Mover 2-3 mantendo 1-4',
+    name: { pt: 'Mover 2-3 mantendo 1-4', en: 'Move 2-3 holding 1-4' },
     description: {
       pt: 'Mantenha os dedos 1 e 4 pressionados enquanto os dedos 2 e 3 se movem entre eles. Excelente para controle muscular fino.',
       en: 'Keep fingers 1 and 4 pressed down while fingers 2 and 3 move between them. Excellent for fine muscular control.',
@@ -242,7 +242,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'fixed-move34-hold12',
     category: 'fixed',
-    name: 'Mover 3-4 mantendo 1-2',
+    name: { pt: 'Mover 3-4 mantendo 1-2', en: 'Move 3-4 holding 1-2' },
     description: {
       pt: 'Mantenha os dedos 1 e 2 pressionados enquanto os dedos 3 e 4 se movem. Foca no controle do anelar e do mínimo.',
       en: 'Keep fingers 1 and 2 pressed down while fingers 3 and 4 move. Focuses on control of the ring finger and pinky.',
@@ -256,7 +256,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'stretch-1-4',
     category: 'stretch',
-    name: '1-4',
+    name: { pt: '1-4', en: '1-4' },
     description: {
       pt: 'Alongamento máximo entre indicador e mínimo dentro da região, trabalhando alcance e flexibilidade.',
       en: 'Maximum stretch between index and pinky within the region, training reach and flexibility.',
@@ -268,7 +268,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'stretch-1-3-4',
     category: 'stretch',
-    name: '1-3-4',
+    name: { pt: '1-3-4', en: '1-3-4' },
     description: {
       pt: 'Alongamento progressivo passando pelo anelar antes do mínimo.',
       en: 'Progressive stretch passing through the ring finger before the pinky.',
@@ -280,7 +280,7 @@ export const FINGER_EXERCISE_CATALOG: FingerExerciseDefinition[] = [
   {
     id: 'stretch-1-2-4',
     category: 'stretch',
-    name: '1-2-4',
+    name: { pt: '1-2-4', en: '1-2-4' },
     description: {
       pt: 'Alongamento progressivo passando pelo médio antes do mínimo.',
       en: 'Progressive stretch passing through the middle finger before the pinky.',
