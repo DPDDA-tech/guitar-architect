@@ -3,6 +3,7 @@ import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
 import { getInstructorById, getInstructorCategoryLabel } from '../data/instructors';
 import AppFooter from './AppFooter';
+import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
 type ThemeMode = 'light' | 'dark';
 type AppLang = 'pt' | 'en';
@@ -36,6 +37,18 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
 
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, [instructorId]);
+
+  useEffect(() => {
+    const viewedInstructor = getInstructorById(instructorId);
+    if (!viewedInstructor) return;
+    trackEvent(AnalyticsEvents.VIEW_INSTRUCTOR_PROFILE, {
+      instructor_id: viewedInstructor.id,
+      instructor_name: viewedInstructor.name,
+      instructor_title: viewedInstructor.title[lang],
+      language: lang,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instructorId]);
 
   const handleToggleTheme = () => {

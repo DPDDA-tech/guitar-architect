@@ -3,6 +3,7 @@ import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
 import AppFooter from './AppFooter';
 import { getDailyInstructorSpotlightGroup } from '../data/instructors';
+import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -238,7 +239,15 @@ const EcosystemPage: React.FC = () => {
               <button
                 key={instructor.id}
                 type="button"
-                onClick={() => navigateTo(`/instructors/${instructor.id}`)}
+                onClick={() => {
+                  trackEvent(AnalyticsEvents.SELECT_INSTRUCTOR, {
+                    instructor_id: instructor.id,
+                    instructor_name: instructor.name,
+                    source: 'ecosystem_home',
+                    language: lang,
+                  });
+                  navigateTo(`/instructors/${instructor.id}`);
+                }}
                 className="flex flex-col items-center gap-1.5"
               >
                 <span className={`h-14 w-14 overflow-hidden rounded-full border-2 transition-transform hover:scale-110 md:h-16 md:w-16 ${isLight ? 'border-white shadow-md' : 'border-zinc-800'}`}>

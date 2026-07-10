@@ -18,6 +18,8 @@ export const AnalyticsEvents = {
   CHORD_EXPLORER_USED: 'chord_explorer_used',
   LOGIN_COMPLETED: 'login_completed',
   SIGNUP_COMPLETED: 'signup_completed',
+  VIEW_INSTRUCTOR_PROFILE: 'view_instructor_profile',
+  SELECT_INSTRUCTOR: 'select_instructor',
 } as const;
 
 export type AnalyticsEventName = typeof AnalyticsEvents[keyof typeof AnalyticsEvents] | string;

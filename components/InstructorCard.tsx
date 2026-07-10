@@ -1,6 +1,7 @@
 import React from 'react';
 import type { InstructorProfile } from '../data/instructors';
 import { getInstructorCategoryLabel } from '../data/instructors';
+import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
 const GALLERY_SCROLL_KEY = 'ga_instructors_gallery_scroll';
 
@@ -9,12 +10,22 @@ const navigateTo = (path: string) => {
   window.dispatchEvent(new Event('ga-route-change'));
 };
 
-const navigateToInstructor = (path: string) => {
+const navigateToInstructor = (
+  path: string,
+  instructor: InstructorProfile,
+  lang: 'pt' | 'en',
+) => {
   try {
     sessionStorage.setItem(GALLERY_SCROLL_KEY, String(window.scrollY));
   } catch {
     // sessionStorage indisponível (ex.: modo privado) — segue sem restaurar posição.
   }
+  trackEvent(AnalyticsEvents.SELECT_INSTRUCTOR, {
+    instructor_id: instructor.id,
+    instructor_name: instructor.name,
+    source: 'instructors_gallery',
+    language: lang,
+  });
   navigateTo(path);
 };
 
@@ -38,7 +49,7 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
   return (
     <button
       type="button"
-      onClick={() => navigateToInstructor(`/instructors/${instructor.id}`)}
+      onClick={() => navigateToInstructor(`/instructors/${instructor.id}`, instructor, lang)}
       aria-label={lang === 'pt' ? `Ver perfil de ${instructor.name}` : `View ${instructor.name}'s profile`}
       title={instructor.title[lang]}
       className={`flex flex-col overflow-hidden rounded-3xl border text-left transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${panelClass}`}
