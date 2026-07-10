@@ -105,15 +105,18 @@ const Season1Page: React.FC = () => {
         s3Title: '3. Validade da Season 1',
         s3: 'A Season 1 permanece aberta para registros de apoio até 31/05/2027.',
         s4Title: '4. Como apoiar nesta fase',
-        s4: 'Nesta fase inicial, o apoio é registrado manualmente. Após realizar a contribuição, o apoiador poderá enviar o comprovante para validação e liberação do selo correspondente no perfil.',
+        s4: 'Nesta fase inicial, o apoio via Pix ou Wise é registrado manualmente. Após realizar a contribuição, o apoiador poderá enviar o comprovante para validação e liberação do selo correspondente no perfil.',
         s5Title: '5. Dados de apoio',
+        s5PixLabel: 'Pix — Brasil',
         pix: 'Chave Pix:',
+        s5WiseLabel: 'Wise — Internacional',
+        s5WiseText: 'Para contribuições internacionais em USD, consulte os dados bancários na área de apoio do aplicativo.',
         contact: 'Contato:',
         s6Title: '6. Avisos importantes',
         s6: [
           'Contribuições são opcionais.',
           'Contribuições não desbloqueiam funcionalidades.',
-          'O Guitar Architect continua utilizável independentemente de apoio.',
+          'O Guitar Architect continua utilizável independentemente de apoio, nos termos e condições atualmente disponibilizados.',
           'O apoio é uma forma de participar da construção e evolução do projeto.',
         ],
         s7Title: '7. Natureza dos Apoios',
@@ -148,15 +151,18 @@ const Season1Page: React.FC = () => {
         s3Title: '3. Season 1 validity',
         s3: 'Season 1 remains open for support registrations until May 31, 2027.',
         s4Title: '4. How to support in this phase',
-        s4: 'In this initial phase, support is registered manually. After contributing, the supporter may send proof for validation and badge release in the profile.',
+        s4: 'In this initial phase, support via Pix or Wise is registered manually. After contributing, the supporter may send proof for validation and badge release in the profile.',
         s5Title: '5. Support details',
-        pix: 'PIX key:',
+        s5PixLabel: 'Pix — Brazil',
+        pix: 'Pix key:',
+        s5WiseLabel: 'Wise — International',
+        s5WiseText: "For international contributions in USD, see the banking details in the app's support area.",
         contact: 'Contact:',
         s6Title: '6. Important notices',
         s6: [
           'Contributions are optional.',
           'Contributions do not unlock features.',
-          'Guitar Architect remains fully usable regardless of support.',
+          'Guitar Architect remains available regardless of support, under the terms and conditions currently offered.',
           'Supporting is a way to take part in the construction and evolution of the project.',
         ],
         s7Title: '7. Nature of Contributions',
@@ -249,9 +255,16 @@ const Season1Page: React.FC = () => {
 
               <section id="season-1-payment-info" className={`rounded-2xl border p-6 ${panelClass}`}>
                 <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s5Title}</h2>
-                <div className="space-y-2 font-bold">
-                  <p>{t.pix} <span className={accentValueClass}>{SUPPORTER_PIX_KEY}</span></p>
-                  <p>{t.contact} <span className={accentValueClass}>{SUPPORTER_CONTACT_EMAIL}</span></p>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-zinc-400 mb-1">{t.s5PixLabel}</p>
+                    <p className="font-bold">{t.pix} <span className={accentValueClass}>{SUPPORTER_PIX_KEY}</span></p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-zinc-400 mb-1">{t.s5WiseLabel}</p>
+                    <p className="font-bold">{t.s5WiseText}</p>
+                  </div>
+                  <p className="font-bold">{t.contact} <span className={accentValueClass}>{SUPPORTER_CONTACT_EMAIL}</span></p>
                 </div>
               </section>
 

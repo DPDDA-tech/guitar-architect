@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
-import { instructors, instructorCategoryLabels, type InstructorCategory } from '../data/instructors';
+import { instructors, getInstructorCategoryLabel, type InstructorCategory } from '../data/instructors';
 import InstructorCard from './InstructorCard';
 import AppFooter from './AppFooter';
 
@@ -43,14 +43,24 @@ const InstructorsGalleryPage: React.FC = () => {
     let stored: string | null = null;
     try {
       stored = sessionStorage.getItem(GALLERY_SCROLL_KEY);
-      sessionStorage.removeItem(GALLERY_SCROLL_KEY);
     } catch {
       // sessionStorage indisponível — mantém o topo da página.
     }
     if (stored === null) return;
     const scrollY = Number(stored);
     if (!Number.isFinite(scrollY)) return;
-    const frame = requestAnimationFrame(() => window.scrollTo(0, scrollY));
+    // A chave só é removida quando a restauração realmente ocorre (dentro do
+    // rAF), não ao montar o efeito. Isso evita que a dupla montagem do
+    // React.StrictMode (mount → cleanup → mount) consuma a chave e cancele o
+    // frame antes que a montagem final tenha a chance de restaurar o scroll.
+    const frame = requestAnimationFrame(() => {
+      try {
+        sessionStorage.removeItem(GALLERY_SCROLL_KEY);
+      } catch {
+        // sessionStorage indisponível — nada a remover.
+      }
+      window.scrollTo(0, scrollY);
+    });
     return () => cancelAnimationFrame(frame);
   }, []);
 
@@ -113,7 +123,7 @@ const InstructorsGalleryPage: React.FC = () => {
       };
 
   const filterLabel = (value: FilterValue) =>
-    value === 'all' ? (lang === 'pt' ? 'Todos' : 'All') : instructorCategoryLabels[value];
+    value === 'all' ? (lang === 'pt' ? 'Todos' : 'All') : getInstructorCategoryLabel(value, lang);
 
   return (
     <>

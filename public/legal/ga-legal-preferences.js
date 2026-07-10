@@ -10,7 +10,7 @@
   const config = readConfig();
   const globalLang = localStorage.getItem('ga_lang');
   const globalTheme = localStorage.getItem('ga_theme');
-  const lang = globalLang === 'en' || globalLang === 'pt'
+  let lang = globalLang === 'en' || globalLang === 'pt'
     ? globalLang
     : (config.lang === 'en' ? 'en' : 'pt');
   const isDark = globalTheme === 'dark' || globalTheme === 'light'
@@ -22,7 +22,6 @@
   const SUN_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg>';
 
   document.documentElement.classList.toggle('dark', isDark);
-  document.documentElement.lang = lang === 'en' ? 'en-US' : 'pt-BR';
 
   const style = document.createElement('style');
   style.textContent = `
@@ -90,6 +89,10 @@
     html.dark [data-lang-toggle]:hover {
       border-color: #3b82f6 !important;
     }
+
+    [data-lang][hidden] {
+      display: none !important;
+    }
   `;
   document.head.appendChild(style);
 
@@ -99,7 +102,7 @@
       eyebrow: ['Guitar Architect', 'Guitar Architect'],
       h1: ['Ajuda e FAQ', 'Help and FAQ'],
       subtitle: ['Guia Rápido e Dúvidas Frequentes', 'Quick Guide and Frequently Asked Questions'],
-      date: ['Última atualização: 15 de junho de 2026', 'Last updated: June 15, 2026'],
+      date: ['Última atualização: 10 de julho de 2026', 'Last updated: July 10, 2026'],
     },
     'privacy.html': {
       title: ['Política de Privacidade - Guitar Architect', 'Privacy Policy - Guitar Architect'],
@@ -126,67 +129,94 @@
 
   if (!copy) return;
 
-  const slot = lang === 'en' ? 1 : 0;
-  document.title = copy.title[slot];
-
-  const backLinks = document.querySelectorAll('[data-back-to-app]');
-  backLinks.forEach(link => {
-    link.textContent = lang === 'en' ? '← Back to App' : '← Voltar ao App';
-  });
-
-  const aboutLink = document.querySelector('[data-about-link]');
-  if (aboutLink) aboutLink.textContent = lang === 'en' ? 'About' : 'Sobre';
-
-  const enNotice = document.querySelector('[data-en-notice]');
-  if (enNotice) enNotice.hidden = lang !== 'en';
-
   const footerLabels = {
     season1: ['Temporada 1', 'Season 1'],
     privacy: ['Privacidade', 'Privacy'],
     terms: ['Termos', 'Terms'],
     license: ['Licença', 'License'],
     help: ['Ajuda', 'Help'],
+    support: ['Suporte', 'Support'],
   };
-  document.querySelectorAll('[data-footer-link]').forEach(link => {
-    const labels = footerLabels[link.getAttribute('data-footer-link')];
-    if (labels) link.textContent = labels[slot];
-  });
-
-  const footerTagline = document.querySelector('[data-footer-tagline]');
-  if (footerTagline) {
-    const taglines = [
-      'Marca Mista Depositada no INPI • Processo Nº 944083625 • © 2026 Guitar Architect',
-      'Mixed trademark application filed with the Brazilian INPI • Case no. 944083625 • © 2026 Guitar Architect',
-    ];
-    footerTagline.textContent = taglines[slot];
-  }
-
-  const h1 = document.querySelector('h1');
-  if (h1) {
-    const eyebrow = h1.previousElementSibling;
-    if (eyebrow && eyebrow.tagName === 'P') eyebrow.textContent = copy.eyebrow[slot];
-
-    h1.textContent = copy.h1[slot];
-
-    const subtitle = h1.nextElementSibling;
-    if (subtitle && subtitle.tagName === 'P') {
-      subtitle.textContent = copy.subtitle[slot];
-    }
-
-    const dateEl = document.querySelector('[data-update-date]');
-    if (dateEl) dateEl.textContent = copy.date[slot];
-  }
 
   const themeBtn = document.querySelector('[data-theme-toggle]');
+  const langBtn = document.querySelector('[data-lang-toggle]');
+
+  const applyLang = (nextLang) => {
+    lang = nextLang;
+    const slot = lang === 'en' ? 1 : 0;
+
+    document.documentElement.lang = lang === 'en' ? 'en-US' : 'pt-BR';
+    document.title = copy.title[slot];
+
+    document.querySelectorAll('[data-back-to-app]').forEach(link => {
+      link.textContent = lang === 'en' ? '← Back to App' : '← Voltar ao App';
+    });
+
+    const aboutLink = document.querySelector('[data-about-link]');
+    if (aboutLink) aboutLink.textContent = lang === 'en' ? 'About' : 'Sobre';
+
+    const ecosystemLink = document.querySelector('[data-ecosystem-link]');
+    if (ecosystemLink) {
+      ecosystemLink.setAttribute('aria-label', lang === 'en'
+        ? 'Go to the Guitar Architect ecosystem'
+        : 'Ir para o ecossistema Guitar Architect');
+    }
+
+    document.querySelectorAll('[data-lang]').forEach(el => {
+      el.hidden = el.getAttribute('data-lang') !== lang;
+    });
+
+    document.querySelectorAll('[data-footer-link]').forEach(link => {
+      const labels = footerLabels[link.getAttribute('data-footer-link')];
+      if (labels) link.textContent = labels[slot];
+    });
+
+    const footerTagline = document.querySelector('[data-footer-tagline]');
+    if (footerTagline) {
+      const taglines = [
+        'Marca Mista Depositada no INPI • Processo Nº 944083625 • © 2026 Guitar Architect',
+        'Mixed trademark application filed with the Brazilian INPI • Case no. 944083625 • © 2026 Guitar Architect',
+      ];
+      footerTagline.textContent = taglines[slot];
+    }
+
+    const h1 = document.querySelector('h1');
+    if (h1) {
+      const eyebrow = h1.previousElementSibling;
+      if (eyebrow && eyebrow.tagName === 'P') eyebrow.textContent = copy.eyebrow[slot];
+
+      h1.textContent = copy.h1[slot];
+
+      const subtitle = h1.nextElementSibling;
+      if (subtitle && subtitle.tagName === 'P') {
+        subtitle.textContent = copy.subtitle[slot];
+      }
+
+      const dateEl = document.querySelector('[data-update-date]');
+      if (dateEl) dateEl.textContent = copy.date[slot];
+    }
+
+    if (themeBtn) {
+      const isDarkNow = document.documentElement.classList.contains('dark');
+      themeBtn.setAttribute('aria-label', lang === 'en'
+        ? (isDarkNow ? 'Enable light mode' : 'Enable dark mode')
+        : (isDarkNow ? 'Ativar modo claro' : 'Ativar modo escuro'));
+    }
+
+    if (langBtn) langBtn.textContent = lang.toUpperCase();
+  };
+
+  applyLang(lang);
+
   if (themeBtn) {
     themeBtn.innerHTML = isDark ? SUN_SVG : MOON_SVG;
-    themeBtn.setAttribute('aria-label', lang === 'en'
-      ? (isDark ? 'Enable light mode' : 'Enable dark mode')
-      : (isDark ? 'Ativar modo claro' : 'Ativar modo escuro'));
     themeBtn.addEventListener('click', () => {
       const nowDark = !document.documentElement.classList.contains('dark');
       document.documentElement.classList.toggle('dark', nowDark);
       themeBtn.innerHTML = nowDark ? SUN_SVG : MOON_SVG;
+      themeBtn.setAttribute('aria-label', lang === 'en'
+        ? (nowDark ? 'Enable light mode' : 'Enable dark mode')
+        : (nowDark ? 'Ativar modo claro' : 'Ativar modo escuro'));
       const cfg = readConfig();
       cfg.theme = nowDark ? 'dark' : 'light';
       localStorage.setItem('ga_config', JSON.stringify(cfg));
@@ -194,16 +224,14 @@
     });
   }
 
-  const langBtn = document.querySelector('[data-lang-toggle]');
   if (langBtn) {
-    langBtn.textContent = lang.toUpperCase();
     langBtn.addEventListener('click', () => {
       const nextLang = lang === 'pt' ? 'en' : 'pt';
       const cfg = readConfig();
       cfg.lang = nextLang;
       localStorage.setItem('ga_config', JSON.stringify(cfg));
       localStorage.setItem('ga_lang', nextLang);
-      window.location.reload();
+      applyLang(nextLang);
     });
   }
 })();

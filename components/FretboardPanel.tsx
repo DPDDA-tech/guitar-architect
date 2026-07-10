@@ -625,6 +625,14 @@ const MoonIcon = () => (
   </svg>
 );
 
+const GlobeIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="2" y1="12" x2="22" y2="12" />
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </svg>
+);
+
 const DEFAULT_FRETBOARD = (lang: Lang, instrumentType: InstrumentType = 'guitar-6'): FretboardState => {
   const instr = INSTRUMENT_PRESETS[instrumentType];
   return {
@@ -2085,7 +2093,7 @@ const handleDismissReturnContext = () => {
         'explore',
         lang === 'pt' ? 'Explorar' : 'Explore',
         <div className={isMobileMenu ? 'space-y-2' : 'grid grid-cols-2 gap-2'}>
-          <button onClick={() => openModulePage('/ecosystem')} className={`${menuBtnClass} ${ecosystemBtnClass} ${!isMobileMenu ? 'col-span-2' : ''}`}>{lang === 'pt' ? 'Início' : 'Home'}</button>
+          <button onClick={() => openModulePage('/ecosystem')} className={`${menuBtnClass} ${ecosystemBtnClass} ${!isMobileMenu ? 'col-span-2' : ''}`}>{lang === 'pt' ? 'Página Inicial' : 'Home'}</button>
           <button onClick={() => openModulePage('/learn')} className={menuBtnClass}>{lang === 'pt' ? 'Aprender' : 'Learn'}</button>
           <button onClick={() => openModulePage('/practice')} className={menuBtnClass}>{lang === 'pt' ? 'Praticar' : 'Practice'}</button>
           <button onClick={() => openModulePage('/chords')} className={menuBtnClass}>{lang === 'pt' ? 'Acordes' : 'Chords'}</button>
@@ -2274,6 +2282,14 @@ const handleDismissReturnContext = () => {
 
             <div className="flex basis-full flex-wrap items-center justify-center gap-1 sm:basis-auto sm:justify-end">
               <button
+                onClick={() => openModulePage('/ecosystem')}
+                className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
+                aria-label={lang === 'pt' ? 'Ir para o início' : 'Go to Home'}
+                title={lang === 'pt' ? 'Página Inicial' : 'Home'}
+              >
+                <GlobeIcon />
+              </button>
+              <button
                 onClick={() => setTheme(isLight ? 'dark' : 'light')}
                 className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isLight ? 'bg-white border-zinc-300 text-zinc-700' : 'bg-zinc-900 border-zinc-700 text-zinc-100'}`}
                 aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
@@ -2448,7 +2464,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
                  </div>
                  <div className="grid grid-cols-3 gap-1.5">
                     <button onClick={() => openModulePage('/ecosystem')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${ecosystemBtnClass}`}>
-                     {lang === 'pt' ? 'Início' : 'Home'}
+                     {lang === 'pt' ? 'Página Inicial' : 'Home'}
                    </button>
                     <button onClick={() => openModulePage('/theme-collection')} className={`min-w-[96px] px-2 py-2 text-[8px] ${headerButtonBaseClass} ${collectiblesBtnClass}`}>
                      {lang === 'pt' ? 'Colecionáveis' : 'Collectibles'}

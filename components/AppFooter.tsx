@@ -96,6 +96,13 @@ const AppFooter: React.FC<AppFooterProps> = ({
             <a href="/legal/help.html" target="_blank" rel="noreferrer" className="transition-colors hover:text-blue-600">
               {lang === 'pt' ? 'Ajuda' : 'Help'}
             </a>
+            <a
+              href="mailto:contato@guitararchitect.com.br"
+              aria-label={lang === 'pt' ? 'Enviar e-mail para o suporte do Guitar Architect' : 'Send an email to Guitar Architect support'}
+              className="transition-colors hover:text-blue-600"
+            >
+              {lang === 'pt' ? 'Suporte' : 'Support'}
+            </a>
           </div>
 
           <p className={`text-[10px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>

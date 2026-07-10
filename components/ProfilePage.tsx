@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { loadConfig, saveConfig } from '../utils/persistence';
+import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
 import { supabase } from '../src/lib/supabase';
 import { canUseDisplayName, getDisplayNameError, getSupabaseDisplayName } from '../src/lib/userIdentity';
 import { loadUserProfile, saveUserProfile, UserProfile } from '../src/lib/userProfile';
@@ -7,15 +8,30 @@ import { pushLocalSnapshotToSupabase } from '../src/lib/cloudSync';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { AppState, ThemeMode } from '../types';
 
+type AppLang = 'pt' | 'en';
+
 const navigateHome = () => {
   window.history.pushState(null, '', '/studio');
   window.dispatchEvent(new CustomEvent('ga-route-change'));
 };
 
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
+  </svg>
+);
+
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
 const ProfilePage: React.FC = () => {
   const [config, setConfig] = useState<AppState | null>(() => loadConfig());
-  const lang = config?.lang || 'pt';
-  const theme = config?.theme || 'dark';
+  const [theme, setTheme] = useState<ThemeMode>(() => getGlobalTheme());
+  const [lang, setLang] = useState<AppLang>(() => getGlobalLang());
   const isLight = theme === 'light';
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
@@ -53,7 +69,16 @@ const ProfilePage: React.FC = () => {
 
   const toggleTheme = () => {
     const nextTheme: ThemeMode = isLight ? 'dark' : 'light';
+    setTheme(nextTheme);
     updateConfig({ theme: nextTheme });
+    setGlobalPreferences(nextTheme, lang);
+  };
+
+  const toggleLang = () => {
+    const nextLang: AppLang = lang === 'pt' ? 'en' : 'pt';
+    setLang(nextLang);
+    updateConfig({ lang: nextLang });
+    setGlobalPreferences(theme, nextLang);
   };
 
   const syncProfile = async (nextProfile: UserProfile, nextLogo = logo) => {
@@ -194,13 +219,22 @@ const ProfilePage: React.FC = () => {
                 : 'Manage your identity, contact, export logo and account security.'}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button onClick={toggleTheme} className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-slate-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>
-              {isLight ? (lang === 'pt' ? 'Escuro' : 'Dark') : (lang === 'pt' ? 'Claro' : 'Light')}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
+              className={`flex h-11 w-11 items-center justify-center rounded-xl border text-[10px] font-black uppercase transition-all ${isLight ? 'border-[#cbd7e6] bg-white text-slate-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}
+            >
+              {isLight ? <MoonIcon /> : <SunIcon />}
             </button>
-            <span className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase ${isLight ? 'border-[#cbd7e6] bg-white text-slate-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}>
-              {lang === 'pt' ? 'PT-BR' : 'EN'}
-            </span>
+            <button
+              type="button"
+              onClick={toggleLang}
+              className={`rounded-xl border px-4 py-3 text-[10px] font-black uppercase transition-all ${isLight ? 'border-[#cbd7e6] bg-white text-slate-700' : 'border-blue-950/70 bg-[#0e121a] text-zinc-100'}`}
+            >
+              {lang.toUpperCase()}
+            </button>
             <button onClick={navigateHome} className="rounded-xl border border-blue-500/30 px-4 py-3 text-[10px] font-black uppercase text-blue-500">
               {lang === 'pt' ? 'Voltar ao fretboard' : 'Back to fretboard'}
             </button>

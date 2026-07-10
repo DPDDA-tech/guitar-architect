@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
-import { getInstructorById, instructorCategoryLabels } from '../data/instructors';
+import { getInstructorById, getInstructorCategoryLabel } from '../data/instructors';
 import AppFooter from './AppFooter';
 
 type ThemeMode = 'light' | 'dark';
@@ -190,7 +190,7 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
             <div className="p-8 md:p-12">
               <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">{t.available}</p>
               <h1 className="mt-2 text-3xl md:text-5xl font-black italic uppercase tracking-tighter">{instructor.name}</h1>
-              <p className="mt-1 text-sm md:text-base font-bold uppercase tracking-widest text-blue-500">{instructor.title}</p>
+              <p className="mt-1 text-sm md:text-base font-bold uppercase tracking-widest text-blue-500">{instructor.title[lang]}</p>
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {instructor.categories.map(category => (
@@ -200,24 +200,24 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
                       isLight ? 'bg-zinc-100 text-zinc-600' : 'bg-zinc-800 text-zinc-300'
                     }`}
                   >
-                    {instructorCategoryLabels[category]}
+                    {getInstructorCategoryLabel(category, lang)}
                   </span>
                 ))}
               </div>
 
               <p className={`mt-6 text-sm md:text-base leading-relaxed ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                {instructor.longDescription}
+                {instructor.longDescription[lang]}
               </p>
 
               <blockquote className={`mt-6 rounded-2xl border p-5 text-center text-sm md:text-base font-black italic ${panelClass}`}>
-                “{instructor.quote}”
+                “{instructor.quote[lang]}”
               </blockquote>
 
               <div className="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
                   <h2 className="text-sm font-black uppercase tracking-tight mb-3">{t.personalityTitle}</h2>
                   <div className="flex flex-wrap gap-2">
-                    {instructor.personality.map(trait => (
+                    {instructor.personality[lang].map(trait => (
                       <span
                         key={trait}
                         className={`rounded-full px-3 py-1 text-[11px] font-semibold ${isLight ? 'bg-blue-50 text-blue-700' : 'bg-blue-500/10 text-blue-300'}`}
@@ -231,7 +231,7 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
                 <div>
                   <h2 className="text-sm font-black uppercase tracking-tight mb-3">{t.strengthsTitle}</h2>
                   <ul className={`space-y-1.5 text-xs md:text-sm ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                    {instructor.strengths.map(strength => (
+                    {instructor.strengths[lang].map(strength => (
                       <li key={strength}>• {strength}</li>
                     ))}
                   </ul>
@@ -241,7 +241,7 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
               <div className="mt-8">
                 <h2 className="text-sm font-black uppercase tracking-tight mb-3">{t.modulesTitle}</h2>
                 <div className="flex flex-wrap gap-2">
-                  {instructor.relatedModules.map(module => (
+                  {instructor.relatedModules[lang].map(module => (
                     <span
                       key={module}
                       className={`rounded-xl border px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide ${panelClass}`}

@@ -60,6 +60,21 @@ import { trackPageView } from './src/lib/analytics';
 
 const getCurrentPath = () => window.location.pathname;
 
+// Exceção deliberada: ao retornar da galeria de Arquitetos Musicais, a posição
+// de scroll é restaurada pelo próprio InstructorsGalleryPage a partir do
+// sessionStorage, em vez de reiniciar no topo.
+const GALLERY_SCROLL_KEY = 'ga_instructors_gallery_scroll';
+
+const hasRestorableGalleryScroll = (path: string): boolean => {
+  if (path !== '/instructors') return false;
+  try {
+    const stored = sessionStorage.getItem(GALLERY_SCROLL_KEY);
+    return stored !== null && Number.isFinite(Number(stored));
+  } catch {
+    return false;
+  }
+};
+
 const App: React.FC = () => {
   const [path, setPath] = useState(getCurrentPath());
   const [unlockedConstancyReward, setUnlockedConstancyReward] = useState<ConstancyReward | null>(null);
@@ -132,19 +147,49 @@ const App: React.FC = () => {
 
     initAuthSync();
 
-    const syncPath = () => {
+    // Rastreado fora do state do React (não dispara re-render) para saber de
+    // qual rota o usuário está saindo no momento em que 'ga-route-change' é
+    // disparado, já que window.location.pathname já foi atualizado pelo
+    // pushState antes do evento chegar até aqui.
+    let previousPath = getCurrentPath();
+
+    const applyPathChange = () => {
       const nextPath = getCurrentPath();
       setPath(prevPath => {
         if (nextPath !== prevPath) cleanupStudioRuntime(nextPath);
         return nextPath;
       });
+      return nextPath;
     };
-    window.addEventListener('popstate', syncPath);
-    window.addEventListener('ga-route-change', syncPath);
+
+    const handlePopState = () => {
+      previousPath = applyPathChange();
+    };
+
+    // Navegação interna via pushState (botões, links, cards, menus e atalhos)
+    // deve iniciar no topo da nova página, salvo a exceção deliberada de
+    // retorno à galeria de Arquitetos Musicais — e somente quando a rota
+    // anterior era de fato um perfil de arquiteto, para não restaurar uma
+    // chave de scroll remanescente de uma navegação não relacionada (ex.:
+    // Home → Galeria após o usuário ter saído de um perfil por outro caminho).
+    // O botão voltar/avançar nativo do navegador (popstate) não é afetado,
+    // preservando a restauração de scroll padrão do navegador para esse caso.
+    const handleInternalNavigation = () => {
+      const departedFromProfile = previousPath.startsWith('/instructors/');
+      const nextPath = applyPathChange();
+      const isReturningToGalleryWithScroll =
+        departedFromProfile && hasRestorableGalleryScroll(nextPath);
+      if (!isReturningToGalleryWithScroll) {
+        window.scrollTo(0, 0);
+      }
+      previousPath = nextPath;
+    };
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('ga-route-change', handleInternalNavigation);
     return () => {
       subscription.unsubscribe();
-      window.removeEventListener('popstate', syncPath);
-      window.removeEventListener('ga-route-change', syncPath);
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('ga-route-change', handleInternalNavigation);
       window.removeEventListener('ga-supporter-sync-completed', handleSyncCompleted);
       window.removeEventListener('ga-pinned-badges-updated', handleSyncCompleted);
     };

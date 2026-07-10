@@ -1,6 +1,6 @@
 import React from 'react';
 import type { InstructorProfile } from '../data/instructors';
-import { instructorCategoryLabels } from '../data/instructors';
+import { getInstructorCategoryLabel } from '../data/instructors';
 
 const GALLERY_SCROLL_KEY = 'ga_instructors_gallery_scroll';
 
@@ -39,6 +39,8 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
     <button
       type="button"
       onClick={() => navigateToInstructor(`/instructors/${instructor.id}`)}
+      aria-label={lang === 'pt' ? `Ver perfil de ${instructor.name}` : `View ${instructor.name}'s profile`}
+      title={instructor.title[lang]}
       className={`flex flex-col overflow-hidden rounded-3xl border text-left transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${panelClass}`}
     >
       <div className="relative h-48 w-full overflow-hidden bg-zinc-100 md:h-56">
@@ -55,10 +57,10 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
           {instructor.name}
         </h3>
         <p className={`text-[11px] font-bold uppercase tracking-widest text-blue-500`}>
-          {instructor.title}
+          {instructor.title[lang]}
         </p>
         <p className={`mt-2 text-xs leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
-          {instructor.shortDescription}
+          {instructor.shortDescription[lang]}
         </p>
 
         <div className="mt-3 flex flex-wrap gap-1.5">
@@ -69,7 +71,7 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
                 isLight ? 'bg-zinc-100 text-zinc-600' : 'bg-zinc-800 text-zinc-300'
               }`}
             >
-              {instructorCategoryLabels[category]}
+              {getInstructorCategoryLabel(category, lang)}
             </span>
           ))}
         </div>
@@ -86,7 +88,7 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
             <p className={`text-[9px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>
               {isAmbassador
                 ? (lang === 'pt' ? 'Guia da jornada' : 'Journey guide')
-                : (lang === 'pt' ? instructor.unlockLabel : 'Mentorship coming soon')}
+                : instructor.unlockLabel[lang]}
             </p>
           </div>
           <span className="whitespace-nowrap text-[10px] font-black uppercase tracking-widest text-blue-500">
