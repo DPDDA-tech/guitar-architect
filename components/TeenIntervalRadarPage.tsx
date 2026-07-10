@@ -6,6 +6,7 @@ import { getFrequencyForNoteName, playFrequencies } from '../utils/audio';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 import AppFooter from './AppFooter';
+import { useFretboardScrollAnchor } from '../utils/useFretboardScrollAnchor';
 import {
   ALL_INTERVALS,
   buildRadarNeckMarkers,
@@ -209,6 +210,14 @@ const TeenIntervalRadarPage: React.FC = () => {
   const [instrument, setInstrument] = useState<IntervalRadarInstrument>('guitar');
   const [handedness, setHandedness] = useState<'right' | 'left'>('right');
   const [activeTab, setActiveTab] = useState<'estudar' | 'desafios'>('estudar');
+
+  // Wrappers min-w-[...] (ergonomia de toque no mobile) com scroll horizontal, um por modo
+  // (estudo e desafio). Ancoram no início do braço (ou no fim, para canhotos) e reancoram ao
+  // girar o aparelho, evitando que o scrollLeft antigo mostre um trecho diferente do braço.
+  const studyFretboardScrollRef = useRef<HTMLDivElement | null>(null);
+  const challengeFretboardScrollRef = useRef<HTMLDivElement | null>(null);
+  useFretboardScrollAnchor(studyFretboardScrollRef, handedness === 'left');
+  useFretboardScrollAnchor(challengeFretboardScrollRef, handedness === 'left');
 
   const [studyNoteIndex, setStudyNoteIndex] = useState(0);
   const [studyInterval, setStudyInterval] = useState<IntervalId>('5');
@@ -658,7 +667,7 @@ const TeenIntervalRadarPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mt-4 overflow-x-auto">
+              <div className="mt-4 overflow-x-auto" style={{ overflowAnchor: 'none' }} ref={studyFretboardScrollRef}>
                 <div className={`min-w-[1040px] rounded-[28px] border px-4 py-5 ${isLight ? 'border-slate-200 bg-white' : 'border-zinc-800 bg-zinc-950/80'}`}>
                   <FretboardSVG
                     state={studyFretboardState}
@@ -761,7 +770,7 @@ const TeenIntervalRadarPage: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto" style={{ overflowAnchor: 'none' }} ref={challengeFretboardScrollRef}>
                       <div className={`min-w-[640px] rounded-[28px] border px-4 py-5 ${isLight ? 'border-slate-200 bg-white' : 'border-zinc-800 bg-zinc-950/80'}`}>
                         <FretboardSVG
                           state={challengeFretboardState}

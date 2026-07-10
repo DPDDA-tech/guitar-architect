@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import FretboardSVG from './FretboardSVG';
 import { getIntervalName, getNoteAt } from '../music/musicTheory';
 import { INTERVAL_COLORS } from '../data/fretboardVisualTheme';
 import { getTeensLang, getTeensTheme, setGlobalLang, setGlobalTheme } from '../utils/ecosystemPreferences';
+import { useFretboardScrollAnchor } from '../utils/useFretboardScrollAnchor';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 import AppFooter from './AppFooter';
@@ -371,6 +372,12 @@ const TeenTriadMapPage: React.FC = () => {
   const [lang, setLang] = useState<'pt' | 'en'>(() => getTeensLang());
   const [instrument, setInstrument] = useState<TeenTriadInstrument>('guitar');
   const [handedness, setHandedness] = useState<'right' | 'left'>('right');
+
+  // Wrapper min-w-[1040px] (ergonomia de toque no mobile) com scroll horizontal. Ancora no
+  // início do braço (ou no fim, para canhotos) e reancora ao girar o aparelho.
+  const fretboardScrollRef = useRef<HTMLDivElement | null>(null);
+  useFretboardScrollAnchor(fretboardScrollRef, handedness === 'left');
+
   const [noteIndex, setNoteIndex] = useState(0);
   const [quality, setQuality] = useState<TriadQuality>('major');
   const [activeGroupId, setActiveGroupId] = useState('all');
@@ -693,7 +700,7 @@ const TeenTriadMapPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 overflow-x-auto" style={{ overflowAnchor: 'none' }} ref={fretboardScrollRef}>
             <div className={`min-w-[1040px] rounded-[28px] border px-4 py-5 ${isLight ? 'border-slate-200 bg-white' : 'border-zinc-800 bg-zinc-950/80'}`}>
               <FretboardSVG
                 state={fretboardState}

@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getTeensLang, getTeensTheme, setGlobalLang } from '../utils/ecosystemPreferences';
+import { useFretboardScrollAnchor } from '../utils/useFretboardScrollAnchor';
 import ChordDiagramViewer, { type ChordDiagramDisplayMode } from './chords/ChordDiagramViewer';
 import { createChordDiagramDataFromTeenShape } from '../utils/chordDiagram';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
@@ -41,6 +42,12 @@ const TeenChordExplorerPage: React.FC = () => {
   const isLight = theme === 'light';
   const [instrument, setInstrument] = useState<TeenChordInstrument>('guitar');
   const [handedness, setHandedness] = useState<'right' | 'left'>('right');
+
+  // Wrapper min-w-[960px] (ergonomia de toque no mobile) com scroll horizontal. Ancora no
+  // início do braço (ou no fim, para canhotos) e reancora ao girar o aparelho.
+  const fretboardScrollRef = useRef<HTMLDivElement | null>(null);
+  useFretboardScrollAnchor(fretboardScrollRef, handedness === 'left');
+
   const [noteIndex, setNoteIndex] = useState(0);
   const [quality, setQuality] = useState<TeenChordQuality>('major');
   const [shapeIndex, setShapeIndex] = useState(0);
@@ -450,7 +457,7 @@ const TeenChordExplorerPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4 overflow-x-auto" style={{ overflowAnchor: 'none' }} ref={fretboardScrollRef}>
               <div className={`min-w-[960px] rounded-[28px] border px-4 py-5 ${isLight ? 'border-slate-200 bg-white' : 'border-zinc-800 bg-zinc-950/80'}`}>
                 {diagramData ? (
                   <ChordDiagramViewer

@@ -97,3 +97,21 @@ export const getRankProgress = (xp: number) => {
   const percent = Math.min(100, Math.round((offset / span) * 100));
   return { current, next, percent };
 };
+
+// Bypass exclusivo de ambiente de desenvolvimento (import.meta.env.DEV, falso em builds de
+// produção independente do hostname): libera o desbloqueio de conteúdo por rank/XP no Teens
+// para quem está desenvolvendo localmente, sem alterar XP real, rótulos de rank exibidos ou
+// a progressão de qualquer usuário em produção.
+export const isTeensDevUnlockActive = (): boolean => {
+  try {
+    return Boolean(import.meta.env?.DEV);
+  } catch {
+    return false;
+  }
+};
+
+// Id do rank a usar apenas para decidir o que já está desbloqueado (shapes, regiões, pools).
+// Em produção é sempre o rank real; em dev, é sempre o rank mais alto — o rank e o XP
+// exibidos na UI continuam vindo de getRankProgress/getRankByXp normalmente.
+export const getUnlockRankId = (currentRankId: string): string =>
+  isTeensDevUnlockActive() ? TEEN_RANKS[TEEN_RANKS.length - 1].id : currentRankId;

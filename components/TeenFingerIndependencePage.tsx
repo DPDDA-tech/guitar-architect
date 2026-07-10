@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import FretboardSVG from './FretboardSVG';
 import { getTeensLang, getTeensTheme, setGlobalLang } from '../utils/ecosystemPreferences';
+import { useFretboardScrollAnchor } from '../utils/useFretboardScrollAnchor';
 import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 import AppFooter from './AppFooter';
@@ -163,6 +164,13 @@ const TeenFingerIndependencePage: React.FC = () => {
 
   const indexRef = useRef(0);
   const [, forceRender] = useState(0);
+
+  // Wrapper min-w-[1040px] (ergonomia de toque no mobile) com scroll horizontal.
+  // Ancora no início do braço (ou no fim, para canhotos) e reancora ao girar o
+  // aparelho, evitando que o scrollLeft antigo passe a mostrar um trecho
+  // diferente do braço na nova largura.
+  const fretboardScrollRef = useRef<HTMLDivElement | null>(null);
+  useFretboardScrollAnchor(fretboardScrollRef, handedness === 'left');
 
   const copy = lang === 'pt'
     ? {
@@ -505,7 +513,7 @@ const TeenFingerIndependencePage: React.FC = () => {
             </div>
           )}
 
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 overflow-x-auto" style={{ overflowAnchor: 'none' }} ref={fretboardScrollRef}>
             <div className={`min-w-[1040px] rounded-[28px] border px-4 py-5 ${isLight ? 'border-slate-200 bg-white' : 'border-zinc-800 bg-zinc-950/80'}`}>
               <div className="flex gap-2">
                 <div className="relative w-5 shrink-0">

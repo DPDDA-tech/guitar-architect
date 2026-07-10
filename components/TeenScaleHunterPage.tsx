@@ -1,6 +1,6 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useRef, useState } from 'react';
 import { getTeensLang, getTeensTheme } from '../utils/ecosystemPreferences';
-import { addTeensXpOnce, getRankProgress, getTeensXp, TEEN_RANKS } from '../utils/teenProgress';
+import { addTeensXpOnce, getRankProgress, getTeensXp, getUnlockRankId, TEEN_RANKS } from '../utils/teenProgress';
 import { sendFretboardIntent } from '../utils/sendFretboardIntent';
 import { getNoteAt, CHROMATIC_SCALE } from '../music/musicTheory';
 import { getScaleNotes } from '../music/scales';
@@ -17,6 +17,7 @@ import EcosystemPageActions from './ecosystem/EcosystemPageActions';
 import InternalEcosystemHeader from './ecosystem/InternalEcosystemHeader';
 import AppFooter from './AppFooter';
 import FretboardSVG from './FretboardSVG';
+import { useFretboardScrollAnchor } from '../utils/useFretboardScrollAnchor';
 import type { FretboardState, Marker, StringStatus } from '../types';
 
 const navigateTo = (path: string) => {
@@ -476,17 +477,15 @@ const TeenScaleHunterPage: React.FC = () => {
   // mostrar a mesma dica em texto, sem precisar de uma lib de tooltip nova.
   const [lockedRegionHintId, setLockedRegionHintId] = useState<string | null>(null);
 
+  const fretboardScrollRef = useRef<HTMLDivElement | null>(null);
+
   // O wrapper min-w-[880px] (ajuste de ergonomia de toque no mobile) abre com scrollLeft=0,
   // que mostra a borda esquerda do SVG. Em modo destro essa borda é o nut — certo por padrão.
   // Em canhoto o FretboardSVG espelha o eixo X e o nut passa para a direita, então sem isso o
   // aluno cairia numa área vazia (padding) e precisaria rolar manualmente para achar a região.
-  useEffect(() => {
-    const node = fretboardScrollRef.current;
-    if (!node) return;
-    node.scrollLeft = handedness === 'left' ? node.scrollWidth : 0;
-  }, [handedness]);
-
-  const fretboardScrollRef = useRef<HTMLDivElement | null>(null);
+  // O hook também reancora ao girar o aparelho (resize/orientationchange), evitando que o
+  // scrollLeft antigo passe a mostrar um trecho diferente do braço na nova largura.
+  useFretboardScrollAnchor(fretboardScrollRef, handedness === 'left');
   const audioContextRef = useRef<AudioContext | null>(null);
   const playTokenRef = useRef(0);
 
@@ -511,10 +510,13 @@ const TeenScaleHunterPage: React.FC = () => {
   // "Região" cobre tanto as janelas genéricas (r1-r6, fora do escopo desta etapa) quanto os
   // shapes reais (shape-1..shape-5, Pentatônica Menor/Maior) — qual delas depende só do
   // scaleType selecionado no momento. Mantive os nomes de variável genéricos de propósito.
+  // Em ambiente de desenvolvimento (import.meta.env.DEV), o desbloqueio de shapes/regiões usa
+  // sempre o rank mais alto — não afeta XP real, rank exibido ou progressão em produção.
+  const unlockRankId = getUnlockRankId(rankProgress.current.id);
   const isManualPentatonic = isPentatonicScaleType(manualScaleType);
   const availableManualRegions: Array<{ id: string; label: string }> = isManualPentatonic
-    ? getAvailableShapesForRank(rankProgress.current.id)
-    : getAvailableRegionsForRank(rankProgress.current.id);
+    ? getAvailableShapesForRank(unlockRankId)
+    : getAvailableRegionsForRank(unlockRankId);
   const allManualAreaOptions: Array<{ id: string; label: string }> = isManualPentatonic
     ? MINOR_PENTATONIC_SHAPES
     : SCALE_HUNTER_REGIONS;
@@ -766,9 +768,9 @@ const TeenScaleHunterPage: React.FC = () => {
   };
 
   const newChallenge = () => {
-    let next = generateRandomScaleHunterPath(rankProgress.current.id);
+    let next = generateRandomScaleHunterPath(unlockRankId);
     if (next.id === currentPath.id) {
-      next = generateRandomScaleHunterPath(rankProgress.current.id);
+      next = generateRandomScaleHunterPath(unlockRankId);
     }
     applyPath(next, isPt ? 'Novo caminho carregado. Observe a tônica e toque junto no instrumento.' : 'New path loaded. Spot the root note and play along on your instrument.');
   };
@@ -1023,7 +1025,7 @@ const TeenScaleHunterPage: React.FC = () => {
                 Sem alterar o FretboardSVG: forcamos uma largura minima aqui (min-w) e deixamos
                 o scroll horizontal (overflow-x-auto) absorver o excesso em mobile — a altura
                 sobe junto, proporcional, sem distorcer nada. */}
-            <div className="overflow-x-auto" ref={fretboardScrollRef}>
+            <div className="overflow-x-auto" style={{ overflowAnchor: 'none' }} ref={fretboardScrollRef}>
               <div className="min-w-[880px]">
                 <FretboardSVG
                   state={scaleHunterFretboardState}
