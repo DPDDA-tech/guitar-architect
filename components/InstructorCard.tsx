@@ -54,11 +54,11 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
       title={instructor.title[lang]}
       className={`flex flex-col overflow-hidden rounded-3xl border text-left transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${panelClass}`}
     >
-      <div className="relative h-48 w-full overflow-hidden bg-zinc-100 md:h-56">
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-zinc-100">
         <img
           src={instructor.cardImage}
           alt={instructor.name}
-          className="absolute inset-0 h-full w-full object-contain object-bottom"
+          className="absolute inset-0 h-full w-full object-cover object-center"
           style={{ transform: `translate(${x}px, ${y}px) scale(${scale})` }}
         />
       </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
-import { getInstructorById, getInstructorCategoryLabel } from '../data/instructors';
+import { getInstructorById, getInstructorCategoryLabel, instructors } from '../data/instructors';
 import AppFooter from './AppFooter';
 import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
@@ -104,6 +104,8 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
         professionalReferencesTitle: 'Referências profissionais',
         musicalBackgroundTitle: 'A música na vida da Diana',
         favoritesTitle: 'Entre os favoritos',
+        previousProfile: 'Perfil anterior',
+        nextProfile: 'Próximo perfil',
         modulesTitle: 'Módulos e áreas relacionadas',
         noticeTitle: 'Acompanhamento em breve',
         noticeBody: 'A função de acompanhamento da sua jornada com este arquiteto musical ainda está em construção. Em breve, trilhas, dicas e desafios serão conectados a este perfil.',
@@ -120,6 +122,8 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
         professionalReferencesTitle: 'Professional References',
         musicalBackgroundTitle: 'Music in Diana’s Life',
         favoritesTitle: 'Among Her Favorites',
+        previousProfile: 'Previous profile',
+        nextProfile: 'Next profile',
         modulesTitle: 'Related modules and areas',
         noticeTitle: 'Journey tracking coming soon',
         noticeBody: 'The journey-tracking feature for this music architect is still under construction. Soon, tracks, tips and challenges will be connected to this profile.',
@@ -164,6 +168,9 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
   const x = imageFit.x ?? 0;
   const y = imageFit.y ?? 0;
   const heroImage = instructor.heroImage ?? instructor.cardImage;
+  const instructorIndex = instructors.findIndex(item => item.id === instructor.id);
+  const previousInstructor = instructors[(instructorIndex - 1 + instructors.length) % instructors.length];
+  const nextInstructor = instructors[(instructorIndex + 1) % instructors.length];
 
   return (
     <>
@@ -199,11 +206,11 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
           </div>
 
           <div className={`overflow-hidden rounded-[40px] border ${cardClass}`}>
-            <div className="relative h-64 w-full overflow-hidden bg-zinc-100 md:h-80">
+            <div className="relative aspect-video w-full overflow-hidden bg-zinc-100">
               <img
                 src={heroImage}
                 alt={instructor.name}
-                className="absolute inset-0 h-full w-full object-contain object-bottom"
+                className="absolute inset-0 h-full w-full object-cover object-center"
                 style={{ transform: `translate(${x}px, ${y}px) scale(${scale})` }}
               />
             </div>
@@ -340,13 +347,35 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
                 <p className="mt-3 text-[11px] leading-relaxed opacity-70">{t.fictionalNotice}</p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => navigateTo('/instructors')}
-                className={`mt-8 inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all ${actionClass}`}
-              >
-                {t.back}
-              </button>
+              <nav className="mt-8 grid gap-3 sm:grid-cols-[1fr_auto_1fr]" aria-label={lang === 'pt' ? 'Navegação entre perfis' : 'Profile navigation'}>
+                <button
+                  type="button"
+                  onClick={() => navigateTo(`/instructors/${previousInstructor.id}`)}
+                  className={`flex min-h-[64px] flex-col items-start justify-center rounded-xl border px-4 py-3 text-left transition-all ${actionClass}`}
+                  aria-label={`${t.previousProfile}: ${previousInstructor.name}`}
+                >
+                  <span className="text-[9px] font-black uppercase tracking-widest opacity-60">← {t.previousProfile}</span>
+                  <span className="mt-1 text-sm font-black uppercase tracking-tight">{previousInstructor.name}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigateTo('/instructors')}
+                  className={`inline-flex min-h-[64px] items-center justify-center rounded-xl border px-5 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${actionClass}`}
+                >
+                  {t.back}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigateTo(`/instructors/${nextInstructor.id}`)}
+                  className={`flex min-h-[64px] flex-col items-end justify-center rounded-xl border px-4 py-3 text-right transition-all ${actionClass}`}
+                  aria-label={`${t.nextProfile}: ${nextInstructor.name}`}
+                >
+                  <span className="text-[9px] font-black uppercase tracking-widest opacity-60">{t.nextProfile} →</span>
+                  <span className="mt-1 text-sm font-black uppercase tracking-tight">{nextInstructor.name}</span>
+                </button>
+              </nav>
             </div>
           </div>
         </div>
