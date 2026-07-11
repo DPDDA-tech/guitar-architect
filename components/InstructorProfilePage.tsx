@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
 import { getInstructorById, getInstructorCategoryLabel, instructors } from '../data/instructors';
+import { getInstructorBeyondGAById } from '../data/instructorBeyondGA';
 import AppFooter from './AppFooter';
 import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
@@ -106,6 +107,23 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
         favoritesTitle: 'Entre os favoritos',
         previousProfile: 'Perfil anterior',
         nextProfile: 'Próximo perfil',
+        beyondGATitle: 'Além do GA',
+        beyondGAIntro: 'Um pouco da pessoa por trás do Arquiteto.',
+        fullName: 'Nome completo',
+        age: 'Idade',
+        birthplace: 'Local de nascimento',
+        livesIn: 'Onde vive',
+        occupation: 'Ocupação',
+        hobbies: 'Hobbies',
+        pastimes: 'Passatempos',
+        favoriteFood: 'Comida favorita',
+        favoriteDrink: 'Bebida favorita',
+        unexpectedPlaylist: 'Fora da playlist esperada',
+        quirk: 'Uma mania',
+        cantStand: 'Não suporta',
+        randomFact: 'Fato aleatório',
+        confessableFlaw: 'Um defeito confessável',
+        smallPleasure: 'Pequeno prazer',
         modulesTitle: 'Módulos e áreas relacionadas',
         noticeTitle: 'Acompanhamento em breve',
         noticeBody: 'A função de acompanhamento da sua jornada com este arquiteto musical ainda está em construção. Em breve, trilhas, dicas e desafios serão conectados a este perfil.',
@@ -124,6 +142,23 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
         favoritesTitle: 'Among Her Favorites',
         previousProfile: 'Previous profile',
         nextProfile: 'Next profile',
+        beyondGATitle: 'Beyond GA',
+        beyondGAIntro: 'A glimpse of the person behind the Architect.',
+        fullName: 'Full name',
+        age: 'Age',
+        birthplace: 'Place of birth',
+        livesIn: 'Lives in',
+        occupation: 'Occupation',
+        hobbies: 'Hobbies',
+        pastimes: 'Pastimes',
+        favoriteFood: 'Favorite food',
+        favoriteDrink: 'Favorite drink',
+        unexpectedPlaylist: 'Outside the expected playlist',
+        quirk: 'A quirk',
+        cantStand: 'Can’t stand',
+        randomFact: 'Random fact',
+        confessableFlaw: 'A confessable flaw',
+        smallPleasure: 'Small pleasure',
         modulesTitle: 'Related modules and areas',
         noticeTitle: 'Journey tracking coming soon',
         noticeBody: 'The journey-tracking feature for this music architect is still under construction. Soon, tracks, tips and challenges will be connected to this profile.',
@@ -171,6 +206,26 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
   const instructorIndex = instructors.findIndex(item => item.id === instructor.id);
   const previousInstructor = instructors[(instructorIndex - 1 + instructors.length) % instructors.length];
   const nextInstructor = instructors[(instructorIndex + 1) % instructors.length];
+  const beyondGA = getInstructorBeyondGAById(instructor.id);
+  const beyondGAItems = beyondGA
+    ? [
+        { key: 'fullName', label: t.fullName, value: beyondGA.fullName[lang], wide: false },
+        { key: 'age', label: t.age, value: beyondGA.age[lang], wide: false },
+        { key: 'birthplace', label: t.birthplace, value: beyondGA.birthplace[lang], wide: false },
+        { key: 'livesIn', label: t.livesIn, value: beyondGA.livesIn?.[lang], wide: false },
+        { key: 'occupation', label: t.occupation, value: beyondGA.occupation[lang], wide: true },
+        { key: 'hobbies', label: t.hobbies, value: beyondGA.hobbies[lang], wide: false },
+        { key: 'pastimes', label: t.pastimes, value: beyondGA.pastimes[lang], wide: true },
+        { key: 'favoriteFood', label: t.favoriteFood, value: beyondGA.favoriteFood[lang], wide: false },
+        { key: 'favoriteDrink', label: t.favoriteDrink, value: beyondGA.favoriteDrink[lang], wide: false },
+        { key: 'unexpectedPlaylist', label: t.unexpectedPlaylist, value: beyondGA.unexpectedPlaylist[lang], wide: true },
+        { key: 'quirk', label: t.quirk, value: beyondGA.quirk[lang], wide: true },
+        { key: 'cantStand', label: t.cantStand, value: beyondGA.cantStand[lang], wide: true },
+        { key: 'randomFact', label: t.randomFact, value: beyondGA.randomFact[lang], wide: true },
+        { key: 'confessableFlaw', label: t.confessableFlaw, value: beyondGA.confessableFlaw[lang], wide: true },
+        { key: 'smallPleasure', label: t.smallPleasure, value: beyondGA.smallPleasure[lang], wide: true },
+      ].filter(item => Boolean(item.value))
+    : [];
 
   return (
     <>
@@ -320,6 +375,26 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
                   <p className={`mt-4 text-xs md:text-sm leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
                     {instructor.listeningNote[lang]}
                   </p>
+                </section>
+              )}
+
+              {beyondGAItems.length > 0 && (
+                <section className={`mt-8 rounded-2xl border p-5 md:p-6 ${panelClass}`} aria-labelledby="beyond-ga-title">
+                  <h2 id="beyond-ga-title" className="text-sm font-black uppercase tracking-tight">{t.beyondGATitle}</h2>
+                  <p className={`mt-1 text-xs ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>{t.beyondGAIntro}</p>
+                  <dl className={`mt-5 grid gap-x-8 sm:grid-cols-2 ${isLight ? 'divide-zinc-200' : 'divide-zinc-800'}`}>
+                    {beyondGAItems.map(item => (
+                      <div
+                        key={item.key}
+                        className={`min-w-0 border-t py-4 ${item.wide ? 'sm:col-span-2' : ''} ${isLight ? 'border-zinc-200' : 'border-zinc-800'}`}
+                      >
+                        <dt className="text-[10px] font-black uppercase tracking-widest text-blue-500">{item.label}</dt>
+                        <dd className={`mt-1 break-words text-xs md:text-sm leading-relaxed ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                          {item.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
                 </section>
               )}
 
