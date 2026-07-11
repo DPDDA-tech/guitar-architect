@@ -100,6 +100,10 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
         notFoundBody: 'Este perfil ainda não existe ou o link está incorreto.',
         personalityTitle: 'Personalidade e estilo de mentoria',
         strengthsTitle: 'Pontos fortes',
+        influencesTitle: 'Influências musicais',
+        professionalReferencesTitle: 'Referências profissionais',
+        musicalBackgroundTitle: 'A música na vida da Diana',
+        favoritesTitle: 'Entre os favoritos',
         modulesTitle: 'Módulos e áreas relacionadas',
         noticeTitle: 'Acompanhamento em breve',
         noticeBody: 'A função de acompanhamento da sua jornada com este arquiteto musical ainda está em construção. Em breve, trilhas, dicas e desafios serão conectados a este perfil.',
@@ -112,6 +116,10 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
         notFoundBody: 'This profile doesn’t exist yet, or the link is incorrect.',
         personalityTitle: 'Personality and mentoring style',
         strengthsTitle: 'Strengths',
+        influencesTitle: 'Musical Influences',
+        professionalReferencesTitle: 'Professional References',
+        musicalBackgroundTitle: 'Music in Diana’s Life',
+        favoritesTitle: 'Among Her Favorites',
         modulesTitle: 'Related modules and areas',
         noticeTitle: 'Journey tracking coming soon',
         noticeBody: 'The journey-tracking feature for this music architect is still under construction. Soon, tracks, tips and challenges will be connected to this profile.',
@@ -222,10 +230,6 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
                 {instructor.longDescription[lang]}
               </p>
 
-              <blockquote className={`mt-6 rounded-2xl border p-5 text-center text-sm md:text-base font-black italic ${panelClass}`}>
-                “{instructor.quote[lang]}”
-              </blockquote>
-
               <div className="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
                   <h2 className="text-sm font-black uppercase tracking-tight mb-3">{t.personalityTitle}</h2>
@@ -250,6 +254,71 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
                   </ul>
                 </div>
               </div>
+
+              {instructor.influences && instructor.influenceNote && (
+                <section className={`mt-8 rounded-2xl border p-5 ${panelClass}`}>
+                  <h2 className="text-sm font-black uppercase tracking-tight">{t.influencesTitle}</h2>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {instructor.influences[lang].map(influence => (
+                      <span
+                        key={influence}
+                        className={`rounded-full px-3 py-1 text-[11px] font-semibold ${isLight ? 'bg-amber-50 text-amber-800' : 'bg-amber-400/10 text-amber-200'}`}
+                      >
+                        {influence}
+                      </span>
+                    ))}
+                  </div>
+                  <p className={`mt-4 text-xs md:text-sm leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                    {instructor.influenceNote[lang]}
+                  </p>
+                </section>
+              )}
+
+              {instructor.professionalReferences && instructor.professionalReferenceNote && (
+                <section className={`mt-8 rounded-2xl border p-5 ${panelClass}`}>
+                  <h2 className="text-sm font-black uppercase tracking-tight">{t.professionalReferencesTitle}</h2>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {instructor.professionalReferences[lang].map(reference => (
+                      <span
+                        key={reference}
+                        className={`rounded-full px-3 py-1 text-[11px] font-semibold ${isLight ? 'bg-amber-50 text-amber-800' : 'bg-amber-400/10 text-amber-200'}`}
+                      >
+                        {reference}
+                      </span>
+                    ))}
+                  </div>
+                  <p className={`mt-4 text-xs md:text-sm leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                    {instructor.professionalReferenceNote[lang]}
+                  </p>
+                </section>
+              )}
+
+              {instructor.musicalBackground && instructor.listeningFavorites && instructor.listeningNote && (
+                <section className={`mt-8 rounded-2xl border p-5 ${panelClass}`}>
+                  <h2 className="text-sm font-black uppercase tracking-tight">{t.musicalBackgroundTitle}</h2>
+                  <p className={`mt-3 text-xs md:text-sm leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                    {instructor.musicalBackground[lang]}
+                  </p>
+                  <h3 className="mt-5 text-[11px] font-black uppercase tracking-widest text-blue-500">{t.favoritesTitle}</h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {instructor.listeningFavorites[lang].map(favorite => (
+                      <span
+                        key={favorite}
+                        className={`rounded-full px-3 py-1 text-[11px] font-semibold ${isLight ? 'bg-amber-50 text-amber-800' : 'bg-amber-400/10 text-amber-200'}`}
+                      >
+                        {favorite}
+                      </span>
+                    ))}
+                  </div>
+                  <p className={`mt-4 text-xs md:text-sm leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                    {instructor.listeningNote[lang]}
+                  </p>
+                </section>
+              )}
+
+              <blockquote className={`mt-8 rounded-2xl border p-5 text-center text-sm md:text-base font-black italic ${panelClass}`}>
+                “{instructor.quote[lang]}”
+              </blockquote>
 
               <div className="mt-8">
                 <h2 className="text-sm font-black uppercase tracking-tight mb-3">{t.modulesTitle}</h2>
