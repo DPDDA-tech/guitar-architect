@@ -46,6 +46,7 @@ export interface InstructorProfile {
   id: string;
   name: string;
   title: LocalizedText;
+  aboutLabel: LocalizedText;
   shortDescription: LocalizedText;
   longDescription: LocalizedText;
   personality: LocalizedList;
@@ -123,6 +124,7 @@ export const instructors: InstructorProfile[] = [
     id: 'alice',
     name: 'Alice',
     title: { pt: 'Primeiros Passos', en: 'First Steps' },
+    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
     shortDescription: {
       pt: 'Acolhe os primeiros passos na guitarra, no canto e na descoberta musical, reduzindo a intimidação sem infantilizar.',
       en: 'Welcomes first steps in guitar, singing and musical discovery, reducing intimidation without talking down to anyone.',
@@ -156,6 +158,7 @@ export const instructors: InstructorProfile[] = [
     id: 'arthur',
     name: 'Arthur',
     title: { pt: 'Fundamentos e Evolução', en: 'Foundations and Growth' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Acompanha o estudante entre compreender, tentar, errar, persistir e conquistar novos desafios musicais.',
       en: 'Supports students as they understand, try, make mistakes, persist and overcome new musical challenges.',
@@ -189,6 +192,7 @@ export const instructors: InstructorProfile[] = [
     id: 'bill',
     name: 'Bill',
     title: { pt: 'Blues e Feeling', en: 'Blues and Feeling' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Ensina blues e fraseado com foco em expressão — tocar com intenção, não apenas repetir escalas.',
       en: 'Teaches blues and phrasing with a focus on expression — playing with intention, not just repeating scales.',
@@ -222,6 +226,7 @@ export const instructors: InstructorProfile[] = [
     id: 'clara',
     name: 'Clara',
     title: { pt: 'Teoria e Organização', en: 'Theory and Organization' },
+    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
     shortDescription: {
       pt: 'Organiza conhecimentos dispersos, identifica lacunas e transforma teoria fragmentada em um caminho claro de estudo.',
       en: 'Organizes scattered knowledge, identifies gaps and turns fragmented theory into a clear path of study.',
@@ -255,6 +260,7 @@ export const instructors: InstructorProfile[] = [
     id: 'dean',
     name: 'Dean',
     title: { pt: 'Rock e Riffs', en: 'Rock and Riffs' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Especialista em riffs e repertório de rock, focado em construir a linguagem do estilo na prática.',
       en: "A riffs and rock repertoire specialist, focused on building the style's language through practice.",
@@ -288,6 +294,7 @@ export const instructors: InstructorProfile[] = [
     id: 'diana',
     name: 'Diana',
     title: { pt: 'Embaixadora do GA', en: 'GA Ambassador' },
+    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
     shortDescription: {
       pt: 'Recebe quem chega ao GA, apresenta a jornada e ajuda cada pessoa a encontrar os ambientes e Arquitetos mais adequados.',
       en: 'Welcomes newcomers to GA, introduces the journey and helps each person find the most suitable environments and Music Architects.',
@@ -325,6 +332,7 @@ export const instructors: InstructorProfile[] = [
     id: 'erika',
     name: 'Erika',
     title: { pt: 'Voz e Performance', en: 'Voice and Performance' },
+    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
     shortDescription: {
       pt: 'Desenvolve presença, interpretação e confiança para transformar intenção musical em comunicação.',
       en: 'Develops presence, interpretation and confidence to turn musical intention into communication.',
@@ -358,6 +366,7 @@ export const instructors: InstructorProfile[] = [
     id: 'fred',
     name: 'Fred',
     title: { pt: 'Arquitetura do Braço', en: 'Fretboard Architecture' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Visualiza como acordes, escalas e funções se conectam no braço para revelar a estrutura da música.',
       en: 'Visualizes how chords, scales and functions connect across the fretboard to reveal musical structure.',
@@ -391,6 +400,7 @@ export const instructors: InstructorProfile[] = [
     id: 'hiroshi',
     name: 'Hiroshi',
     title: { pt: 'Precisão e Técnica', en: 'Precision and Technique' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Aprofunda técnica, intervalos e análise com precisão, ajustando o nível da conversa sem evitar questões exigentes.',
       en: 'Deepens technique, intervals and analysis with precision, adjusting the level of the conversation without avoiding demanding questions.',
@@ -424,6 +434,7 @@ export const instructors: InstructorProfile[] = [
     id: 'jax',
     name: 'Jax',
     title: { pt: 'Concisão e Ruptura', en: 'Concision and Disruption' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Questiona excessos e convenções para encontrar a forma mais direta e necessária de expressão.',
       en: 'Questions excess and convention to find the most direct and necessary form of expression.',
@@ -457,6 +468,7 @@ export const instructors: InstructorProfile[] = [
     id: 'juan',
     name: 'Juan',
     title: { pt: 'Baixo, Groove e Movimento', en: 'Bass, Groove and Motion' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Explora o baixo pelo groove e pelo movimento melódico, propondo caminhos que vão além de apenas sustentar a base.',
       en: 'Explores bass through groove and melodic movement, offering paths that go beyond simply holding down the foundation.',
@@ -490,6 +502,7 @@ export const instructors: InstructorProfile[] = [
     id: 'kael',
     name: 'Kael',
     title: { pt: 'Metal e Técnica Pesada', en: 'Metal and Heavy Technique' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Especialista em metal, palhetada e riffs pesados, com foco em intensidade e precisão.',
       en: 'A metal specialist in picking and heavy riffs, focused on intensity and precision.',
@@ -523,6 +536,7 @@ export const instructors: InstructorProfile[] = [
     id: 'leo',
     name: 'Leo',
     title: { pt: 'Prática e Evolução', en: 'Practice and Progress' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Transforma escalas, ritmos e conceitos em habilidade por meio de sessões práticas, progressivas e motivadoras.',
       en: 'Turns scales, rhythms and concepts into skill through practical, progressive and motivating sessions.',
@@ -556,6 +570,7 @@ export const instructors: InstructorProfile[] = [
     id: 'mel',
     name: 'Mel',
     title: { pt: 'Melodia e Fraseado', en: 'Melody and Phrasing' },
+    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
     shortDescription: {
       pt: 'Transforma notas em ideias musicais, desenvolvendo frases com respiração, contraste, intenção e direção.',
       en: 'Turns notes into musical ideas, developing phrases with breath, contrast, intention and direction.',
@@ -589,6 +604,7 @@ export const instructors: InstructorProfile[] = [
     id: 'nina',
     name: 'Nina',
     title: { pt: 'Voz, Ouvido e Musicalidade', en: 'Voice, Ear and Musicality' },
+    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
     shortDescription: {
       pt: 'Conecta voz, ouvido e instrumento para desenvolver afinação, percepção, fraseado e imaginação musical.',
       en: 'Connects voice, ear and instrument to develop pitch, perception, phrasing and musical imagination.',
@@ -622,6 +638,7 @@ export const instructors: InstructorProfile[] = [
     id: 'rick',
     name: 'Rick',
     title: { pt: 'Baixo e Fundamento', en: 'Bass and Foundation' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Constrói linhas de baixo que conectam harmonia, bateria e groove com clareza, espaço e função.',
       en: 'Builds bass lines that connect harmony, drums and groove with clarity, space and purpose.',
@@ -655,6 +672,7 @@ export const instructors: InstructorProfile[] = [
     id: 'roxie',
     name: 'Roxie',
     title: { pt: 'Rock Alternativo', en: 'Alternative Rock' },
+    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
     shortDescription: {
       pt: 'Inspira identidade e expressão autoral no rock alternativo, encorajando cada músico a encontrar uma voz própria.',
       en: 'Inspires identity and original expression in alternative rock, encouraging every musician to find a voice of their own.',
@@ -688,6 +706,7 @@ export const instructors: InstructorProfile[] = [
     id: 'sofia',
     name: 'Sofia',
     title: { pt: 'Acordes e Expressividade', en: 'Chords and Expressiveness' },
+    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
     shortDescription: {
       pt: 'Trabalha harmonia aplicada, acompanhamento e expressividade com foco em repertório.',
       en: 'Works on applied harmony, accompaniment and expressiveness with a focus on repertoire.',
@@ -724,6 +743,7 @@ export const instructors: InstructorProfile[] = [
     id: 'tom',
     name: 'Tom',
     title: { pt: 'Luthieria e Setup', en: 'Luthiery and Setup' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Especialista em regulagem, conservação, manutenção e ajustes práticos para manter o instrumento confortável, estável e pronto para tocar.',
       en: 'A specialist in setup, upkeep, maintenance and practical adjustments to keep the instrument comfortable, stable and ready to play.',
@@ -770,6 +790,7 @@ export const instructors: InstructorProfile[] = [
     id: 'victor',
     name: 'Victor',
     title: { pt: 'Jazz e Harmonia', en: 'Jazz and Harmony' },
+    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
     shortDescription: {
       pt: 'Explora acordes sofisticados, condução harmônica e a linguagem do jazz.',
       en: 'Explores sophisticated chords, voice leading and the language of jazz.',

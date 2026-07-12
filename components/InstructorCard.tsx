@@ -93,9 +93,6 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
 
         <div className="mt-4 flex flex-1 items-end justify-between gap-2">
           <div>
-            <p className={`text-[9px] font-bold uppercase tracking-widest ${isLight ? 'text-emerald-600' : 'text-emerald-400'}`}>
-              {lang === 'pt' ? 'Perfil disponível' : 'Profile available'}
-            </p>
             <p className={`text-[9px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>
               {isAmbassador
                 ? (lang === 'pt' ? 'Guia da jornada' : 'Journey guide')
