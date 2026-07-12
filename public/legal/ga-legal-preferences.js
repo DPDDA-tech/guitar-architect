@@ -102,7 +102,7 @@
       eyebrow: ['Guitar Architect', 'Guitar Architect'],
       h1: ['Ajuda e FAQ', 'Help and FAQ'],
       subtitle: ['Guia Rápido e Dúvidas Frequentes', 'Quick Guide and Frequently Asked Questions'],
-      date: ['Última atualização: 10 de julho de 2026', 'Last updated: July 10, 2026'],
+      date: ['Última atualização: 12 de julho de 2026', 'Last updated: July 12, 2026'],
     },
     'privacy.html': {
       title: ['Política de Privacidade - Guitar Architect', 'Privacy Policy - Guitar Architect'],

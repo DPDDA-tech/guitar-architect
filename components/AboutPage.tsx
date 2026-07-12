@@ -72,11 +72,11 @@ const AboutPage: React.FC = () => {
     ? {
         eyebrow: 'Guitar Architect',
         title: 'O que é o Guitar Architect?',
-        subtitle: 'Plataforma brasileira de educação musical, prática guiada e construção harmônica.',
+        subtitle: 'Ecossistema musical brasileiro para descoberta, prática e construção harmônica.',
         back: '← Voltar ao App',
         s1Title: 'Uma jornada de construção musical',
         s1: [
-          'O Guitar Architect é uma plataforma brasileira de educação musical criada para organizar o aprendizado em uma jornada progressiva.',
+          'O Guitar Architect é um ecossistema musical brasileiro criado para acompanhar diferentes formas de descobrir, compreender, praticar, construir e viver a música.',
           'A proposta é simples: transformar conceitos musicais em experiências visuais, práticas e interativas, ajudando o usuário a sair do primeiro contato com os sons até a construção harmônica com mais consciência.',
         ],
         s2Title: 'Kids, Teens e Studio',
@@ -86,6 +86,16 @@ const AboutPage: React.FC = () => {
           { id: 'teens', logo: '/gateenslogo.webp', title: 'Teens', description: 'desafios, prática guiada, exercícios progressivos, riffs, escalas, intervalos e independência dos dedos.', accent: isLight ? 'text-violet-600' : 'text-violet-400' },
           { id: 'studio', logo: '/logogastudio.webp', title: 'Studio', description: 'ferramentas avançadas para visualizar harmonia, acordes, tríades, tétrades, mapas do braço do instrumento e estruturas musicais.', accent: isLight ? 'text-blue-600' : 'text-blue-400' },
         ],
+        architectsTitle: 'Arquitetos Musicais: diferentes formas de viver a música',
+        architects: [
+          'O Guitar Architect passou a ser habitado por Arquitetos Musicais: personagens inteiramente fictícios, criados com inteligência artificial, que representam diferentes experiências, especialidades, personalidades e formas de viver, compreender e se relacionar com a música.',
+          'Há quem acolherá os primeiros passos, quem organizará a teoria, quem explorará o peso de um riff, a liberdade do blues, a precisão dos intervalos, a função do baixo, a presença de palco ou as possibilidades da harmonia. Há também quem cuidará da jornada, da comunicação, da expressão, dos instrumentos e dos inúmeros caminhos que fazem parte de uma vida construída em torno da música.',
+          'Cada Arquiteto possui identidade própria, história, referências e uma maneira particular de habitar esse universo. Alguns ajudarão a compreender, outros a praticar, criar, interpretar, cuidar, orientar, experimentar ou simplesmente enxergar a música por novos ângulos. Outros ainda estarão presentes ao longo da jornada para motivar, encorajar e manter aceso o interesse pelo aprendizado e pela descoberta musical.',
+          'Juntos, eles darão rosto e voz às múltiplas perspectivas que compõem o ecossistema do Guitar Architect e contribuirão para tornar mais humana a relação entre descoberta, prática, instrumentos, sons, conhecimento e expressão.',
+          'Seus nomes, histórias, trajetórias, características pessoais, referências, hábitos e demais elementos biográficos integram exclusivamente esse universo ficcional. Qualquer eventual semelhança com pessoas, fatos ou situações do mundo real é involuntária e puramente coincidente.',
+          'Sua presença no projeto ainda demandará ajustes, aprofundamentos, desenvolvimento técnico e, em determinadas frentes, suporte de tecnologias e serviços externos. À medida que a plataforma evoluir, os Arquitetos poderão assumir novos papéis dentro do ecossistema, sem perder aquilo que os define desde o início: diferentes formas de viver, sentir, construir e compartilhar a música.',
+        ],
+        architectsLink: 'Conheça nossos Arquitetos →',
         s3Title: 'Guitarra, baixo e mapas visuais',
         s3: [
           'Embora a guitarra esteja no centro da identidade do projeto, o Guitar Architect também oferece configurações para baixo/contrabaixo de 4 e 5 cordas.',
@@ -98,7 +108,7 @@ const AboutPage: React.FC = () => {
         ],
         accountTitle: 'Preciso criar conta para usar?',
         account: [
-          'Não para começar. Boa parte do Guitar Architect pode ser explorada sem login, especialmente os ambientes Kids e Teens. O login é feito pelo Studio e permite salvar evolução, instrumentos, colecionáveis, projetos e preferências vinculadas à sua conta.',
+          'Não para começar. Boa parte do Guitar Architect pode ser explorada sem login, especialmente os ambientes Kids e Teens. O login é feito pelo Studio e permite sincronizar determinados projetos, instrumentos, itens da coleção, conquistas e preferências. Algumas áreas, como a progressão XP do Teens e determinados projetos do Kids, continuam locais.',
         ],
         s5Title: 'O que o Guitar Architect não é',
         s5: [
@@ -115,11 +125,11 @@ const AboutPage: React.FC = () => {
     : {
         eyebrow: 'Guitar Architect',
         title: 'What is Guitar Architect?',
-        subtitle: 'Brazilian music education platform for guided practice and harmonic construction.',
+        subtitle: 'A Brazilian music ecosystem for discovery, practice and harmonic construction.',
         back: '← Back to App',
         s1Title: 'A musical construction journey',
         s1: [
-          'Guitar Architect is a Brazilian music education platform created to organize learning as a progressive journey.',
+          'Guitar Architect is a Brazilian music ecosystem designed to support different ways of discovering, understanding, practicing, building and living music.',
           'Its purpose is simple: to turn musical concepts into visual, practical and interactive experiences, helping users move from their first contact with sounds to harmonic construction with greater awareness.',
         ],
         s2Title: 'Kids, Teens and Studio',
@@ -129,6 +139,16 @@ const AboutPage: React.FC = () => {
           { id: 'teens', logo: '/gateenslogo.webp', title: 'Teens', description: 'challenges, guided practice, progressive exercises, riffs, scales, intervals and finger independence.', accent: isLight ? 'text-violet-600' : 'text-violet-400' },
           { id: 'studio', logo: '/logogastudio.webp', title: 'Studio', description: 'advanced tools to visualize harmony, chords, triads, seventh chords, instrument fretboard maps and musical structures.', accent: isLight ? 'text-blue-600' : 'text-blue-400' },
         ],
+        architectsTitle: 'Music Architects: different ways of living music',
+        architects: [
+          'Guitar Architect is now inhabited by Music Architects: entirely fictional characters created with artificial intelligence to represent different experiences, specialties, personalities and ways of living, understanding and relating to music.',
+          'Some will welcome the very first steps; others will bring structure to theory or explore the weight of a riff, the freedom of the blues, the precision of intervals, the role of bass, stage presence or the possibilities of harmony. Others will look after the journey itself, communication, expression, instruments and the many paths that shape a life built around music.',
+          'Each Architect has a distinct identity, story, set of references and way of inhabiting this universe. Some will help people understand; others will encourage practice, creation, interpretation, care, guidance, experimentation or simply offer new ways of seeing music. Others will accompany the journey by motivating, encouraging and keeping curiosity and musical discovery alive.',
+          'Together, they will give a face and a voice to the many perspectives within the Guitar Architect ecosystem, helping make the relationship between discovery, practice, instruments, sound, knowledge and expression feel more human.',
+          'Their names, stories, backgrounds, personal traits, references, habits and all other biographical details belong exclusively to this fictional universe. Any resemblance to real people, events or situations is unintended and purely coincidental.',
+          'Their role in the project will still require refinement, deeper development, technical work and, in some areas, support from external technologies and services. As the platform evolves, the Architects may take on new roles across the ecosystem without losing what has defined them from the beginning: different ways of living, feeling, building and sharing music.',
+        ],
+        architectsLink: 'Meet our Architects →',
         s3Title: 'Guitar, bass and visual maps',
         s3: [
           'Although guitar is at the center of the project’s identity, Guitar Architect also supports 4-string and 5-string bass configurations.',
@@ -141,7 +161,7 @@ const AboutPage: React.FC = () => {
         ],
         accountTitle: 'Do I need an account to use it?',
         account: [
-          'Not to get started. Much of Guitar Architect can be explored without signing in, especially the Kids and Teens environments. Sign-in is available through Studio and lets you save progress, instruments, collectibles, projects and preferences linked to your account.',
+          'Not to get started. Much of Guitar Architect can be explored without signing in, especially Kids and Teens. Sign-in is available through Studio and can sync selected projects, instruments, collection items, achievements and preferences. Some areas, including Teens XP progression and certain Kids projects, remain local.',
         ],
         s5Title: 'What Guitar Architect is not',
         s5: [
@@ -233,6 +253,22 @@ const AboutPage: React.FC = () => {
                     </button>
                   ))}
                 </div>
+              </section>
+
+              <hr className={isLight ? 'border-zinc-100' : 'border-zinc-800'} />
+
+              <section>
+                <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.architectsTitle}</h2>
+                <div className="space-y-3">
+                  {t.architects.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigateTo('/instructors')}
+                  className={`mt-5 text-[11px] font-black uppercase tracking-widest underline-offset-2 transition hover:underline ${isLight ? 'text-blue-600' : 'text-blue-400'}`}
+                >
+                  {t.architectsLink}
+                </button>
               </section>
 
               <hr className={isLight ? 'border-zinc-100' : 'border-zinc-800'} />
