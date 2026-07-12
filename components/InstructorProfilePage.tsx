@@ -113,6 +113,7 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
         age: 'Idade',
         birthplace: 'Local de nascimento',
         livesIn: 'Onde vive',
+        otherConnections: 'Outros vínculos',
         occupation: 'Ocupação',
         hobbies: 'Hobbies',
         pastimes: 'Passatempos',
@@ -148,6 +149,7 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
         age: 'Age',
         birthplace: 'Place of birth',
         livesIn: 'Lives in',
+        otherConnections: 'Other connections',
         occupation: 'Occupation',
         hobbies: 'Hobbies',
         pastimes: 'Pastimes',
@@ -213,6 +215,7 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
         { key: 'age', label: t.age, value: beyondGA.age[lang], wide: false },
         { key: 'birthplace', label: t.birthplace, value: beyondGA.birthplace[lang], wide: false },
         { key: 'livesIn', label: t.livesIn, value: beyondGA.livesIn?.[lang], wide: false },
+        { key: 'otherConnections', label: t.otherConnections, value: beyondGA.otherConnections?.[lang], wide: false },
         { key: 'occupation', label: t.occupation, value: beyondGA.occupation[lang], wide: true },
         { key: 'hobbies', label: t.hobbies, value: beyondGA.hobbies[lang], wide: false },
         { key: 'pastimes', label: t.pastimes, value: beyondGA.pastimes[lang], wide: true },
@@ -260,14 +263,55 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
             </div>
           </div>
 
+          <nav
+            className="mb-4 grid grid-cols-2 gap-2"
+            aria-label={lang === 'pt' ? 'Navegação rápida entre perfis' : 'Quick profile navigation'}
+          >
+            <button
+              type="button"
+              onClick={() => navigateTo(`/instructors/${previousInstructor.id}`)}
+              className={`min-w-0 rounded-xl border px-3 py-2.5 text-left transition-all ${actionClass}`}
+              aria-label={`${t.previousProfile}: ${previousInstructor.name}, ${previousInstructor.title[lang]}`}
+            >
+              <span className="block break-words text-xs font-black uppercase tracking-tight">← {previousInstructor.name}</span>
+              <span className="mt-0.5 block break-words text-[9px] font-bold uppercase tracking-wide opacity-60">
+                {previousInstructor.title[lang]}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateTo(`/instructors/${nextInstructor.id}`)}
+              className={`min-w-0 rounded-xl border px-3 py-2.5 text-right transition-all ${actionClass}`}
+              aria-label={`${t.nextProfile}: ${nextInstructor.name}, ${nextInstructor.title[lang]}`}
+            >
+              <span className="block break-words text-xs font-black uppercase tracking-tight">{nextInstructor.name} →</span>
+              <span className="mt-0.5 block break-words text-[9px] font-bold uppercase tracking-wide opacity-60">
+                {nextInstructor.title[lang]}
+              </span>
+            </button>
+          </nav>
+
           <div className={`overflow-hidden rounded-[40px] border ${cardClass}`}>
             <div className="relative aspect-video w-full overflow-hidden bg-zinc-100">
-              <img
-                src={heroImage}
-                alt={instructor.name}
-                className="absolute inset-0 h-full w-full object-cover object-center"
-                style={{ transform: `translate(${x}px, ${y}px) scale(${scale})` }}
-              />
+              {instructor.introVideo ? (
+                <video
+                  className="absolute inset-0 h-full w-full bg-black object-contain"
+                  src={instructor.introVideo.src}
+                  poster={instructor.introVideo.poster ?? heroImage}
+                  controls
+                  playsInline
+                  preload="metadata"
+                >
+                  <img src={heroImage} alt={instructor.name} className="h-full w-full object-cover object-center" />
+                </video>
+              ) : (
+                <img
+                  src={heroImage}
+                  alt={instructor.name}
+                  className="absolute inset-0 h-full w-full object-cover object-center"
+                  style={{ transform: `translate(${x}px, ${y}px) scale(${scale})` }}
+                />
+              )}
             </div>
 
             <div className="p-8 md:p-12">
@@ -431,6 +475,9 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
                 >
                   <span className="text-[9px] font-black uppercase tracking-widest opacity-60">← {t.previousProfile}</span>
                   <span className="mt-1 text-sm font-black uppercase tracking-tight">{previousInstructor.name}</span>
+                  <span className="mt-0.5 text-[10px] font-bold uppercase tracking-wide opacity-60">
+                    {previousInstructor.title[lang]}
+                  </span>
                 </button>
 
                 <button
@@ -449,6 +496,9 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
                 >
                   <span className="text-[9px] font-black uppercase tracking-widest opacity-60">{t.nextProfile} →</span>
                   <span className="mt-1 text-sm font-black uppercase tracking-tight">{nextInstructor.name}</span>
+                  <span className="mt-0.5 text-[10px] font-bold uppercase tracking-wide opacity-60">
+                    {nextInstructor.title[lang]}
+                  </span>
                 </button>
               </nav>
             </div>

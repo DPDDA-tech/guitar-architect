@@ -36,6 +36,12 @@ export interface InstructorImageFit {
   y?: number;
 }
 
+export interface InstructorIntroVideo {
+  src: string;
+  poster?: string;
+  duration?: number;
+}
+
 export interface InstructorProfile {
   id: string;
   name: string;
@@ -59,6 +65,8 @@ export interface InstructorProfile {
   heroImage?: string;
   quote: LocalizedText;
   imageFit?: InstructorImageFit;
+  /** Optional presentation video shown near the profile introduction. */
+  introVideo?: InstructorIntroVideo;
 }
 
 export const instructorCategoryLabels: Record<AppLang, Record<InstructorCategory, string>> = {
@@ -138,6 +146,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('alice'),
     heroImage: instructorProfilePath('alice'),
+    introVideo: { src: '/instructors/intro/alice-intro.mp4' },
     quote: {
       pt: 'Todo mundo começa do mesmo lugar: pelo primeiro som.',
       en: 'Everyone starts in the same place: with the first sound.',
@@ -170,6 +179,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('arthur'),
     heroImage: instructorProfilePath('arthur'),
+    introVideo: { src: '/instructors/intro/arthur-intro.mp4' },
     quote: {
       pt: 'Cada tentativa faz parte do caminho entre entender e conquistar.',
       en: 'Every attempt is part of the path from understanding to achievement.',
@@ -202,6 +212,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('bill'),
     heroImage: instructorProfilePath('bill'),
+    introVideo: { src: '/instructors/intro/bill-intro.mp4' },
     quote: {
       pt: 'Uma nota bem sentida vale mais que dez notas apressadas.',
       en: 'One deeply felt note is worth more than ten rushed ones.',
@@ -234,6 +245,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('clara'),
     heroImage: instructorProfilePath('clara'),
+    introVideo: { src: '/instructors/intro/clara-intro.mp4' },
     quote: {
       pt: 'Quando o conhecimento encontra uma estrutura, o próximo passo fica claro.',
       en: 'When knowledge finds a structure, the next step becomes clear.',
@@ -266,6 +278,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('dean'),
     heroImage: instructorProfilePath('dean'),
+    introVideo: { src: '/instructors/intro/dean-intro.mp4' },
     quote: {
       pt: 'Um bom riff diz tudo antes mesmo do vocal entrar.',
       en: "A good riff says it all before the vocals even come in.",
@@ -302,6 +315,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('diana'),
     heroImage: instructorProfilePath('diana'),
+    introVideo: { src: '/instructors/intro/diana-intro.mp4' },
     quote: {
       pt: 'Toda jornada fica mais clara quando você sabe onde está e quem pode caminhar com você.',
       en: 'Every journey becomes clearer when you know where you are and who can walk it with you.',
@@ -334,6 +348,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('erika'),
     heroImage: instructorProfilePath('erika'),
+    introVideo: { src: '/instructors/intro/erika-intro.mp4' },
     quote: {
       pt: 'Performance é fazer o público compreender o que a música quer dizer.',
       en: 'Performance is making the audience understand what the music wants to say.',
@@ -366,6 +381,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('fred'),
     heroImage: instructorProfilePath('fred'),
+    introVideo: { src: '/instructors/intro/fred-intro.mp4' },
     quote: {
       pt: 'Quando você enxerga as conexões, o braço deixa de ser um conjunto de formas isoladas.',
       en: 'When you see the connections, the fretboard stops being a collection of isolated shapes.',
@@ -398,6 +414,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('hiroshi'),
     heroImage: instructorProfilePath('hiroshi'),
+    introVideo: { src: '/instructors/intro/hiroshi-intro.mp4' },
     quote: {
       pt: 'Precisão não é o fim da análise. É o que permite enxergar mais fundo.',
       en: 'Precision is not the end of analysis. It is what allows us to see deeper.',
@@ -430,6 +447,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('jax'),
     heroImage: instructorProfilePath('jax'),
+    introVideo: { src: '/instructors/intro/jax-intro.mp4' },
     quote: {
       pt: 'A música não precisa ser complicada para dizer algo importante.',
       en: "Music doesn't have to be complicated to say something important.",
@@ -462,6 +480,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('juan'),
     heroImage: instructorProfilePath('juan'),
+    introVideo: { src: '/instructors/intro/juan-intro.mp4' },
     quote: {
       pt: 'O baixo sustenta a música — mas também pode mostrar novos caminhos.',
       en: 'Bass supports the music — but it can also reveal new paths.',
@@ -494,6 +513,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('kael'),
     heroImage: instructorProfilePath('kael'),
+    introVideo: { src: '/instructors/intro/kael-intro.mp4' },
     quote: {
       pt: 'Intensidade sem controle é ruído. Com técnica, é impacto.',
       en: "Intensity without control is noise. With technique, it's impact.",
@@ -526,6 +546,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('leo'),
     heroImage: instructorProfilePath('leo'),
+    introVideo: { src: '/instructors/intro/leo-intro.mp4' },
     quote: {
       pt: 'O melhor sinal de evolução é quando o difícil começa a soar natural.',
       en: 'The best sign of progress is when the difficult begins to feel natural.',
@@ -558,6 +579,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('mel'),
     heroImage: instructorProfilePath('mel'),
+    introVideo: { src: '/instructors/intro/mel-intro.mp4' },
     quote: {
       pt: 'Uma frase ganha sentido quando sabemos de onde ela vem e para onde quer ir.',
       en: 'A phrase gains meaning when we know where it comes from and where it wants to go.',
@@ -590,6 +612,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('nina'),
     heroImage: instructorProfilePath('nina'),
+    introVideo: { src: '/instructors/intro/nina-intro.mp4' },
     quote: {
       pt: 'Quando você consegue cantar uma ideia, o instrumento deixa de ser uma barreira.',
       en: 'When you can sing an idea, the instrument stops being a barrier.',
@@ -622,6 +645,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('rick'),
     heroImage: instructorProfilePath('rick'),
+    introVideo: { src: '/instructors/intro/rick-intro.mp4' },
     quote: {
       pt: 'Uma boa linha de baixo dá chão à banda sem ocupar todo o espaço.',
       en: 'A good bass line grounds the band without taking up all the space.',
@@ -654,6 +678,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('roxie'),
     heroImage: instructorProfilePath('roxie'),
+    introVideo: { src: '/instructors/intro/roxie-intro.mp4' },
     quote: {
       pt: 'Antes de soar como qualquer outra pessoa, precisa soar como você.',
       en: 'Before it sounds like anyone else, it needs to sound like you.',
@@ -689,6 +714,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('sofia'),
     heroImage: instructorProfilePath('sofia'),
+    introVideo: { src: '/instructors/intro/sofia-intro.mp4' },
     quote: {
       pt: 'Um bom acorde não é apenas uma forma no braço: é uma escolha de cor, movimento e expressão.',
       en: "A good chord isn't just a shape on the fretboard: it's a choice of color, movement and expression.",
@@ -734,6 +760,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('tom'),
     heroImage: instructorProfilePath('tom'),
+    introVideo: { src: '/instructors/intro/tom-intro.mp4' },
     quote: {
       pt: 'Instrumento bem cuidado responde melhor, afina melhor e inspira mais.',
       en: 'A well cared-for instrument responds better, tunes better and inspires more.',
@@ -766,6 +793,7 @@ export const instructors: InstructorProfile[] = [
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('victor'),
     heroImage: instructorProfilePath('victor'),
+    introVideo: { src: '/instructors/intro/victor-intro.mp4' },
     quote: {
       pt: 'Harmonia sofisticada não é sobre complicar — é sobre enxergar mais opções.',
       en: "Sophisticated harmony isn't about complicating things — it's about seeing more options.",
