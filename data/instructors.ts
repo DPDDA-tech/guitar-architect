@@ -751,6 +751,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('rick'),
     heroImage: instructorProfilePath('rick'),
     introVideo: { src: '/instructors/intro/rick-intro.mp4' },
+    actionGallery: actionGallery('rick', 'Rick', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Rick construindo linhas de baixo que conectam bateria, harmonia, groove e espaço.',
+      en: 'See Rick building bass lines that connect drums, harmony, groove and space.',
+    }),
     quote: {
       pt: 'Uma boa linha de baixo dá chão à banda sem ocupar todo o espaço.',
       en: 'A good bass line grounds the band without taking up all the space.',
@@ -785,6 +789,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('roxie'),
     heroImage: instructorProfilePath('roxie'),
     introVideo: { src: '/instructors/intro/roxie-intro.mp4' },
+    actionGallery: actionGallery('roxie', 'Roxie', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Roxie explorando riffs alternativos, escolhas autorais e caminhos para uma identidade musical própria.',
+      en: 'See Roxie exploring alternative riffs, original choices and paths toward a musical identity of her own.',
+    }),
     quote: {
       pt: 'Antes de soar como qualquer outra pessoa, precisa soar como você.',
       en: 'Before it sounds like anyone else, it needs to sound like you.',
@@ -822,6 +830,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('sofia'),
     heroImage: instructorProfilePath('sofia'),
     introVideo: { src: '/instructors/intro/sofia-intro.mp4' },
+    actionGallery: actionGallery('sofia', 'Sofia', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Sofia conectando acordes, condução harmônica e expressividade a situações reais de repertório.',
+      en: 'See Sofia connecting chords, voice leading and expressiveness with real repertoire situations.',
+    }),
     quote: {
       pt: 'Um bom acorde não é apenas uma forma no braço: é uma escolha de cor, movimento e expressão.',
       en: "A good chord isn't just a shape on the fretboard: it's a choice of color, movement and expression.",
@@ -869,6 +881,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('tom'),
     heroImage: instructorProfilePath('tom'),
     introVideo: { src: '/instructors/intro/tom-intro.mp4' },
+    actionGallery: actionGallery('tom', 'Tom', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Tom cuidando de regulagem, manutenção e ajustes que mantêm o instrumento pronto para tocar.',
+      en: 'See Tom handling setup, maintenance and adjustments that keep the instrument ready to play.',
+    }),
     quote: {
       pt: 'Instrumento bem cuidado responde melhor, afina melhor e inspira mais.',
       en: 'A well cared-for instrument responds better, tunes better and inspires more.',
@@ -903,6 +919,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('victor'),
     heroImage: instructorProfilePath('victor'),
     introVideo: { src: '/instructors/intro/victor-intro.mp4' },
+    actionGallery: actionGallery('victor', 'Victor', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Victor explorando acordes estendidos, voicings, substituições e condução harmônica no jazz.',
+      en: 'See Victor exploring extended chords, voicings, substitutions and harmonic voice leading in jazz.',
+    }),
     quote: {
       pt: 'Harmonia sofisticada não é sobre complicar — é sobre enxergar mais opções.',
       en: "Sophisticated harmony isn't about complicating things — it's about seeing more options.",
