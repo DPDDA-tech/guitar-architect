@@ -116,8 +116,8 @@ const EcosystemPage: React.FC = () => {
               id: 'kids',
               title: 'KIDS',
               subtitle: lang === 'pt'
-                ? 'Primeiros contatos com sons, instrumentos e conceitos básicos.\nUm espaço visual e divertido para crianças e iniciantes descobrirem o universo da música.'
-                : 'First contact with sounds, instruments and basic concepts.\nA visual, fun space for children and beginners to discover the world of music.',
+                ? 'Descubra sons, instrumentos, notas e conceitos musicais em uma experiência visual, lúdica e interativa feita para transformar os primeiros contatos com a música em exploração e descoberta.'
+                : 'Discover sounds, instruments, notes and musical concepts through a visual, playful and interactive experience designed to turn those first encounters with music into exploration and discovery.',
               logo: '/gakidslogo.webp',
               path: '/kids',
               btn: 'bg-emerald-600',
@@ -127,8 +127,8 @@ const EcosystemPage: React.FC = () => {
               id: 'teens',
               title: 'TEENS',
               subtitle: lang === 'pt'
-                ? 'Desafios, prática guiada e evolução progressiva no braço do instrumento.\nExplore escalas, intervalos, independência dos dedos, riffs e exercícios interativos.'
-                : 'Challenges, guided practice and progressive growth across the instrument fretboard.\nExplore scales, intervals, finger independence, riffs and interactive exercises.',
+                ? 'Desafios, prática guiada e evolução técnica progressiva por meio de escalas, intervalos, percepção, independência dos dedos, riffs e exercícios interativos.'
+                : 'Challenges, guided practice and progressive technical development through scales, intervals, ear training, finger independence, riffs and interactive exercises.',
               logo: '/gateenslogo.webp',
               path: '/teens',
               btn: 'bg-violet-600',
@@ -138,8 +138,8 @@ const EcosystemPage: React.FC = () => {
               id: 'studio',
               title: 'STUDIO',
               subtitle: lang === 'pt'
-                ? 'Ferramentas avançadas para visualizar harmonia, acordes, tríades e tétrades.\nUm espaço para estudantes, guitarristas e professores aprofundarem a construção musical.'
-                : 'Advanced tools to visualize harmony, chords, triads and seventh chords.\nA space for students, guitarists and teachers to deepen their musical construction.',
+                ? 'Um laboratório musical interativo para explorar notas, escalas, intervalos, acordes e estruturas harmônicas diretamente no braço do instrumento, com ferramentas avançadas para estudantes, músicos e professores.'
+                : 'An interactive music laboratory for exploring notes, scales, intervals, chords and harmonic structures directly on the instrument fretboard, with advanced tools for students, musicians and teachers.',
               logo: '/logogastudio.webp',
               path: '/studio',
               btn: 'bg-blue-600',
@@ -147,17 +147,11 @@ const EcosystemPage: React.FC = () => {
             },
           ].map(area => {
             const isStudio = area.id === 'studio';
-            const ctaOffsetClass =
-              area.id === 'kids'
-                ? 'md:mt-0'
-                : area.id === 'teens'
-                  ? 'md:mt-1'
-                  : 'md:mt-2';
             return (
               <button
                 key={area.id}
                 onClick={() => navigateTo(area.path)}
-                className={`group px-10 md:px-12 py-7 md:py-9 [@media(max-height:800px)]:py-6 rounded-[64px] border transition-all duration-500 text-center flex flex-col items-center max-lg:landscape:px-2 max-lg:landscape:py-3 max-lg:landscape:rounded-3xl ${
+                className={`group px-10 md:px-4 lg:px-12 py-7 md:py-9 [@media(max-height:800px)]:py-6 rounded-[64px] border transition-all duration-500 text-center flex flex-col items-center max-lg:landscape:px-2 max-lg:landscape:py-3 max-lg:landscape:rounded-3xl ${
                   isLight ? 'bg-white/80 border-zinc-200' : 'bg-zinc-900/80 border-zinc-800'
                 } hover:-translate-y-2 shadow-2xl ${
                   isStudio
@@ -181,7 +175,7 @@ const EcosystemPage: React.FC = () => {
                   {area.subtitle}
                 </p>
 
-                <div className={`${ctaOffsetClass} px-8 ${isStudio ? 'py-4 text-[11px]' : 'py-3 text-[10px]'} rounded-xl ${area.btn} text-white font-black uppercase tracking-widest max-lg:landscape:mt-0 max-lg:landscape:px-3 max-lg:landscape:py-1.5 max-lg:landscape:text-[8px] max-lg:landscape:rounded-lg`}>
+                <div className={`mt-auto px-8 ${isStudio ? 'py-4 text-[11px]' : 'py-3 text-[10px]'} rounded-xl ${area.btn} text-white font-black uppercase tracking-widest max-lg:landscape:px-3 max-lg:landscape:py-1.5 max-lg:landscape:text-[8px] max-lg:landscape:rounded-lg`}>
                   {area.cta}
                 </div>
               </button>
@@ -230,8 +224,8 @@ const EcosystemPage: React.FC = () => {
           </p>
           <p className={`mt-2 text-sm md:text-base leading-relaxed ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
             {lang === 'pt'
-              ? 'Personagens virtuais criados para orientar sua jornada em teoria, ritmo, percepção, rock, blues, metal, baixo, harmonia e prática guiada.'
-              : 'Virtual characters created to guide your journey through theory, rhythm, ear training, rock, blues, metal, bass, harmony and guided practice.'}
+              ? 'São 20 personagens virtuais, cada um com personalidade, trajetória e campo de especialização próprios. Juntos, formam uma equipe diversa que futuramente acompanhará sua jornada por diferentes dimensões do universo da música — da teoria e percepção à técnica, aos estilos musicais, à prática e aos instrumentos.'
+              : 'They are 20 virtual characters, each with their own personality, background, and field of expertise. Together, they form a diverse team that will eventually accompany you on your journey through different dimensions of the musical universe — from theory and ear training to technique, musical styles, practice, and instruments.'}
           </p>
 
           <div className="mt-5 flex items-center justify-center gap-4">
@@ -265,7 +259,7 @@ const EcosystemPage: React.FC = () => {
             onClick={() => navigateTo('/instructors')}
             className={`mt-5 inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all ${actionClass}`}
           >
-            {lang === 'pt' ? 'Ver Arquitetos Musicais' : 'See Music Architects'}
+            {lang === 'pt' ? 'Ver todos os Arquitetos' : 'See All Music Architects'}
           </button>
         </div>
       </div>
