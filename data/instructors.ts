@@ -42,6 +42,16 @@ export interface InstructorIntroVideo {
   duration?: number;
 }
 
+export interface InstructorActionImage {
+  src: string;
+  alt: LocalizedText;
+}
+
+export interface InstructorActionGallery {
+  subtitle: LocalizedText;
+  images: InstructorActionImage[];
+}
+
 export interface InstructorProfile {
   id: string;
   name: string;
@@ -68,6 +78,8 @@ export interface InstructorProfile {
   imageFit?: InstructorImageFit;
   /** Optional presentation video shown near the profile introduction. */
   introVideo?: InstructorIntroVideo;
+  /** Optional scenes showing the architect at work inside GA Academy. */
+  actionGallery?: InstructorActionGallery;
 }
 
 export const instructorCategoryLabels: Record<AppLang, Record<InstructorCategory, string>> = {
@@ -119,6 +131,22 @@ export const getInstructorCategoryLabel = (category: InstructorCategory, lang: A
 const instructorCardPath = (id: string) => `/instructors/1000/${id}-card-instructor.webp`;
 const instructorProfilePath = (id: string) => `/instructors/1400/${id}-profile.webp`;
 
+const actionGallery = (
+  id: string,
+  name: string,
+  files: string[],
+  subtitle: LocalizedText,
+): InstructorActionGallery => ({
+  subtitle,
+  images: files.map((file, index) => ({
+    src: `/instructors/action/${id}/${id}-action-${file}.webp`,
+    alt: {
+      pt: `${name} em ação na GA Academy, cena ${index + 1}`,
+      en: `${name} in action at GA Academy, scene ${index + 1}`,
+    },
+  })),
+});
+
 export const instructors: InstructorProfile[] = [
   {
     id: 'alice',
@@ -149,6 +177,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('alice'),
     heroImage: instructorProfilePath('alice'),
     introVideo: { src: '/instructors/intro/alice-intro.mp4' },
+    actionGallery: actionGallery('alice', 'Alice', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Alice acolhendo e acompanhando diferentes pessoas em seus primeiros passos musicais.',
+      en: 'See Alice welcoming and guiding different people through their first musical steps.',
+    }),
     quote: {
       pt: 'Todo mundo começa do mesmo lugar: pelo primeiro som.',
       en: 'Everyone starts in the same place: with the first sound.',
@@ -183,6 +215,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('arthur'),
     heroImage: instructorProfilePath('arthur'),
     introVideo: { src: '/instructors/intro/arthur-intro.mp4' },
+    actionGallery: actionGallery('arthur', 'Arthur', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Arthur acompanhando tentativas, desafios e conquistas ao longo da jornada musical.',
+      en: 'See Arthur guiding attempts, challenges and achievements throughout the musical journey.',
+    }),
     quote: {
       pt: 'Cada tentativa faz parte do caminho entre entender e conquistar.',
       en: 'Every attempt is part of the path from understanding to achievement.',
@@ -217,6 +253,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('bill'),
     heroImage: instructorProfilePath('bill'),
     introVideo: { src: '/instructors/intro/bill-intro.mp4' },
+    actionGallery: actionGallery('bill', 'Bill', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Bill trabalhando expressão, fraseado e intenção através da linguagem do blues.',
+      en: 'See Bill exploring expression, phrasing and intention through the language of blues.',
+    }),
     quote: {
       pt: 'Uma nota bem sentida vale mais que dez notas apressadas.',
       en: 'One deeply felt note is worth more than ten rushed ones.',
@@ -251,6 +291,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('clara'),
     heroImage: instructorProfilePath('clara'),
     introVideo: { src: '/instructors/intro/clara-intro.mp4' },
+    actionGallery: actionGallery('clara', 'Clara', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Clara organizando conceitos e transformando conhecimentos dispersos em caminhos claros.',
+      en: 'See Clara organizing concepts and turning scattered knowledge into clear paths.',
+    }),
     quote: {
       pt: 'Quando o conhecimento encontra uma estrutura, o próximo passo fica claro.',
       en: 'When knowledge finds a structure, the next step becomes clear.',
@@ -285,6 +329,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('dean'),
     heroImage: instructorProfilePath('dean'),
     introVideo: { src: '/instructors/intro/dean-intro.mp4' },
+    actionGallery: actionGallery('dean', 'Dean', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Dean construindo riffs, repertório e a linguagem prática do rock.',
+      en: 'See Dean building riffs, repertoire and the practical language of rock.',
+    }),
     quote: {
       pt: 'Um bom riff diz tudo antes mesmo do vocal entrar.',
       en: "A good riff says it all before the vocals even come in.",
@@ -323,6 +371,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('diana'),
     heroImage: instructorProfilePath('diana'),
     introVideo: { src: '/instructors/intro/diana-intro.mp4' },
+    actionGallery: actionGallery('diana', 'Diana', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Diana recebendo pessoas e conectando cada jornada aos caminhos do Guitar Architect.',
+      en: 'See Diana welcoming people and connecting each journey with paths through Guitar Architect.',
+    }),
     quote: {
       pt: 'Toda jornada fica mais clara quando você sabe onde está e quem pode caminhar com você.',
       en: 'Every journey becomes clearer when you know where you are and who can walk it with you.',
@@ -357,6 +409,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('erika'),
     heroImage: instructorProfilePath('erika'),
     introVideo: { src: '/instructors/intro/erika-intro.mp4' },
+    actionGallery: actionGallery('erika', 'Erika', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Erika trabalhando presença, interpretação e confiança em diferentes situações de performance.',
+      en: 'See Erika developing presence, interpretation and confidence across different performance settings.',
+    }),
     quote: {
       pt: 'Performance é fazer o público compreender o que a música quer dizer.',
       en: 'Performance is making the audience understand what the music wants to say.',
@@ -391,6 +447,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('fred'),
     heroImage: instructorProfilePath('fred'),
     introVideo: { src: '/instructors/intro/fred-intro.mp4' },
+    actionGallery: actionGallery('fred', 'Fred', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Fred revelando as conexões entre harmonia, estruturas e regiões do instrumento.',
+      en: 'See Fred revealing the connections between harmony, structures and different regions of the instrument.',
+    }),
     quote: {
       pt: 'Quando você enxerga as conexões, o braço deixa de ser um conjunto de formas isoladas.',
       en: 'When you see the connections, the fretboard stops being a collection of isolated shapes.',
@@ -425,6 +485,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('hiroshi'),
     heroImage: instructorProfilePath('hiroshi'),
     introVideo: { src: '/instructors/intro/hiroshi-intro.mp4' },
+    actionGallery: actionGallery('hiroshi', 'Hiroshi', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Hiroshi analisando movimentos, intervalos e escolhas musicais com precisão técnica.',
+      en: 'See Hiroshi analyzing movement, intervals and musical choices with technical precision.',
+    }),
     quote: {
       pt: 'Precisão não é o fim da análise. É o que permite enxergar mais fundo.',
       en: 'Precision is not the end of analysis. It is what allows us to see deeper.',
@@ -459,6 +523,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('jax'),
     heroImage: instructorProfilePath('jax'),
     introVideo: { src: '/instructors/intro/jax-intro.mp4' },
+    actionGallery: actionGallery('jax', 'Jax', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Jax eliminando excessos, rompendo padrões e preservando a força de ideias musicais diretas.',
+      en: 'See Jax removing excess, breaking patterns and preserving the strength of direct musical ideas.',
+    }),
     quote: {
       pt: 'A música não precisa ser complicada para dizer algo importante.',
       en: "Music doesn't have to be complicated to say something important.",
@@ -493,6 +561,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('juan'),
     heroImage: instructorProfilePath('juan'),
     introVideo: { src: '/instructors/intro/juan-intro.mp4' },
+    actionGallery: actionGallery('juan', 'Juan', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Juan explorando groove, movimento melódico e novas possibilidades para o baixo.',
+      en: 'See Juan exploring groove, melodic movement and new possibilities for the bass.',
+    }),
     quote: {
       pt: 'O baixo sustenta a música — mas também pode mostrar novos caminhos.',
       en: 'Bass supports the music — but it can also reveal new paths.',
@@ -527,6 +599,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('kael'),
     heroImage: instructorProfilePath('kael'),
     introVideo: { src: '/instructors/intro/kael-intro.mp4' },
+    actionGallery: actionGallery('kael', 'Kael', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Kael trabalhando riffs pesados, intensidade e precisão em técnicas de alta exigência.',
+      en: 'See Kael working on heavy riffs, intensity and precision through highly demanding techniques.',
+    }),
     quote: {
       pt: 'Intensidade sem controle é ruído. Com técnica, é impacto.',
       en: "Intensity without control is noise. With technique, it's impact.",
@@ -561,6 +637,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('leo'),
     heroImage: instructorProfilePath('leo'),
     introVideo: { src: '/instructors/intro/leo-intro.mp4' },
+    actionGallery: actionGallery('leo', 'Leo', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Leo conduzindo sessões de prática progressivas para desenvolver fluidez, ritmo e confiança.',
+      en: 'See Leo leading progressive practice sessions that build fluency, rhythm and confidence.',
+    }),
     quote: {
       pt: 'O melhor sinal de evolução é quando o difícil começa a soar natural.',
       en: 'The best sign of progress is when the difficult begins to feel natural.',
@@ -595,6 +675,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('mel'),
     heroImage: instructorProfilePath('mel'),
     introVideo: { src: '/instructors/intro/mel-intro.mp4' },
+    actionGallery: actionGallery('mel', 'Mel', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Mel construindo melodias e frases com direção, contraste, espaço e intenção.',
+      en: 'See Mel building melodies and phrases with direction, contrast, space and intention.',
+    }),
     quote: {
       pt: 'Uma frase ganha sentido quando sabemos de onde ela vem e para onde quer ir.',
       en: 'A phrase gains meaning when we know where it comes from and where it wants to go.',
@@ -629,6 +713,10 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('nina'),
     heroImage: instructorProfilePath('nina'),
     introVideo: { src: '/instructors/intro/nina-intro.mp4' },
+    actionGallery: actionGallery('nina', 'Nina', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Nina conectando voz, ouvido e instrumento para desenvolver percepção e imaginação musical.',
+      en: 'See Nina connecting voice, ear and instrument to develop perception and musical imagination.',
+    }),
     quote: {
       pt: 'Quando você consegue cantar uma ideia, o instrumento deixa de ser uma barreira.',
       en: 'When you can sing an idea, the instrument stops being a barrier.',

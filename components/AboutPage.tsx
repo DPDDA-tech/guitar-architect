@@ -73,6 +73,7 @@ const AboutPage: React.FC = () => {
         eyebrow: 'Guitar Architect',
         title: 'O que é o Guitar Architect?',
         subtitle: 'Ecossistema musical brasileiro para descoberta, prática e construção harmônica.',
+        institutionalVideoLabel: 'Vídeo institucional sobre o Guitar Architect.',
         back: '← Voltar ao App',
         s1Title: 'Uma jornada de construção musical',
         s1: [
@@ -126,6 +127,7 @@ const AboutPage: React.FC = () => {
         eyebrow: 'Guitar Architect',
         title: 'What is Guitar Architect?',
         subtitle: 'A Brazilian music ecosystem for discovery, practice and harmonic construction.',
+        institutionalVideoLabel: 'Institutional video about Guitar Architect.',
         back: '← Back to App',
         s1Title: 'A musical construction journey',
         s1: [
@@ -221,6 +223,22 @@ const AboutPage: React.FC = () => {
             <p className="mt-3 text-zinc-500 font-bold uppercase text-[12px] md:text-sm tracking-[0.2em]">
               {t.subtitle}
             </p>
+          </div>
+
+          <div className={`mb-10 overflow-hidden rounded-3xl border ${isLight ? 'border-zinc-200 bg-white shadow-xl' : 'border-blue-950/70 bg-zinc-900 shadow-[0_20px_60px_rgba(0,0,0,0.45)]'}`}>
+            <video
+              width="1600"
+              height="900"
+              controls
+              playsInline
+              preload="metadata"
+              poster="/institutional/diana/diana-about.webp"
+              aria-label={t.institutionalVideoLabel}
+              className="aspect-video h-auto w-full object-cover"
+            >
+              <source src="/institutional/diana/diana-about.mp4" type="video/mp4" />
+              {t.institutionalVideoLabel}
+            </video>
           </div>
 
           <div className={`rounded-[40px] border p-8 md:p-12 ${cardClass}`}>

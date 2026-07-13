@@ -90,6 +90,7 @@ const BrandPage: React.FC = () => {
         eyebrow: 'Guitar Architect',
         title: 'Nossa Marca',
         subtitle: 'A identidade por trás do ecossistema Guitar Architect.',
+        institutionalVideoLabel: 'Vídeo institucional sobre a identidade da marca Guitar Architect.',
         back: '← Voltar ao App',
         logoAlt: 'Identidade visual Guitar Architect',
         s1Title: 'O significado da marca',
@@ -155,6 +156,7 @@ const BrandPage: React.FC = () => {
         eyebrow: 'Guitar Architect',
         title: 'Our Brand',
         subtitle: 'The identity behind the Guitar Architect ecosystem.',
+        institutionalVideoLabel: 'Institutional video about the Guitar Architect brand identity.',
         back: '← Back to App',
         logoAlt: 'Guitar Architect visual identity',
         s1Title: 'The meaning behind the brand',
@@ -286,6 +288,21 @@ const BrandPage: React.FC = () => {
           </div>
 
           <div className={`rounded-[40px] border p-8 md:p-12 ${cardClass}`}>
+            <div className={`mb-10 overflow-hidden rounded-3xl border ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-blue-950/70 bg-zinc-900'}`}>
+              <video
+                width="1600"
+                height="900"
+                controls
+                playsInline
+                preload="metadata"
+                poster="/institutional/diana/diana-brand.webp"
+                aria-label={t.institutionalVideoLabel}
+                className="aspect-video h-auto w-full object-cover"
+              >
+                <source src="/institutional/diana/diana-brand.mp4" type="video/mp4" />
+                {t.institutionalVideoLabel}
+              </video>
+            </div>
             <div className="space-y-8 text-sm md:text-base">
               <section>
                 <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s1Title}</h2>

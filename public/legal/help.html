@@ -14,8 +14,10 @@
   <style>
     body { background-color: #eef3f8; background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px); background-size: 20px 20px; }
     .content-card { background: rgba(255,255,255,.96); backdrop-filter: blur(10px); }
+    .institutional-image { background: #fafafa; border-color: #e4e4e7; }
     html.dark body { background-color: #050914; background-image: linear-gradient(rgba(37,99,235,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,.22) 1px, transparent 1px); color: #e5edf7; }
     html.dark .content-card { background: rgba(7,17,31,.96); border-color: rgba(30,64,175,.45); box-shadow: 0 24px 80px rgba(0,0,0,.55); }
+    html.dark .institutional-image { background: #18181b; border-color: rgba(30,64,175,.7); }
     html.dark h1, html.dark h2, html.dark h3 { color: #bfdbfe !important; }
     html.dark p, html.dark li { color: #cbd5e1; }
     html.dark section { border-color: rgba(30,64,175,.35) !important; background-color: rgba(15,23,42,.45) !important; }
@@ -41,6 +43,16 @@
     </div>
 
     <div class="content-card p-8 md:p-12 rounded-[40px] border border-zinc-200 shadow-2xl">
+      <div class="institutional-image mb-8 overflow-hidden rounded-3xl border">
+        <video data-lang="pt" controls playsinline preload="metadata" poster="/institutional/diana/diana-help.webp" aria-label="Vídeo de orientação para a página de perguntas e respostas do Guitar Architect." width="1600" height="900" class="aspect-video h-auto w-full object-cover">
+          <source src="/institutional/diana/diana-help.mp4" type="video/mp4" />
+          Vídeo de orientação para a página de perguntas e respostas do Guitar Architect.
+        </video>
+        <video data-lang="en" hidden controls playsinline preload="metadata" poster="/institutional/diana/diana-help.webp" aria-label="Guidance video for the Guitar Architect questions and answers page." width="1600" height="900" class="aspect-video h-auto w-full object-cover">
+          <source src="/institutional/diana/diana-help.mp4" type="video/mp4" />
+          Guidance video for the Guitar Architect questions and answers page.
+        </video>
+      </div>
       <div id="faq-content" class="space-y-8 text-sm md:text-base"></div>
     </div>
 

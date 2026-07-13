@@ -6,6 +6,10 @@ interface ImageLightboxProps {
   src: string;
   alt: string;
   closeLabel?: string;
+  onPrevious?: () => void;
+  onNext?: () => void;
+  previousLabel?: string;
+  nextLabel?: string;
 }
 
 const CloseIcon = () => (
@@ -14,9 +18,19 @@ const CloseIcon = () => (
   </svg>
 );
 
-const ImageLightbox: React.FC<ImageLightboxProps> = ({ isOpen, onClose, src, alt, closeLabel = 'Close' }) => {
+const ImageLightbox: React.FC<ImageLightboxProps> = ({ isOpen, onClose, src, alt, closeLabel = 'Close', onPrevious, onNext, previousLabel = 'Previous image', nextLabel = 'Next image' }) => {
   const [shouldRender, setShouldRender] = useState(isOpen);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const onCloseRef = useRef(onClose);
+  const onPreviousRef = useRef(onPrevious);
+  const onNextRef = useRef(onNext);
+
+  onCloseRef.current = onClose;
+  onPreviousRef.current = onPrevious;
+  onNextRef.current = onNext;
 
   useEffect(() => {
     if (isOpen) {
@@ -29,14 +43,36 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ isOpen, onClose, src, alt
 
   useEffect(() => {
     if (!isOpen) return;
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     closeButtonRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') onCloseRef.current();
+      if (event.key === 'ArrowLeft') onPreviousRef.current?.();
+      if (event.key === 'ArrowRight') onNextRef.current?.();
+      if (event.key === 'Tab') {
+        const focusable = Array.from(dialogRef.current?.querySelectorAll<HTMLButtonElement>('button:not([disabled])') ?? []);
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocusRef.current?.focus();
+    };
+  }, [isOpen]);
 
   if (!shouldRender) return null;
 
@@ -47,8 +83,16 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ isOpen, onClose, src, alt
       role="dialog"
       aria-modal="true"
       aria-label={alt}
+      onTouchStart={event => { touchStartX.current = event.touches[0]?.clientX ?? null; }}
+      onTouchEnd={event => {
+        if (touchStartX.current === null) return;
+        const distance = (event.changedTouches[0]?.clientX ?? touchStartX.current) - touchStartX.current;
+        if (Math.abs(distance) > 50) distance > 0 ? onPrevious?.() : onNext?.();
+        touchStartX.current = null;
+      }}
     >
       <div
+        ref={dialogRef}
         className={`relative max-h-[90vh] max-w-[90vw] transition-all duration-200 ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
         onClick={event => event.stopPropagation()}
       >
@@ -61,7 +105,13 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ isOpen, onClose, src, alt
         >
           <CloseIcon />
         </button>
+        {onPrevious && (
+          <button type="button" onClick={onPrevious} aria-label={previousLabel} className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-zinc-950/75 text-xl text-white transition hover:bg-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400">‹</button>
+        )}
         <img src={src} alt={alt} className="max-h-[90vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl" />
+        {onNext && (
+          <button type="button" onClick={onNext} aria-label={nextLabel} className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-zinc-950/75 text-xl text-white transition hover:bg-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400">›</button>
+        )}
       </div>
     </div>
   );
