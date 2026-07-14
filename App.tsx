@@ -60,7 +60,7 @@ import { trackPageView } from './src/lib/analytics';
 
 const getCurrentPath = () => window.location.pathname;
 
-// Exceção deliberada: ao retornar da galeria de Arquitetos Musicais, a posição
+// Exceção deliberada: ao retornar da galeria de Mestres Arquitetos, a posição
 // de scroll é restaurada pelo próprio InstructorsGalleryPage a partir do
 // sessionStorage, em vez de reiniciar no topo.
 const GALLERY_SCROLL_KEY = 'ga_instructors_gallery_scroll';
@@ -168,7 +168,7 @@ const App: React.FC = () => {
 
     // Navegação interna via pushState (botões, links, cards, menus e atalhos)
     // deve iniciar no topo da nova página, salvo a exceção deliberada de
-    // retorno à galeria de Arquitetos Musicais — e somente quando a rota
+    // retorno à galeria de Mestres Arquitetos — e somente quando a rota
     // anterior era de fato um perfil de arquiteto, para não restaurar uma
     // chave de scroll remanescente de uma navegação não relacionada (ex.:
     // Home → Galeria após o usuário ter saído de um perfil por outro caminho).

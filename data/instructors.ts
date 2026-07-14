@@ -20,6 +20,7 @@ export type InstructorStyle =
 
 export type InstructorFunctionalTag =
   | 'institutional'
+  | 'experience'
   | 'leadership'
   | 'communication'
   | 'journey'
@@ -128,6 +129,7 @@ export const instructorTaxonomyLabels: Record<AppLang, Record<InstructorTaxonomy
     funk: 'Funk',
     soul: 'Soul',
     institutional: 'Institucional',
+    experience: 'Experiência',
     leadership: 'Liderança',
     communication: 'Comunicação',
     journey: 'Jornada',
@@ -158,6 +160,7 @@ export const instructorTaxonomyLabels: Record<AppLang, Record<InstructorTaxonomy
     funk: 'Funk',
     soul: 'Soul',
     institutional: 'Institutional',
+    experience: 'Experience',
     leadership: 'Leadership',
     communication: 'Communication',
     journey: 'Journey',
@@ -426,32 +429,32 @@ export const instructors: InstructorProfile[] = [
   },
   {
     id: 'diana',
-    name: 'Diana',
-    title: { pt: 'CEO do Guitar Architect', en: 'Guitar Architect CEO' },
-    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
+    name: 'Diana Helena Moreau Fontenelle',
+    title: { pt: 'Diretora de Experiência e Jornada', en: 'Director of Experience & Journey' },
+    aboutLabel: { pt: 'Sobre Diana', en: 'About Diana' },
     shortDescription: {
-      pt: 'Dirige e representa o Guitar Architect, comunicando sua visão, seus valores e a evolução do ecossistema.',
-      en: 'Leads and represents Guitar Architect, communicating its vision, values and the evolution of the ecosystem.',
+      pt: 'Cuida da forma como as pessoas são recebidas, orientadas e conectadas aos diferentes caminhos e possibilidades do Guitar Architect.',
+      en: 'Shapes how people are welcomed, guided and connected with the different paths and possibilities across Guitar Architect.',
     },
     longDescription: {
-      pt: 'Diana é a CEO do Guitar Architect. Ela lidera o posicionamento institucional, representa a identidade do projeto e comunica sua visão, seus valores, suas novidades e sua evolução. Sua atuação conecta estratégia, experiência e comunicação entre Kids, Teens, Studio e as demais áreas do ecossistema.',
-      en: 'Diana is the CEO of Guitar Architect. She leads its institutional positioning, represents the project identity and communicates its vision, values, updates and evolution. Her work connects strategy, experience and communication across Kids, Teens, Studio and the other areas of the ecosystem.',
+      pt: 'Diana Helena Moreau Fontenelle é a Diretora de Experiência e Jornada do Guitar Architect. Em uma função singular dentro do conjunto de 20 personagens, ela cuida da forma como as pessoas são recebidas, orientadas e conectadas aos diferentes caminhos, áreas e possibilidades do ecossistema. Diana não integra o grupo dos Mestres Arquitetos: sua atuação conecta experiência, jornada e comunicação entre Kids, Teens, Studio e as demais áreas do projeto.',
+      en: 'Diana Helena Moreau Fontenelle is Guitar Architect’s Director of Experience & Journey. In a singular role within the cast of 20 characters, she shapes how people are welcomed, guided and connected with the ecosystem’s different paths, areas and possibilities. Diana is not one of the Master Architects: her work connects experience, journey and communication across Kids, Teens, Studio and the project’s other areas.',
     },
     personality: { pt: ['Acolhedora', 'Motivadora', 'Estratégica'], en: ['Welcoming', 'Motivating', 'Strategic'] },
     strengths: {
-      pt: ['Liderança e representação institucional', 'Comunicação da visão e dos valores do projeto', 'Visão estratégica do ecossistema'],
-      en: ['Institutional leadership and representation', 'Communicating the project vision and values', 'A strategic view of the ecosystem'],
+      pt: ['Experiência de acolhimento e orientação', 'Conexão entre pessoas, áreas e possibilidades', 'Visão integrada da jornada pelo ecossistema'],
+      en: ['A welcoming and guided experience', 'Connecting people, areas and possibilities', 'An integrated view of the ecosystem journey'],
     },
     musicalBackground: {
-      pt: 'A relação de Diana com a música começou pelo canto, pela interpretação e pela experiência de se expressar diante de outras pessoas. Essa vivência desenvolveu sua presença, sua escuta e sua forma acolhedora de se comunicar. Com o tempo, seu olhar se ampliou do palco para o ecossistema musical como um todo — e hoje essa experiência contribui para sua liderança, sua comunicação e sua representação institucional do Guitar Architect.',
-      en: 'Diana’s relationship with music began through singing, interpretation and the experience of expressing herself in front of others. That experience shaped her presence, her listening and her welcoming way of communicating. Over time, her perspective expanded from the stage to the musical ecosystem as a whole — and today that experience contributes to her leadership, communication and institutional representation of Guitar Architect.',
+      pt: 'A relação de Diana com a música começou pelo canto, pela interpretação e pela experiência de se expressar diante de outras pessoas. Essa vivência desenvolveu sua presença, sua escuta e sua forma acolhedora de se comunicar. Com o tempo, seu olhar se ampliou do palco para o ecossistema musical como um todo — e hoje essa experiência contribui para seu trabalho com a experiência e a jornada das pessoas no Guitar Architect.',
+      en: 'Diana’s relationship with music began through singing, interpretation and the experience of expressing herself in front of others. That experience shaped her presence, her listening and her welcoming way of communicating. Over time, her perspective expanded from the stage to the musical ecosystem as a whole — and today that experience informs her work with people’s experience and journey through Guitar Architect.',
     },
     listeningFavorites: { pt: ['A-ha', 'U2', 'Roxette', 'Seal', 'Annie Lennox'], en: ['A-ha', 'U2', 'Roxette', 'Seal', 'Annie Lennox'] },
     listeningNote: {
       pt: 'Diana se conecta com grandes melodias, vozes marcantes e canções que unem interpretação, identidade e produção refinada.',
       en: 'Diana connects with memorable melodies, distinctive voices and songs that bring together interpretation, identity and refined production.',
     },
-    taxonomy: { functionalTags: ['institutional', 'leadership', 'communication'] },
+    taxonomy: { functionalTags: ['experience', 'journey', 'communication'] },
     areas: ['kids', 'teens', 'studio'],
     levels: [],
     relatedModules: { pt: ['Ecossistema', 'Kids', 'Teens', 'Studio'], en: ['Ecosystem', 'Kids', 'Teens', 'Studio'] },
@@ -459,9 +462,9 @@ export const instructors: InstructorProfile[] = [
     cardImage: instructorCardPath('diana'),
     heroImage: instructorProfilePath('diana'),
     introVideo: { src: '/instructors/intro/diana-intro.mp4' },
-    actionGallery: actionGallery('diana', 'Diana', ['01', '02', '03', '04', '05', '06', '07', '08'], {
-      pt: 'Veja Diana representando o Guitar Architect e comunicando a visão, os valores e a evolução do ecossistema.',
-      en: 'See Diana representing Guitar Architect and communicating the vision, values and evolution of the ecosystem.',
+    actionGallery: actionGallery('diana', 'Diana Helena Moreau Fontenelle', ['01', '02', '03', '04', '05', '06', '07', '08'], {
+      pt: 'Veja Diana Helena Moreau Fontenelle acolhendo, orientando e conectando pessoas aos caminhos do Guitar Architect.',
+      en: 'See Diana Helena Moreau Fontenelle welcoming, guiding and connecting people with paths through Guitar Architect.',
     }),
     quote: {
       pt: 'Toda jornada fica mais clara quando você sabe onde está e quem pode caminhar com você.',

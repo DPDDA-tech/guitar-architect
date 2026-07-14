@@ -36,7 +36,7 @@ interface InstructorCardProps {
 }
 
 const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, lang }) => {
-  const isCEO = instructor.id === 'diana';
+  const isExperienceDirector = instructor.id === 'diana';
   const cardTags = getInstructorCardTags(instructor);
   const panelClass = isLight
     ? 'border-zinc-200 bg-white shadow-lg'
@@ -95,8 +95,8 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
         <div className="mt-4 flex flex-1 items-end justify-between gap-2">
           <div>
             <p className={`text-[9px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>
-              {isCEO
-                ? (lang === 'pt' ? 'Liderança institucional' : 'Institutional leadership')
+              {isExperienceDirector
+                ? (lang === 'pt' ? 'Experiência e jornada' : 'Experience and journey')
                 : instructor.unlockLabel[lang]}
             </p>
           </div>

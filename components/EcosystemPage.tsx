@@ -220,12 +220,12 @@ const EcosystemPage: React.FC = () => {
 
         <div className="mx-auto mt-10 mb-2 max-w-2xl text-center max-lg:landscape:hidden">
           <p className={`text-base md:text-xl font-extrabold tracking-tight ${isLight ? 'text-zinc-800' : 'text-white'}`}>
-            {lang === 'pt' ? 'Conheça nossos Arquitetos Musicais' : 'Meet our Music Architects'}
+            {lang === 'pt' ? 'Conheça nossos Mestres Arquitetos' : 'Meet our Master Architects'}
           </p>
           <p className={`mt-2 text-sm md:text-base leading-relaxed ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
             {lang === 'pt'
-              ? 'São 20 personagens virtuais, cada um com personalidade, trajetória e campo de especialização próprios. Juntos, formam uma equipe diversa que futuramente acompanhará sua jornada por diferentes dimensões do universo da música — da teoria e percepção à técnica, aos estilos musicais, à prática e aos instrumentos.'
-              : 'They are 20 virtual characters, each with their own personality, background, and field of expertise. Together, they form a diverse team that will eventually accompany you on your journey through different dimensions of the musical universe — from theory and ear training to technique, musical styles, practice, and instruments.'}
+              ? 'São 19 Mestres Arquitetos, cada um com personalidade, trajetória e campo de especialização próprios. Ao lado deles, Diana Helena Moreau Fontenelle atua como Diretora de Experiência e Jornada. Juntos, esses 20 personagens fictícios futuramente acompanharão sua jornada por diferentes dimensões do universo da música e do ecossistema.'
+              : 'There are 19 Master Architects, each with their own personality, background and field of expertise. Alongside them, Diana Helena Moreau Fontenelle serves as Director of Experience & Journey. Together, these 20 fictional characters will eventually accompany you through different dimensions of music and the ecosystem.'}
           </p>
 
           <div className="mt-5 flex items-center justify-center gap-4">
@@ -259,7 +259,7 @@ const EcosystemPage: React.FC = () => {
             onClick={() => navigateTo('/instructors')}
             className={`mt-5 inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all ${actionClass}`}
           >
-            {lang === 'pt' ? 'Ver todos os Arquitetos' : 'See All Music Architects'}
+            {lang === 'pt' ? 'Ver todos os personagens' : 'See all characters'}
           </button>
         </div>
       </div>
