@@ -1,22 +1,46 @@
-export type InstructorCategory =
-  | 'institutional'
-  | 'communication'
-  | 'journey'
-  | 'luthiery'
-  | 'gear'
-  | 'maintenance'
-  | 'harmony'
-  | 'beginner'
+export type InstructorLevel = 'beginner' | 'intermediate' | 'advanced';
+
+export type InstructorFocus =
   | 'theory'
-  | 'practice'
+  | 'guidedPractice'
+  | 'technique'
+  | 'harmony'
   | 'rhythm'
-  | 'earTraining'
+  | 'earTraining';
+
+export type InstructorStyle =
+  | 'various'
+  | 'blues'
   | 'rock'
   | 'metal'
-  | 'blues'
+  | 'grunge'
   | 'jazz'
-  | 'bass'
-  | 'advanced';
+  | 'funk'
+  | 'soul';
+
+export type InstructorFunctionalTag =
+  | 'institutional'
+  | 'leadership'
+  | 'communication'
+  | 'journey'
+  | 'organization'
+  | 'guidance'
+  | 'voice'
+  | 'performance'
+  | 'luthiery'
+  | 'care'
+  | 'maintenance';
+
+export type InstructorArea = 'kids' | 'teens' | 'studio';
+export type InstructorAudienceLevel = 'earlyEducation' | InstructorLevel;
+export type InstructorTaxonomyTag = InstructorLevel | InstructorFocus | InstructorStyle | InstructorFunctionalTag;
+
+export interface InstructorTaxonomy {
+  level?: InstructorLevel;
+  focus?: InstructorFocus;
+  style?: InstructorStyle;
+  functionalTags?: InstructorFunctionalTag[];
+}
 
 export type AppLang = 'pt' | 'en';
 
@@ -68,7 +92,9 @@ export interface InstructorProfile {
   musicalBackground?: LocalizedText;
   listeningFavorites?: LocalizedList;
   listeningNote?: LocalizedText;
-  categories: InstructorCategory[];
+  taxonomy: InstructorTaxonomy;
+  areas: InstructorArea[];
+  levels: InstructorAudienceLevel[];
   relatedModules: LocalizedList;
   unlockLabel: LocalizedText;
   cardImage: string;
@@ -82,51 +108,101 @@ export interface InstructorProfile {
   actionGallery?: InstructorActionGallery;
 }
 
-export const instructorCategoryLabels: Record<AppLang, Record<InstructorCategory, string>> = {
+export const instructorTaxonomyLabels: Record<AppLang, Record<InstructorTaxonomyTag, string>> = {
   pt: {
-    institutional: 'Institucional',
-    communication: 'Comunicação',
-    journey: 'Jornada',
-    luthiery: 'Luthieria',
-    gear: 'Equipamentos',
-    maintenance: 'Manutenção',
-    harmony: 'Harmonia',
-    beginner: 'Iniciantes',
+    beginner: 'Iniciante',
+    intermediate: 'Intermediário',
+    advanced: 'Avançado',
     theory: 'Teoria',
-    practice: 'Prática',
+    guidedPractice: 'Prática Guiada',
+    technique: 'Técnica',
+    harmony: 'Harmonia',
     rhythm: 'Ritmo',
     earTraining: 'Percepção',
+    various: 'Diversos',
+    blues: 'Blues',
     rock: 'Rock',
     metal: 'Metal',
-    blues: 'Blues',
+    grunge: 'Grunge',
     jazz: 'Jazz',
-    bass: 'Baixo & Bases',
-    advanced: 'Avançado',
+    funk: 'Funk',
+    soul: 'Soul',
+    institutional: 'Institucional',
+    leadership: 'Liderança',
+    communication: 'Comunicação',
+    journey: 'Jornada',
+    organization: 'Organização',
+    guidance: 'Orientação',
+    voice: 'Voz',
+    performance: 'Performance',
+    luthiery: 'Luthieria',
+    care: 'Cuidados',
+    maintenance: 'Manutenção',
   },
   en: {
-    institutional: 'Institutional',
-    communication: 'Communication',
-    journey: 'Journey',
-    luthiery: 'Luthiery',
-    gear: 'Gear',
-    maintenance: 'Maintenance',
-    harmony: 'Harmony',
-    beginner: 'Beginners',
+    beginner: 'Beginner',
+    intermediate: 'Intermediate',
+    advanced: 'Advanced',
     theory: 'Theory',
-    practice: 'Practice',
+    guidedPractice: 'Guided Practice',
+    technique: 'Technique',
+    harmony: 'Harmony',
     rhythm: 'Rhythm',
     earTraining: 'Ear Training',
+    various: 'Various',
+    blues: 'Blues',
     rock: 'Rock',
     metal: 'Metal',
-    blues: 'Blues',
+    grunge: 'Grunge',
     jazz: 'Jazz',
-    bass: 'Bass & Foundations',
-    advanced: 'Advanced',
+    funk: 'Funk',
+    soul: 'Soul',
+    institutional: 'Institutional',
+    leadership: 'Leadership',
+    communication: 'Communication',
+    journey: 'Journey',
+    organization: 'Organization',
+    guidance: 'Guidance',
+    voice: 'Voice',
+    performance: 'Performance',
+    luthiery: 'Luthiery',
+    care: 'Care',
+    maintenance: 'Maintenance',
   },
 };
 
-export const getInstructorCategoryLabel = (category: InstructorCategory, lang: AppLang): string =>
-  instructorCategoryLabels[lang][category];
+export const getInstructorTaxonomyLabel = (tag: InstructorTaxonomyTag, lang: AppLang): string =>
+  instructorTaxonomyLabels[lang][tag];
+
+const instructorAreaLabels: Record<AppLang, Record<InstructorArea, string>> = {
+  pt: { kids: 'Kids', teens: 'Teens', studio: 'Studio' },
+  en: { kids: 'Kids', teens: 'Teens', studio: 'Studio' },
+};
+
+const instructorAudienceLevelLabels: Record<AppLang, Record<InstructorAudienceLevel, string>> = {
+  pt: { earlyEducation: 'Educação Infantil', beginner: 'Iniciantes', intermediate: 'Intermediários', advanced: 'Avançados' },
+  en: { earlyEducation: 'Early Education', beginner: 'Beginners', intermediate: 'Intermediate', advanced: 'Advanced' },
+};
+
+export const getInstructorAreaLabel = (area: InstructorArea, lang: AppLang): string =>
+  instructorAreaLabels[lang][area];
+
+export const getInstructorAudienceLevelLabel = (level: InstructorAudienceLevel, lang: AppLang): string =>
+  instructorAudienceLevelLabels[lang][level];
+
+export const getInstructorCardTags = (instructor: InstructorProfile): InstructorTaxonomyTag[] => {
+  if (instructor.taxonomy.functionalTags?.length) return instructor.taxonomy.functionalTags;
+  return [instructor.taxonomy.level, instructor.taxonomy.focus, instructor.taxonomy.style]
+    .filter((tag): tag is InstructorLevel | InstructorFocus | InstructorStyle => Boolean(tag));
+};
+
+export const instructorMatchesPublicFilters = (
+  instructor: InstructorProfile,
+  area: InstructorArea | null,
+  level: InstructorAudienceLevel | null,
+): boolean =>
+  (!area || instructor.areas.includes(area))
+  && (!level || instructor.levels.includes(level));
 
 const instructorCardPath = (id: string) => `/instructors/1000/${id}-card-instructor.webp`;
 const instructorProfilePath = (id: string) => `/instructors/1400/${id}-profile.webp`;
@@ -171,7 +247,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências a união entre guitarra e canto, o acolhimento das canções diretas e uma sensibilidade alternativa sem intimidação.',
       en: 'Draws from these references the connection between guitar and singing, the warmth of direct songs and an alternative sensibility without intimidation.',
     },
-    categories: ['beginner', 'practice'],
+    taxonomy: { level: 'beginner', focus: 'guidedPractice', style: 'various' },
+    areas: ['kids'],
+    levels: ['earlyEducation', 'beginner'],
     relatedModules: { pt: ['Kids', 'Aprender'], en: ['Kids', 'Learn'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('alice'),
@@ -209,7 +287,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências perseverança, fundamentos amadurecidos e a satisfação de atravessar desafios até conquistar fluidez.',
       en: 'Draws from these references perseverance, mature foundations and the satisfaction of working through challenges until fluency is achieved.',
     },
-    categories: ['beginner', 'practice'],
+    taxonomy: { level: 'beginner', focus: 'guidedPractice', style: 'various' },
+    areas: ['teens'],
+    levels: ['beginner'],
     relatedModules: { pt: ['Teens', 'Aprender', 'Praticar'], en: ['Teens', 'Learn', 'Practice'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('arthur'),
@@ -247,7 +327,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências o espaço, os bends expressivos e a convicção de que intenção vale mais do que quantidade de notas.',
       en: 'Draws from these references space, expressive bends and the belief that intention matters more than the number of notes.',
     },
-    categories: ['blues', 'practice'],
+    taxonomy: { level: 'intermediate', focus: 'guidedPractice', style: 'blues' },
+    areas: ['studio'],
+    levels: ['intermediate'],
     relatedModules: { pt: ['Praticar', 'Acordes'], en: ['Practice', 'Chords'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('bill'),
@@ -265,11 +347,11 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'clara',
     name: 'Clara',
-    title: { pt: 'Teoria e Organização', en: 'Theory and Organization' },
+    title: { pt: 'Jornada e Organização', en: 'Journey and Organization' },
     aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
     shortDescription: {
-      pt: 'Organiza conhecimentos dispersos, identifica lacunas e transforma teoria fragmentada em um caminho claro de estudo.',
-      en: 'Organizes scattered knowledge, identifies gaps and turns fragmented theory into a clear path of study.',
+      pt: 'Organiza conhecimentos dispersos, identifica lacunas e orienta cada pessoa por um caminho claro de estudo.',
+      en: 'Organizes scattered knowledge, identifies gaps and guides each person through a clear path of study.',
     },
     longDescription: {
       pt: 'Clara ajuda o estudante a entender o que já sabe, o que ainda falta e qual é o próximo passo lógico. Ela conecta fundamentos, teoria e aplicação em uma estrutura coerente, adaptando o percurso de quem está começando a quem já ensina ou toca profissionalmente.',
@@ -277,15 +359,17 @@ export const instructors: InstructorProfile[] = [
     },
     personality: { pt: ['Organizada', 'Analítica', 'Encorajadora'], en: ['Organized', 'Analytical', 'Encouraging'] },
     strengths: {
-      pt: ['Diagnóstico de conhecimentos e lacunas', 'Organização de conceitos', 'Definição do próximo passo lógico'],
-      en: ['Diagnosing knowledge and gaps', 'Organizing concepts', 'Defining the next logical step'],
+      pt: ['Diagnóstico de conhecimentos e lacunas', 'Organização de conceitos', 'Orientação do percurso e do próximo passo lógico'],
+      en: ['Diagnosing knowledge and gaps', 'Organizing concepts', 'Guidance through the learning path and its next logical step'],
     },
     influences: { pt: ['Herbie Hancock', 'Quincy Jones', 'Leonard Bernstein'], en: ['Herbie Hancock', 'Quincy Jones', 'Leonard Bernstein'] },
     influenceNote: {
       pt: 'Leva dessas referências visão de conjunto, organização e clareza para conectar ideias musicais e transformar complexidade em caminhos compreensíveis.',
       en: 'Draws from these references broad perspective, organization and clarity to connect musical ideas and turn complexity into understandable paths.',
     },
-    categories: ['beginner', 'theory', 'practice'],
+    taxonomy: { functionalTags: ['journey', 'organization', 'guidance'] },
+    areas: ['kids', 'teens', 'studio'],
+    levels: [],
     relatedModules: { pt: ['Praticar', 'Aprender'], en: ['Practice', 'Learn'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('clara'),
@@ -323,7 +407,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências riffs memoráveis, energia de banda e respeito pela linguagem construída pelo classic rock.',
       en: 'Draws from these references memorable riffs, band energy and respect for the language built by classic rock.',
     },
-    categories: ['rock', 'practice'],
+    taxonomy: { level: 'intermediate', focus: 'guidedPractice', style: 'rock' },
+    areas: ['teens', 'studio'],
+    levels: ['intermediate'],
     relatedModules: { pt: ['Praticar', 'Acordes'], en: ['Practice', 'Chords'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('dean'),
@@ -341,39 +427,41 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'diana',
     name: 'Diana',
-    title: { pt: 'Embaixadora do GA', en: 'GA Ambassador' },
+    title: { pt: 'CEO do Guitar Architect', en: 'Guitar Architect CEO' },
     aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
     shortDescription: {
-      pt: 'Recebe quem chega ao GA, apresenta a jornada e ajuda cada pessoa a encontrar os ambientes e Arquitetos mais adequados.',
-      en: 'Welcomes newcomers to GA, introduces the journey and helps each person find the most suitable environments and Music Architects.',
+      pt: 'Dirige e representa o Guitar Architect, comunicando sua visão, seus valores e a evolução do ecossistema.',
+      en: 'Leads and represents Guitar Architect, communicating its vision, values and the evolution of the ecosystem.',
     },
     longDescription: {
-      pt: 'Diana é a Embaixadora do GA e Guia da Jornada. Ela recebe quem chega, apresenta Kids, Teens e Studio, ajuda o usuário a compreender suas possibilidades e indica caminhos entre áreas e Arquitetos Musicais. Sua orientação atende desde iniciantes até professores e profissionais descobrindo o ecossistema.',
-      en: 'Diana is the GA Ambassador and Journey Guide. She welcomes newcomers, introduces Kids, Teens and Studio, helps users understand their possibilities and points them toward the right areas and Music Architects. Her guidance serves everyone from beginners to teachers and professionals discovering the ecosystem.',
+      pt: 'Diana é a CEO do Guitar Architect. Ela lidera o posicionamento institucional, representa a identidade do projeto e comunica sua visão, seus valores, suas novidades e sua evolução. Sua atuação conecta estratégia, experiência e comunicação entre Kids, Teens, Studio e as demais áreas do ecossistema.',
+      en: 'Diana is the CEO of Guitar Architect. She leads its institutional positioning, represents the project identity and communicates its vision, values, updates and evolution. Her work connects strategy, experience and communication across Kids, Teens, Studio and the other areas of the ecosystem.',
     },
     personality: { pt: ['Acolhedora', 'Motivadora', 'Estratégica'], en: ['Welcoming', 'Motivating', 'Strategic'] },
     strengths: {
-      pt: ['Recepção e orientação na jornada', 'Conexão com áreas e Arquitetos', 'Visão geral do ecossistema'],
-      en: ['Welcoming and journey guidance', 'Connecting users with areas and Architects', 'A broad view of the ecosystem'],
+      pt: ['Liderança e representação institucional', 'Comunicação da visão e dos valores do projeto', 'Visão estratégica do ecossistema'],
+      en: ['Institutional leadership and representation', 'Communicating the project vision and values', 'A strategic view of the ecosystem'],
     },
     musicalBackground: {
-      pt: 'A relação de Diana com a música começou pelo canto, pela interpretação e pela experiência de se expressar diante de outras pessoas. Essa vivência desenvolveu sua presença, sua escuta e sua forma acolhedora de se comunicar. Com o tempo, seu olhar se ampliou do palco para a jornada musical como um todo — e hoje ela usa essa experiência para receber, orientar e conectar cada pessoa aos caminhos e Arquitetos mais adequados.',
-      en: 'Diana’s relationship with music began through singing, interpretation and the experience of expressing herself in front of others. That experience shaped her presence, her listening and her welcoming way of communicating. Over time, her perspective expanded from the stage to the musical journey as a whole — and today she uses that experience to welcome, guide and connect each person with the most suitable paths and Music Architects.',
+      pt: 'A relação de Diana com a música começou pelo canto, pela interpretação e pela experiência de se expressar diante de outras pessoas. Essa vivência desenvolveu sua presença, sua escuta e sua forma acolhedora de se comunicar. Com o tempo, seu olhar se ampliou do palco para o ecossistema musical como um todo — e hoje essa experiência contribui para sua liderança, sua comunicação e sua representação institucional do Guitar Architect.',
+      en: 'Diana’s relationship with music began through singing, interpretation and the experience of expressing herself in front of others. That experience shaped her presence, her listening and her welcoming way of communicating. Over time, her perspective expanded from the stage to the musical ecosystem as a whole — and today that experience contributes to her leadership, communication and institutional representation of Guitar Architect.',
     },
     listeningFavorites: { pt: ['A-ha', 'U2', 'Roxette', 'Seal', 'Annie Lennox'], en: ['A-ha', 'U2', 'Roxette', 'Seal', 'Annie Lennox'] },
     listeningNote: {
       pt: 'Diana se conecta com grandes melodias, vozes marcantes e canções que unem interpretação, identidade e produção refinada.',
       en: 'Diana connects with memorable melodies, distinctive voices and songs that bring together interpretation, identity and refined production.',
     },
-    categories: ['institutional', 'communication', 'journey'],
+    taxonomy: { functionalTags: ['institutional', 'leadership', 'communication'] },
+    areas: ['kids', 'teens', 'studio'],
+    levels: [],
     relatedModules: { pt: ['Ecossistema', 'Kids', 'Teens', 'Studio'], en: ['Ecosystem', 'Kids', 'Teens', 'Studio'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('diana'),
     heroImage: instructorProfilePath('diana'),
     introVideo: { src: '/instructors/intro/diana-intro.mp4' },
     actionGallery: actionGallery('diana', 'Diana', ['01', '02', '03', '04', '05', '06', '07', '08'], {
-      pt: 'Veja Diana recebendo pessoas e conectando cada jornada aos caminhos do Guitar Architect.',
-      en: 'See Diana welcoming people and connecting each journey with paths through Guitar Architect.',
+      pt: 'Veja Diana representando o Guitar Architect e comunicando a visão, os valores e a evolução do ecossistema.',
+      en: 'See Diana representing Guitar Architect and communicating the vision, values and evolution of the ecosystem.',
     }),
     quote: {
       pt: 'Toda jornada fica mais clara quando você sabe onde está e quem pode caminhar com você.',
@@ -403,7 +491,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências presença, elegância interpretativa e confiança para transformar voz, corpo e intenção em comunicação musical.',
       en: 'Draws from these references presence, interpretive elegance and confidence to turn voice, body and intention into musical communication.',
     },
-    categories: ['communication', 'practice'],
+    taxonomy: { functionalTags: ['communication', 'voice', 'performance'] },
+    areas: ['teens', 'studio'],
+    levels: [],
     relatedModules: { pt: ['Praticar', 'Studio'], en: ['Practice', 'Studio'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('erika'),
@@ -441,7 +531,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências a visão do braço como um mapa conectado de acordes, escalas, funções e possibilidades.',
       en: 'Draws from these references a view of the fretboard as a connected map of chords, scales, functions and possibilities.',
     },
-    categories: ['harmony', 'theory', 'advanced'],
+    taxonomy: { level: 'advanced', focus: 'harmony', style: 'various' },
+    areas: ['studio'],
+    levels: ['advanced'],
     relatedModules: { pt: ['Tríades e Tétrades', 'Ciclo Harmônico', 'CAGED'], en: ['Triads and Tetrads', 'Harmonic Cycle', 'CAGED'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('fred'),
@@ -479,7 +571,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências precisão, domínio consciente da técnica e atenção aos detalhes que permitem aprofundar cada escolha musical.',
       en: 'Draws from these references precision, conscious technical command and attention to detail that make deeper musical choices possible.',
     },
-    categories: ['theory', 'practice', 'advanced'],
+    taxonomy: { level: 'advanced', focus: 'technique', style: 'various' },
+    areas: ['studio'],
+    levels: ['advanced'],
     relatedModules: { pt: ['Radar de Intervalos', 'CAGED', 'Praticar'], en: ['Interval Radar', 'CAGED', 'Practice'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('hiroshi'),
@@ -517,7 +611,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências concisão, contraste e coragem para preservar a força de uma ideia sem complicá-la por obrigação.',
       en: 'Draws from these references concision, contrast and the courage to preserve the strength of an idea without complicating it out of obligation.',
     },
-    categories: ['rock', 'practice'],
+    taxonomy: { level: 'intermediate', focus: 'guidedPractice', style: 'grunge' },
+    areas: ['teens'],
+    levels: ['intermediate'],
     relatedModules: { pt: ['Teens', 'Praticar'], en: ['Teens', 'Practice'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('jax'),
@@ -555,7 +651,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências liberdade melódica, groove móvel e disposição para propor ao baixo funções menos previsíveis.',
       en: 'Draws from these references melodic freedom, moving groove and a willingness to give the bass less predictable roles.',
     },
-    categories: ['bass', 'rhythm'],
+    taxonomy: { level: 'intermediate', focus: 'rhythm', style: 'funk' },
+    areas: ['studio'],
+    levels: ['intermediate'],
     relatedModules: { pt: ['Praticar', 'Ciclo Harmônico'], en: ['Practice', 'Harmonic Cycle'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('juan'),
@@ -593,7 +691,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências riffs pesados, palhetada firme e intensidade sustentada por controle técnico.',
       en: 'Draws from these references heavy riffs, firm picking and intensity sustained by technical control.',
     },
-    categories: ['metal', 'advanced'],
+    taxonomy: { level: 'advanced', focus: 'technique', style: 'metal' },
+    areas: ['studio'],
+    levels: ['advanced'],
     relatedModules: { pt: ['Praticar', 'CAGED'], en: ['Practice', 'CAGED'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('kael'),
@@ -631,7 +731,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências fluidez, confiança e a prática amadurecida até que a execução passe a soar natural.',
       en: 'Draws from these references fluency, confidence and practice matured until playing begins to feel natural.',
     },
-    categories: ['practice', 'rhythm'],
+    taxonomy: { level: 'intermediate', focus: 'guidedPractice', style: 'various' },
+    areas: ['teens'],
+    levels: ['intermediate'],
     relatedModules: { pt: ['Teens', 'Praticar'], en: ['Teens', 'Practice'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('leo'),
@@ -669,7 +771,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências direção melódica, espaço, contraste e sensibilidade para desenvolver ideias com intenção e identidade.',
       en: 'Draws from these references melodic direction, space, contrast and the sensitivity to develop ideas with intention and identity.',
     },
-    categories: ['theory', 'practice'],
+    taxonomy: { level: 'intermediate', focus: 'guidedPractice', style: 'various' },
+    areas: ['teens', 'studio'],
+    levels: ['intermediate'],
     relatedModules: { pt: ['Praticar'], en: ['Practice'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('mel'),
@@ -707,7 +811,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências escuta sensível, precisão vocal e a capacidade de transformar melodias imaginadas em ideias que podem ser cantadas e tocadas.',
       en: 'Draws from these references sensitive listening, vocal precision and the ability to turn imagined melodies into ideas that can be sung and played.',
     },
-    categories: ['earTraining', 'practice'],
+    taxonomy: { level: 'intermediate', focus: 'earTraining', style: 'various' },
+    areas: ['teens', 'studio'],
+    levels: ['intermediate'],
     relatedModules: { pt: ['Radar de Intervalos', 'Praticar'], en: ['Interval Radar', 'Practice'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('nina'),
@@ -745,7 +851,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências fundamento, espaço e linhas que conectam bateria e harmonia sem competir com a canção.',
       en: 'Draws from these references foundation, space and lines that connect drums and harmony without competing with the song.',
     },
-    categories: ['bass', 'rhythm'],
+    taxonomy: { level: 'intermediate', focus: 'rhythm', style: 'soul' },
+    areas: ['studio'],
+    levels: ['intermediate'],
     relatedModules: { pt: ['Praticar', 'Ciclo Harmônico'], en: ['Practice', 'Harmonic Cycle'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('rick'),
@@ -783,7 +891,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências atitude, liberdade para experimentar e coragem para construir uma identidade inequivocamente própria.',
       en: 'Draws from these references attitude, freedom to experiment and the courage to build an unmistakably individual identity.',
     },
-    categories: ['rock', 'practice'],
+    taxonomy: { level: 'intermediate', focus: 'guidedPractice', style: 'rock' },
+    areas: ['teens', 'studio'],
+    levels: ['intermediate'],
     relatedModules: { pt: ['Teens', 'Studio', 'Praticar'], en: ['Teens', 'Studio', 'Practice'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('roxie'),
@@ -821,7 +931,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências acordes com movimento, voicings expressivos e acompanhamento que participa ativamente da música.',
       en: 'Draws from these references moving chords, expressive voicings and accompaniment that actively participates in the music.',
     },
-    categories: ['harmony', 'practice'],
+    taxonomy: { level: 'intermediate', focus: 'harmony', style: 'various' },
+    areas: ['studio'],
+    levels: ['intermediate'],
     relatedModules: {
       pt: ['Acordes', 'Tríades e Tétrades', 'Studio', 'Praticar'],
       en: ['Chords', 'Triads and Tetrads', 'Studio', 'Practice'],
@@ -872,7 +984,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências curiosidade técnica, experimentação e a ideia de que instrumento, regulagem e equipamento fazem parte da criação musical.',
       en: 'Draws from these references technical curiosity, experimentation and the idea that instrument, setup and gear are part of musical creation.',
     },
-    categories: ['luthiery', 'gear', 'maintenance'],
+    taxonomy: { functionalTags: ['luthiery', 'care', 'maintenance'] },
+    areas: ['studio'],
+    levels: [],
     relatedModules: {
       pt: ['Custom Shop', 'Manutenção do Instrumento', 'Equipamentos e Timbres', 'EVH / Frankenstrat'],
       en: ['Custom Shop', 'Instrument Maintenance', 'Gear and Tones', 'EVH / Frankenstrat'],
@@ -913,7 +1027,9 @@ export const instructors: InstructorProfile[] = [
       pt: 'Leva dessas referências abertura para tensões, voicings e substituições que ampliam a linguagem sem transformar sofisticação em excesso.',
       en: 'Draws from these references an openness to tensions, voicings and substitutions that expand the language without turning sophistication into excess.',
     },
-    categories: ['jazz', 'harmony', 'theory', 'advanced'],
+    taxonomy: { level: 'advanced', focus: 'harmony', style: 'jazz' },
+    areas: ['studio'],
+    levels: ['advanced'],
     relatedModules: { pt: ['Ciclo Harmônico', 'Tríades e Tétrades'], en: ['Harmonic Cycle', 'Triads and Tetrads'] },
     unlockLabel: { pt: 'Mentoria em breve', en: 'Mentorship coming soon' },
     cardImage: instructorCardPath('victor'),

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { InstructorProfile } from '../data/instructors';
-import { getInstructorCategoryLabel } from '../data/instructors';
+import { getInstructorCardTags, getInstructorTaxonomyLabel } from '../data/instructors';
 import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
 const GALLERY_SCROLL_KEY = 'ga_instructors_gallery_scroll';
@@ -36,7 +36,8 @@ interface InstructorCardProps {
 }
 
 const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, lang }) => {
-  const isAmbassador = instructor.id === 'diana';
+  const isCEO = instructor.id === 'diana';
+  const cardTags = getInstructorCardTags(instructor);
   const panelClass = isLight
     ? 'border-zinc-200 bg-white shadow-lg'
     : 'border-[rgba(30,64,175,0.4)] bg-[rgba(10,20,36,0.92)] shadow-[0_12px_40px_rgba(0,0,0,0.45)]';
@@ -75,14 +76,14 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
         </p>
 
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {instructor.categories.map(category => (
+          {cardTags.map(tag => (
             <span
-              key={category}
+              key={tag}
               className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
                 isLight ? 'bg-zinc-100 text-zinc-600' : 'bg-zinc-800 text-zinc-300'
               }`}
             >
-              {getInstructorCategoryLabel(category, lang)}
+              {getInstructorTaxonomyLabel(tag, lang)}
             </span>
           ))}
         </div>
@@ -94,8 +95,8 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
         <div className="mt-4 flex flex-1 items-end justify-between gap-2">
           <div>
             <p className={`text-[9px] font-bold uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>
-              {isAmbassador
-                ? (lang === 'pt' ? 'Guia da jornada' : 'Journey guide')
+              {isCEO
+                ? (lang === 'pt' ? 'Liderança institucional' : 'Institutional leadership')
                 : instructor.unlockLabel[lang]}
             </p>
           </div>
