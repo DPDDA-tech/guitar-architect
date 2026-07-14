@@ -51,14 +51,14 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
     <button
       type="button"
       onClick={() => navigateToInstructor(`/instructors/${instructor.id}`, instructor, lang)}
-      aria-label={lang === 'pt' ? `Ver perfil de ${instructor.name}` : `View ${instructor.name}'s profile`}
+      aria-label={lang === 'pt' ? `Ver perfil de ${instructor.cardName}` : `View ${instructor.cardName}'s profile`}
       title={instructor.title[lang]}
       className={`flex flex-col overflow-hidden rounded-3xl border text-left transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${panelClass}`}
     >
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-zinc-100">
         <img
           src={instructor.cardImage}
-          alt={instructor.name}
+          alt={instructor.cardName}
           className="absolute inset-0 h-full w-full object-cover object-center"
           style={{ transform: `translate(${x}px, ${y}px) scale(${scale})` }}
         />
@@ -66,7 +66,7 @@ const InstructorCard: React.FC<InstructorCardProps> = ({ instructor, isLight, la
 
       <div className="flex flex-1 flex-col p-4">
         <h3 className={`text-sm font-black uppercase tracking-tight ${isLight ? 'text-zinc-800' : 'text-white'}`}>
-          {instructor.name}
+          {instructor.cardName}
         </h3>
         <p className={`text-[11px] font-bold uppercase tracking-widest text-blue-500`}>
           {instructor.title[lang]}

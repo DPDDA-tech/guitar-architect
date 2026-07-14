@@ -109,7 +109,8 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
         previousProfile: 'Perfil anterior',
         nextProfile: 'Próximo perfil',
         beyondGATitle: 'Além do GA',
-        beyondGAIntro: 'Um pouco da pessoa por trás do Mestre Arquiteto.',
+        beyondGAIntro: 'Biografia e curiosidades pessoais',
+        quoteTitle: 'Em suas palavras',
         fullName: 'Nome completo',
         age: 'Idade',
         birthplace: 'Local de nascimento',
@@ -145,7 +146,8 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
         previousProfile: 'Previous profile',
         nextProfile: 'Next profile',
         beyondGATitle: 'Beyond GA',
-        beyondGAIntro: 'A glimpse of the person behind the Master Architect.',
+        beyondGAIntro: 'Biography and personal insights',
+        quoteTitle: 'In their own words',
         fullName: 'Full name',
         age: 'Age',
         birthplace: 'Place of birth',
@@ -171,7 +173,6 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
 
   if (isExperienceDirector) {
     t.personalityTitle = lang === 'pt' ? 'Personalidade, experiência e comunicação' : 'Personality, experience and communication';
-    t.beyondGAIntro = lang === 'pt' ? 'Um pouco mais sobre Diana Helena Moreau Fontenelle.' : 'A little more about Diana Helena Moreau Fontenelle.';
     t.noticeTitle = lang === 'pt' ? 'Diretora de Experiência e Jornada' : 'Director of Experience & Journey';
     t.noticeBody = lang === 'pt'
       ? 'Diana Helena Moreau Fontenelle acolhe, orienta e conecta as pessoas aos diferentes caminhos e possibilidades do Guitar Architect.'
@@ -211,6 +212,7 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
   const previousInstructor = instructors[(instructorIndex - 1 + instructors.length) % instructors.length];
   const nextInstructor = instructors[(instructorIndex + 1) % instructors.length];
   const beyondGA = getInstructorBeyondGAById(instructor.id);
+  const profileName = beyondGA?.fullName[lang] ?? instructor.name;
   const beyondGAItems = beyondGA
     ? [
         { key: 'fullName', label: t.fullName, value: beyondGA.fullName[lang], wide: false },
@@ -295,7 +297,7 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
 
           <div className={`overflow-hidden rounded-[40px] border ${cardClass}`}>
             <div className="p-8 pb-6 md:p-12 md:pb-8">
-              <h1 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter">{instructor.name}</h1>
+              <h1 className="break-words text-3xl md:text-5xl font-black italic uppercase tracking-tighter">{profileName}</h1>
               <p className="mt-1 text-sm md:text-base font-bold uppercase tracking-widest text-blue-500">{instructor.title[lang]}</p>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -324,12 +326,12 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
                   playsInline
                   preload="metadata"
                 >
-                  <img src={heroImage} alt={instructor.name} className="h-full w-full object-cover object-center" />
+                  <img src={heroImage} alt={profileName} className="h-full w-full object-cover object-center" />
                 </video>
               ) : (
                 <img
                   src={heroImage}
-                  alt={instructor.name}
+                  alt={profileName}
                   className="absolute inset-0 h-full w-full object-cover object-center"
                   style={{ transform: `translate(${x}px, ${y}px) scale(${scale})` }}
                 />
@@ -428,29 +430,14 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
                 </section>
               )}
 
-              {beyondGAItems.length > 0 && (
-                <section className="mt-10" aria-labelledby="beyond-ga-title">
-                  <h2 id="beyond-ga-title" className="text-sm font-black uppercase tracking-tight">{t.beyondGATitle}</h2>
-                  <p className={`mt-1 text-xs ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>{t.beyondGAIntro}</p>
-                  <dl className={`mt-5 grid gap-x-8 sm:grid-cols-2 ${isLight ? 'divide-zinc-200' : 'divide-zinc-800'}`}>
-                    {beyondGAItems.map(item => (
-                      <div
-                        key={item.key}
-                        className={`min-w-0 border-b py-4 ${item.wide ? 'sm:col-span-2' : ''} ${isLight ? 'border-zinc-200' : 'border-zinc-800'}`}
-                      >
-                        <dt className="text-[10px] font-black uppercase tracking-widest text-blue-500">{item.label}</dt>
-                        <dd className={`mt-1 break-words text-xs md:text-sm leading-relaxed ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                          {item.value}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                </section>
-              )}
-
-              <blockquote className={`mt-8 rounded-2xl border p-5 text-center text-sm md:text-base font-black italic ${panelClass}`}>
-                “{instructor.quote[lang]}”
-              </blockquote>
+              <section className="mt-8" aria-labelledby="instructor-quote-title">
+                <h2 id="instructor-quote-title" className="mb-3 text-center text-[10px] font-black uppercase tracking-widest text-blue-500">
+                  {t.quoteTitle}
+                </h2>
+                <blockquote className={`rounded-2xl border p-5 text-center text-sm md:text-base font-black italic ${panelClass}`}>
+                  “{instructor.quote[lang]}”
+                </blockquote>
+              </section>
 
               <div className="mt-8">
                 <h2 className="text-sm font-black uppercase tracking-tight mb-3">{t.modulesTitle}</h2>
@@ -474,6 +461,26 @@ const InstructorProfilePage: React.FC<InstructorProfilePageProps> = ({ instructo
                   title={t.actionTitle}
                 />
               ) : null}
+
+              {beyondGAItems.length > 0 && (
+                <section className="mt-10" aria-labelledby="beyond-ga-title">
+                  <h2 id="beyond-ga-title" className="text-sm font-black uppercase tracking-tight">{t.beyondGATitle}</h2>
+                  <p className={`mt-1 text-xs ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>{t.beyondGAIntro}</p>
+                  <dl className={`mt-5 grid gap-x-8 sm:grid-cols-2 ${isLight ? 'divide-zinc-200' : 'divide-zinc-800'}`}>
+                    {beyondGAItems.map(item => (
+                      <div
+                        key={item.key}
+                        className={`min-w-0 border-b py-4 ${item.wide ? 'sm:col-span-2' : ''} ${isLight ? 'border-zinc-200' : 'border-zinc-800'}`}
+                      >
+                        <dt className="text-[10px] font-black uppercase tracking-widest text-blue-500">{item.label}</dt>
+                        <dd className={`mt-1 break-words text-xs md:text-sm leading-relaxed ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                          {item.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              )}
 
               <div className={`mt-8 rounded-2xl border p-5 text-center ${noticeClass}`}>
                 <p className="text-xs font-black uppercase tracking-widest">{t.noticeTitle}</p>

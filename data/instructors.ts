@@ -80,6 +80,7 @@ export interface InstructorActionGallery {
 export interface InstructorProfile {
   id: string;
   name: string;
+  cardName: string;
   title: LocalizedText;
   aboutLabel: LocalizedText;
   shortDescription: LocalizedText;
@@ -230,8 +231,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'alice',
     name: 'Alice',
+    cardName: 'Alice Sampaio',
     title: { pt: 'Primeiros Passos', en: 'First Steps' },
-    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre a Mestre Arquiteta', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Acolhe os primeiros passos na guitarra, no canto e na descoberta musical, reduzindo a intimidação sem infantilizar.',
       en: 'Welcomes first steps in guitar, singing and musical discovery, reducing intimidation without talking down to anyone.',
@@ -270,8 +272,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'arthur',
     name: 'Arthur',
+    cardName: 'Arthur Tavares',
     title: { pt: 'Fundamentos e Evolução', en: 'Foundations and Growth' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Acompanha o estudante entre compreender, tentar, errar, persistir e conquistar novos desafios musicais.',
       en: 'Supports students as they understand, try, make mistakes, persist and overcome new musical challenges.',
@@ -310,8 +313,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'bill',
     name: 'Bill',
+    cardName: 'Bill dos Santos',
     title: { pt: 'Blues e Feeling', en: 'Blues and Feeling' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Ensina blues e fraseado com foco em expressão — tocar com intenção, não apenas repetir escalas.',
       en: 'Teaches blues and phrasing with a focus on expression — playing with intention, not just repeating scales.',
@@ -350,8 +354,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'clara',
     name: 'Clara',
+    cardName: 'Clara Vasconcelos',
     title: { pt: 'Jornada e Organização', en: 'Journey and Organization' },
-    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre a Mestre Arquiteta', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Organiza conhecimentos dispersos, identifica lacunas e orienta cada pessoa por um caminho claro de estudo.',
       en: 'Organizes scattered knowledge, identifies gaps and guides each person through a clear path of study.',
@@ -390,8 +395,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'dean',
     name: 'Dean',
+    cardName: 'Dean Fontoura',
     title: { pt: 'Rock e Riffs', en: 'Rock and Riffs' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Especialista em riffs e repertório de rock, focado em construir a linguagem do estilo na prática.',
       en: "A riffs and rock repertoire specialist, focused on building the style's language through practice.",
@@ -429,9 +435,10 @@ export const instructors: InstructorProfile[] = [
   },
   {
     id: 'diana',
-    name: 'Diana Helena Moreau Fontenelle',
+    name: 'Diana',
+    cardName: 'Diana Fontenelle',
     title: { pt: 'Diretora de Experiência e Jornada', en: 'Director of Experience & Journey' },
-    aboutLabel: { pt: 'Sobre Diana', en: 'About Diana' },
+    aboutLabel: { pt: 'Sobre a Diretora de Experiência e Jornada', en: 'About the Director of Experience & Journey' },
     shortDescription: {
       pt: 'Cuida da forma como as pessoas são recebidas, orientadas e conectadas aos diferentes caminhos e possibilidades do Guitar Architect.',
       en: 'Shapes how people are welcomed, guided and connected with the different paths and possibilities across Guitar Architect.',
@@ -474,8 +481,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'erika',
     name: 'Erika',
+    cardName: 'Erika Albuquerque',
     title: { pt: 'Voz e Performance', en: 'Voice and Performance' },
-    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre a Mestre Arquiteta', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Desenvolve presença, interpretação e confiança para transformar intenção musical em comunicação.',
       en: 'Develops presence, interpretation and confidence to turn musical intention into communication.',
@@ -514,8 +522,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'fred',
     name: 'Fred',
+    cardName: 'Fred Brandão',
     title: { pt: 'Arquitetura do Braço', en: 'Fretboard Architecture' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Visualiza como acordes, escalas e funções se conectam no braço para revelar a estrutura da música.',
       en: 'Visualizes how chords, scales and functions connect across the fretboard to reveal musical structure.',
@@ -554,8 +563,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'hiroshi',
     name: 'Hiroshi',
+    cardName: 'Hiroshi Sato',
     title: { pt: 'Precisão e Técnica', en: 'Precision and Technique' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Aprofunda técnica, intervalos e análise com precisão, ajustando o nível da conversa sem evitar questões exigentes.',
       en: 'Deepens technique, intervals and analysis with precision, adjusting the level of the conversation without avoiding demanding questions.',
@@ -594,8 +604,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'jax',
     name: 'Jax',
+    cardName: 'Jax Xavier',
     title: { pt: 'Concisão e Ruptura', en: 'Concision and Disruption' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Questiona excessos e convenções para encontrar a forma mais direta e necessária de expressão.',
       en: 'Questions excess and convention to find the most direct and necessary form of expression.',
@@ -634,8 +645,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'juan',
     name: 'Juan',
+    cardName: 'Juan Oliveira',
     title: { pt: 'Baixo, Groove e Movimento', en: 'Bass, Groove and Motion' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Explora o baixo pelo groove e pelo movimento melódico, propondo caminhos que vão além de apenas sustentar a base.',
       en: 'Explores bass through groove and melodic movement, offering paths that go beyond simply holding down the foundation.',
@@ -674,8 +686,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'kael',
     name: 'Kael',
+    cardName: 'Kael Valadares',
     title: { pt: 'Metal e Técnica Pesada', en: 'Metal and Heavy Technique' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Especialista em metal, palhetada e riffs pesados, com foco em intensidade e precisão.',
       en: 'A metal specialist in picking and heavy riffs, focused on intensity and precision.',
@@ -714,8 +727,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'leo',
     name: 'Leo',
+    cardName: 'Leo Valença',
     title: { pt: 'Prática e Evolução', en: 'Practice and Progress' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Transforma escalas, ritmos e conceitos em habilidade por meio de sessões práticas, progressivas e motivadoras.',
       en: 'Turns scales, rhythms and concepts into skill through practical, progressive and motivating sessions.',
@@ -754,8 +768,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'mel',
     name: 'Mel',
+    cardName: 'Mel Sá',
     title: { pt: 'Melodia e Fraseado', en: 'Melody and Phrasing' },
-    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre a Mestre Arquiteta', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Transforma notas em ideias musicais, desenvolvendo frases com respiração, contraste, intenção e direção.',
       en: 'Turns notes into musical ideas, developing phrases with breath, contrast, intention and direction.',
@@ -794,8 +809,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'nina',
     name: 'Nina',
+    cardName: 'Nina Barreto',
     title: { pt: 'Voz, Ouvido e Musicalidade', en: 'Voice, Ear and Musicality' },
-    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre a Mestre Arquiteta', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Conecta voz, ouvido e instrumento para desenvolver afinação, percepção, fraseado e imaginação musical.',
       en: 'Connects voice, ear and instrument to develop pitch, perception, phrasing and musical imagination.',
@@ -834,8 +850,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'rick',
     name: 'Rick',
+    cardName: 'Rick Ferreira',
     title: { pt: 'Baixo e Fundamento', en: 'Bass and Foundation' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Constrói linhas de baixo que conectam harmonia, bateria e groove com clareza, espaço e função.',
       en: 'Builds bass lines that connect harmony, drums and groove with clarity, space and purpose.',
@@ -874,8 +891,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'roxie',
     name: 'Roxie',
+    cardName: 'Roxie Lacerda',
     title: { pt: 'Rock Alternativo', en: 'Alternative Rock' },
-    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre a Mestre Arquiteta', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Inspira identidade e expressão autoral no rock alternativo, encorajando cada músico a encontrar uma voz própria.',
       en: 'Inspires identity and original expression in alternative rock, encouraging every musician to find a voice of their own.',
@@ -914,8 +932,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'sofia',
     name: 'Sofia',
+    cardName: 'Sofia Fagundes',
     title: { pt: 'Acordes e Expressividade', en: 'Chords and Expressiveness' },
-    aboutLabel: { pt: 'Sobre a arquiteta', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre a Mestre Arquiteta', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Trabalha harmonia aplicada, acompanhamento e expressividade com foco em repertório.',
       en: 'Works on applied harmony, accompaniment and expressiveness with a focus on repertoire.',
@@ -957,8 +976,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'tom',
     name: 'Tom',
+    cardName: 'Tom Vianna',
     title: { pt: 'Luthieria e Setup', en: 'Luthiery and Setup' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Especialista em regulagem, conservação, manutenção e ajustes práticos para manter o instrumento confortável, estável e pronto para tocar.',
       en: 'A specialist in setup, upkeep, maintenance and practical adjustments to keep the instrument comfortable, stable and ready to play.',
@@ -1010,8 +1030,9 @@ export const instructors: InstructorProfile[] = [
   {
     id: 'victor',
     name: 'Victor',
+    cardName: 'Victor Azevedo',
     title: { pt: 'Jazz e Harmonia', en: 'Jazz and Harmony' },
-    aboutLabel: { pt: 'Sobre o arquiteto', en: 'About the architect' },
+    aboutLabel: { pt: 'Sobre o Mestre Arquiteto', en: 'About the Master Architect' },
     shortDescription: {
       pt: 'Explora acordes sofisticados, condução harmônica e a linguagem do jazz.',
       en: 'Explores sophisticated chords, voice leading and the language of jazz.',
