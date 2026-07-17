@@ -23,6 +23,11 @@
             background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(10px);
         }
+        .institutional-image {
+            background: #fafafa;
+            border-color: #e4e4e7;
+        }
+        .institutional-poster { display: none; }
         h2 { scroll-margin-top: 24px; }
         html.dark body {
             background-color: #050914;
@@ -35,6 +40,10 @@
             background: rgba(7, 17, 31, 0.96);
             border-color: rgba(30,64,175,0.45);
             box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+        }
+        html.dark .institutional-image {
+            background: #18181b;
+            border-color: rgba(30,64,175,0.7);
         }
         html.dark h1, html.dark h2, html.dark h3 { color: #bfdbfe !important; }
         html.dark p, html.dark li { color: #cbd5e1; }
@@ -49,6 +58,10 @@
         }
         html.dark [data-theme-toggle]:hover,
         html.dark [data-lang-toggle]:hover { border-color: #3b82f6; }
+        @media (prefers-reduced-motion: reduce) {
+            .institutional-video { display: none; }
+            .institutional-poster { display: block; }
+        }
     </style>
 </head>
 <body class="text-zinc-800 font-sans leading-relaxed">
@@ -70,6 +83,13 @@
         </div>
 
         <main class="content-card p-8 md:p-12 rounded-[40px] border border-zinc-200 shadow-2xl">
+            <div class="institutional-image mb-8 overflow-hidden rounded-3xl border">
+                <video controls playsinline preload="metadata" poster="/institutional/diana/diana-privacy.webp" aria-label="Vídeo institucional sobre cuidado e privacidade das informações" width="1600" height="900" class="institutional-video aspect-video h-auto w-full object-cover">
+                    <source src="/institutional/diana/diana-privacy.mp4" type="video/mp4" />
+                    Vídeo institucional sobre cuidado e privacidade das informações.
+                </video>
+                <img src="/institutional/diana/diana-privacy.webp" alt="Apresentação institucional sobre cuidado e privacidade das informações" width="1600" height="900" class="institutional-poster aspect-video h-auto w-full object-cover" />
+            </div>
             <div class="space-y-8 text-sm md:text-base">
                 <p data-update-date class="text-[11px] text-zinc-400 -mt-2 mb-2">Última atualização: 15 de junho de 2026</p>
 
