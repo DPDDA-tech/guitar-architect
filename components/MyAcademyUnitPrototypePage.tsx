@@ -64,10 +64,10 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
           <div className="flex items-center justify-between gap-4">
             <button
               type="button"
-              onClick={() => navigateToPath('/')}
+              onClick={() => navigateToPath('/my-academy')}
               className="rounded-xl border border-slate-700 px-3 py-2 text-[10px] font-black uppercase tracking-wide text-slate-200 hover:border-blue-400"
             >
-              Sair do protótipo
+              Voltar ao My Academy
             </button>
             <div className="text-right">
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">My Academy · protótipo interno</p>
@@ -212,7 +212,7 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
               <div className="mt-5 grid gap-3">
                 <button type="button" onClick={() => setStep(1)} className="min-h-12 rounded-xl border border-slate-700 bg-slate-950/60 px-4 text-sm font-black text-slate-100 hover:border-blue-400">Repetir a experiência</button>
                 <button type="button" onClick={() => navigateToPath('/studio')} className="min-h-12 rounded-xl border border-blue-400/40 bg-blue-600 px-4 text-sm font-black text-white hover:bg-blue-500">Explorar o Studio livremente</button>
-                <button type="button" onClick={() => navigateToPath('/')} className="min-h-12 rounded-xl border border-slate-700 px-4 text-sm font-black text-slate-300 hover:border-slate-500">Voltar ao ecossistema</button>
+                <button type="button" onClick={() => navigateToPath('/my-academy')} className="min-h-12 rounded-xl border border-slate-700 px-4 text-sm font-black text-slate-300 hover:border-slate-500">Voltar ao My Academy</button>
               </div>
             </div>
           )}

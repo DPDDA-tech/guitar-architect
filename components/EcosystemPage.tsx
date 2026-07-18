@@ -110,34 +110,7 @@ const EcosystemPage: React.FC = () => {
           </button>
         </div>
 
-        <section className={`mx-auto mb-7 max-w-4xl rounded-[28px] border p-4 text-left shadow-xl md:flex md:items-center md:justify-between md:gap-6 md:p-6 max-lg:landscape:mb-3 max-lg:landscape:p-3 ${
-          isLight
-            ? 'border-cyan-200 bg-gradient-to-r from-white to-cyan-50'
-            : 'border-cyan-500/30 bg-gradient-to-r from-slate-950 to-cyan-950/35'
-        }`} aria-labelledby="my-academy-preview-title">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-600 max-lg:landscape:text-[8px]">
-              {lang === 'pt' ? 'Novo · protótipo interno' : 'New · internal prototype'}
-            </p>
-            <h2 id="my-academy-preview-title" className={`mt-1 text-xl font-black tracking-tight md:text-2xl max-lg:landscape:text-sm ${isLight ? 'text-slate-900' : 'text-white'}`}>
-              My Academy
-            </h2>
-            <p className={`mt-1 max-w-2xl text-sm font-semibold leading-relaxed max-lg:landscape:text-[8px] max-lg:landscape:leading-tight ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-              {lang === 'pt'
-                ? 'Experimente a primeira unidade da jornada: Pulso e regularidade, com rotas visual e sonora e sem pontuação.'
-                : 'Try the first journey unit: Pulse and regularity, with visual and audio routes and no scoring.'}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigateTo('/my-academy/prototype/nmc-rit-001')}
-            className="mt-4 min-h-12 w-full shrink-0 rounded-xl bg-cyan-600 px-5 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-cyan-950/25 transition hover:bg-cyan-500 md:mt-0 md:w-auto max-lg:landscape:min-h-9 max-lg:landscape:py-1.5 max-lg:landscape:text-[8px]"
-          >
-            {lang === 'pt' ? 'Entrar no My Academy' : 'Enter My Academy'}
-          </button>
-        </section>
-
-        <div className="grid gap-8 md:grid-cols-3 mb-10 md:mb-12 [@media(max-height:800px)]:mb-6 max-lg:landscape:grid-cols-3 max-lg:landscape:gap-2 max-lg:landscape:mb-2">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 mb-10 md:mb-12 [@media(max-height:800px)]:mb-6 max-lg:landscape:grid-cols-4 max-lg:landscape:gap-2 max-lg:landscape:mb-2">
           {[
             {
               id: 'kids',
@@ -172,21 +145,27 @@ const EcosystemPage: React.FC = () => {
               btn: 'bg-blue-600',
               cta: lang === 'pt' ? 'Explorar Studio' : 'Explore Studio',
             },
+            {
+              id: 'my-academy',
+              title: 'MY ACADEMY',
+              subtitle: lang === 'pt'
+                ? 'Seu mapa de estudos dentro do Guitar Architect: teoria musical organizada, aplicações guiadas, caminhos sugeridos e liberdade para explorar ou avançar conforme seus objetivos.'
+                : 'Your learning map inside Guitar Architect: organized music theory, guided applications, suggested paths and the freedom to explore or move ahead according to your goals.',
+              logo: '/gamyacademylogo.webp',
+              path: '/my-academy',
+              btn: 'bg-cyan-700',
+              cta: lang === 'pt' ? 'Entrar no My Academy' : 'Enter My Academy',
+            },
           ].map(area => {
-            const isStudio = area.id === 'studio';
             return (
               <button
                 key={area.id}
                 onClick={() => navigateTo(area.path)}
-                className={`group px-10 md:px-4 lg:px-12 py-7 md:py-9 [@media(max-height:800px)]:py-6 rounded-[64px] border transition-all duration-500 text-center flex flex-col items-center max-lg:landscape:px-2 max-lg:landscape:py-3 max-lg:landscape:rounded-3xl ${
+                className={`group px-10 md:px-6 lg:px-4 xl:px-6 py-7 md:py-8 [@media(max-height:800px)]:py-6 rounded-[48px] border transition-all duration-500 text-center flex flex-col items-center max-lg:landscape:px-2 max-lg:landscape:py-3 max-lg:landscape:rounded-3xl ${
                   isLight ? 'bg-white/80 border-zinc-200' : 'bg-zinc-900/80 border-zinc-800'
-                } hover:-translate-y-2 shadow-2xl ${
-                  isStudio
-                    ? 'scale-[1.03] md:scale-[1.04] border-blue-400/60 shadow-[0_0_35px_rgba(37,99,235,0.28)] max-lg:landscape:scale-100'
-                    : ''
-                }`}
+                } hover:-translate-y-2 hover:border-blue-400/60 shadow-2xl`}
               >
-                <div className="w-48 h-48 md:w-64 md:h-64 mb-6 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center max-lg:landscape:w-16 max-lg:landscape:h-16 max-lg:landscape:mb-1">
+                <div className="w-48 h-48 md:w-56 md:h-56 lg:w-48 lg:h-48 xl:w-56 xl:h-56 mb-6 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center max-lg:landscape:w-16 max-lg:landscape:h-16 max-lg:landscape:mb-1">
                   <img
                     src={area.logo}
                     alt={area.title}
@@ -202,7 +181,7 @@ const EcosystemPage: React.FC = () => {
                   {area.subtitle}
                 </p>
 
-                <div className={`mt-auto px-8 ${isStudio ? 'py-4 text-[11px]' : 'py-3 text-[10px]'} rounded-xl ${area.btn} text-white font-black uppercase tracking-widest max-lg:landscape:px-3 max-lg:landscape:py-1.5 max-lg:landscape:text-[8px] max-lg:landscape:rounded-lg`}>
+                <div className={`mt-auto px-6 py-3 text-[10px] rounded-xl ${area.btn} text-white font-black uppercase tracking-widest max-lg:landscape:px-3 max-lg:landscape:py-1.5 max-lg:landscape:text-[8px] max-lg:landscape:rounded-lg`}>
                   {area.cta}
                 </div>
               </button>

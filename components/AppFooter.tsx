@@ -26,6 +26,7 @@ const AppFooter: React.FC<AppFooterProps> = ({
   const logoHref = logoAlt.includes('Kids') ? '/kids'
     : logoAlt.includes('Teens') ? '/teens'
     : logoAlt.includes('Studio') ? '/studio'
+    : logoAlt.includes('My Academy') ? '/my-academy'
     : '/ecosystem';
 
   const logoAriaLabel = logoAlt.includes('Kids')
@@ -34,6 +35,8 @@ const AppFooter: React.FC<AppFooterProps> = ({
     ? (lang === 'pt' ? 'Ir para a página inicial Teens' : 'Go to Teens home')
     : logoAlt.includes('Studio')
     ? (lang === 'pt' ? 'Ir para a página inicial Studio' : 'Go to Studio home')
+    : logoAlt.includes('My Academy')
+    ? (lang === 'pt' ? 'Ir para a página inicial My Academy' : 'Go to My Academy home')
     : (lang === 'pt' ? 'Ir para o ecossistema Guitar Architect' : 'Go to Guitar Architect ecosystem');
 
   return (
