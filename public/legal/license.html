@@ -25,6 +25,10 @@
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
     }
+    .institutional-image {
+      background: #fafafa;
+      border-color: #e4e4e7;
+    }
           html.dark body {
             background-color: #050914;
             background-image:
@@ -36,6 +40,10 @@
             background: rgba(7, 17, 31, 0.96);
             border-color: rgba(30,64,175,0.45);
             box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+        }
+        html.dark .institutional-image {
+            background: #18181b;
+            border-color: rgba(30,64,175,0.7);
         }
         html.dark h1, html.dark h2, html.dark h3 { color: #bfdbfe !important; }
         html.dark p, html.dark li { color: #cbd5e1; }
@@ -78,6 +86,12 @@
     </div>
 
     <div class="content-card p-8 md:p-12 rounded-[40px] border border-zinc-200 shadow-2xl">
+      <div class="institutional-image mb-8 overflow-hidden rounded-3xl border">
+        <video controls playsinline preload="metadata" poster="/institutional/diana/diana-license.webp" aria-label="Vídeo institucional sobre a Licença de Uso do Guitar Architect" width="1600" height="900" class="aspect-video h-auto w-full object-cover">
+          <source src="/institutional/diana/diana-license.mp4" type="video/mp4" />
+          Vídeo institucional sobre a Licença de Uso do Guitar Architect.
+        </video>
+      </div>
 
       <div class="space-y-8 text-sm md:text-base">
 

@@ -93,6 +93,7 @@ const BrandPage: React.FC = () => {
         institutionalVideoLabel: 'Vídeo institucional sobre a identidade da marca Guitar Architect.',
         back: '← Voltar ao App',
         logoAlt: 'Identidade visual Guitar Architect',
+        logoCaption: 'Representação oficial da marca Guitar Architect',
         s1Title: 'O significado da marca',
         s1: [
           'A marca Guitar Architect foi concebida para representar a construção progressiva do conhecimento musical.',
@@ -159,6 +160,7 @@ const BrandPage: React.FC = () => {
         institutionalVideoLabel: 'Institutional video about the Guitar Architect brand identity.',
         back: '← Back to App',
         logoAlt: 'Guitar Architect visual identity',
+        logoCaption: 'Official representation of the Guitar Architect brand',
         s1Title: 'The meaning behind the brand',
         s1: [
           'The Guitar Architect brand was designed to represent the progressive construction of musical knowledge.',
@@ -268,23 +270,6 @@ const BrandPage: React.FC = () => {
             <p className="mt-3 text-zinc-500 font-bold uppercase text-[12px] md:text-sm tracking-[0.2em]">
               {t.subtitle}
             </p>
-          </div>
-
-          <div className="mb-10 flex justify-center">
-            <div className={`w-full max-w-md rounded-[40px] border p-6 md:p-10 ${cardClass}`}>
-              <button
-                type="button"
-                onClick={() => openLightbox({ src: '/nossamarcagatm.webp', alt: t.logoAlt })}
-                className="mx-auto block w-full cursor-pointer rounded-2xl transition-transform hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-                aria-label={`${t.lightboxExpand} — ${t.logoAlt}`}
-              >
-                <img
-                  src="/nossamarcagatm.webp"
-                  alt={t.logoAlt}
-                  className="mx-auto h-auto w-full max-w-[280px] object-contain md:max-w-[320px]"
-                />
-              </button>
-            </div>
           </div>
 
           <div className={`rounded-[40px] border p-8 md:p-12 ${cardClass}`}>
@@ -409,12 +394,33 @@ const BrandPage: React.FC = () => {
               <section>
                 <h2 className={`text-xs font-black uppercase tracking-[0.18em] mb-3 ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>{t.s7Title}</h2>
                 <p className={`mb-4 text-xs leading-relaxed ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>{t.s7Intro}</p>
-                <div className={`rounded-2xl border p-5 md:p-6 ${panelClass}`}>
-                  <p className={`mb-3 text-[11px] font-black uppercase tracking-widest ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>{t.s7Body[0]}</p>
-                  <div className="space-y-3">
-                    {t.s7Body.slice(1).map(paragraph => (
-                      <p key={paragraph} className={`text-xs leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{paragraph}</p>
-                    ))}
+                <div className="grid gap-6 md:grid-cols-2 md:items-stretch">
+                  <figure className={`flex min-w-0 flex-col justify-center rounded-2xl border p-5 md:p-6 ${panelClass}`}>
+                    <button
+                      type="button"
+                      onClick={() => openLightbox({ src: '/nossamarcagatm.webp', alt: t.logoAlt })}
+                      className="mx-auto block w-full cursor-pointer rounded-2xl transition-transform hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                      aria-label={`${t.lightboxExpand} — ${t.logoAlt}`}
+                    >
+                      <img
+                        src="/nossamarcagatm.webp"
+                        alt={t.logoAlt}
+                        width="1204"
+                        height="1204"
+                        className="mx-auto h-auto w-full max-w-[340px] object-contain"
+                      />
+                    </button>
+                    <figcaption className={`mt-4 text-center text-[10px] font-semibold leading-relaxed ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                      {t.logoCaption}
+                    </figcaption>
+                  </figure>
+                  <div className={`min-w-0 rounded-2xl border p-5 md:p-6 ${panelClass}`}>
+                    <p className={`mb-3 text-[11px] font-black uppercase tracking-widest ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>{t.s7Body[0]}</p>
+                    <div className="space-y-3">
+                      {t.s7Body.slice(1).map(paragraph => (
+                        <p key={paragraph} className={`text-xs leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{paragraph}</p>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </section>
