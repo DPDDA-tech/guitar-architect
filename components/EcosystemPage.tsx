@@ -110,6 +110,33 @@ const EcosystemPage: React.FC = () => {
           </button>
         </div>
 
+        <section className={`mx-auto mb-7 max-w-4xl rounded-[28px] border p-4 text-left shadow-xl md:flex md:items-center md:justify-between md:gap-6 md:p-6 max-lg:landscape:mb-3 max-lg:landscape:p-3 ${
+          isLight
+            ? 'border-cyan-200 bg-gradient-to-r from-white to-cyan-50'
+            : 'border-cyan-500/30 bg-gradient-to-r from-slate-950 to-cyan-950/35'
+        }`} aria-labelledby="my-academy-preview-title">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-600 max-lg:landscape:text-[8px]">
+              {lang === 'pt' ? 'Novo · protótipo interno' : 'New · internal prototype'}
+            </p>
+            <h2 id="my-academy-preview-title" className={`mt-1 text-xl font-black tracking-tight md:text-2xl max-lg:landscape:text-sm ${isLight ? 'text-slate-900' : 'text-white'}`}>
+              My Academy
+            </h2>
+            <p className={`mt-1 max-w-2xl text-sm font-semibold leading-relaxed max-lg:landscape:text-[8px] max-lg:landscape:leading-tight ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+              {lang === 'pt'
+                ? 'Experimente a primeira unidade da jornada: Pulso e regularidade, com rotas visual e sonora e sem pontuação.'
+                : 'Try the first journey unit: Pulse and regularity, with visual and audio routes and no scoring.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigateTo('/my-academy/prototype/nmc-rit-001')}
+            className="mt-4 min-h-12 w-full shrink-0 rounded-xl bg-cyan-600 px-5 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-cyan-950/25 transition hover:bg-cyan-500 md:mt-0 md:w-auto max-lg:landscape:min-h-9 max-lg:landscape:py-1.5 max-lg:landscape:text-[8px]"
+          >
+            {lang === 'pt' ? 'Entrar no My Academy' : 'Enter My Academy'}
+          </button>
+        </section>
+
         <div className="grid gap-8 md:grid-cols-3 mb-10 md:mb-12 [@media(max-height:800px)]:mb-6 max-lg:landscape:grid-cols-3 max-lg:landscape:gap-2 max-lg:landscape:mb-2">
           {[
             {

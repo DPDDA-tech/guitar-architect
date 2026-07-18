@@ -52,6 +52,7 @@ import TeenChordBuilderPage from './components/TeenChordBuilderPage';
 import TeenBlueprintReadingPage from './components/TeenBlueprintReadingPage';
 import TeensGarageHubPage from './components/TeensGarageHubPage';
 import TeensGarageEvhPage from './components/TeensGarageEvhPage';
+import MyAcademyUnitPrototypePage from './components/MyAcademyUnitPrototypePage';
 import { supabase } from './src/lib/supabase';
 import { hydrateSupporterFromServer } from './utils/supporterStorage';
 import { loadConfig } from './utils/persistence';
@@ -269,6 +270,7 @@ const App: React.FC = () => {
       case '/teens/radar-de-intervalos': return <TeenIntervalRadarPage />;
       case '/teens/chord-builder': return <TeenChordBuilderPage />;
       case '/teens/blueprint-reading': return <TeenBlueprintReadingPage />;
+      case '/my-academy/prototype/nmc-rit-001': return <MyAcademyUnitPrototypePage />;
       case '/studio': return <FretboardPanel />;
       case '/': return <EcosystemPage />;
       default: return <EcosystemPage />;
