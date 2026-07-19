@@ -1,5 +1,9 @@
 import type { AppState } from '../types';
 import { loadConfig, saveConfig } from './persistence';
+import {
+  installEcosystemBrandAssetSync,
+  syncEcosystemBrandImages,
+} from './ecosystemBrandAssets';
 
 export type ThemeMode = 'light' | 'dark';
 export type AppLang = 'pt' | 'en';
@@ -87,6 +91,7 @@ export const setGlobalTheme = (theme: ThemeMode) => {
   localStorage.setItem(GLOBAL_THEME_KEY, theme);
   syncLegacyThemeKeys(theme);
   syncConfigPatch({ theme });
+  syncEcosystemBrandImages(theme);
   window.dispatchEvent(new CustomEvent('ga-preferences-updated', { detail: { theme } }));
 };
 
@@ -108,3 +113,5 @@ export const getKidsTheme = (): ThemeMode => getGlobalTheme();
 export const getKidsLang = (): AppLang => getGlobalLang();
 export const getTeensTheme = (): ThemeMode => getGlobalTheme();
 export const getTeensLang = (): AppLang => getGlobalLang();
+
+if (isBrowser()) installEcosystemBrandAssetSync(getGlobalTheme);
