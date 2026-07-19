@@ -81,12 +81,26 @@ export const loadConfig = (userId?: string | null): AppState | null => {
 
 export const getLibrary = (userId?: string | null): Project[] => {
   const key = getScopedStorageKey(PROJECTS_KEY, userId);
-  const data = localStorage.getItem(key);
-  if (data) return JSON.parse(data);
+  const effectiveUserId = userId || 'guest';
+  const scopedLibrary = safeParse<unknown>(localStorage.getItem(key));
+
+  if (Array.isArray(scopedLibrary)) {
+    return scopedLibrary.filter((project): project is Project => (
+      typeof project === 'object' &&
+      project !== null &&
+      (project as Partial<Project>).user === effectiveUserId
+    ));
+  }
 
   // Fallback apenas para projetos legados sem UUID
-  const legacyData = localStorage.getItem(PROJECTS_KEY);
-  return legacyData ? JSON.parse(legacyData) : [];
+  const legacyLibrary = safeParse<unknown>(localStorage.getItem(PROJECTS_KEY));
+  if (!Array.isArray(legacyLibrary)) return [];
+
+  return legacyLibrary.filter((project): project is Project => (
+    typeof project === 'object' &&
+    project !== null &&
+    (project as Partial<Project>).user === effectiveUserId
+  ));
 };
 
 export const listLocalUsers = (): string[] => {

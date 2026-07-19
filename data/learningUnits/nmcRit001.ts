@@ -98,23 +98,23 @@ export const NMC_RIT_001 = {
       {
         id: 'recurring-reference',
         label: 'Uma referência que se repete no tempo e pode ser percebida ou acompanhada.',
-        feedback: 'Isso mesmo. A resposta mostra compreensão da explicação; não informa como você toca.',
+        feedback: 'A ideia central aqui é uma referência que se repete no tempo e pode ser percebida ou acompanhada. Esta escolha não informa como você toca.',
         expected: true,
       },
       {
         id: 'loud-sound',
         label: 'Qualquer som mais alto produzido por um instrumento.',
-        feedback: 'Reveja a ideia de repetição no tempo. Você pode tentar novamente ou continuar sem bloqueio.',
+        feedback: 'A ideia central aqui é a repetição no tempo; um som mais alto, por si só, não define o pulso. Você pode tentar novamente ou continuar.',
       },
       {
         id: 'mandatory-speed',
         label: 'A velocidade obrigatória escolhida pelo aplicativo.',
-        feedback: 'O pulso não é uma velocidade obrigatória do aplicativo. Você pode tentar novamente ou continuar.',
+        feedback: 'A ideia central aqui não depende de uma velocidade obrigatória do aplicativo. Você pode tentar novamente ou continuar.',
       },
       {
         id: 'pick-technique',
         label: 'A maneira correta de segurar uma palheta.',
-        feedback: 'Essa resposta pertence à técnica instrumental, não à ideia de pulso.',
+        feedback: 'A ideia central aqui é a repetição no tempo; a maneira de segurar uma palheta pertence a outro contexto.',
       },
     ],
   },

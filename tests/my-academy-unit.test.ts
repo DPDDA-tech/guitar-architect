@@ -40,4 +40,11 @@ describe('My Academy learning unit NMC-RIT-001', () => {
       visualVolumeMeterRequired: false,
     });
   });
+
+  it('uses explanatory conceptual feedback without score-like verdicts', () => {
+    const feedback = NMC_RIT_001.conceptCheck.choices.map(choice => choice.feedback).join(' ');
+
+    expect(feedback).toContain('A ideia central aqui');
+    expect(feedback).not.toMatch(/acertou|isso mesmo|aprovad[oa]/i);
+  });
 });

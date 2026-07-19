@@ -60,7 +60,13 @@ describe('persistence', () => {
 
     expect(loadConfig()).toEqual(config);
     expect(JSON.parse(localStorage.getItem('ga_config_alice') || '{}')).toEqual(config);
-    expect(JSON.parse(localStorage.getItem('ga_config') || '{}')).toEqual(config);
+    expect(JSON.parse(localStorage.getItem('ga_config') || '{}')).toEqual({
+      version: '1.8.6',
+      currentUser: 'alice',
+      theme: 'light',
+      lang: 'pt',
+      defaultInstrument: 'guitar-6',
+    });
   });
 
   it('saves, updates, loads, and deletes projects by user library key', () => {

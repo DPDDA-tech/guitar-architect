@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { NMC_RIT_001 } from '../data/learningUnits/nmcRit001';
 import type { LearningInteraction } from '../types/learningUnit';
+import type { MyAcademyNextPreference, MyAcademyPerception } from '../types/myAcademyJourney';
 import { navigateToPath } from '../utils/fretboardNavigation';
+import { createNmcRit001SelfRecord, saveMyAcademySelfRecord } from '../utils/myAcademyJourney';
+import { useGlobalPreferences } from '../utils/useGlobalPreferences';
+import GlobalPreferenceControls from './GlobalPreferenceControls';
 import AccessiblePulse from './myAcademy/AccessiblePulse';
-
-const RECORD_KEY = 'ga_my_academy_nmc_rit_001_self_record';
 
 const StepMarker = ({ current, total }: { current: number; total: number }) => (
   <div className="flex items-center gap-2" aria-label={`Etapa ${current + 1} de ${total}`}>
@@ -19,14 +21,17 @@ const StepMarker = ({ current, total }: { current: number; total: number }) => (
 );
 
 const MyAcademyUnitPrototypePage: React.FC = () => {
+  const { theme, lang, setTheme, setLang } = useGlobalPreferences();
+  const isLight = theme === 'light';
   const [step, setStep] = useState(0);
+  const [conceptDecision, setConceptDecision] = useState<'check' | 'skip' | null>(null);
   const [conceptChoice, setConceptChoice] = useState<string | null>(null);
   const [interaction, setInteraction] = useState<LearningInteraction | null>(null);
-  const [perception, setPerception] = useState<string | null>(null);
-  const [nextPreference, setNextPreference] = useState<string | null>(null);
+  const [perception, setPerception] = useState<MyAcademyPerception | null>(null);
+  const [nextPreference, setNextPreference] = useState<MyAcademyNextPreference | null>(null);
   const [recordSaved, setRecordSaved] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const totalSteps = 7;
+  const totalSteps = 8;
   const activity = step >= 1 && step <= 3 ? NMC_RIT_001.activities[step - 1] : null;
   const conceptFeedback = useMemo(
     () => NMC_RIT_001.conceptCheck.choices.find(choice => choice.id === conceptChoice)?.feedback,
@@ -42,37 +47,33 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
   const goBack = () => setStep(current => Math.max(0, current - 1));
 
   const saveRecord = () => {
-    const record = {
-      unitId: NMC_RIT_001.id,
+    const record = createNmcRit001SelfRecord({
       unitVersion: NMC_RIT_001.version,
-      recordedAt: new Date().toISOString(),
-      declaredByUser: true,
       interaction,
       perception,
       nextPreference,
-    };
-    window.localStorage.setItem(RECORD_KEY, JSON.stringify(record));
+    });
+    saveMyAcademySelfRecord(record);
     setRecordSaved(true);
   };
 
-  const selectedConcept = NMC_RIT_001.conceptCheck.choices.find(choice => choice.id === conceptChoice);
-
   return (
-    <div className="blueprint-grid-dark min-h-screen bg-zinc-950 text-zinc-100">
-      <header className="sticky top-0 z-40 border-b border-blue-950/70 bg-[#050914]/95 px-4 py-3 backdrop-blur-xl">
+    <div className={`min-h-screen ${isLight ? 'blueprint-grid-light bg-slate-100 text-slate-900' : 'blueprint-grid-dark bg-zinc-950 text-zinc-100'}`}>
+      <header className={`sticky top-0 z-40 border-b px-4 py-3 backdrop-blur-xl ${isLight ? 'border-slate-200 bg-white/95' : 'border-blue-950/70 bg-[#050914]/95'}`}>
         <div className="mx-auto max-w-3xl">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => navigateToPath('/my-academy')}
-              className="rounded-xl border border-slate-700 px-3 py-2 text-[10px] font-black uppercase tracking-wide text-slate-200 hover:border-blue-400"
+              className={`rounded-xl border px-3 py-2 text-[10px] font-black uppercase tracking-wide focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500 ${isLight ? 'border-slate-300 bg-white text-slate-700 hover:border-cyan-500' : 'border-slate-700 text-slate-200 hover:border-blue-400'}`}
             >
               Voltar ao My Academy
             </button>
-            <div className="text-right">
+            <div className="ml-auto text-right">
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">My Academy · protótipo interno</p>
               <p className="mt-1 text-xs font-bold text-slate-400">{NMC_RIT_001.id} · v{NMC_RIT_001.version}</p>
             </div>
+            <GlobalPreferenceControls theme={theme} lang={lang} onThemeChange={setTheme} onLangChange={setLang} />
           </div>
           <div className="mt-3">
             <StepMarker current={step} total={totalSteps} />
@@ -81,16 +82,23 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
       </header>
 
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:py-10">
+        {lang === 'en' && (
+          <p role="status" className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${isLight ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-amber-700/60 bg-amber-950/35 text-amber-100'}`}>
+            This pilot experience is currently available in Portuguese only.
+          </p>
+        )}
         <section className="rounded-[2rem] border border-blue-900/45 bg-[linear-gradient(145deg,rgba(8,13,22,0.98),rgba(3,7,18,0.96))] p-5 shadow-[0_30px_100px_rgba(2,6,23,0.62)] sm:p-8">
           <p className="text-[10px] font-black uppercase tracking-[0.26em] text-cyan-300">
-            {step === 0 ? 'Iniciação · Ritmo' : activity?.eyebrow ?? (step === 4 ? 'Compreensão' : step === 5 ? 'Autorregistro opcional' : 'Próximo passo')}
+            {step === 0
+              ? 'Iniciação · Ritmo'
+              : activity?.eyebrow ?? (step === 4 ? 'Pausa opcional' : step === 5 ? 'Conferir a ideia' : step === 6 ? 'Próximo passo' : 'Escolhas abertas')}
           </p>
 
           <h1 ref={headingRef} tabIndex={-1} className="mt-3 text-3xl font-black tracking-tight text-white outline-none sm:text-4xl">
             {step === 0
               ? NMC_RIT_001.title
               : activity?.title
-                ?? (step === 4 ? 'O que ficou claro?' : step === 5 ? 'Como foi para você?' : 'Experiência encerrada')}
+                ?? (step === 4 ? 'Como você está se sentindo?' : step === 5 ? 'Conferir a ideia principal' : step === 6 ? 'O que você prefere fazer agora?' : 'Escolha como seguir')}
           </h1>
 
           {step === 0 && (
@@ -146,6 +154,48 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
 
           {step === 4 && (
             <div className="mt-6">
+              <div className="rounded-3xl border border-cyan-400/25 bg-cyan-950/20 p-5">
+                <p className="text-lg font-black leading-relaxed text-cyan-50">
+                  E então, como você está se sentindo em relação ao que vimos até aqui?
+                </p>
+                <p className="mt-3 text-sm font-semibold leading-relaxed text-cyan-100/75">
+                  Se quiser, você pode responder a algumas perguntas para conferir a ideia principal. Não é uma prova e sua resposta não bloqueia o caminho.
+                </p>
+              </div>
+              <div className="mt-5 grid gap-3" role="group" aria-label="Escolha como deseja seguir">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConceptDecision('check');
+                    setStep(5);
+                  }}
+                  className="min-h-12 rounded-xl border border-cyan-400/40 bg-cyan-600/20 px-4 text-sm font-black text-cyan-50 transition hover:bg-cyan-600/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                >
+                  Quero conferir o que entendi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConceptDecision('skip');
+                    setStep(6);
+                  }}
+                  className="min-h-12 rounded-xl border border-slate-700 bg-slate-950/55 px-4 text-sm font-black text-slate-200 transition hover:border-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                >
+                  Prefiro seguir sem responder
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep(0)}
+                  className="min-h-12 rounded-xl border border-slate-700 px-4 text-sm font-black text-slate-300 transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                >
+                  Quero rever a explicação
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 5 && conceptDecision === 'check' && (
+            <div className="mt-6">
               <p className="text-base font-bold leading-relaxed text-slate-200">{NMC_RIT_001.conceptCheck.prompt}</p>
               <div className="mt-4 space-y-3" role="radiogroup" aria-label={NMC_RIT_001.conceptCheck.prompt}>
                 {NMC_RIT_001.conceptCheck.choices.map(choice => (
@@ -162,52 +212,67 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
                 ))}
               </div>
               {conceptFeedback && (
-                <div className={`mt-4 rounded-2xl border p-4 text-sm font-semibold leading-relaxed ${selectedConcept?.expected ? 'border-emerald-400/35 bg-emerald-950/25 text-emerald-100' : 'border-amber-400/30 bg-amber-950/20 text-amber-100'}`} role="status">
+                <div className="mt-4 rounded-2xl border border-cyan-400/25 bg-cyan-950/20 p-4 text-sm font-semibold leading-relaxed text-cyan-100" role="status">
                   {conceptFeedback}
                 </div>
               )}
-              <p className="mt-4 text-xs font-semibold text-slate-500">Esta pergunta pode sugerir revisão, mas não bloqueia a jornada e não avalia sua execução.</p>
-            </div>
-          )}
-
-          {step === 5 && (
-            <div className="mt-6 space-y-6">
-              <fieldset>
-                <legend className="text-sm font-black text-white">O que você experimentou?</legend>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {NMC_RIT_001.selfRecord.interactions.map(option => (
-                    <button key={option.id} type="button" aria-pressed={interaction === option.id} onClick={() => setInteraction(option.id)} className={`min-h-12 rounded-xl border px-3 text-sm font-bold ${interaction === option.id ? 'border-cyan-300 bg-cyan-400/15 text-cyan-100' : 'border-slate-700 bg-slate-950/50 text-slate-300'}`}>{option.label}</button>
-                  ))}
-                </div>
-              </fieldset>
-              <fieldset>
-                <legend className="text-sm font-black text-white">Como você percebeu a repetição?</legend>
-                <div className="mt-3 space-y-2">
-                  {NMC_RIT_001.selfRecord.perceptions.map(option => (
-                    <button key={option.id} type="button" aria-pressed={perception === option.id} onClick={() => setPerception(option.id)} className={`min-h-12 w-full rounded-xl border px-3 text-left text-sm font-bold ${perception === option.id ? 'border-cyan-300 bg-cyan-400/15 text-cyan-100' : 'border-slate-700 bg-slate-950/50 text-slate-300'}`}>{option.label}</button>
-                  ))}
-                </div>
-              </fieldset>
-              <fieldset>
-                <legend className="text-sm font-black text-white">O que prefere fazer agora?</legend>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {NMC_RIT_001.selfRecord.nextPreferences.map(option => (
-                    <button key={option.id} type="button" aria-pressed={nextPreference === option.id} onClick={() => setNextPreference(option.id)} className={`min-h-12 rounded-xl border px-3 text-sm font-bold ${nextPreference === option.id ? 'border-cyan-300 bg-cyan-400/15 text-cyan-100' : 'border-slate-700 bg-slate-950/50 text-slate-300'}`}>{option.label}</button>
-                  ))}
-                </div>
-              </fieldset>
-              <button type="button" onClick={saveRecord} className="min-h-12 w-full rounded-xl border border-emerald-400/40 bg-emerald-600/20 px-4 text-sm font-black text-emerald-100 hover:bg-emerald-600/30">
-                Salvar este autorregistro neste dispositivo
-              </button>
-              {recordSaved && <p className="text-center text-sm font-bold text-emerald-300" role="status">Autorregistro salvo localmente. Ele não constitui avaliação nem prova de domínio.</p>}
+              <p className="mt-4 text-xs font-semibold text-slate-500">Esta pergunta é opcional, não bloqueia a jornada e não avalia sua execução.</p>
             </div>
           )}
 
           {step === 6 && (
+            <div className="mt-6 space-y-6">
+              <fieldset>
+                <legend className="text-sm font-black text-white">O que você prefere fazer agora?</legend>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {NMC_RIT_001.selfRecord.nextPreferences.map(option => (
+                    <button key={option.id} type="button" aria-pressed={nextPreference === option.id} onClick={() => setNextPreference(option.id as MyAcademyNextPreference)} className={`min-h-12 rounded-xl border px-3 text-sm font-bold ${nextPreference === option.id ? 'border-cyan-300 bg-cyan-400/15 text-cyan-100' : 'border-slate-700 bg-slate-950/50 text-slate-300'}`}>{option.label}</button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <details className="group rounded-2xl border border-slate-700 bg-slate-950/45">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-4 py-3 text-sm font-black text-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+                  <span>Registrar como foi esta experiência — opcional</span>
+                  <span aria-hidden="true" className="text-lg text-cyan-300 group-open:rotate-45">+</span>
+                </summary>
+                <div className="space-y-6 border-t border-slate-800 p-4">
+                  <fieldset>
+                    <legend className="text-sm font-black text-white">O que você experimentou?</legend>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      {NMC_RIT_001.selfRecord.interactions.map(option => (
+                        <button key={option.id} type="button" aria-pressed={interaction === option.id} onClick={() => setInteraction(option.id)} className={`min-h-12 rounded-xl border px-3 text-sm font-bold ${interaction === option.id ? 'border-cyan-300 bg-cyan-400/15 text-cyan-100' : 'border-slate-700 bg-slate-950/50 text-slate-300'}`}>{option.label}</button>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <fieldset>
+                    <legend className="text-sm font-black text-white">Como você percebeu a repetição?</legend>
+                    <div className="mt-3 space-y-2">
+                      {NMC_RIT_001.selfRecord.perceptions.map(option => (
+                        <button key={option.id} type="button" aria-pressed={perception === option.id} onClick={() => setPerception(option.id as MyAcademyPerception)} className={`min-h-12 w-full rounded-xl border px-3 text-left text-sm font-bold ${perception === option.id ? 'border-cyan-300 bg-cyan-400/15 text-cyan-100' : 'border-slate-700 bg-slate-950/50 text-slate-300'}`}>{option.label}</button>
+                      ))}
+                    </div>
+                  </fieldset>
+                </div>
+              </details>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button type="button" onClick={saveRecord} className="min-h-12 rounded-xl border border-cyan-400/40 bg-cyan-600/20 px-4 text-sm font-black text-cyan-100 transition hover:bg-cyan-600/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+                  Salvar escolhas neste dispositivo
+                </button>
+                <button type="button" onClick={() => setStep(7)} className="min-h-12 rounded-xl bg-blue-600 px-4 text-sm font-black text-white shadow-lg shadow-blue-950/40 transition hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+                  Continuar
+                </button>
+              </div>
+              {recordSaved && <p className="text-center text-sm font-bold text-cyan-300" role="status">Autorregistro salvo localmente. Ele descreve apenas as escolhas que você declarou.</p>}
+            </div>
+          )}
+
+          {step === 7 && (
             <div className="mt-6">
               <div className="rounded-3xl border border-cyan-400/30 bg-cyan-950/20 p-5">
-                <p className="text-lg font-black text-cyan-100">Você explorou a ideia de pulso.</p>
-                <p className="mt-3 text-sm font-semibold leading-relaxed text-cyan-100/75">O GA não conclui que você “dominou” o assunto. Ele apenas organiza o próximo caminho a partir das escolhas que você fez.</p>
+                <p className="text-lg font-black text-cyan-100">A experiência de pulso permanece disponível.</p>
+                <p className="mt-3 text-sm font-semibold leading-relaxed text-cyan-100/75">O GA apenas organiza caminhos possíveis a partir das escolhas que você fez. Você continua livre para repetir, explorar ou voltar ao mapa.</p>
               </div>
               <div className="mt-5 grid gap-3">
                 <button type="button" onClick={() => setStep(1)} className="min-h-12 rounded-xl border border-slate-700 bg-slate-950/60 px-4 text-sm font-black text-slate-100 hover:border-blue-400">Repetir a experiência</button>
@@ -217,13 +282,13 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
             </div>
           )}
 
-          {step < 6 && (
+          {step < 6 && step !== 4 && (
             <div className="mt-8 flex gap-3 border-t border-slate-800 pt-5">
               {step > 0 && (
                 <button type="button" onClick={goBack} className="min-h-12 flex-1 rounded-xl border border-slate-700 px-4 text-sm font-black text-slate-300 hover:border-slate-500">Voltar</button>
               )}
               <button type="button" onClick={goNext} className="min-h-12 flex-[1.4] rounded-xl bg-blue-600 px-4 text-sm font-black text-white shadow-lg shadow-blue-950/40 hover:bg-blue-500">
-                {step === 0 ? 'Começar' : step === 5 ? 'Encerrar experiência' : 'Continuar'}
+                {step === 0 ? 'Começar' : 'Continuar'}
               </button>
             </div>
           )}

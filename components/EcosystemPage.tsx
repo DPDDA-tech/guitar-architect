@@ -1,7 +1,8 @@
 ﻿import React, { useMemo, useState } from 'react';
-import { loadConfig } from '../utils/persistence';
-import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
+import { getEcosystemBrandAsset } from '../utils/ecosystemBrandAssets';
+import { useGlobalPreferences } from '../utils/useGlobalPreferences';
 import AppFooter from './AppFooter';
+import GlobalPreferenceControls from './GlobalPreferenceControls';
 import { getDailyInstructorSpotlightGroup } from '../data/instructors';
 import { AnalyticsEvents, trackEvent } from '../src/lib/analytics';
 
@@ -10,49 +11,14 @@ const navigateTo = (path: string) => {
   window.dispatchEvent(new Event('ga-route-change'));
 };
 
-const SunIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="4" />
-    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-  </svg>
-);
-
-const MoonIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
-  </svg>
-);
-
-type ThemeMode = 'light' | 'dark';
-type AppLang = 'pt' | 'en';
-
 const EcosystemPage: React.FC = () => {
-  const [theme, setTheme] = useState<ThemeMode>(() => getGlobalTheme());
-  const [lang, setLang] = useState<AppLang>(() => getGlobalLang());
+  const { theme, lang, setTheme, setLang } = useGlobalPreferences();
   const isLight = theme === 'light';
   const spotlightInstructors = useMemo(() => getDailyInstructorSpotlightGroup(), []);
 
   const actionClass = isLight
     ? 'border-zinc-300 bg-white text-zinc-700 shadow-[0_8px_20px_rgba(15,23,42,0.08)] hover:border-blue-400'
     : 'border-zinc-700 bg-zinc-900 text-zinc-200 shadow-[0_0_0_1px_rgba(255,255,255,0.04)] hover:border-blue-500';
-
-  const handleToggleTheme = () => {
-    const current = loadConfig();
-    const nextTheme: ThemeMode = isLight ? 'dark' : 'light';
-    const next = { ...(current || {}), theme: nextTheme, lang };
-    localStorage.setItem('ga_config', JSON.stringify(next));
-    setGlobalPreferences(nextTheme, lang);
-    setTheme(nextTheme);
-  };
-
-  const handleToggleLang = () => {
-    const current = loadConfig();
-    const nextLang: AppLang = lang === 'pt' ? 'en' : 'pt';
-    const next = { ...(current || {}), theme, lang: nextLang };
-    localStorage.setItem('ga_config', JSON.stringify(next));
-    setGlobalPreferences(theme, nextLang);
-    setLang(nextLang);
-  };
 
   const gridStyle = {
     backgroundImage: `linear-gradient(${isLight ? '#e2e8f0' : '#1e293b'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#e2e8f0' : '#1e293b'} 1px, transparent 1px)`,
@@ -89,25 +55,8 @@ const EcosystemPage: React.FC = () => {
             : 'From the first contact with instruments, notes and sounds to advanced tools for guitar and bass, Guitar Architect guides your musical growth through discovery, practice, visual maps and harmonic construction.'}
         </p>
 
-        <div className="mb-6 flex items-center justify-end gap-2 max-lg:landscape:mb-2">
-          <button
-            type="button"
-            onClick={handleToggleTheme}
-            className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-all ${actionClass}`}
-            aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
-            title={isLight ? (lang === 'pt' ? 'Modo escuro' : 'Dark mode') : (lang === 'pt' ? 'Modo claro' : 'Light mode')}
-          >
-            {isLight ? <MoonIcon /> : <SunIcon />}
-          </button>
-          <button
-            type="button"
-            onClick={handleToggleLang}
-            className={`min-h-[40px] rounded-xl border px-3 py-2 text-[11px] font-black uppercase transition-all ${actionClass}`}
-            aria-label={lang === 'pt' ? 'Trocar idioma para inglês' : 'Switch language to Portuguese'}
-            title={lang === 'pt' ? 'Idioma' : 'Language'}
-          >
-            {lang.toUpperCase()}
-          </button>
+        <div className="mb-6 flex items-center justify-end max-lg:landscape:mb-2">
+          <GlobalPreferenceControls theme={theme} lang={lang} onThemeChange={setTheme} onLangChange={setLang} />
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 mb-10 md:mb-12 [@media(max-height:800px)]:mb-6 max-lg:landscape:grid-cols-4 max-lg:landscape:gap-2 max-lg:landscape:mb-2">
@@ -118,7 +67,7 @@ const EcosystemPage: React.FC = () => {
               subtitle: lang === 'pt'
                 ? 'Descubra sons, instrumentos, notas e conceitos musicais em uma experiência visual, lúdica e interativa feita para transformar os primeiros contatos com a música em exploração e descoberta.'
                 : 'Discover sounds, instruments, notes and musical concepts through a visual, playful and interactive experience designed to turn those first encounters with music into exploration and discovery.',
-              logo: '/gakidslogo.webp',
+              logo: getEcosystemBrandAsset('kids', theme),
               path: '/kids',
               btn: 'bg-emerald-600',
               cta: lang === 'pt' ? 'Explorar Kids' : 'Explore Kids',
@@ -129,7 +78,7 @@ const EcosystemPage: React.FC = () => {
               subtitle: lang === 'pt'
                 ? 'Desafios, prática guiada e evolução técnica progressiva por meio de escalas, intervalos, percepção, independência dos dedos, riffs e exercícios interativos.'
                 : 'Challenges, guided practice and progressive technical development through scales, intervals, ear training, finger independence, riffs and interactive exercises.',
-              logo: '/gateenslogo.webp',
+              logo: getEcosystemBrandAsset('teens', theme),
               path: '/teens',
               btn: 'bg-violet-600',
               cta: lang === 'pt' ? 'Explorar Teens' : 'Explore Teens',
@@ -140,7 +89,7 @@ const EcosystemPage: React.FC = () => {
               subtitle: lang === 'pt'
                 ? 'Um laboratório musical interativo para explorar notas, escalas, intervalos, acordes e estruturas harmônicas diretamente no braço do instrumento, com ferramentas avançadas para estudantes, músicos e professores.'
                 : 'An interactive music laboratory for exploring notes, scales, intervals, chords and harmonic structures directly on the instrument fretboard, with advanced tools for students, musicians and teachers.',
-              logo: '/logogastudio.webp',
+              logo: getEcosystemBrandAsset('studio', theme),
               path: '/studio',
               btn: 'bg-blue-600',
               cta: lang === 'pt' ? 'Explorar Studio' : 'Explore Studio',
@@ -151,7 +100,7 @@ const EcosystemPage: React.FC = () => {
               subtitle: lang === 'pt'
                 ? 'Seu mapa de estudos dentro do Guitar Architect: teoria musical organizada, aplicações guiadas, caminhos sugeridos e liberdade para explorar ou avançar conforme seus objetivos.'
                 : 'Your learning map inside Guitar Architect: organized music theory, guided applications, suggested paths and the freedom to explore or move ahead according to your goals.',
-              logo: '/gamyacademylogo.webp',
+              logo: getEcosystemBrandAsset('academy', theme),
               path: '/my-academy',
               btn: 'bg-cyan-700',
               cta: lang === 'pt' ? 'Entrar no My Academy' : 'Enter My Academy',
@@ -168,7 +117,8 @@ const EcosystemPage: React.FC = () => {
                 <div className="w-48 h-48 md:w-56 md:h-56 lg:w-48 lg:h-48 xl:w-56 xl:h-56 mb-6 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center max-lg:landscape:w-16 max-lg:landscape:h-16 max-lg:landscape:mb-1">
                   <img
                     src={area.logo}
-                    alt={area.title}
+                    alt=""
+                    aria-hidden="true"
                     className="w-full h-full object-contain drop-shadow-2xl max-lg:landscape:max-h-[12vh]"
                   />
                 </div>
