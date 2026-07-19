@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
+import { getEcosystemBrandAsset, type EcosystemBrandId } from '../utils/ecosystemBrandAssets';
 import AppFooter from './AppFooter';
 
 type ThemeMode = 'light' | 'dark';
 type AppLang = 'pt' | 'en';
+
+type EcosystemArea = {
+  id: EcosystemBrandId;
+  title: string;
+  description: string;
+  accent: string;
+};
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -68,7 +76,7 @@ const AboutPage: React.FC = () => {
     ? 'border-zinc-200 bg-white'
     : 'border-[rgba(30,64,175,0.4)] bg-[rgba(10,20,36,0.92)] shadow-[0_12px_40px_rgba(0,0,0,0.45)]';
 
-  const t = (lang === 'pt'
+  const t = lang === 'pt'
     ? {
         eyebrow: 'Guitar Architect',
         title: 'O que é o Guitar Architect?',
@@ -78,24 +86,22 @@ const AboutPage: React.FC = () => {
         s1Title: 'Uma jornada de construção musical',
         s1: [
           'O Guitar Architect é um ecossistema musical brasileiro criado para acompanhar diferentes formas de descobrir, compreender, praticar, construir e viver a música.',
-          'A proposta é simples: transformar conceitos musicais em experiências visuais, práticas e interativas, ajudando o usuário a sair do primeiro contato com os sons até a construção harmônica com mais consciência.',
+          'A proposta é transformar conceitos musicais em experiências visuais, práticas e interativas, ajudando o usuário a sair do primeiro contato com os sons até a construção harmônica com mais consciência.',
         ],
-        s2Title: 'Kids, Teens e Studio',
-        s2Intro: 'O ecossistema é dividido em três grandes ambientes:',
+        s2Title: 'Ambientes e jornadas do ecossistema',
+        s2Intro: 'Kids, Teens e Studio oferecem conteúdos e ferramentas. O My Academy articula esses recursos em uma jornada guiada, progressiva e aberta a diferentes percursos.',
         ecosystem: [
-          { id: 'kids', logo: '/gakidslogo.webp', title: 'Kids', description: 'descoberta musical para crianças, iniciantes e primeiros contatos com sons, instrumentos e conceitos básicos.', accent: isLight ? 'text-emerald-600' : 'text-emerald-400' },
-          { id: 'teens', logo: '/gateenslogo.webp', title: 'Teens', description: 'desafios, prática guiada, exercícios progressivos, riffs, escalas, intervalos e independência dos dedos.', accent: isLight ? 'text-violet-600' : 'text-violet-400' },
-          { id: 'studio', logo: '/logogastudio.webp', title: 'Studio', description: 'ferramentas avançadas para visualizar harmonia, acordes, tríades, tétrades, mapas do braço do instrumento e estruturas musicais.', accent: isLight ? 'text-blue-600' : 'text-blue-400' },
-        ],
+          { id: 'kids', title: 'Kids', description: 'Descoberta musical para crianças, iniciantes e primeiros contatos com sons, instrumentos e conceitos básicos.', accent: isLight ? 'text-emerald-600' : 'text-emerald-400' },
+          { id: 'teens', title: 'Teens', description: 'Desafios, prática guiada, exercícios progressivos, riffs, escalas, intervalos e independência dos dedos.', accent: isLight ? 'text-violet-600' : 'text-violet-400' },
+          { id: 'studio', title: 'Studio', description: 'Ferramentas avançadas para visualizar harmonia, acordes, tríades, tétrades, mapas do braço e estruturas musicais.', accent: isLight ? 'text-blue-600' : 'text-blue-400' },
+          { id: 'academy', title: 'My Academy', description: 'Jornada guiada pelo universo do Guitar Architect, conectando conteúdos, desafios e Mestres Arquitetos para apoiar uma evolução musical etapa por etapa.', accent: isLight ? 'text-red-600' : 'text-red-400' },
+        ] as EcosystemArea[],
         architectsTitle: 'Mestres Arquitetos: diferentes formas de viver a música',
         architects: [
-          'O Guitar Architect passou a ser habitado por Mestres Arquitetos: personagens inteiramente fictícios, criados com inteligência artificial, que representam diferentes experiências, especialidades, personalidades e formas de viver, compreender e se relacionar com a música.',
-          'Há quem acolherá os primeiros passos, quem organizará a teoria, quem explorará o peso de um riff, a liberdade do blues, a precisão dos intervalos, a função do baixo, a presença de palco, as possibilidades da harmonia ou os inúmeros caminhos que fazem parte de uma vida construída em torno da música.',
-          'Cada Mestre Arquiteto possui identidade própria, história, referências e uma maneira particular de habitar esse universo. Alguns ajudarão a compreender, outros a praticar, criar, interpretar, cuidar dos instrumentos, experimentar ou simplesmente enxergar a música por novos ângulos. Outros ainda estarão presentes ao longo da jornada para motivar, encorajar e manter aceso o interesse pelo aprendizado e pela descoberta musical.',
-          'Ao lado deles, Diana Helena Moreau Fontenelle ocupa uma função singular como Diretora de Experiência e Jornada, cuidando da forma como as pessoas são recebidas, orientadas e conectadas aos diferentes caminhos, áreas e possibilidades do ecossistema.',
-          'Juntos, os Mestres Arquitetos e Diana darão rosto e voz às múltiplas perspectivas que compõem o Guitar Architect e contribuirão para tornar mais humana a relação entre descoberta, prática, instrumentos, sons, conhecimento, experiência e expressão.',
-          'Seus nomes, histórias, trajetórias, características pessoais, referências, hábitos e demais elementos biográficos integram exclusivamente esse universo ficcional. Qualquer eventual semelhança com pessoas, fatos ou situações do mundo real é involuntária e puramente coincidente.',
-          'Sua presença no projeto ainda demandará ajustes, aprofundamentos, desenvolvimento técnico e, em determinadas frentes, suporte de tecnologias e serviços externos. À medida que a plataforma evoluir, os Mestres Arquitetos e Diana poderão assumir novos papéis dentro do ecossistema, sem perder aquilo que os define desde o início: diferentes formas de viver, sentir, construir e compartilhar a música.',
+          'O Guitar Architect é habitado por Mestres Arquitetos: personagens inteiramente fictícios, criados com inteligência artificial, que representam diferentes experiências, especialidades, personalidades e formas de viver, compreender e se relacionar com a música.',
+          'Cada Mestre Arquiteto possui identidade própria, história, referências e uma maneira particular de habitar esse universo. Alguns ajudam a compreender, outros a praticar, criar, interpretar, cuidar dos instrumentos, experimentar ou enxergar a música por novos ângulos.',
+          'Ao lado deles, Diana Helena Moreau Fontenelle ocupa uma função singular na experiência e na jornada, cuidando da forma como as pessoas são recebidas, orientadas e conectadas aos diferentes caminhos do ecossistema.',
+          'Seus nomes, histórias, trajetórias, características pessoais, referências, hábitos e demais elementos biográficos integram exclusivamente esse universo ficcional. Qualquer semelhança com pessoas, fatos ou situações do mundo real é involuntária e puramente coincidente.',
         ],
         architectsLink: 'Conheça nossos Mestres Arquitetos e Diana →',
         s3Title: 'Guitarra, baixo e mapas visuais',
@@ -109,9 +115,7 @@ const AboutPage: React.FC = () => {
           'A ideia é construir entendimento: reconhecer sons, visualizar relações, praticar com propósito e compreender como cada nota, intervalo e acorde participa da arquitetura musical.',
         ],
         accountTitle: 'Preciso criar conta para usar?',
-        account: [
-          'Não para começar. Boa parte do Guitar Architect pode ser explorada sem login, especialmente os ambientes Kids e Teens. O login é feito pelo Studio e permite sincronizar determinados projetos, instrumentos, itens da coleção, conquistas e preferências. Algumas áreas, como a progressão XP do Teens e determinados projetos do Kids, continuam locais.',
-        ],
+        account: ['Não para começar. Boa parte do Guitar Architect pode ser explorada sem login. O login pelo Studio permite sincronizar determinados projetos, instrumentos, itens da coleção, conquistas e preferências.'],
         s5Title: 'O que o Guitar Architect não é',
         s5: [
           'O Guitar Architect não é um plugin de efeitos, simulador de amplificador, DAW, banco de cifras ou simples coleção de exercícios.',
@@ -133,24 +137,22 @@ const AboutPage: React.FC = () => {
         s1Title: 'A musical construction journey',
         s1: [
           'Guitar Architect is a Brazilian music ecosystem designed to support different ways of discovering, understanding, practicing, building and living music.',
-          'Its purpose is simple: to turn musical concepts into visual, practical and interactive experiences, helping users move from their first contact with sounds to harmonic construction with greater awareness.',
+          'Its purpose is to turn musical concepts into visual, practical and interactive experiences, helping users move from their first contact with sounds to harmonic construction with greater awareness.',
         ],
-        s2Title: 'Kids, Teens and Studio',
-        s2Intro: 'The ecosystem is divided into three main environments:',
+        s2Title: 'Ecosystem environments and journeys',
+        s2Intro: 'Kids, Teens and Studio provide content and tools. My Academy connects these resources through a guided, progressive journey that remains open to different paths.',
         ecosystem: [
-          { id: 'kids', logo: '/gakidslogo.webp', title: 'Kids', description: 'musical discovery for children, beginners and first contact with sounds, instruments and basic concepts.', accent: isLight ? 'text-emerald-600' : 'text-emerald-400' },
-          { id: 'teens', logo: '/gateenslogo.webp', title: 'Teens', description: 'challenges, guided practice, progressive exercises, riffs, scales, intervals and finger independence.', accent: isLight ? 'text-violet-600' : 'text-violet-400' },
-          { id: 'studio', logo: '/logogastudio.webp', title: 'Studio', description: 'advanced tools to visualize harmony, chords, triads, seventh chords, instrument fretboard maps and musical structures.', accent: isLight ? 'text-blue-600' : 'text-blue-400' },
-        ],
+          { id: 'kids', title: 'Kids', description: 'Musical discovery for children, beginners and first contact with sounds, instruments and basic concepts.', accent: isLight ? 'text-emerald-600' : 'text-emerald-400' },
+          { id: 'teens', title: 'Teens', description: 'Challenges, guided practice, progressive exercises, riffs, scales, intervals and finger independence.', accent: isLight ? 'text-violet-600' : 'text-violet-400' },
+          { id: 'studio', title: 'Studio', description: 'Advanced tools to visualize harmony, chords, triads, seventh chords, fretboard maps and musical structures.', accent: isLight ? 'text-blue-600' : 'text-blue-400' },
+          { id: 'academy', title: 'My Academy', description: 'A guided journey through Guitar Architect, connecting content, challenges and Master Architects to support step-by-step musical growth.', accent: isLight ? 'text-red-600' : 'text-red-400' },
+        ] as EcosystemArea[],
         architectsTitle: 'Master Architects: different ways of living music',
         architects: [
-          'Guitar Architect is now inhabited by Master Architects: entirely fictional characters created with artificial intelligence to represent different experiences, specialties, personalities and ways of living, understanding and relating to music.',
-          'Some will welcome the very first steps, while others will organize theory or explore the weight of a riff, the freedom of the blues, the precision of intervals, the role of bass, stage presence, the possibilities of harmony or the countless paths that shape a life built around music.',
-          'Each Master Architect has a distinct identity, story, set of references and way of inhabiting this universe. Some will help people understand; others will encourage practice, creation, interpretation, instrument care, experimentation or simply offer new ways of seeing music. Others will be present throughout the journey to motivate, encourage and keep curiosity, learning and musical discovery alive.',
-          'Alongside them, Diana Helena Moreau Fontenelle holds a singular role as Director of Experience & Journey, shaping how people are welcomed, guided and connected with the ecosystem’s different paths, areas and possibilities.',
-          'Together, the Master Architects and Diana will give a face and a voice to the many perspectives that make up Guitar Architect, helping make the relationship between discovery, practice, instruments, sound, knowledge, experience and expression feel more human.',
+          'Guitar Architect is inhabited by Master Architects: entirely fictional characters created with artificial intelligence to represent different experiences, specialties, personalities and ways of living, understanding and relating to music.',
+          'Each Master Architect has a distinct identity, story, references and way of inhabiting this universe. Some help users understand; others encourage practice, creation, interpretation, instrument care, experimentation or new ways of seeing music.',
+          'Alongside them, Diana Helena Moreau Fontenelle has a singular role in experience and journey design, shaping how people are welcomed, guided and connected with the ecosystem’s different paths.',
           'Their names, stories, backgrounds, personal traits, references, habits and all other biographical details belong exclusively to this fictional universe. Any resemblance to real people, events or situations is unintended and purely coincidental.',
-          'Their presence in the project will still require refinement, deeper development, technical work and, in some areas, support from external technologies and services. As the platform evolves, the Master Architects and Diana may take on new roles across the ecosystem without losing what has defined them from the beginning: different ways of living, feeling, building and sharing music.',
         ],
         architectsLink: 'Meet our Master Architects and Diana →',
         s3Title: 'Guitar, bass and visual maps',
@@ -164,9 +166,7 @@ const AboutPage: React.FC = () => {
           'The idea is to build understanding: recognize sounds, visualize relationships, practice with purpose and understand how each note, interval and chord takes part in musical architecture.',
         ],
         accountTitle: 'Do I need an account to use it?',
-        account: [
-          'Not to get started. Much of Guitar Architect can be explored without signing in, especially Kids and Teens. Sign-in is available through Studio and can sync selected projects, instruments, collection items, achievements and preferences. Some areas, including Teens XP progression and certain Kids projects, remain local.',
-        ],
+        account: ['Not to get started. Much of Guitar Architect can be explored without signing in. Sign-in through Studio can sync selected projects, instruments, collection items, achievements and preferences.'],
         s5Title: 'What Guitar Architect is not',
         s5: [
           'Guitar Architect is not an effects plugin, amp simulator, DAW, chord chart database or simple exercise collection.',
@@ -178,66 +178,38 @@ const AboutPage: React.FC = () => {
           'The brand combines the idea of guitar with musical architecture: planning, visualizing, practicing and building a musical journey step by step.',
         ],
         s6Link: 'Meet our brand →',
-      });
+      };
 
-  const ecosystemPaths: Record<string, string> = { kids: '/kids', teens: '/teens', studio: '/studio' };
+  const ecosystemPaths: Record<EcosystemBrandId, string> = {
+    kids: '/kids',
+    teens: '/teens',
+    studio: '/studio',
+    academy: '/my-academy',
+  };
+
+  const dividerClass = isLight ? 'border-zinc-100' : 'border-zinc-800';
 
   return (
     <>
       <div className={`relative min-h-screen p-6 md:p-12 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-white'}`}>
         <div className="absolute inset-0 pointer-events-none opacity-50" style={gridStyle} />
-
         <div className="relative mx-auto max-w-[1000px] py-6">
           <div className="mb-8 flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={() => navigateTo('/ecosystem')}
-              className="inline-flex items-center gap-2 text-blue-500 font-black text-xs uppercase tracking-widest hover:underline"
-            >
-              {t.back}
-            </button>
+            <button type="button" onClick={() => navigateTo('/ecosystem')} className="inline-flex items-center gap-2 text-blue-500 font-black text-xs uppercase tracking-widest hover:underline">{t.back}</button>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleToggleTheme}
-                className={`flex h-9 w-9 items-center justify-center rounded-xl border text-xs font-black transition-all ${actionClass}`}
-                aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
-              >
-                {isLight ? <MoonIcon /> : <SunIcon />}
-              </button>
-              <button
-                type="button"
-                onClick={handleToggleLang}
-                className={`min-h-[36px] rounded-xl border px-3 py-2 text-[11px] font-black uppercase transition-all ${actionClass}`}
-              >
-                {lang.toUpperCase()}
-              </button>
+              <button type="button" onClick={handleToggleTheme} className={`flex h-9 w-9 items-center justify-center rounded-xl border text-xs font-black transition-all ${actionClass}`} aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}>{isLight ? <MoonIcon /> : <SunIcon />}</button>
+              <button type="button" onClick={handleToggleLang} className={`min-h-[36px] rounded-xl border px-3 py-2 text-[11px] font-black uppercase transition-all ${actionClass}`}>{lang.toUpperCase()}</button>
             </div>
           </div>
 
           <div className="text-center mb-10">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">
-              {t.eyebrow}
-            </p>
-            <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter">
-              {t.title}
-            </h1>
-            <p className="mt-3 text-zinc-500 font-bold uppercase text-[12px] md:text-sm tracking-[0.2em]">
-              {t.subtitle}
-            </p>
+            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">{t.eyebrow}</p>
+            <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter">{t.title}</h1>
+            <p className="mt-3 text-zinc-500 font-bold uppercase text-[12px] md:text-sm tracking-[0.2em]">{t.subtitle}</p>
           </div>
 
           <div className={`mb-10 overflow-hidden rounded-3xl border ${isLight ? 'border-zinc-200 bg-white shadow-xl' : 'border-blue-950/70 bg-zinc-900 shadow-[0_20px_60px_rgba(0,0,0,0.45)]'}`}>
-            <video
-              width="1600"
-              height="900"
-              controls
-              playsInline
-              preload="metadata"
-              poster="/institutional/diana/diana-about.webp"
-              aria-label={t.institutionalVideoLabel}
-              className="aspect-video h-auto w-full object-cover"
-            >
+            <video width="1600" height="900" controls playsInline preload="metadata" poster="/institutional/diana/diana-about.webp" aria-label={t.institutionalVideoLabel} className="aspect-video h-auto w-full object-cover">
               <source src="/institutional/diana/diana-about.mp4" type="video/mp4" />
               {t.institutionalVideoLabel}
             </video>
@@ -247,26 +219,19 @@ const AboutPage: React.FC = () => {
             <div className="space-y-8 text-sm md:text-base">
               <section>
                 <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s1Title}</h2>
-                <div className="space-y-3">
-                  {t.s1.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-                </div>
+                <div className="space-y-3">{t.s1.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div>
               </section>
 
-              <hr className={isLight ? 'border-zinc-100' : 'border-zinc-800'} />
+              <hr className={dividerClass} />
 
               <section>
                 <h2 className="text-lg font-black uppercase tracking-tight mb-2">{t.s2Title}</h2>
                 <p className={`mb-5 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{t.s2Intro}</p>
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {t.ecosystem.map(area => (
-                    <button
-                      key={area.id}
-                      type="button"
-                      onClick={() => navigateTo(ecosystemPaths[area.id])}
-                      className={`flex flex-col items-center rounded-2xl border p-5 text-center transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${panelClass}`}
-                    >
-                      <div className="mb-4 flex h-16 w-24 items-center justify-center">
-                        <img src={area.logo} alt={area.title} className="h-full w-full object-contain" />
+                    <button key={area.id} type="button" onClick={() => navigateTo(ecosystemPaths[area.id])} className={`flex flex-col items-center rounded-2xl border p-5 text-center transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${panelClass}`}>
+                      <div className="mb-4 flex h-16 w-28 items-center justify-center">
+                        <img src={getEcosystemBrandAsset(area.id, theme)} alt={area.title} className="h-full w-full object-contain" />
                       </div>
                       <h3 className={`text-sm font-black uppercase tracking-widest ${area.accent}`}>{area.title}</h3>
                       <p className={`mt-2 text-xs font-semibold leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-300'}`}>{area.description}</p>
@@ -275,72 +240,35 @@ const AboutPage: React.FC = () => {
                 </div>
               </section>
 
-              <hr className={isLight ? 'border-zinc-100' : 'border-zinc-800'} />
+              <hr className={dividerClass} />
 
               <section>
                 <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.architectsTitle}</h2>
-                <div className="space-y-3">
-                  {t.architects.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => navigateTo('/instructors')}
-                  className={`mt-5 text-[11px] font-black uppercase tracking-widest underline-offset-2 transition hover:underline ${isLight ? 'text-blue-600' : 'text-blue-400'}`}
-                >
-                  {t.architectsLink}
-                </button>
+                <div className="space-y-3">{t.architects.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div>
+                <button type="button" onClick={() => navigateTo('/instructors')} className={`mt-5 text-[11px] font-black uppercase tracking-widest underline-offset-2 transition hover:underline ${isLight ? 'text-blue-600' : 'text-blue-400'}`}>{t.architectsLink}</button>
               </section>
 
-              <hr className={isLight ? 'border-zinc-100' : 'border-zinc-800'} />
+              {[
+                [t.s3Title, t.s3],
+                [t.s4Title, t.s4],
+                [t.accountTitle, t.account],
+                [t.s5Title, t.s5],
+              ].map(([title, paragraphs]) => (
+                <React.Fragment key={title as string}>
+                  <hr className={dividerClass} />
+                  <section>
+                    <h2 className="text-lg font-black uppercase tracking-tight mb-4">{title}</h2>
+                    <div className="space-y-3">{(paragraphs as string[]).map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div>
+                  </section>
+                </React.Fragment>
+              ))}
 
-              <section>
-                <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s3Title}</h2>
-                <div className="space-y-3">
-                  {t.s3.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-                </div>
-              </section>
-
-              <hr className={isLight ? 'border-zinc-100' : 'border-zinc-800'} />
-
-              <section>
-                <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s4Title}</h2>
-                <div className="space-y-3">
-                  {t.s4.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-                </div>
-              </section>
-
-              <hr className={isLight ? 'border-zinc-100' : 'border-zinc-800'} />
-
-              <section>
-                <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.accountTitle}</h2>
-                <div className="space-y-3">
-                  {t.account.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-                </div>
-              </section>
-
-              <hr className={isLight ? 'border-zinc-100' : 'border-zinc-800'} />
-
-              <section>
-                <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s5Title}</h2>
-                <div className="space-y-3">
-                  {t.s5.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-                </div>
-              </section>
-
-              <hr className={isLight ? 'border-zinc-100' : 'border-zinc-800'} />
+              <hr className={dividerClass} />
 
               <section>
                 <h2 className="text-lg font-black uppercase tracking-tight mb-4">{t.s6Title}</h2>
-                <div className="space-y-3">
-                  {t.s6.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => navigateTo('/brand')}
-                  className={`mt-5 text-[11px] font-black uppercase tracking-widest underline-offset-2 transition hover:underline ${isLight ? 'text-blue-600' : 'text-blue-400'}`}
-                >
-                  {t.s6Link}
-                </button>
+                <div className="space-y-3">{t.s6.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div>
+                <button type="button" onClick={() => navigateTo('/brand')} className={`mt-5 text-[11px] font-black uppercase tracking-widest underline-offset-2 transition hover:underline ${isLight ? 'text-blue-600' : 'text-blue-400'}`}>{t.s6Link}</button>
               </section>
             </div>
           </div>
