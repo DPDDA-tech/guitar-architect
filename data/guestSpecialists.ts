@@ -9,7 +9,9 @@ export interface GuestSpecialist {
   cardName?: string;
   specialty: LocalizedText;
   shortDescription: LocalizedText;
-  image?: string;
+  cardImage?: string;
+  profileImage?: string;
+  presentationVideo?: string;
   quote?: LocalizedText;
   biography?: LocalizedText;
   philosophy?: LocalizedText;
@@ -36,7 +38,9 @@ export const guestSpecialists: GuestSpecialist[] = [
       pt: 'Médica fisiatra dedicada à prevenção de lesões, ergonomia e construção de hábitos de prática mais sustentáveis.',
       en: 'A physiatrist focused on injury prevention, ergonomics and more sustainable practice habits.',
     },
-    image: '/guests/dra-helena.svg',
+    cardImage: '/guests/helena/helena-card-guest.webp',
+    profileImage: '/guests/helena/helena-profile.webp',
+    presentationVideo: '/guests/helena/helena-presentation.mp4',
     quote: {
       pt: 'Tocar bem também significa aprender a cuidar do corpo que torna a música possível.',
       en: 'Playing well also means learning to care for the body that makes music possible.',
