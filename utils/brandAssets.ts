@@ -1,4 +1,6 @@
 import { InstrumentType } from '../types';
+import { getGlobalTheme } from './ecosystemPreferences';
+import { getEcosystemBrandAsset } from './ecosystemBrandAssets';
 
 export type BrandVariant = 'guitar' | 'extended-guitar' | 'bass';
 
@@ -37,13 +39,15 @@ export const getBrandAssets = (instrumentType: InstrumentType): BrandAssets => {
     };
   }
 
+  const studioLogo = getEcosystemBrandAsset('studio', getGlobalTheme());
+
   return {
     variant: 'guitar',
-    logo: '/tier0/tier0-ga6-oficial.webp',
-    hero: '/tier0/tier0-ga6-oficial.webp',
+    logo: studioLogo,
+    hero: studioLogo,
     accent: '#2563eb',
     accentSoft: 'rgba(37,99,235,0.14)',
     accentShadow: 'rgba(37,99,235,0.26)',
-    label: 'Guitar',
+    label: 'Guitar Architect Studio',
   };
 };
