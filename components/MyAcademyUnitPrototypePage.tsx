@@ -70,8 +70,8 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
               Voltar ao My Academy
             </button>
             <div className="ml-auto text-right">
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">My Academy · protótipo interno</p>
-              <p className="mt-1 text-xs font-bold text-slate-400">{NMC_RIT_001.id} · v{NMC_RIT_001.version}</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">My Academy · experiência guiada</p>
+              <p className="mt-1 text-xs font-bold text-slate-400">Pulso e regularidade</p>
             </div>
             <GlobalPreferenceControls theme={theme} lang={lang} onThemeChange={setTheme} onLangChange={setLang} />
           </div>
@@ -84,7 +84,7 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:py-10">
         {lang === 'en' && (
           <p role="status" className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${isLight ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-amber-700/60 bg-amber-950/35 text-amber-100'}`}>
-            This pilot experience is currently available in Portuguese only.
+            This first guided experience is currently available in Portuguese only.
           </p>
         )}
         <section className="rounded-[2rem] border border-blue-900/45 bg-[linear-gradient(145deg,rgba(8,13,22,0.98),rgba(3,7,18,0.96))] p-5 shadow-[0_30px_100px_rgba(2,6,23,0.62)] sm:p-8">
@@ -103,6 +103,13 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
 
           {step === 0 && (
             <div className="mt-6">
+              <div className="mb-5 flex items-center gap-4 rounded-2xl border border-cyan-400/25 bg-cyan-950/20 p-4">
+                <img src="/instructors/1000/clara-card-instructor.webp" alt="Clara, guia do My Academy" className="h-16 w-16 rounded-2xl object-cover" />
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">Clara acompanha esta etapa</p>
+                  <p className="mt-1 text-sm font-semibold leading-relaxed text-cyan-100/80">Vamos começar por uma experiência simples: perceber uma referência que se repete no tempo.</p>
+                </div>
+              </div>
               <div className="space-y-4 text-base font-semibold leading-relaxed text-slate-300">
                 {NMC_RIT_001.opening.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
               </div>
@@ -111,7 +118,7 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
                 <p className="mt-2 text-xs font-semibold text-cyan-200/70">Percurso completo estimado: 4–7 minutos. Você pode parar ao final de qualquer microatividade.</p>
               </div>
               <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/55 p-4">
-                <p className="text-xs font-black uppercase tracking-wider text-slate-400">O que o GA não fará</p>
+                <p className="text-xs font-black uppercase tracking-wider text-slate-400">Como esta experiência funciona</p>
                 <ul className="mt-3 space-y-2 text-sm font-semibold leading-relaxed text-slate-300">
                   {NMC_RIT_001.boundaries.map(item => <li key={item}>• {item}</li>)}
                 </ul>
@@ -132,7 +139,7 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
 
               {(step === 1 || step === 3) && (
                 <div className="mt-5">
-                  {step === 3 && <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-blue-300">Studio contextual · sem pontuação</p>}
+                  {step === 3 && <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-blue-300">Ferramenta do Studio · exploração livre</p>}
                   <AccessiblePulse
                     allowTempoChange={step === 3}
                   />
@@ -155,7 +162,8 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
           {step === 4 && (
             <div className="mt-6">
               <div className="rounded-3xl border border-cyan-400/25 bg-cyan-950/20 p-5">
-                <p className="text-lg font-black leading-relaxed text-cyan-50">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">Uma pausa com Clara</p>
+                <p className="mt-2 text-lg font-black leading-relaxed text-cyan-50">
                   E então, como você está se sentindo em relação ao que vimos até aqui?
                 </p>
                 <p className="mt-3 text-sm font-semibold leading-relaxed text-cyan-100/75">
@@ -271,7 +279,8 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
           {step === 7 && (
             <div className="mt-6">
               <div className="rounded-3xl border border-cyan-400/30 bg-cyan-950/20 p-5">
-                <p className="text-lg font-black text-cyan-100">A experiência de pulso permanece disponível.</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">Clara organiza o próximo passo</p>
+                <p className="mt-2 text-lg font-black text-cyan-100">A experiência de pulso permanece disponível.</p>
                 <p className="mt-3 text-sm font-semibold leading-relaxed text-cyan-100/75">O GA apenas organiza caminhos possíveis a partir das escolhas que você fez. Você continua livre para repetir, explorar ou voltar ao mapa.</p>
               </div>
               <div className="mt-5 grid gap-3">
@@ -295,7 +304,7 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
         </section>
 
         <p className="mx-auto mt-5 max-w-xl text-center text-[11px] font-semibold leading-relaxed text-slate-500">
-          Protótipo interno · sem pontuação, bloqueio ou certificação · dados de teste armazenados somente neste dispositivo.
+          Sem pontuação, bloqueio ou certificação. As escolhas opcionais são armazenadas somente neste dispositivo.
         </p>
       </main>
     </div>
