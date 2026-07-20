@@ -49,7 +49,13 @@ const GuestSpecialistCard: React.FC<GuestSpecialistCardProps> = ({ guest, isLigh
       className={`flex flex-col overflow-hidden rounded-3xl border text-left transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${panelClass}`}
     >
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-zinc-100">
-        <img src={guest.image} alt={guest.cardName} className="absolute inset-0 h-full w-full object-cover object-center" />
+        {guest.cardImage && (
+          <img
+            src={guest.cardImage}
+            alt={guest.cardName}
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+        )}
       </div>
       <div className="flex flex-1 flex-col p-4">
         <span className="w-fit rounded-full bg-blue-600 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white">
