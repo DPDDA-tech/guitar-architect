@@ -1,4 +1,7 @@
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import MyAcademyCompanionChooser from '../components/myAcademy/MyAcademyCompanionChooser';
 import {
   MY_ACADEMY_COMPANION_KEY,
   MY_ACADEMY_COMPANIONS,
@@ -64,5 +67,15 @@ describe('My Academy journey companion', () => {
     clearMyAcademyCompanionChoice(storage);
     expect(storage.getItem(MY_ACADEMY_COMPANION_KEY)).toBeNull();
     expect(loadMyAcademyCompanionChoice(storage)).toBeNull();
+  });
+
+  it('renders both companions and preserves the option to continue without one', () => {
+    const markup = renderToStaticMarkup(React.createElement(MyAcademyCompanionChooser, { lang: 'pt' }));
+
+    expect(markup).toContain('Um convite de Clara');
+    expect(markup).toContain('Alice');
+    expect(markup).toContain('Arthur');
+    expect(markup).toContain('Nenhum acompanhante por enquanto');
+    expect(markup).toContain('não muda o currículo nem bloqueia caminhos');
   });
 });
