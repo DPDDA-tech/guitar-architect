@@ -12,6 +12,7 @@ import {
 import { guestSpecialists } from '../data/guestSpecialists';
 import InstructorCard from './InstructorCard';
 import GuestSpecialistCard from './GuestSpecialistCard';
+import GuestSpecialistProfilePage from './GuestSpecialistProfilePage';
 import AppFooter from './AppFooter';
 
 type ThemeMode = 'light' | 'dark';
@@ -114,6 +115,8 @@ const InstructorsGalleryPage: React.FC = () => {
       };
 
   const clearFilters = () => { setAreaFilter(null); setLevelFilter(null); };
+  const selectedSpecialist = new URLSearchParams(window.location.search).get('specialist');
+  if (selectedSpecialist) return <GuestSpecialistProfilePage specialistId={selectedSpecialist} />;
 
   return (
     <>
