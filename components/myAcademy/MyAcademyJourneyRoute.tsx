@@ -1,6 +1,7 @@
 import React from 'react';
 import { MY_ACADEMY_CURRICULUM } from '../../data/myAcademyCurriculum';
 import type { MyAcademyCurriculumMoment } from '../../types/myAcademyCurriculum';
+import { navigateToPath } from '../../utils/fretboardNavigation';
 import type { MyAcademyMomentId } from '../../utils/myAcademyMapPresentation';
 import {
   deriveMyAcademyExplorationEvidence,
@@ -32,10 +33,11 @@ interface MyAcademyJourneyRouteProps {
 type CharacterMarker = {
   name: string;
   image: string;
-  role: 'guide' | 'choice';
+  role: 'guide' | 'choice' | 'specialist';
+  profilePath?: string;
 };
 
-const CHARACTER_MARKERS: Partial<Record<MyAcademyMomentId, readonly CharacterMarker[]>> = {
+const BASE_CHARACTER_MARKERS: Partial<Record<MyAcademyMomentId, readonly CharacterMarker[]>> = {
   '0': [
     {
       name: 'Clara',
@@ -62,6 +64,13 @@ const CHARACTER_MARKERS: Partial<Record<MyAcademyMomentId, readonly CharacterMar
   ],
 };
 
+const TOM_MARKER: CharacterMarker = {
+  name: 'Tom',
+  image: '/instructors/1000/tom-card-instructor.webp',
+  role: 'specialist',
+  profilePath: '/instructors/tom',
+};
+
 const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
   lang,
   selectedMomentId,
@@ -84,6 +93,21 @@ const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
     explorationEvidence,
   );
   const moduleAccent = getMyAcademyWaypointAccent(selectedVisualState) === 'gold' ? 'amber' : 'cyan';
+  const showTom = selectedMomentId === '0' && selectedModuleId === 'M0-03';
+
+  const markerActionLabel = (character: CharacterMarker) => {
+    if (character.role === 'guide') return isPt ? `Conversar com ${character.name}` : `Talk with ${character.name}`;
+    if (character.role === 'specialist') return isPt ? `Conhecer ${character.name}, especialista convidado` : `Meet ${character.name}, guest specialist`;
+    return isPt ? `Escolher ${character.name}` : `Choose ${character.name}`;
+  };
+
+  const openCharacter = (character: CharacterMarker) => {
+    if (character.profilePath) {
+      navigateToPath(character.profilePath);
+      return;
+    }
+    onOpenCharacters();
+  };
 
   return (
     <div className="mt-8">
@@ -121,7 +145,8 @@ const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
               const presentation = getMyAcademyWaypointPresentation(moment.id, hasSelfRecord, lang);
               const visualState = getMyAcademyWaypointVisualState(moment.id, selectedMomentId, moment.status, explorationEvidence);
               const position = routeGeometry.waypointPositions[index];
-              const characters = CHARACTER_MARKERS[moment.id] ?? [];
+              const baseCharacters = BASE_CHARACTER_MARKERS[moment.id] ?? [];
+              const characters = moment.id === '0' && showTom ? [...baseCharacters, TOM_MARKER] : baseCharacters;
               const placeCharactersOnRight = position.x < 50;
 
               return (
@@ -146,24 +171,24 @@ const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
 
                   {characters.length > 0 && (
                     <div className={`absolute top-1/2 flex -translate-y-1/2 items-center ${placeCharactersOnRight ? 'left-[calc(100%+8px)]' : 'right-[calc(100%+8px)] flex-row-reverse'}`}>
-                      {characters.map((character, characterIndex) => (
-                        <button
-                          key={`${moment.id}-${character.name}`}
-                          type="button"
-                          onClick={onOpenCharacters}
-                          title={isPt
-                            ? `${character.role === 'guide' ? 'Conversar com' : 'Escolher'} ${character.name}`
-                            : `${character.role === 'guide' ? 'Talk with' : 'Choose'} ${character.name}`}
-                          aria-label={isPt
-                            ? `${character.role === 'guide' ? 'Conversar com' : 'Escolher'} ${character.name}`
-                            : `${character.role === 'guide' ? 'Talk with' : 'Choose'} ${character.name}`}
-                          className={`relative h-11 w-11 overflow-hidden rounded-full border-2 bg-slate-950 shadow-lg transition hover:z-20 hover:scale-110 focus-visible:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${character.role === 'guide' ? 'border-amber-300' : 'border-cyan-300'}`}
-                          style={{ marginInlineStart: characterIndex === 0 ? 0 : -10 }}
-                        >
-                          <img src={character.image} alt="" className="h-full w-full object-cover object-top" />
-                          <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border border-slate-950 ${character.role === 'guide' ? 'bg-amber-300' : 'bg-cyan-300'}`} aria-hidden="true" />
-                        </button>
-                      ))}
+                      {characters.map((character, characterIndex) => {
+                        const label = markerActionLabel(character);
+                        const specialist = character.role === 'specialist';
+                        return (
+                          <button
+                            key={`${moment.id}-${character.name}`}
+                            type="button"
+                            onClick={() => openCharacter(character)}
+                            title={label}
+                            aria-label={label}
+                            className={`relative h-11 w-11 overflow-hidden rounded-full border-2 bg-slate-950 shadow-lg transition hover:z-20 hover:scale-110 focus-visible:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${character.role === 'choice' ? 'border-cyan-300' : 'border-amber-300'} ${specialist ? 'ring-2 ring-amber-300/25 ring-offset-2 ring-offset-slate-950' : ''}`}
+                            style={{ marginInlineStart: characterIndex === 0 ? 0 : -10 }}
+                          >
+                            <img src={character.image} alt="" className="h-full w-full object-cover object-top" />
+                            <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border border-slate-950 ${character.role === 'choice' ? 'bg-cyan-300' : 'bg-amber-300'}`} aria-hidden="true" />
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </li>
