@@ -39,7 +39,7 @@ export const getMyAcademyDisplayNumber = (momentId: MyAcademyMomentId): number =
 );
 
 export const getMyAcademyPublicMapLabel = (lang: 'pt' | 'en'): string => (
-  lang === 'pt' ? 'Jornada My Academy' : 'My Academy Journey'
+  lang === 'pt' ? 'GA · MAPA 1—7' : 'GA · MAP 1—7'
 );
 
 export const shouldShowMyAcademyTerritoryStatus = (
