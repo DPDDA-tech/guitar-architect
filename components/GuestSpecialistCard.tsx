@@ -44,7 +44,7 @@ const GuestSpecialistCard: React.FC<GuestSpecialistCardProps> = ({ guest, isLigh
   return (
     <button
       type="button"
-      onClick={() => navigateTo(`/especialistas/${guest.id}`)}
+      onClick={() => navigateTo(`/instructors?specialist=${guest.id}`)}
       aria-label={lang === 'pt' ? `Ver perfil de ${guest.cardName}` : `View ${guest.cardName}'s profile`}
       className={`flex flex-col overflow-hidden rounded-3xl border text-left transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${panelClass}`}
     >
