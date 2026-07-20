@@ -101,7 +101,7 @@ const MyAcademyCurriculumMap: React.FC<MyAcademyCurriculumMapProps> = ({
             }}
             className="min-h-11 rounded-full border border-cyan-400/45 bg-cyan-400/10 px-5 text-xs font-bold uppercase tracking-[0.1em] text-cyan-100 transition hover:border-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
           >
-            {open ? (isPt ? 'Recolher turnê' : 'Collapse tour') : (isPt ? 'Abrir turnê' : 'Open tour')}
+            {open ? (isPt ? 'Recolher mapa' : 'Collapse map') : (isPt ? 'Abrir mapa' : 'Open map')}
           </button>
         </div>
 
