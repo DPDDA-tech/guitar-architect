@@ -101,10 +101,10 @@ const MyAcademyPage: React.FC = () => {
   };
 
   const nowPanel = (
-    <section id="agora" className={`scroll-mt-20 border-y px-5 py-12 sm:py-16 ${isLight ? 'border-cyan-100 bg-cyan-50/55' : 'border-cyan-950/70 bg-cyan-950/15'}`} aria-labelledby="my-academy-now-title">
+    <section id="onde-estou" className={`scroll-mt-20 border-y px-5 py-12 sm:py-16 ${isLight ? 'border-cyan-100 bg-cyan-50/55' : 'border-cyan-950/70 bg-cyan-950/15'}`} aria-labelledby="my-academy-now-title">
       <div className="mx-auto max-w-7xl">
         <div className="max-w-3xl">
-          <p className={`text-[10px] font-black uppercase tracking-[0.24em] ${isLight ? 'text-cyan-700' : 'text-cyan-300'}`}>{isPt ? 'Agora' : 'Now'}</p>
+          <p className={`text-[10px] font-black uppercase tracking-[0.24em] ${isLight ? 'text-cyan-700' : 'text-cyan-300'}`}>{isPt ? 'Onde estou agora' : 'Where I am now'}</p>
           <h2 id="my-academy-now-title" className={`mt-3 text-3xl font-black tracking-tight sm:text-4xl ${isLight ? 'text-slate-950' : 'text-slate-50'}`}>
             {isPt ? 'Um próximo passo explicado, sem limitar sua exploração.' : 'An explained next step, without limiting your exploration.'}
           </h2>
@@ -222,10 +222,10 @@ const MyAcademyPage: React.FC = () => {
             {isPt ? 'Voltar ao ecossistema' : 'Back to ecosystem'}
           </button>
           <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
-          <p className={`text-right text-[9px] font-black uppercase tracking-[0.22em] ${isLight ? 'text-cyan-700' : 'text-cyan-300'}`}>
-            Guitar Architect · My Academy
-          </p>
-          <GlobalPreferenceControls theme={theme} lang={lang} onThemeChange={setTheme} onLangChange={setLang} />
+            <p className={`text-right text-[9px] font-black uppercase tracking-[0.22em] ${isLight ? 'text-cyan-700' : 'text-cyan-300'}`}>
+              Guitar Architect · My Academy
+            </p>
+            <GlobalPreferenceControls theme={theme} lang={lang} onThemeChange={setTheme} onLangChange={setLang} />
           </div>
         </div>
       </header>
@@ -247,7 +247,7 @@ const MyAcademyPage: React.FC = () => {
                 {isPt ? 'Direção sem julgamento' : 'Direction without judgement'}
               </p>
               <h1 className={`mt-4 max-w-3xl font-black leading-[1.02] tracking-[-0.04em] ${isLight ? 'text-slate-950' : 'text-white'} ${isFirstAccess ? 'text-4xl sm:text-5xl lg:text-6xl' : 'text-4xl sm:text-5xl'}`}>
-                {isPt ? 'Sua jornada musical começa com um mapa.' : 'Your musical journey begins with a map.'}
+                {isPt ? 'Sua jornada musical começa com uma turnê.' : 'Your musical journey begins with a tour.'}
               </h1>
               <p className={`mt-5 max-w-2xl text-base font-semibold leading-relaxed sm:text-lg ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
                 {isPt
@@ -260,7 +260,7 @@ const MyAcademyPage: React.FC = () => {
                   onClick={openJourneyMap}
                   className="min-h-12 rounded-xl bg-cyan-700 px-6 text-sm font-black text-white shadow-lg shadow-cyan-950/20 transition hover:bg-cyan-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700"
                 >
-                  {isPt ? 'Conhecer o mapa da jornada' : 'Explore the journey map'}
+                  {isPt ? 'Conhecer sua turnê musical' : 'Explore your musical tour'}
                 </button>
                 <button
                   type="button"
@@ -280,9 +280,8 @@ const MyAcademyPage: React.FC = () => {
         </section>
 
         {isFirstAccess && <MyAcademyWelcome lang={lang} isLight={isLight} mode={getMyAcademyWelcomeMode(true)} />}
-        {isFirstAccess && curriculumMap}
+        {curriculumMap}
         {nowPanel}
-        {!isFirstAccess && curriculumMap}
         {!isFirstAccess && <MyAcademyWelcome lang={lang} isLight={isLight} mode={getMyAcademyWelcomeMode(false)} />}
 
         <section className="px-5 py-12 sm:py-16" aria-labelledby="my-academy-how-title">
