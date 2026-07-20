@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MY_ACADEMY_CURRICULUM_VERSION } from '../../data/myAcademyCurriculum';
 import {
   getMyAcademyPositionMomentId,
   getMyAcademyTerritory,
@@ -65,7 +64,7 @@ const MyAcademyCurriculumMap: React.FC<MyAcademyCurriculumMapProps> = ({
         <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-4xl">
             <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">
-              {isPt ? `GPS musical · mapa v${MY_ACADEMY_CURRICULUM_VERSION}` : `Musical GPS · map v${MY_ACADEMY_CURRICULUM_VERSION}`}
+              {isPt ? 'Seu mapa musical' : 'Your musical map'}
             </p>
             <h2 ref={headingRef} tabIndex={-1} id="my-academy-map-title" className="mt-3 text-3xl font-black tracking-tight outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-4 focus-visible:ring-offset-slate-950 sm:text-4xl">
               {isPt ? 'Sete territórios em uma jornada aberta.' : 'Seven territories in an open journey.'}
