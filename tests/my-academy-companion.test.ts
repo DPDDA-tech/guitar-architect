@@ -2,6 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import MyAcademyCompanionChooser from '../components/myAcademy/MyAcademyCompanionChooser';
+import MyAcademyCurriculumMap from '../components/myAcademy/MyAcademyCurriculumMap';
 import {
   MY_ACADEMY_COMPANION_KEY,
   MY_ACADEMY_COMPANIONS,
@@ -77,5 +78,21 @@ describe('My Academy journey companion', () => {
     expect(markup).toContain('Arthur');
     expect(markup).toContain('Nenhum acompanhante por enquanto');
     expect(markup).toContain('não muda o currículo nem bloqueia caminhos');
+  });
+
+  it('keeps a permanent reversible companion control inside the open journey map', () => {
+    const markup = renderToStaticMarkup(React.createElement(MyAcademyCurriculumMap, {
+      lang: 'pt',
+      open: true,
+      isFirstAccess: false,
+      hasSelfRecord: false,
+      focusMapRequest: 0,
+      onOpenChange: () => undefined,
+      onEngage: () => undefined,
+    }));
+
+    expect(markup).toContain('Acompanhante de jornada');
+    expect(markup).toContain('Ver, trocar ou remover Alice ou Arthur');
+    expect(markup).toContain('my-academy-companion-choice');
   });
 });
