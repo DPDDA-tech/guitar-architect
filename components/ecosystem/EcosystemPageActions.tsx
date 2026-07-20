@@ -1,5 +1,6 @@
 import React from 'react';
-import { setGlobalLang, setGlobalTheme, type AppLang } from '../../utils/ecosystemPreferences';
+import { getGlobalLang, setGlobalLang, setGlobalTheme, type AppLang } from '../../utils/ecosystemPreferences';
+import { hasMyAcademyReturnContextForPath } from '../../utils/myAcademyReturnContext';
 import { getEcosystemLang, getLocalizedBackLabel } from './ecosystemPageCopy';
 
 type EcosystemPageActionsProps = {
@@ -31,14 +32,17 @@ const GlobeIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="9" />
     <path d="M3 12h18" />
-    <path d="M12 3a14 14 0 0 1 4 9 14 14 0 0 1-4 9 14 14 0 0 1-4-9 14 14 0 0 1 4-9Z" />
+    <path d="M12 3a14 14 0 0 1 4 9 14 14 0 0 1-4 9 14 14 0 0 1 4-9Z" />
   </svg>
 );
 
 const getCurrentLang = (ecosystem: 'kids' | 'teens'): AppLang => getEcosystemLang(ecosystem);
 
 export const EcosystemPageActions: React.FC<EcosystemPageActionsProps> = ({ ecosystem, isLight, backLabel, backPath }) => {
-  const lang = getCurrentLang(ecosystem);
+  const ecosystemLang = getCurrentLang(ecosystem);
+  const returningToAcademy = typeof window !== 'undefined' && hasMyAcademyReturnContextForPath(window.location.pathname);
+  const lang = returningToAcademy ? getGlobalLang() : ecosystemLang;
+  const effectiveBackPath = returningToAcademy ? '/my-academy' : backPath;
   const actionClass = ecosystem === 'kids'
     ? (isLight
       ? 'border-emerald-300 bg-white text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.12)] hover:border-emerald-400 hover:shadow-[0_10px_24px_rgba(16,185,129,0.16)]'
@@ -59,13 +63,15 @@ export const EcosystemPageActions: React.FC<EcosystemPageActionsProps> = ({ ecos
     window.location.reload();
   };
 
-  const localizedBackLabel = getLocalizedBackLabel(ecosystem, backPath, backLabel);
+  const localizedBackLabel = returningToAcademy
+    ? (lang === 'pt' ? 'Voltar ao mapa do My Academy' : 'Return to My Academy map')
+    : getLocalizedBackLabel(ecosystem, backPath, backLabel);
 
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <button
         type="button"
-        onClick={() => navigateTo(backPath)}
+        onClick={() => navigateTo(effectiveBackPath)}
         className={`rounded-xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] transition-all ${actionClass}`}
       >
         {localizedBackLabel}
