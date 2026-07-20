@@ -36,14 +36,14 @@ type CharacterMarker = {
 };
 
 const CHARACTER_MARKERS: Partial<Record<MyAcademyMomentId, readonly CharacterMarker[]>> = {
-  discovery: [
+  '0': [
     {
       name: 'Clara',
       image: '/instructors/1000/clara-card-instructor.webp',
       role: 'guide',
     },
   ],
-  initiation: [
+  '1': [
     {
       name: 'Clara',
       image: '/instructors/1000/clara-card-instructor.webp',
