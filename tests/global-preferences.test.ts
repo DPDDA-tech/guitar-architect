@@ -67,12 +67,12 @@ describe('global ecosystem preferences', () => {
     expect(markup).toContain('Global preferences');
   });
 
-  it('keeps the pilot substance in Portuguese and adds a non-blocking English notice', () => {
+  it('keeps the guided experience in Portuguese and adds a non-blocking English notice', () => {
     localStorage.setItem(GLOBAL_THEME_KEY, 'dark');
     localStorage.setItem(GLOBAL_LANG_KEY, 'en');
     const markup = renderToStaticMarkup(React.createElement(MyAcademyUnitPrototypePage));
 
-    expect(markup).toContain('This pilot experience is currently available in Portuguese only.');
+    expect(markup).toContain('This first guided experience is currently available in Portuguese only.');
     expect(markup).toContain('Começar');
     expect(markup).toContain('Iniciação');
   });
