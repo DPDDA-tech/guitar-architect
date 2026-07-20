@@ -189,20 +189,20 @@ const topicContent = {
       paragraphs: [
         'A afinação organiza as cordas em alturas definidas para que notas, acordes e relações musicais soem como esperado. O instrumento pode sair da afinação por mudanças de temperatura, cordas novas, uso, transporte ou variações de tensão.',
         'Um afinador identifica a altura produzida. Toque uma corda por vez, observe a indicação e ajuste lentamente a tarraxa até chegar à referência. A afinação padrão é um ponto de partida, não a única possibilidade; instrumentos diferentes podem usar quantidades de cordas e referências distintas.',
-        'Afinar não é o mesmo que regular o instrumento. Se a corda estiver muito distante, excessivamente tensa, não estabilizar ou houver dúvida, pare e procure orientação. Mantenha postura confortável, faça pausas e reduza o volume antes de conectar ou desconectar equipamentos elétricos.',
+        'Afinar não é o mesmo que regular o instrumento. Se a corda estiver muito distante da referência, excessivamente tensa, não estabilizar ou houver dúvida, interrompa o ajuste e procure orientação.',
       ],
-      points: ['Confira uma corda por vez.', 'Gire a tarraxa lentamente.', 'Use o afinador como referência, não como cobrança.', 'Interrompa diante de dor, tensão excessiva ou dúvida técnica.'],
-      character: tom('Afinação, conforto e segurança', 'Tuning, comfort and safety').pt,
+      points: ['Confira uma corda por vez.', 'Gire a tarraxa lentamente.', 'Use o afinador como referência, não como cobrança.', 'Pare se a corda ficar excessivamente tensa ou se houver dúvida sobre o ajuste.'],
+      character: tom('Afinação e cuidado do instrumento', 'Tuning and instrument care').pt,
     },
     {
       heading: 'Tuning means adjusting each string to a reference pitch',
       paragraphs: [
         'Tuning organizes strings into defined pitches so notes, chords and musical relationships sound as expected. Instruments may go out of tune because of temperature, new strings, use, transport or tension changes.',
         'A tuner identifies the pitch being produced. Play one string at a time, observe the indication and slowly adjust the tuning peg until reaching the reference. Standard tuning is a starting point, not the only possibility; different instruments may use different string counts and references.',
-        'Tuning is not the same as setting up the instrument. If a string is far from reference, excessively tense, unstable or you are unsure, stop and seek guidance. Keep a comfortable posture, take breaks and reduce volume before connecting or disconnecting electric equipment.',
+        'Tuning is not the same as setting up the instrument. If a string is far from reference, excessively tense, unstable or you are unsure, stop adjusting and seek guidance.',
       ],
-      points: ['Check one string at a time.', 'Turn the tuning peg slowly.', 'Use the tuner as a reference, not pressure.', 'Stop when there is pain, excessive tension or technical doubt.'],
-      character: tom('Afinação, conforto e segurança', 'Tuning, comfort and safety').en,
+      points: ['Check one string at a time.', 'Turn the tuning peg slowly.', 'Use the tuner as a reference, not pressure.', 'Stop if the string becomes excessively tense or if you are unsure about the adjustment.'],
+      character: tom('Afinação e cuidado do instrumento', 'Tuning and instrument care').en,
     },
   ),
   'M0-04-01': topic(
