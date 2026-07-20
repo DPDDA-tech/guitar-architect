@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { NMC_RIT_001 } from '../data/learningUnits/nmcRit001';
 
 describe('My Academy learning unit NMC-RIT-001', () => {
-  it('keeps its editorial lineage and internal draft status explicit', () => {
+  it('keeps its editorial lineage and public experimental status explicit', () => {
     expect(NMC_RIT_001).toMatchObject({
       id: 'NMC-RIT-001',
-      version: '0.1.4',
+      version: '1.0.0',
       contractVersion: '0.2.2',
       sourceDossierVersion: '0.1.2',
-      editorialStatus: 'draft',
-      visibility: 'internal',
+      editorialStatus: 'experimental',
+      visibility: 'public',
     });
   });
 
@@ -46,5 +46,11 @@ describe('My Academy learning unit NMC-RIT-001', () => {
 
     expect(feedback).toContain('A ideia central aqui');
     expect(feedback).not.toMatch(/acertou|isso mesmo|aprovad[oa]/i);
+  });
+
+  it('introduces Clara as the guide without claiming adaptive diagnosis', () => {
+    expect(NMC_RIT_001.opening.join(' ')).toContain('Clara');
+    expect(NMC_RIT_001.selfRecord.nextPreferences.map(option => option.label).join(' ')).toContain('Clara');
+    expect(NMC_RIT_001.boundaries.join(' ')).toContain('não mede');
   });
 });
