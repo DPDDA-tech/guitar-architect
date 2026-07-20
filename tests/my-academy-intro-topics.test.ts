@@ -31,6 +31,8 @@ describe('My Academy published introduction topics', () => {
     expect(markup).toContain('Um mapa que conecta todo o ecossistema');
     expect(markup).toContain('Direção sem transformar experiência em julgamento');
     expect(markup).toContain('Uma jornada orientada, mas nunca obrigatória');
-    expect(markup).not.toMatch(/aprovação|reprovação|nível pessoal atribuído/i);
+    expect(markup).toContain('não atribui diagnóstico musical, aprovação, reprovação ou nível pessoal');
+    expect(markup).toContain('Sem promessa de avaliação técnica automática');
+    expect(markup).toContain('Sem bloqueio do mapa por respostas, pausas ou escolhas diferentes');
   });
 });
