@@ -1,4 +1,5 @@
 import React from 'react';
+import { navigateToPath } from '../../utils/fretboardNavigation';
 
 interface MyAcademyIntroTopicContentProps {
   itemId: string;
@@ -17,238 +18,245 @@ type TopicCopy = {
   };
 };
 
-const topic = (
-  pt: TopicCopy,
-  en: TopicCopy,
-): { pt: TopicCopy; en: TopicCopy } => ({ pt, en });
+const topic = (pt: TopicCopy, en: TopicCopy): { pt: TopicCopy; en: TopicCopy } => ({ pt, en });
+
+const clara = (rolePt: string, roleEn: string) => ({
+  pt: { name: 'Clara', image: '/instructors/1000/clara-card-instructor.webp', role: rolePt, profilePath: '/instructors/clara' },
+  en: { name: 'Clara', image: '/instructors/1000/clara-card-instructor.webp', role: roleEn, profilePath: '/instructors/clara' },
+});
+
+const tom = (rolePt: string, roleEn: string) => ({
+  pt: { name: 'Tom', image: '/instructors/1000/tom-card-instructor.webp', role: rolePt, profilePath: '/instructors/tom' },
+  en: { name: 'Tom', image: '/instructors/1000/tom-card-instructor.webp', role: roleEn, profilePath: '/instructors/tom' },
+});
 
 const topicContent = {
   'M0-01-01': topic(
     {
       heading: 'Um mapa que conecta todo o ecossistema',
       paragraphs: [
-        'O My Academy é a camada de orientação do Guitar Architect. Ele organiza assuntos, experiências, ferramentas e personagens em uma jornada compreensível, para que você saiba onde está, o que pode explorar e quais caminhos fazem sentido a partir dali.',
-        'Kids, Teens e Studio continuam sendo ambientes independentes. O My Academy não os substitui: cria pontes entre eles e explica por que determinada atividade ou ferramenta pode ser útil em cada momento.',
+        'O My Academy organiza assuntos, experiências, ferramentas e personagens para que você saiba onde está, o que pode explorar e quais caminhos fazem sentido a partir dali.',
+        'Kids, Teens e Studio continuam independentes. O My Academy não replica tudo: ele explica por que um recurso já existente pode ser útil e conduz você até ele.',
       ],
-      points: ['Kids favorece descoberta e curiosidade.', 'Teens aproxima descoberta, prática e desafios.', 'Studio oferece ferramentas de estudo e criação.', 'My Academy organiza essas possibilidades em uma jornada aberta.'],
-      character: { name: 'Clara', image: '/instructors/1000/clara-card-instructor.webp', role: 'Guia da jornada', profilePath: '/instructors/clara' },
+      points: ['Kids favorece descoberta e curiosidade.', 'Teens aproxima prática e desafios.', 'Studio oferece ferramentas de estudo e criação.', 'My Academy conecta essas possibilidades.'],
+      character: clara('Guia da jornada', 'Journey guide').pt,
     },
     {
       heading: 'A map connecting the whole ecosystem',
       paragraphs: [
-        'My Academy is Guitar Architect’s guidance layer. It organizes topics, experiences, tools and characters into an understandable journey, helping you see where you are, what you can explore and which paths may be useful from there.',
-        'Kids, Teens and Studio remain independent environments. My Academy does not replace them: it creates bridges and explains why a certain activity or tool may be useful at each moment.',
+        'My Academy organizes topics, experiences, tools and characters so you can see where you are, what you may explore and which paths may be useful from there.',
+        'Kids, Teens and Studio remain independent. My Academy does not replicate everything: it explains why an existing resource may be useful and guides you to it.',
       ],
-      points: ['Kids supports discovery and curiosity.', 'Teens connects discovery, practice and challenges.', 'Studio provides study and creation tools.', 'My Academy organizes these possibilities into an open journey.'],
-      character: { name: 'Clara', image: '/instructors/1000/clara-card-instructor.webp', role: 'Journey guide', profilePath: '/instructors/clara' },
+      points: ['Kids supports discovery and curiosity.', 'Teens connects practice and challenges.', 'Studio provides study and creation tools.', 'My Academy connects these possibilities.'],
+      character: clara('Guia da jornada', 'Journey guide').en,
     },
   ),
   'M0-01-02': topic(
     {
       heading: 'Direção sem transformar experiência em julgamento',
       paragraphs: [
-        'O Guitar Architect pode explicar conceitos, propor experiências, apresentar ferramentas e organizar próximos passos. Essas sugestões partem do conteúdo disponível e das escolhas declaradas por você.',
-        'O GA não observa sua execução física, não comprova domínio técnico e não transforma uma interação digital em diagnóstico musical. Por isso, não atribui aprovação, reprovação ou nível pessoal.',
+        'O Guitar Architect pode explicar conceitos, propor experiências e organizar próximos passos a partir do conteúdo disponível e das escolhas declaradas por você.',
+        'O GA não observa sua execução física nem transforma uma interação digital em diagnóstico musical. Por isso, não atribui aprovação, reprovação ou nível pessoal.',
       ],
-      points: ['Sem notas ou ranking no My Academy.', 'Sem promessa de avaliação técnica automática.', 'Sem bloqueio do mapa por respostas ou pausas.', 'Com linguagem transparente sobre o que foi apenas declarado.'],
+      points: ['Sem notas ou ranking.', 'Sem promessa de avaliação técnica automática.', 'Sem bloqueio do mapa por respostas ou pausas.', 'Com linguagem transparente sobre o que foi declarado.'],
     },
     {
       heading: 'Direction without turning experience into judgement',
       paragraphs: [
-        'Guitar Architect can explain concepts, propose experiences, present tools and organize possible next steps. Suggestions come from available content and choices explicitly declared by you.',
-        'GA does not observe physical performance, verify technical mastery or turn a digital interaction into a musical diagnosis. It therefore does not assign approval, failure or a personal level.',
+        'Guitar Architect can explain concepts, propose experiences and organize possible next steps from available content and choices declared by you.',
+        'GA does not observe physical performance or turn a digital interaction into a musical diagnosis. It therefore does not assign approval, failure or a personal level.',
       ],
-      points: ['No grades or My Academy ranking.', 'No promise of automatic technical assessment.', 'No map locks caused by answers or pauses.', 'Transparent language about declared information.'],
+      points: ['No grades or ranking.', 'No promise of automatic technical assessment.', 'No map locks caused by answers or pauses.', 'Transparent language about declared information.'],
     },
   ),
   'M0-01-03': topic(
     {
       heading: 'Uma jornada orientada, mas nunca obrigatória',
       paragraphs: [
-        'O My Academy pode destacar uma experiência como próximo passo, mas essa indicação não cria uma sequência obrigatória. Você continua livre para abrir o mapa completo, visitar outro território, repetir uma unidade, usar o Studio ou interromper a jornada.',
+        'O My Academy pode destacar um próximo passo, mas isso não cria sequência obrigatória. Você pode abrir o mapa, visitar outro território, repetir uma unidade, usar o Studio ou interromper a jornada.',
         'Revisar não significa retroceder, pular não significa falhar e explorar livremente não apaga o caminho sugerido.',
       ],
-      points: ['Seguir uma sugestão quando ela fizer sentido.', 'Repetir para reencontrar uma ideia.', 'Revisar sem perder outras possibilidades.', 'Pular ou explorar livremente e retornar depois.'],
+      points: ['Seguir uma sugestão quando fizer sentido.', 'Repetir para reencontrar uma ideia.', 'Revisar sem perder outras possibilidades.', 'Pular ou explorar e retornar depois.'],
     },
     {
       heading: 'A guided journey that is never mandatory',
       paragraphs: [
-        'My Academy may highlight an experience as a possible next step, but that suggestion does not create a mandatory sequence. You remain free to open the complete map, visit another territory, repeat a unit, use Studio or leave the journey.',
-        'Reviewing does not mean moving backwards, skipping does not mean failing, and free exploration does not erase the suggested path.',
+        'My Academy may highlight a next step, but that does not create a mandatory sequence. You may open the map, visit another territory, repeat a unit, use Studio or leave the journey.',
+        'Reviewing is not moving backwards, skipping is not failing, and free exploration does not erase the suggested path.',
       ],
-      points: ['Follow a suggestion when it is useful.', 'Repeat to revisit an idea.', 'Review without losing other possibilities.', 'Skip or explore freely and return later.'],
+      points: ['Follow a suggestion when useful.', 'Repeat to revisit an idea.', 'Review without losing other possibilities.', 'Skip or explore and return later.'],
     },
   ),
   'M0-02-01': topic(
     {
       heading: 'Som e silêncio organizam a atenção',
       paragraphs: [
-        'Som é uma vibração percebida; silêncio é a ausência relativa de um som que chama sua atenção. Na música, ambos têm função. Uma pausa pode separar ideias, criar expectativa ou dar espaço para que o som anterior seja compreendido.',
-        'Antes de nomear notas ou ritmos, experimente perceber quando algo começa, quanto tempo permanece e quando termina.',
+        'Som é uma vibração percebida; silêncio é a ausência relativa de um som que chama sua atenção. Na música, ambos têm função.',
+        'Antes de nomear notas ou ritmos, perceba quando algo começa, quanto tempo permanece e quando termina.',
       ],
-      points: ['Ouça o ambiente por alguns segundos.', 'Identifique um som contínuo e um som breve.', 'Perceba uma pausa entre dois acontecimentos.', 'Não há resposta avaliativa: o objetivo é notar.'],
-      character: { name: 'Clara', image: '/instructors/1000/clara-card-instructor.webp', role: 'Convite à escuta', profilePath: '/instructors/clara' },
+      points: ['Ouça o ambiente por alguns segundos.', 'Identifique um som contínuo e um breve.', 'Perceba uma pausa.', 'O objetivo é notar, não acertar.'],
+      character: clara('Convite à escuta', 'Listening invitation').pt,
     },
     {
       heading: 'Sound and silence organize attention',
       paragraphs: [
-        'Sound is a perceived vibration; silence is the relative absence of a sound calling your attention. In music, both have a function. A pause can separate ideas, build expectation or create space for the previous sound to be understood.',
+        'Sound is a perceived vibration; silence is the relative absence of a sound calling your attention. In music, both have a function.',
         'Before naming notes or rhythms, notice when something begins, how long it remains and when it ends.',
       ],
-      points: ['Listen to the environment for a few seconds.', 'Identify one continuous and one brief sound.', 'Notice a pause between two events.', 'There is no assessment: the goal is simply to notice.'],
-      character: { name: 'Clara', image: '/instructors/1000/clara-card-instructor.webp', role: 'Listening invitation', profilePath: '/instructors/clara' },
+      points: ['Listen to the environment.', 'Identify one continuous and one brief sound.', 'Notice a pause.', 'The goal is noticing, not correctness.'],
+      character: clara('Convite à escuta', 'Listening invitation').en,
     },
   ),
   'M0-02-02': topic(
     {
       heading: 'Quatro maneiras iniciais de descrever um som',
       paragraphs: [
-        'Altura indica se percebemos um som como mais grave ou mais agudo. Duração indica quanto tempo ele permanece. Intensidade descreve a sensação de força ou volume. Timbre é o conjunto de características que nos permite distinguir fontes diferentes mesmo quando produzem alturas parecidas.',
-        'Essas dimensões se combinam. Um mesmo som pode ser agudo, curto, suave e ter um timbre metálico.',
+        'Altura indica grave ou agudo. Duração indica quanto tempo o som permanece. Intensidade descreve força ou volume. Timbre permite distinguir fontes diferentes.',
+        'Essas dimensões se combinam: um som pode ser agudo, curto, suave e metálico.',
       ],
-      points: ['Grave e agudo: altura.', 'Longo e curto: duração.', 'Forte e suave: intensidade.', 'A identidade da fonte sonora: timbre.'],
+      points: ['Grave e agudo: altura.', 'Longo e curto: duração.', 'Forte e suave: intensidade.', 'Identidade sonora: timbre.'],
     },
     {
-      heading: 'Four initial ways to describe a sound',
+      heading: 'Four initial ways to describe sound',
       paragraphs: [
-        'Pitch describes whether a sound feels lower or higher. Duration describes how long it remains. Intensity describes perceived force or volume. Timbre is the set of qualities that lets us distinguish different sources even when they produce similar pitches.',
-        'These dimensions combine. The same sound may be high, short, soft and metallic in timbre.',
+        'Pitch describes low or high. Duration describes how long sound remains. Intensity describes force or volume. Timbre lets us distinguish different sources.',
+        'These dimensions combine: a sound may be high, short, soft and metallic.',
       ],
-      points: ['Low and high: pitch.', 'Long and short: duration.', 'Loud and soft: intensity.', 'The identity of the sound source: timbre.'],
+      points: ['Low and high: pitch.', 'Long and short: duration.', 'Loud and soft: intensity.', 'Sound identity: timbre.'],
     },
   ),
   'M0-02-03': topic(
     {
       heading: 'Você pode entrar pela escuta, pelo corpo ou pelo movimento',
       paragraphs: [
-        'Algumas pessoas percebem primeiro pelo ouvido; outras compreendem melhor ao bater o pé, acompanhar com as mãos ou visualizar um movimento. Nenhuma dessas portas de entrada é inferior.',
-        'O importante é reconhecer qual experiência torna a ideia mais clara e, depois, conectar essa percepção ao instrumento.',
+        'Algumas pessoas percebem primeiro pelo ouvido; outras compreendem melhor ao bater o pé, usar as mãos ou visualizar o movimento. Nenhuma dessas portas é inferior.',
+        'Reconheça qual experiência torna a ideia mais clara e depois conecte essa percepção ao instrumento.',
       ],
-      points: ['Escute sem tocar.', 'Marque uma pulsação com o corpo.', 'Observe o movimento que produz o som.', 'Compare qual abordagem tornou a ideia mais clara.'],
+      points: ['Escute sem tocar.', 'Marque uma pulsação com o corpo.', 'Observe o movimento que produz o som.', 'Compare qual abordagem ajudou mais.'],
     },
     {
       heading: 'You may begin through listening, body or movement',
       paragraphs: [
         'Some people notice first through hearing; others understand better by tapping a foot, using their hands or visualizing movement. None of these entry points is inferior.',
-        'What matters is recognizing which experience makes the idea clearer and then connecting that perception to the instrument.',
+        'Recognize which experience makes the idea clearer and then connect it to the instrument.',
       ],
-      points: ['Listen without playing.', 'Mark a pulse with your body.', 'Observe the movement producing the sound.', 'Compare which approach made the idea clearer.'],
+      points: ['Listen without playing.', 'Mark a pulse with your body.', 'Observe the movement producing sound.', 'Compare which approach helped more.'],
     },
   ),
   'M0-03-01': topic(
     {
-      heading: 'Reconheça o instrumento antes de exigir algo dele',
+      heading: 'Instrumentos de cordas podem produzir som de formas diferentes',
       paragraphs: [
-        'Guitarra e baixo compartilham elementos: corpo, braço, cordas, captadores, controles e conexão de saída. O baixo geralmente trabalha em registro mais grave e costuma ter menos cordas, embora existam muitas variações.',
-        'Neste primeiro contato, não é necessário memorizar modelos ou especificações. Basta localizar as partes principais e entender que cada uma participa da produção ou condução do som.',
+        'Violões, guitarras, baixos, banjos e outros instrumentos de cordas compartilham elementos como cordas, braço e corpo, mas não produzem nem projetam o som da mesma maneira.',
+        'Instrumentos acústicos usam o corpo e a caixa acústica para ampliar a vibração. Eletroacústicos combinam essa projeção natural com captação. Elétricos dependem de captadores e equipamentos externos para reproduzir o sinal com volume funcional.',
       ],
-      points: ['Corpo e braço formam a estrutura principal.', 'Cordas vibram e os captadores convertem essa vibração.', 'Controles alteram volume e características do sinal.', 'A saída conecta o instrumento ao restante do sistema.'],
-      character: { name: 'Tom', image: '/instructors/1000/tom-card-instructor.webp', role: 'Luthieria e cuidado', profilePath: '/instructors/tom' },
+      points: ['Acústico: corda, corpo e caixa acústica.', 'Eletroacústico: som natural e captação.', 'Elétrico: captador, sinal e equipamento.', 'Há muitas variações de forma, número de cordas e afinação.'],
+      character: tom('Luthieria e cuidado', 'Luthiery and care').pt,
     },
     {
-      heading: 'Recognize the instrument before demanding anything from it',
+      heading: 'String instruments may produce sound in different ways',
       paragraphs: [
-        'Guitar and bass share core elements: body, neck, strings, pickups, controls and output connection. Bass usually works in a lower register and often has fewer strings, although many variations exist.',
-        'At this first contact, you do not need to memorize models or specifications. Locate the main parts and understand that each one participates in producing or carrying sound.',
+        'Acoustic guitars, electric guitars, basses, banjos and other string instruments share elements such as strings, neck and body, but they do not produce or project sound in the same way.',
+        'Acoustic instruments use body and sound box to amplify vibration. Electro-acoustic instruments combine natural projection with pickup systems. Electric instruments rely on pickups and external equipment for functional volume.',
       ],
-      points: ['Body and neck form the main structure.', 'Strings vibrate and pickups convert that vibration.', 'Controls change volume and signal characteristics.', 'The output connects the instrument to the rest of the system.'],
-      character: { name: 'Tom', image: '/instructors/1000/tom-card-instructor.webp', role: 'Luthiery and care', profilePath: '/instructors/tom' },
+      points: ['Acoustic: string, body and sound box.', 'Electro-acoustic: natural sound and pickup.', 'Electric: pickup, signal and equipment.', 'There are many variations in shape, strings and tuning.'],
+      character: tom('Luthieria e cuidado', 'Luthiery and care').en,
     },
   ),
   'M0-03-02': topic(
     {
-      heading: 'O caminho básico do som',
+      heading: 'Da vibração ao som que chega aos ouvidos',
       paragraphs: [
-        'Ao tocar uma corda, ela vibra. Os captadores transformam essa vibração em sinal elétrico, que segue pelo circuito do instrumento, sai pelo cabo e chega a um amplificador, interface ou outro equipamento.',
-        'Braço, casas e cordas ajudam a definir a altura produzida. Captadores, controles, cabos e equipamentos influenciam como o sinal chega aos seus ouvidos.',
+        'Em um violão ou banjo acústico, a vibração das cordas chega ao tampo e à caixa acústica, que movimentam o ar e projetam o som. Em instrumentos elétricos, captadores transformam a vibração em sinal elétrico.',
+        'Nos eletroacústicos, os dois caminhos podem coexistir. O braço e as casas organizam as alturas; corpo, caixa, captadores, controles, cabos e amplificação influenciam o resultado final.',
       ],
-      points: ['Cordas: origem da vibração.', 'Braço e casas: organização das alturas.', 'Captadores: conversão em sinal.', 'Cabo e equipamento: condução e reprodução.'],
-      character: { name: 'Tom', image: '/instructors/1000/tom-card-instructor.webp', role: 'Especialista convidado', profilePath: '/instructors/tom' },
+      points: ['Corda: origem da vibração.', 'Caixa acústica: projeção natural.', 'Captador: conversão em sinal.', 'Amplificador ou interface: reprodução do sinal elétrico.'],
+      character: tom('Especialista convidado', 'Guest specialist').pt,
     },
     {
-      heading: 'The basic signal path',
+      heading: 'From vibration to the sound reaching your ears',
       paragraphs: [
-        'When you play a string, it vibrates. Pickups turn that vibration into an electrical signal, which travels through the instrument circuit, leaves through the cable and reaches an amplifier, interface or other equipment.',
-        'Neck, frets and strings help define pitch. Pickups, controls, cables and equipment influence how the signal reaches your ears.',
+        'In an acoustic guitar or banjo, string vibration reaches the top and sound box, which move air and project sound. In electric instruments, pickups turn vibration into an electrical signal.',
+        'Electro-acoustic instruments may use both paths. Neck and frets organize pitch; body, sound box, pickups, controls, cables and amplification shape the result.',
       ],
-      points: ['Strings: source of vibration.', 'Neck and frets: pitch organization.', 'Pickups: signal conversion.', 'Cable and equipment: transmission and reproduction.'],
-      character: { name: 'Tom', image: '/instructors/1000/tom-card-instructor.webp', role: 'Guest specialist', profilePath: '/instructors/tom' },
+      points: ['String: source of vibration.', 'Sound box: natural projection.', 'Pickup: signal conversion.', 'Amplifier or interface: electrical signal reproduction.'],
+      character: tom('Especialista convidado', 'Guest specialist').en,
     },
   ),
   'M0-03-03': topic(
     {
-      heading: 'Conforto e segurança vêm antes da insistência',
+      heading: 'Afinar é ajustar cada corda a uma altura de referência',
       paragraphs: [
-        'Use a afinação como referência, mantenha volume confortável e faça pausas. Tensão leve decorrente de uma adaptação pode acontecer, mas dor persistente, aguda ou crescente não deve ser tratada como prova de esforço.',
-        'Cabos devem ser conectados com cuidado e o volume pode ser reduzido antes de conectar ou desconectar equipamentos. Um instrumento estável e bem cuidado facilita a aprendizagem.',
+        'A afinação organiza as cordas em alturas definidas para que notas, acordes e relações musicais soem como esperado. O instrumento pode sair da afinação por mudanças de temperatura, cordas novas, uso, transporte ou variações de tensão.',
+        'Um afinador identifica a altura produzida. Toque uma corda por vez, observe a indicação e ajuste lentamente a tarraxa até chegar à referência. A afinação padrão é um ponto de partida, não a única possibilidade; instrumentos diferentes podem usar quantidades de cordas e referências distintas.',
+        'Afinar não é o mesmo que regular o instrumento. Se a corda estiver muito distante, excessivamente tensa, não estabilizar ou houver dúvida, pare e procure orientação. Mantenha postura confortável, faça pausas e reduza o volume antes de conectar ou desconectar equipamentos elétricos.',
       ],
-      points: ['Confira a afinação sem transformar isso em cobrança.', 'Comece com volume baixo e confortável.', 'Faça pausas antes de perder concentração ou conforto.', 'Interrompa e procure orientação diante de dor relevante.'],
-      character: { name: 'Tom', image: '/instructors/1000/tom-card-instructor.webp', role: 'Cuidado do instrumento', profilePath: '/instructors/tom' },
+      points: ['Confira uma corda por vez.', 'Gire a tarraxa lentamente.', 'Use o afinador como referência, não como cobrança.', 'Interrompa diante de dor, tensão excessiva ou dúvida técnica.'],
+      character: tom('Afinação, conforto e segurança', 'Tuning, comfort and safety').pt,
     },
     {
-      heading: 'Comfort and safety come before persistence',
+      heading: 'Tuning means adjusting each string to a reference pitch',
       paragraphs: [
-        'Use tuning as a reference, keep volume comfortable and take breaks. Mild adaptation tension may occur, but persistent, sharp or increasing pain should not be treated as proof of effort.',
-        'Connect cables carefully and reduce volume before connecting or disconnecting equipment. A stable, well cared-for instrument supports learning.',
+        'Tuning organizes strings into defined pitches so notes, chords and musical relationships sound as expected. Instruments may go out of tune because of temperature, new strings, use, transport or tension changes.',
+        'A tuner identifies the pitch being produced. Play one string at a time, observe the indication and slowly adjust the tuning peg until reaching the reference. Standard tuning is a starting point, not the only possibility; different instruments may use different string counts and references.',
+        'Tuning is not the same as setting up the instrument. If a string is far from reference, excessively tense, unstable or you are unsure, stop and seek guidance. Keep a comfortable posture, take breaks and reduce volume before connecting or disconnecting electric equipment.',
       ],
-      points: ['Check tuning without turning it into pressure.', 'Begin at a low, comfortable volume.', 'Pause before losing focus or comfort.', 'Stop and seek guidance when relevant pain appears.'],
-      character: { name: 'Tom', image: '/instructors/1000/tom-card-instructor.webp', role: 'Instrument care', profilePath: '/instructors/tom' },
+      points: ['Check one string at a time.', 'Turn the tuning peg slowly.', 'Use the tuner as a reference, not pressure.', 'Stop when there is pain, excessive tension or technical doubt.'],
+      character: tom('Afinação, conforto e segurança', 'Tuning, comfort and safety').en,
     },
   ),
   'M0-04-01': topic(
     {
       heading: 'O braço interativo é um mapa, não um teste',
       paragraphs: [
-        'O Studio permite visualizar notas, intervalos, escalas, acordes e relações no braço. Nesta primeira exploração, o objetivo é compreender que uma indicação visual representa uma posição possível no instrumento real.',
-        'Você pode abrir o braço, observar as cordas e casas e selecionar uma nota sem precisar memorizar ou executar nada.',
+        'O Studio permite visualizar notas, intervalos, escalas, acordes e relações no braço. Nesta primeira exploração, o objetivo é perceber que uma indicação visual representa uma posição possível no instrumento real.',
+        'Abra o recurso, observe cordas e casas e selecione uma posição sem obrigação de memorizar ou executar.',
       ],
-      points: ['Abra o Studio quando desejar.', 'Observe cordas e casas como coordenadas.', 'Selecione uma posição e veja sua identificação.', 'Retorne ao mapa sem obrigação de completar uma tarefa.'],
+      points: ['Cordas e casas funcionam como coordenadas.', 'Uma posição pode receber nomes e relações diferentes.', 'Explorar não significa dominar.', 'Você pode voltar ao mapa a qualquer momento.'],
     },
     {
       heading: 'The interactive fretboard is a map, not a test',
       paragraphs: [
-        'Studio lets you visualize notes, intervals, scales, chords and relationships across the fretboard. In this first exploration, the goal is to understand that a visual indication represents a possible position on the physical instrument.',
-        'You may open the fretboard, observe strings and frets and select a note without memorizing or performing anything.',
+        'Studio lets you visualize notes, intervals, scales, chords and relationships across the fretboard. The goal is to see that a visual indication represents a possible position on the real instrument.',
+        'Open the resource, observe strings and frets and select a position without memorizing or performing.',
       ],
-      points: ['Open Studio whenever you wish.', 'Observe strings and frets as coordinates.', 'Select a position and see its identification.', 'Return to the map without completing a task.'],
+      points: ['Strings and frets work as coordinates.', 'A position may have different names and relationships.', 'Exploring is not mastering.', 'You may return to the map at any time.'],
     },
   ),
   'M0-04-02': topic(
     {
       heading: 'Experimente antes de procurar acerto',
       paragraphs: [
-        'Toque uma corda, selecione uma posição no braço virtual, escute um som disponível ou apenas observe uma relação visual. O objetivo é estabelecer contato, não medir desempenho.',
-        'Você pode repetir, alterar a ordem ou interromper. Uma primeira exploração bem-sucedida é aquela que desperta uma pergunta ou torna algum elemento menos estranho.',
+        'Toque uma corda, selecione uma posição no braço virtual, escute um som disponível ou observe uma relação visual. O objetivo é estabelecer contato, não medir desempenho.',
+        'Uma primeira exploração bem-sucedida é aquela que desperta uma pergunta ou torna algum elemento menos estranho.',
       ],
-      points: ['Escolha uma única ação simples.', 'Observe o que mudou quando você interagiu.', 'Repita somente se houver curiosidade.', 'Registre uma percepção, não uma nota.'],
+      points: ['Escolha uma ação simples.', 'Observe o que mudou.', 'Repita somente se houver curiosidade.', 'Registre uma percepção, não uma nota.'],
     },
     {
       heading: 'Experiment before looking for correctness',
       paragraphs: [
-        'Play a string, select a position on the virtual fretboard, listen to an available sound or simply observe a visual relationship. The goal is contact, not performance measurement.',
-        'You may repeat, change the order or stop. A successful first exploration is one that creates a question or makes something feel less unfamiliar.',
+        'Play a string, select a virtual fretboard position, listen to an available sound or observe a visual relationship. The goal is contact, not performance measurement.',
+        'A successful first exploration creates a question or makes something feel less unfamiliar.',
       ],
-      points: ['Choose one simple action.', 'Notice what changed when you interacted.', 'Repeat only when curiosity remains.', 'Record a perception, not a grade.'],
+      points: ['Choose one simple action.', 'Notice what changed.', 'Repeat only when curious.', 'Record a perception, not a grade.'],
     },
   ),
   'M0-04-03': topic(
     {
       heading: 'Escolha conscientemente o próximo ponto',
       paragraphs: [
-        'Depois da primeira exploração, você pode seguir a sugestão apresentada em “Onde estou agora”, abrir o mapa completo ou entrar livremente em outro ambiente. Nenhuma dessas escolhas invalida as demais.',
+        'Depois da exploração, você pode seguir a sugestão de “Onde estou agora”, abrir o mapa completo ou entrar livremente em outro ambiente. Nenhuma escolha invalida as demais.',
         'Alice pode acompanhar uma abordagem mais contemplativa e explicada; Arthur pode acrescentar pequenos desafios e impulso. A escolha é reversível e não altera o currículo.',
       ],
-      points: ['Seguir a sugestão atual.', 'Abrir o mapa e escolher outro território.', 'Explorar o Studio livremente.', 'Escolher Alice, Arthur ou continuar sem acompanhante.'],
-      character: { name: 'Alice e Arthur', image: '/instructors/1000/alice-card-instructor.webp', role: 'Acompanhamento opcional' },
+      points: ['Seguir a sugestão atual.', 'Abrir o mapa e escolher outro território.', 'Explorar o Studio livremente.', 'Escolher Alice, Arthur ou nenhum acompanhante.'],
     },
     {
       heading: 'Choose the next point deliberately',
       paragraphs: [
-        'After the first exploration, you may follow the suggestion shown in “Where I am now”, open the complete map or freely enter another environment. None of these choices invalidates the others.',
-        'Alice may accompany a more reflective and explained approach; Arthur may add small challenges and momentum. The choice is reversible and does not change the curriculum.',
+        'After exploring, you may follow the suggestion in “Where I am now”, open the full map or freely enter another environment. None of these choices invalidates the others.',
+        'Alice may support a more reflective approach; Arthur may add small challenges and momentum. The choice is reversible and does not change the curriculum.',
       ],
-      points: ['Follow the current suggestion.', 'Open the map and choose another territory.', 'Explore Studio freely.', 'Choose Alice, Arthur or continue without a companion.'],
-      character: { name: 'Alice and Arthur', image: '/instructors/1000/alice-card-instructor.webp', role: 'Optional companions' },
+      points: ['Follow the current suggestion.', 'Open the map and choose another territory.', 'Explore Studio freely.', 'Choose Alice, Arthur or no companion.'],
     },
   ),
 } as const;
@@ -278,9 +286,9 @@ const MyAcademyIntroTopicContent: React.FC<MyAcademyIntroTopicContentProps> = ({
               <p className="text-sm font-black text-white">{content.character.name}</p>
               <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-amber-200">{content.character.role}</p>
               {content.character.profilePath && (
-                <a href={content.character.profilePath} className="mt-1 inline-flex text-xs font-bold text-cyan-300 hover:text-cyan-200">
+                <button type="button" onClick={() => navigateToPath(content.character!.profilePath!)} className="mt-1 inline-flex text-xs font-bold text-cyan-300 hover:text-cyan-200">
                   {isPt ? 'Conhecer personagem' : 'Meet character'}
-                </a>
+                </button>
               )}
             </div>
           </div>
