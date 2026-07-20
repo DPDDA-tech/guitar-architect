@@ -200,7 +200,7 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
               <div className="grid gap-3">
                 <button type="button" onClick={() => setStep(1)} className="min-h-12 rounded-xl border border-slate-700 bg-slate-950/60 px-4 text-sm font-black text-slate-100">Repetir a experiência</button>
                 <button type="button" onClick={() => navigateToPath('/studio')} className="min-h-12 rounded-xl border border-blue-400/40 bg-blue-600 px-4 text-sm font-black text-white">Explorar o Studio livremente</button>
-                <button type="button" onClick={() => navigateToPath('/my-academy')} className="min-h-12 rounded-xl border border-slate-700 px-4 text-sm font-black text-slate-300">Voltar ao My Academy</button>
+                <button type="button" onClick={() => navigateToPath('/my-academy')} className="min-h-12 rounded-xl border border-slate-700 px-4 text-sm font-black text-slate-300">Sair da jornada</button>
               </div>
             </div>
           )}
