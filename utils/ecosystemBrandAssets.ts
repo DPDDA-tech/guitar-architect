@@ -23,11 +23,12 @@ const getBrandForPath = (path: string): EcosystemBrandId | null => {
 
 export const syncEcosystemBrandImages = (
   theme: ThemeMode,
-  root: ParentNode = document,
+  root?: ParentNode,
 ) => {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-  root.querySelectorAll<HTMLImageElement>('img').forEach((image) => {
+  const syncRoot = root ?? document;
+  syncRoot.querySelectorAll<HTMLImageElement>('img').forEach((image) => {
     const rawSrc = image.getAttribute('src');
     if (!rawSrc) return;
 
