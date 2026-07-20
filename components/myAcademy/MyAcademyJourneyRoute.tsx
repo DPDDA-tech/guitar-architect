@@ -10,7 +10,6 @@ import {
 import {
   getMyAcademyDisplayNumber,
   getMyAcademyPositionExplanation,
-  getMyAcademyPublicMapLabel,
   getMyAcademyWaypointPresentation,
 } from '../../utils/myAcademyMapPresentation';
 import {
@@ -118,7 +117,7 @@ const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
 
       <div className="relative overflow-hidden rounded-[2.25rem] border border-cyan-900/70 bg-[#07111f] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_28px_80px_rgba(0,0,0,0.28)] [background-image:linear-gradient(rgba(34,211,238,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.055)_1px,transparent_1px),radial-gradient(circle_at_12%_16%,rgba(180,128,63,0.14),transparent_34%)] [background-size:28px_28px,28px_28px,100%_100%]">
         <div className="pointer-events-none absolute left-5 top-5 z-20 text-xs font-bold uppercase tracking-[0.14em] text-cyan-100/75" aria-hidden="true">
-          {getMyAcademyPublicMapLabel(lang)}
+          {isPt ? 'Jornada My Academy' : 'My Academy Journey'}
         </div>
         <svg className="pointer-events-none absolute -right-20 -top-28 h-[360px] w-[360px] text-amber-300/10" viewBox="0 0 200 240" fill="none" aria-hidden="true">
           <path d="M100 12C154 12 187 61 175 117C161 181 118 225 100 230C82 225 39 181 25 117C13 61 46 12 100 12Z" stroke="currentColor" strokeWidth="2" />
