@@ -2,11 +2,11 @@ import type { LearningUnit } from '../../types/learningUnit';
 
 export const NMC_RIT_001 = {
   id: 'NMC-RIT-001',
-  version: '0.1.4',
+  version: '1.0.0',
   contractVersion: '0.2.2',
   sourceDossierVersion: '0.1.2',
-  editorialStatus: 'draft',
-  visibility: 'internal',
+  editorialStatus: 'experimental',
+  visibility: 'public',
   language: 'pt-BR',
   moment: 'initiation',
   domain: 'rhythm',
@@ -15,8 +15,8 @@ export const NMC_RIT_001 = {
   estimatedMinutes: [4, 7],
   objective: 'Reconhecer a ideia de pulso e experimentar essa relação pelo corpo, pelo instrumento ou pelo metrônomo contextual.',
   opening: [
-    'Em muitas músicas, o pulso é uma batida regular que serve de referência. É o que permite bater palmas, mover o corpo ou tocar junto acompanhando o fluxo.',
-    'Muita gente já sente esse pulso sem nunca ter dado um nome a ele. Aqui você não precisa provar nada: apenas perceber, experimentar e escolher como continuar.',
+    'Toda jornada musical precisa de uma referência para começar. Nesta primeira etapa, Clara convida você a perceber o pulso: uma repetição regular que ajuda o corpo, a escuta e o instrumento a encontrarem um mesmo caminho.',
+    'Talvez você já acompanhe músicas com o pé, com a cabeça ou com as mãos sem nunca ter dado um nome a isso. Aqui você não precisa provar nada: basta perceber, experimentar e escolher como deseja continuar.',
   ],
   boundaries: [
     'O GA não mede a precisão temporal do usuário.',
@@ -28,14 +28,14 @@ export const NMC_RIT_001 = {
       id: 'perceive-pulse',
       order: 1,
       title: 'Perceba a repetição',
-      eyebrow: 'Microatividade 1 · Perceber',
+      eyebrow: 'Etapa 1 · Perceber',
       estimatedMinutes: [1, 2],
       optional: false,
       modalities: ['visual', 'auditory', 'combined'],
       instructions: [
         'Escolha como prefere perceber os pulsos: pelo sinal visual, pelo som ou pelos dois.',
         'Observe ou escute alguns pulsos sem tentar acompanhá-los imediatamente.',
-        'Quando desejar, escolha um movimento pequeno para marcar cada repetição — ou apenas perceba a sequência.',
+        'Quando desejar, marque cada repetição com um movimento pequeno — ou apenas acompanhe mentalmente.',
       ],
       completionChoices: [
         { id: 'experienced', label: 'Fiz a experiência' },
@@ -46,7 +46,7 @@ export const NMC_RIT_001 = {
       id: 'add-sound',
       order: 2,
       title: 'Acrescente um som, se quiser',
-      eyebrow: 'Microatividade 2 · Relacionar',
+      eyebrow: 'Etapa 2 · Relacionar',
       estimatedMinutes: [1, 2],
       optional: true,
       modalities: ['visual', 'auditory', 'combined'],
@@ -65,7 +65,7 @@ export const NMC_RIT_001 = {
       id: 'explore-metronome',
       order: 3,
       title: 'Explore o metrônomo',
-      eyebrow: 'Microatividade 3 · Explorar',
+      eyebrow: 'Etapa 3 · Explorar',
       estimatedMinutes: [1, 3],
       optional: true,
       modalities: ['visual', 'auditory', 'combined'],
@@ -92,7 +92,7 @@ export const NMC_RIT_001 = {
     allowFreeExploration: true,
   },
   conceptCheck: {
-    prompt: 'Nesta unidade, o que significa pulso?',
+    prompt: 'Nesta etapa, o que significa pulso?',
     nonBlocking: true,
     choices: [
       {
@@ -133,8 +133,8 @@ export const NMC_RIT_001 = {
       { id: 'no-answer', label: 'Prefiro não responder' },
     ],
     nextPreferences: [
-      { id: 'repeat', label: 'Repetir' },
-      { id: 'review', label: 'Revisar a explicação' },
+      { id: 'repeat', label: 'Repetir esta etapa' },
+      { id: 'review', label: 'Rever a explicação de Clara' },
       { id: 'continue', label: 'Continuar a jornada' },
       { id: 'studio', label: 'Explorar o Studio livremente' },
     ],
