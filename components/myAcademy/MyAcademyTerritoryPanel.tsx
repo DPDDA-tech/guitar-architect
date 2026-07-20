@@ -28,13 +28,12 @@ const MyAcademyTerritoryPanel: React.FC<MyAcademyTerritoryPanelProps> = ({
   const isPt = lang === 'pt';
   const navigation = getMyAcademyWaypointPresentation(territory.id, hasSelfRecord, lang);
   const showTerritoryEditorialStatus = shouldShowMyAcademyTerritoryStatus(territory.id, navigation.isCurrent);
-
   const selectedModule = territory.modules.find(module => module.id === selectedModuleId) ?? territory.modules[0];
 
   const statusLabel = (status: MyAcademyMapStatus) => {
-    if (status === 'available') return isPt ? 'Disponível' : 'Available';
-    if (status === 'horizon') return isPt ? 'Horizonte curricular' : 'Curricular horizon';
-    return isPt ? 'Em preparação' : 'In preparation';
+    if (status === 'available') return isPt ? 'Disponível agora' : 'Available now';
+    if (status === 'horizon') return isPt ? 'Caminho futuro' : 'Future path';
+    return isPt ? 'Em desenvolvimento' : 'In development';
   };
 
   const statusClass = (status: MyAcademyMapStatus) => {
@@ -55,7 +54,7 @@ const MyAcademyTerritoryPanel: React.FC<MyAcademyTerritoryPanelProps> = ({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-200">
-              {isPt ? `Território selecionado · M${territory.id}` : `Selected territory · M${territory.id}`}
+              {isPt ? 'Território selecionado' : 'Selected territory'}
             </p>
             <h3 id="selected-territory-title" className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
               {territory.title[lang]}
@@ -78,13 +77,12 @@ const MyAcademyTerritoryPanel: React.FC<MyAcademyTerritoryPanelProps> = ({
       <div className="grid gap-0 lg:grid-cols-[minmax(260px,0.38fr)_minmax(0,0.62fr)]">
         <div className="border-b border-slate-800 p-4 lg:border-b-0 lg:border-r sm:p-5">
           <p className="mb-3 text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">
-            {isPt ? 'Módulos deste território' : 'Modules in this territory'}
+            {isPt ? 'Escolha um tema deste território' : 'Choose a topic in this territory'}
           </p>
-          <div className="space-y-2" role="group" aria-label={isPt ? `Módulos de ${territory.title.pt}` : `Modules in ${territory.title.en}`}>
+          <div className="space-y-2" role="group" aria-label={isPt ? `Temas de ${territory.title.pt}` : `Topics in ${territory.title.en}`}>
             {territory.modules.map(module => {
               const selected = module.id === selectedModule?.id;
               const editorialStatus = moduleStatus(module);
-
               return (
                 <button
                   key={module.id}
@@ -94,7 +92,6 @@ const MyAcademyTerritoryPanel: React.FC<MyAcademyTerritoryPanelProps> = ({
                   onClick={() => onSelectModule(module.id)}
                   className={`flex min-h-14 w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${selected ? 'border-cyan-300/55 bg-cyan-300/10' : 'border-slate-800 bg-slate-950/45 hover:border-slate-600'}`}
                 >
-                  <span className="shrink-0 text-[8px] font-black uppercase tracking-[0.12em] text-cyan-300/75">{module.id}</span>
                   <span className="min-w-0 flex-1 text-sm font-black leading-snug text-slate-100">{module.title[lang]}</span>
                   <span className={`h-2.5 w-2.5 shrink-0 rounded-full border ${editorialStatus === 'available' ? 'border-cyan-200 bg-cyan-300' : editorialStatus === 'horizon' ? 'border-amber-300/70 bg-amber-300/35' : 'border-slate-500 bg-slate-700'}`} aria-hidden="true" />
                 </button>
@@ -108,7 +105,9 @@ const MyAcademyTerritoryPanel: React.FC<MyAcademyTerritoryPanelProps> = ({
             <>
               <div className="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-[8px] font-black uppercase tracking-[0.15em] text-cyan-400/65">{selectedModule.id}</p>
+                  <p className="text-[8px] font-black uppercase tracking-[0.15em] text-cyan-400/65">
+                    {isPt ? 'Tema escolhido' : 'Selected topic'}
+                  </p>
                   <h4 className="mt-1 text-xl font-black text-white">{selectedModule.title[lang]}</h4>
                 </div>
                 <span className={`self-start rounded-full border px-3 py-1.5 text-[8px] font-black uppercase tracking-[0.12em] ${statusClass(moduleStatus(selectedModule))}`}>
@@ -131,7 +130,7 @@ const MyAcademyTerritoryPanel: React.FC<MyAcademyTerritoryPanelProps> = ({
                           onClick={() => navigateToPath(item.path!)}
                           className="min-h-11 shrink-0 rounded-xl bg-cyan-600 px-4 text-xs font-black text-white transition hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
                         >
-                          {isPt ? 'Abrir unidade' : 'Open unit'}
+                          {isPt ? 'Começar experiência' : 'Start experience'}
                         </button>
                       )}
                     </div>
