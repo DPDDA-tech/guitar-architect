@@ -197,9 +197,14 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
                 <p className="mt-3 text-sm font-semibold leading-relaxed text-cyan-100/75">O GA apenas organiza caminhos possíveis a partir das escolhas que você fez. Você continua livre para repetir, explorar ou voltar ao mapa.</p>
               </div>
               <MyAcademyCompanionChooser lang={lang} />
+              <div className="rounded-2xl border border-cyan-400/30 bg-cyan-950/20 p-4">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">Próximo passo</p>
+                <p className="mt-2 text-sm font-semibold leading-relaxed text-cyan-100/80">A próxima experiência guiada está sendo preparada. Você pode seguir para o mapa e conhecer os caminhos disponíveis.</p>
+                <button type="button" onClick={() => navigateToPath('/my-academy#mapa')} className="mt-4 min-h-12 w-full rounded-xl bg-cyan-600 px-4 text-sm font-black text-white shadow-lg shadow-cyan-950/30 transition hover:bg-cyan-500">Prosseguir na jornada</button>
+              </div>
               <div className="grid gap-3">
-                <button type="button" onClick={() => setStep(1)} className="min-h-12 rounded-xl border border-slate-700 bg-slate-950/60 px-4 text-sm font-black text-slate-100">Repetir a experiência</button>
                 <button type="button" onClick={() => navigateToPath('/studio')} className="min-h-12 rounded-xl border border-blue-400/40 bg-blue-600 px-4 text-sm font-black text-white">Explorar o Studio livremente</button>
+                <button type="button" onClick={() => setStep(1)} className="min-h-12 rounded-xl border border-slate-700 bg-slate-950/60 px-4 text-sm font-black text-slate-100">Repetir a experiência</button>
                 <button type="button" onClick={() => navigateToPath('/my-academy')} className="min-h-12 rounded-xl border border-slate-700 px-4 text-sm font-black text-slate-300">Sair da jornada</button>
               </div>
             </div>
