@@ -1,5 +1,7 @@
 import React from 'react';
 import type { Lang } from '../i18n';
+import { getGlobalLang } from '../utils/ecosystemPreferences';
+import { hasMyAcademyReturnContextForPath } from '../utils/myAcademyReturnContext';
 
 const navigateTo = (path: string) => {
   window.history.pushState(null, '', path);
@@ -39,8 +41,21 @@ const AppFooter: React.FC<AppFooterProps> = ({
     ? (lang === 'pt' ? 'Ir para a página inicial My Academy' : 'Go to My Academy home')
     : (lang === 'pt' ? 'Ir para o ecossistema Guitar Architect' : 'Go to Guitar Architect ecosystem');
 
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+  const showAcademyReturn = currentPath === '/studio' && hasMyAcademyReturnContextForPath('/studio');
+  const academyLang = showAcademyReturn ? getGlobalLang() : lang;
+
   return (
     <>
+      {showAcademyReturn && (
+        <button
+          type="button"
+          onClick={() => navigateTo('/my-academy')}
+          className="fixed left-4 top-4 z-[70] rounded-xl border border-cyan-300/60 bg-slate-950/95 px-4 py-3 text-[11px] font-black uppercase tracking-[0.12em] text-cyan-100 shadow-[0_14px_40px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-cyan-200 hover:bg-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+        >
+          {academyLang === 'pt' ? 'Voltar ao mapa do My Academy' : 'Return to My Academy map'}
+        </button>
+      )}
       <footer className={`border-t ${compact ? 'py-5 md:py-6' : 'py-10'} ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-zinc-900 bg-zinc-950'}`}>
         <div className="mx-auto flex max-w-[1700px] flex-col items-center justify-between gap-6 px-6 md:flex-row md:px-10">
           <div className="flex items-center gap-3">
