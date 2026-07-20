@@ -61,6 +61,7 @@ const GuestSpecialistProfilePage: React.FC<{ specialistId: string }> = ({ specia
     ? {
         back: '← Voltar à galeria',
         eyebrow: 'Especialista convidada',
+        presentation: 'Apresentação',
         biography: 'Trajetória',
         philosophy: 'Filosofia profissional',
         areas: 'Áreas de orientação',
@@ -72,12 +73,14 @@ const GuestSpecialistProfilePage: React.FC<{ specialistId: string }> = ({ specia
         occupation: 'Ocupação',
         instrument: 'Instrumento',
         role: 'Papel no GA',
+        videoFallback: 'Seu navegador não oferece suporte à reprodução deste vídeo.',
         notice: 'Conteúdo educacional: as orientações apresentadas no Guitar Architect são gerais e não substituem consulta, exame físico, diagnóstico ou tratamento realizado por profissional de saúde. Em caso de dor persistente, formigamento, perda de força, limitação de movimento, trauma, alteração auditiva ou qualquer outro sintoma relevante, interrompa a atividade e procure atendimento profissional.',
-        fictional: 'Dra. Helena é uma personagem fictícia criada para fins educacionais e narrativos. Sua imagem foi gerada por inteligência artificial. Qualquer semelhança com pessoas reais é mera coincidência.',
+        fictional: 'Dra. Helena é uma personagem fictícia criada para fins educacionais e narrativos. Sua imagem e seu vídeo foram gerados por inteligência artificial. Qualquer semelhança com pessoas reais é mera coincidência.',
       }
     : {
         back: '← Back to gallery',
         eyebrow: 'Guest specialist',
+        presentation: 'Introduction',
         biography: 'Background',
         philosophy: 'Professional philosophy',
         areas: 'Guidance areas',
@@ -89,8 +92,9 @@ const GuestSpecialistProfilePage: React.FC<{ specialistId: string }> = ({ specia
         occupation: 'Occupation',
         instrument: 'Instrument',
         role: 'Role at GA',
+        videoFallback: 'Your browser does not support video playback.',
         notice: 'Educational content: Guitar Architect provides general information and does not replace consultation, physical examination, diagnosis or treatment by a qualified health professional. In case of persistent pain, tingling, loss of strength, restricted movement, trauma, hearing changes or any other relevant symptom, stop the activity and seek professional care.',
-        fictional: 'Dr. Helena is a fictional character created for educational and narrative purposes. Her image was generated with artificial intelligence. Any resemblance to real people is purely coincidental.',
+        fictional: 'Dr. Helena is a fictional character created for educational and narrative purposes. Her image and video were generated with artificial intelligence. Any resemblance to real people is purely coincidental.',
       };
 
   const profileItems = specialist.profile ? [
@@ -119,7 +123,9 @@ const GuestSpecialistProfilePage: React.FC<{ specialistId: string }> = ({ specia
           <section className={`overflow-hidden rounded-[36px] border ${panelClass}`}>
             <div className="grid md:grid-cols-[0.85fr_1.15fr]">
               <div className="min-h-[420px] bg-zinc-100">
-                <img src={specialist.image} alt={specialist.cardName} className="h-full w-full object-cover object-center" />
+                {specialist.profileImage && (
+                  <img src={specialist.profileImage} alt={specialist.cardName} className="h-full w-full object-cover object-center" />
+                )}
               </div>
               <div className="flex flex-col justify-center p-7 md:p-12">
                 <p className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-500">{t.eyebrow}</p>
@@ -132,6 +138,22 @@ const GuestSpecialistProfilePage: React.FC<{ specialistId: string }> = ({ specia
               </div>
             </div>
           </section>
+
+          {specialist.presentationVideo && (
+            <section className={`mt-8 overflow-hidden rounded-3xl border p-5 md:p-6 ${panelClass}`}>
+              <h2 className="mb-4 text-sm font-black uppercase tracking-widest text-blue-500">{t.presentation}</h2>
+              <video
+                className="aspect-video w-full rounded-2xl bg-black object-cover"
+                controls
+                playsInline
+                preload="metadata"
+                poster={specialist.profileImage}
+              >
+                <source src={specialist.presentationVideo} type="video/mp4" />
+                {t.videoFallback}
+              </video>
+            </section>
+          )}
 
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             <section className={`rounded-3xl border p-6 ${panelClass}`}>
