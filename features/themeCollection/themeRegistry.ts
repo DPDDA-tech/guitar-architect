@@ -30,7 +30,7 @@ const item = (
 });
 
 export const THEME_REGISTRY: ThemeCollectionItem[] = [
-  item('institutional-blue', 'Institutional Blue', 'tier0', tier(0, 'tier0-ga6-oficial.webp'), 'guitar6', 'common', 'Official six-string Guitar Architect identity.', undefined, 'rgba(37,99,235,0.45)', true),
+  item('institutional-blue', 'Institutional Blue', 'tier0', '/logogastudio.webp', 'guitar6', 'common', 'Official six-string Guitar Architect Studio identity.', undefined, 'rgba(37,99,235,0.45)', true),
   item('bass-green', 'Bass Green', 'tier0', tier(0, 'tier0-gab45-oficial.webp'), 'bass4', 'common', 'Official bass identity for four and five-string workflows.', undefined, 'rgba(16,185,129,0.45)'),
   item('extended-purple', 'Extended Purple', 'tier0', tier(0, 'tier0-ga78-oficial.webp'), 'guitar7', 'common', 'Official extended guitar identity for seven and eight-string workflows.', undefined, 'rgba(168,85,247,0.45)'),
 
