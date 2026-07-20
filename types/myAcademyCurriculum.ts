@@ -5,12 +5,16 @@ export interface MyAcademyLocalizedText {
   en: string;
 }
 
+export type MyAcademyConnectionType = 'experience' | 'tool' | 'reference';
+
 export interface MyAcademyCurriculumItem {
   id: string;
   kind: 'unit' | 'topic';
   title: MyAcademyLocalizedText;
   status: MyAcademyMapStatus;
-  path?: '/my-academy/prototype/nmc-rit-001';
+  path?: string;
+  connectionType?: MyAcademyConnectionType;
+  actionLabel?: MyAcademyLocalizedText;
 }
 
 export interface MyAcademyCurriculumModule {
