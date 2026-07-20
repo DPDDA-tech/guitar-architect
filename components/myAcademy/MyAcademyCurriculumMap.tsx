@@ -5,6 +5,7 @@ import {
   type MyAcademyMomentId,
 } from '../../utils/myAcademyMapPresentation';
 import { isMyAcademyModuleInTerritory } from '../../utils/myAcademyJourneyLandmarks';
+import MyAcademyCompanionChooser from './MyAcademyCompanionChooser';
 import MyAcademyJourneyRoute from './MyAcademyJourneyRoute';
 import MyAcademyTerritoryPanel from './MyAcademyTerritoryPanel';
 
@@ -111,6 +112,22 @@ const MyAcademyCurriculumMap: React.FC<MyAcademyCurriculumMapProps> = ({
               selectedModuleId={selectedModuleId}
               onSelectModule={selectModule}
             />
+            <details className="group mt-6 rounded-3xl border border-cyan-900/70 bg-[#07111f]">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-3xl px-5 py-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">
+                    {isPt ? 'Acompanhante de jornada' : 'Journey companion'}
+                  </p>
+                  <p className="mt-1 text-sm font-black text-white">
+                    {isPt ? 'Ver, trocar ou remover Alice ou Arthur' : 'View, change or remove Alice or Arthur'}
+                  </p>
+                </div>
+                <span aria-hidden="true" className="text-xl font-black text-cyan-300 transition group-open:rotate-45">+</span>
+              </summary>
+              <div className="border-t border-cyan-900/60 p-4 sm:p-5">
+                <MyAcademyCompanionChooser lang={lang} compact />
+              </div>
+            </details>
           </div>
         )}
       </div>
