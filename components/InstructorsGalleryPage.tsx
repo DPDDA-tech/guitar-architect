@@ -23,6 +23,8 @@ const navigateTo = (path: string) => {
   window.dispatchEvent(new Event('ga-route-change'));
 };
 
+const getSelectedSpecialist = () => new URLSearchParams(window.location.search).get('specialist');
+
 const MoonIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
@@ -45,6 +47,7 @@ const InstructorsGalleryPage: React.FC = () => {
   const [lang, setLang] = useState<AppLang>(() => getGlobalLang());
   const [areaFilter, setAreaFilter] = useState<InstructorArea | null>(null);
   const [levelFilter, setLevelFilter] = useState<InstructorAudienceLevel | null>(null);
+  const [selectedSpecialist, setSelectedSpecialist] = useState<string | null>(() => getSelectedSpecialist());
   const isLight = theme === 'light';
 
   useEffect(() => {
@@ -58,6 +61,16 @@ const InstructorsGalleryPage: React.FC = () => {
       window.scrollTo(0, scrollY);
     });
     return () => cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    const syncSelectedSpecialist = () => setSelectedSpecialist(getSelectedSpecialist());
+    window.addEventListener('ga-route-change', syncSelectedSpecialist);
+    window.addEventListener('popstate', syncSelectedSpecialist);
+    return () => {
+      window.removeEventListener('ga-route-change', syncSelectedSpecialist);
+      window.removeEventListener('popstate', syncSelectedSpecialist);
+    };
   }, []);
 
   const handleToggleTheme = () => {
@@ -115,7 +128,7 @@ const InstructorsGalleryPage: React.FC = () => {
       };
 
   const clearFilters = () => { setAreaFilter(null); setLevelFilter(null); };
-  const selectedSpecialist = new URLSearchParams(window.location.search).get('specialist');
+
   if (selectedSpecialist) return <GuestSpecialistProfilePage specialistId={selectedSpecialist} />;
 
   return (
@@ -167,7 +180,7 @@ const InstructorsGalleryPage: React.FC = () => {
               <h2 className="text-3xl font-black italic uppercase tracking-tighter md:text-5xl">{t.guestTitle}</h2>
               <p className="mx-auto mt-4 text-sm font-semibold leading-relaxed text-zinc-500">{t.guestIntro}</p>
             </div>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {guestSpecialists.map(guest => <GuestSpecialistCard key={guest.id} guest={guest} isLight={isLight} lang={lang} />)}
             </div>
           </section>
