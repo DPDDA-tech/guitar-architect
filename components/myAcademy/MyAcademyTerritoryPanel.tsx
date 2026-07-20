@@ -1,5 +1,6 @@
 import React from 'react';
 import type {
+  MyAcademyCurriculumItem,
   MyAcademyCurriculumMoment,
   MyAcademyCurriculumModule,
   MyAcademyMapStatus,
@@ -9,6 +10,9 @@ import {
   shouldShowMyAcademyTerritoryStatus,
 } from '../../utils/myAcademyMapPresentation';
 import { navigateToPath } from '../../utils/fretboardNavigation';
+import MyAcademyIntroTopicContent, {
+  isMyAcademyIntroTopicPublished,
+} from './MyAcademyIntroTopicContent';
 
 interface MyAcademyTerritoryPanelProps {
   lang: 'pt' | 'en';
@@ -42,8 +46,12 @@ const MyAcademyTerritoryPanel: React.FC<MyAcademyTerritoryPanelProps> = ({
     return 'border-slate-600 bg-slate-800/70 text-slate-300';
   };
 
+  const itemStatus = (item: MyAcademyCurriculumItem): MyAcademyMapStatus => (
+    isMyAcademyIntroTopicPublished(item.id) ? 'available' : item.status
+  );
+
   const moduleStatus = (module: MyAcademyCurriculumModule): MyAcademyMapStatus => (
-    module.items.some(item => item.status === 'available')
+    module.items.some(item => itemStatus(item) === 'available')
       ? 'available'
       : territory.status === 'horizon' ? 'horizon' : 'preparing'
   );
@@ -115,27 +123,33 @@ const MyAcademyTerritoryPanel: React.FC<MyAcademyTerritoryPanelProps> = ({
                 </span>
               </div>
               <ul className="mt-4 space-y-2">
-                {selectedModule.items.map(item => (
-                  <li key={item.id} className={`rounded-xl border p-3.5 ${item.status === 'available' ? 'border-cyan-400/35 bg-cyan-950/25' : 'border-slate-800 bg-slate-900/45'}`}>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold leading-relaxed text-slate-200">{item.title[lang]}</p>
-                        <span className={`mt-2 inline-flex rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] ${statusClass(item.status)}`}>
-                          {statusLabel(item.status)}
-                        </span>
+                {selectedModule.items.map(item => {
+                  const editorialStatus = itemStatus(item);
+                  return (
+                    <li key={item.id} className={`rounded-xl border p-3.5 ${editorialStatus === 'available' ? 'border-cyan-400/35 bg-cyan-950/25' : 'border-slate-800 bg-slate-900/45'}`}>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold leading-relaxed text-slate-200">{item.title[lang]}</p>
+                          <span className={`mt-2 inline-flex rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] ${statusClass(editorialStatus)}`}>
+                            {statusLabel(editorialStatus)}
+                          </span>
+                          {isMyAcademyIntroTopicPublished(item.id) && (
+                            <MyAcademyIntroTopicContent itemId={item.id} lang={lang} />
+                          )}
+                        </div>
+                        {item.kind === 'unit' && item.path && (
+                          <button
+                            type="button"
+                            onClick={() => navigateToPath(item.path!)}
+                            className="min-h-11 shrink-0 rounded-xl bg-cyan-600 px-4 text-xs font-black text-white transition hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                          >
+                            {isPt ? 'Começar experiência' : 'Start experience'}
+                          </button>
+                        )}
                       </div>
-                      {item.kind === 'unit' && item.path && (
-                        <button
-                          type="button"
-                          onClick={() => navigateToPath(item.path!)}
-                          className="min-h-11 shrink-0 rounded-xl bg-cyan-600 px-4 text-xs font-black text-white transition hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
-                        >
-                          {isPt ? 'Começar experiência' : 'Start experience'}
-                        </button>
-                      )}
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             </>
           )}
