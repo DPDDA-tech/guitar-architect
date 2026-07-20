@@ -22,6 +22,35 @@ interface MyAcademyTerritoryPanelProps {
   onSelectModule: (moduleId: string) => void;
 }
 
+type ConnectedResource = {
+  path: string;
+  label: { pt: string; en: string };
+  kind: { pt: string; en: string };
+};
+
+const CONNECTED_RESOURCES: Partial<Record<string, ConnectedResource>> = {
+  'M0-03-01': {
+    path: '/kids/instruments',
+    label: { pt: 'Explorar instrumentos', en: 'Explore instruments' },
+    kind: { pt: 'Experiência conectada · GA Kids', en: 'Connected experience · GA Kids' },
+  },
+  'M0-03-02': {
+    path: '/kids/instruments',
+    label: { pt: 'Ver partes e caminhos do som', en: 'See parts and sound paths' },
+    kind: { pt: 'Referência visual · GA Kids', en: 'Visual reference · GA Kids' },
+  },
+  'M0-03-03': {
+    path: '/teens/cuidados-basicos',
+    label: { pt: 'Abrir cuidados básicos', en: 'Open basic care' },
+    kind: { pt: 'Experiência conectada · GA Teens', en: 'Connected experience · GA Teens' },
+  },
+  'M0-04-01': {
+    path: '/studio',
+    label: { pt: 'Explorar o braço no Studio', en: 'Explore the Studio fretboard' },
+    kind: { pt: 'Ferramenta conectada · Studio', en: 'Connected tool · Studio' },
+  },
+};
+
 const MyAcademyTerritoryPanel: React.FC<MyAcademyTerritoryPanelProps> = ({
   lang,
   territory,
@@ -125,25 +154,35 @@ const MyAcademyTerritoryPanel: React.FC<MyAcademyTerritoryPanelProps> = ({
               <ul className="mt-4 space-y-2">
                 {selectedModule.items.map(item => {
                   const editorialStatus = itemStatus(item);
+                  const connected = CONNECTED_RESOURCES[item.id];
+                  const destination = item.path ?? connected?.path;
+                  const actionLabel = item.actionLabel?.[lang] ?? connected?.label[lang] ?? (isPt ? 'Abrir recurso' : 'Open resource');
                   return (
                     <li key={item.id} className={`rounded-xl border p-3.5 ${editorialStatus === 'available' ? 'border-cyan-400/35 bg-cyan-950/25' : 'border-slate-800 bg-slate-900/45'}`}>
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-bold leading-relaxed text-slate-200">{item.title[lang]}</p>
-                          <span className={`mt-2 inline-flex rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] ${statusClass(editorialStatus)}`}>
-                            {statusLabel(editorialStatus)}
-                          </span>
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <span className={`inline-flex rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] ${statusClass(editorialStatus)}`}>
+                              {statusLabel(editorialStatus)}
+                            </span>
+                            {connected && (
+                              <span className="inline-flex rounded-full border border-amber-300/30 bg-amber-300/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-amber-100">
+                                {connected.kind[lang]}
+                              </span>
+                            )}
+                          </div>
                           {isMyAcademyIntroTopicPublished(item.id) && (
                             <MyAcademyIntroTopicContent itemId={item.id} lang={lang} />
                           )}
                         </div>
-                        {item.kind === 'unit' && item.path && (
+                        {destination && (
                           <button
                             type="button"
-                            onClick={() => navigateToPath(item.path!)}
+                            onClick={() => navigateToPath(destination)}
                             className="min-h-11 shrink-0 rounded-xl bg-cyan-600 px-4 text-xs font-black text-white transition hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
                           >
-                            {isPt ? 'Começar experiência' : 'Start experience'}
+                            {item.kind === 'unit' ? (isPt ? 'Começar experiência' : 'Start experience') : actionLabel}
                           </button>
                         )}
                       </div>
