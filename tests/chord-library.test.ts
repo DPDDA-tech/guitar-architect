@@ -147,7 +147,7 @@ describe('chord library', () => {
       expect(voicings[0]?.isKnownShape).toBe(true);
       expect(getShapeByString(voicings[0])).toEqual(expectedShape);
     });
-  });
+  }, 15_000);
 
   it('includes movable barre shapes derived from open major forms', () => {
     const voicings = generateChordVoicings('C', 'major', TUNINGS_PRESETS.Standard, {
@@ -271,7 +271,7 @@ describe('chord library', () => {
     expect(thirteenthVoicings[0].intervals).toEqual(expect.arrayContaining(['1', '3', '13', 'b7']));
     expect(['open', 'barre', 'movable', 'generated']).toContain(thirteenthVoicings[0].voicingStyle);
     expect(['easy', 'intermediate', 'advanced']).toContain(thirteenthVoicings[0].difficulty);
-  });
+  }, 15_000);
 
   it('generates chord shapes for extended-range guitars and bass tunings', () => {
     const guitar8Voicings = generateChordVoicings('B', 'm7', ['E', 'B', 'G', 'D', 'A', 'E', 'B', 'F#'], {

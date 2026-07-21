@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, Suspense } from 'react';
 import FretboardPanel from './components/FretboardPanel';
 import HarmonicCyclePage from './components/HarmonicCyclePage';
@@ -22,6 +21,7 @@ import BrandPage from './components/BrandPage';
 import AboutPage from './components/AboutPage';
 import InstructorsGalleryPage from './components/InstructorsGalleryPage';
 import InstructorProfilePage from './components/InstructorProfilePage';
+import GuestSpecialistProfilePage from './components/GuestSpecialistProfilePage';
 import KidsPage from './components/KidsPage';
 import KidsFirstStepsPage from './components/KidsFirstStepsPage';
 import KidsNotesPage from './components/KidsNotesPage';
@@ -52,6 +52,8 @@ import TeenChordBuilderPage from './components/TeenChordBuilderPage';
 import TeenBlueprintReadingPage from './components/TeenBlueprintReadingPage';
 import TeensGarageHubPage from './components/TeensGarageHubPage';
 import TeensGarageEvhPage from './components/TeensGarageEvhPage';
+import MyAcademyPage from './components/MyAcademyPage';
+import MyAcademyUnitPrototypePage from './components/MyAcademyUnitPrototypePage';
 import { supabase } from './src/lib/supabase';
 import { hydrateSupporterFromServer } from './utils/supporterStorage';
 import { loadConfig } from './utils/persistence';
@@ -59,10 +61,6 @@ import { cleanupStudioRuntime } from './utils/studioRuntime';
 import { trackPageView } from './src/lib/analytics';
 
 const getCurrentPath = () => window.location.pathname;
-
-// Exceção deliberada: ao retornar da galeria de Mestres Arquitetos, a posição
-// de scroll é restaurada pelo próprio InstructorsGalleryPage a partir do
-// sessionStorage, em vez de reiniciar no topo.
 const GALLERY_SCROLL_KEY = 'ga_instructors_gallery_scroll';
 
 const hasRestorableGalleryScroll = (path: string): boolean => {
@@ -87,12 +85,8 @@ const App: React.FC = () => {
   useEffect(() => {
     try {
       const result = recordConstancyVisit(new Date(), loadConfig()?.currentUser ?? undefined);
-
       if (result.newlyUnlockedRewardIds.length > 0) {
-        const reward = constancyRewards.find(
-          item => item.id === result.newlyUnlockedRewardIds[0]
-        );
-
+        const reward = constancyRewards.find(item => item.id === result.newlyUnlockedRewardIds[0]);
         if (reward) {
           setUnlockedConstancyReward(reward);
           window.setTimeout(() => setUnlockedConstancyReward(null), 6000);
@@ -106,29 +100,23 @@ const App: React.FC = () => {
   useEffect(() => {
     const initAuthSync = async () => {
       try {
-        // 1. Tenta sincronizar imediatamente com a sessão atual
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         if (currentSession?.user?.id) {
           recordConstancyVisit(new Date(), currentSession.user.id);
           await hydrateSupporterFromServer(currentSession.user.id);
         }
       } catch (err) {
-        console.error(`[AppBoot] Sync initialization failed:`, err);
+        console.error('[AppBoot] Sync initialization failed:', err);
       }
     };
 
-    // 2. Escuta mudanças de auth (login/logout) para disparar sync
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user?.id) {
-        console.log(`[AppBoot] User signed in: ${session.user.id}. Triggering sync...`);
         recordConstancyVisit(new Date(), session.user.id);
         window.setTimeout(() => {
-          void hydrateSupporterFromServer(session.user.id).catch((err) => {
-            console.error('[AppBoot] Deferred hydrate failed:', err);
-          });
+          void hydrateSupporterFromServer(session.user.id).catch(err => console.error('[AppBoot] Deferred hydrate failed:', err));
         }, 0);
       }
-
       if (event === 'SIGNED_OUT') {
         setPath('/');
         window.history.pushState(null, '', '/');
@@ -136,23 +124,12 @@ const App: React.FC = () => {
       }
     });
 
-    // 3. Escuta o evento de conclusão de sync para atualizar a UI localmente
-    const handleSyncCompleted = () => {
-      console.log(`[AppBoot] Sync completed event received. Refreshing UI...`);
-      setSyncTimestamp(Date.now());
-    };
-
+    const handleSyncCompleted = () => setSyncTimestamp(Date.now());
     window.addEventListener('ga-supporter-sync-completed', handleSyncCompleted);
     window.addEventListener('ga-pinned-badges-updated', handleSyncCompleted);
+    void initAuthSync();
 
-    initAuthSync();
-
-    // Rastreado fora do state do React (não dispara re-render) para saber de
-    // qual rota o usuário está saindo no momento em que 'ga-route-change' é
-    // disparado, já que window.location.pathname já foi atualizado pelo
-    // pushState antes do evento chegar até aqui.
     let previousPath = getCurrentPath();
-
     const applyPathChange = () => {
       const nextPath = getCurrentPath();
       setPath(prevPath => {
@@ -161,29 +138,15 @@ const App: React.FC = () => {
       });
       return nextPath;
     };
-
-    const handlePopState = () => {
-      previousPath = applyPathChange();
-    };
-
-    // Navegação interna via pushState (botões, links, cards, menus e atalhos)
-    // deve iniciar no topo da nova página, salvo a exceção deliberada de
-    // retorno à galeria de Mestres Arquitetos — e somente quando a rota
-    // anterior era de fato um perfil de arquiteto, para não restaurar uma
-    // chave de scroll remanescente de uma navegação não relacionada (ex.:
-    // Home → Galeria após o usuário ter saído de um perfil por outro caminho).
-    // O botão voltar/avançar nativo do navegador (popstate) não é afetado,
-    // preservando a restauração de scroll padrão do navegador para esse caso.
+    const handlePopState = () => { previousPath = applyPathChange(); };
     const handleInternalNavigation = () => {
-      const departedFromProfile = previousPath.startsWith('/instructors/');
+      const departedFromProfile = previousPath.startsWith('/instructors/') || previousPath.startsWith('/especialistas/');
       const nextPath = applyPathChange();
-      const isReturningToGalleryWithScroll =
-        departedFromProfile && hasRestorableGalleryScroll(nextPath);
-      if (!isReturningToGalleryWithScroll) {
-        window.scrollTo(0, 0);
-      }
+      const isReturningToGalleryWithScroll = departedFromProfile && hasRestorableGalleryScroll(nextPath);
+      if (!isReturningToGalleryWithScroll) window.scrollTo(0, 0);
       previousPath = nextPath;
     };
+
     window.addEventListener('popstate', handlePopState);
     window.addEventListener('ga-route-change', handleInternalNavigation);
     return () => {
@@ -208,16 +171,17 @@ const App: React.FC = () => {
 
   const renderPage = () => {
     const currentPath = window.location.pathname;
-    console.log(`[AppRouter] Path State: ${path} | URL Path: ${currentPath}`);
 
-    if (currentPath === '/admin/rewards') {
-      console.log('[AppRouter] Route matched: admin rewards');
-      return <AdminRewardsPage />;
-    }
+    if (currentPath === '/admin/rewards') return <AdminRewardsPage />;
 
     if (currentPath.startsWith('/instructors/')) {
       const instructorId = currentPath.split('/instructors/')[1]?.split('/')[0] ?? '';
       return <InstructorProfilePage instructorId={instructorId} />;
+    }
+
+    if (currentPath.startsWith('/especialistas/')) {
+      const specialistId = currentPath.split('/especialistas/')[1]?.split('/')[0] ?? '';
+      return <GuestSpecialistProfilePage specialistId={specialistId} />;
     }
 
     switch (path) {
@@ -269,6 +233,8 @@ const App: React.FC = () => {
       case '/teens/radar-de-intervalos': return <TeenIntervalRadarPage />;
       case '/teens/chord-builder': return <TeenChordBuilderPage />;
       case '/teens/blueprint-reading': return <TeenBlueprintReadingPage />;
+      case '/my-academy': return <MyAcademyPage />;
+      case '/my-academy/prototype/nmc-rit-001': return <MyAcademyUnitPrototypePage />;
       case '/studio': return <FretboardPanel />;
       case '/': return <EcosystemPage />;
       default: return <EcosystemPage />;
@@ -277,7 +243,7 @@ const App: React.FC = () => {
 
   return (
     <>
-      {renderPage()} 
+      {renderPage()}
       <AchievementUnlockToast />
       {constancyToast}
       {devPanel}

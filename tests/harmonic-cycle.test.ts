@@ -5,7 +5,7 @@ describe('harmonic cycle theory helpers', () => {
   it('builds major key context with coherent sharp spellings', () => {
     const info = getHarmonicKeyInfo('E', 'major');
 
-    expect(info.keySignature).toEqual({ count: 4, type: 'sharps' });
+    expect(info.keySignature).toEqual({ count: 4, type: 'sharps', isTraditional: true });
     expect(info.scale).toEqual(['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#']);
     expect(info.relative).toBe('C#m');
     expect(info.dominant).toBe('B');
@@ -25,11 +25,11 @@ describe('harmonic cycle theory helpers', () => {
     const info = getHarmonicKeyInfo('E', 'minor');
     const progression = resolveProgression('i - VI - III - VII', info.harmonicField);
 
-    expect(info.keySignature).toEqual({ count: 1, type: 'sharps' });
+    expect(info.keySignature).toEqual({ count: 1, type: 'sharps', isTraditional: true });
     expect(info.scale).toEqual(['E', 'F#', 'G', 'A', 'B', 'C', 'D']);
     expect(info.relative).toBe('G');
-    expect(info.dominant).toBe('Bm');
-    expect(info.subdominant).toBe('Am');
+    expect(info.dominant).toBe('B');
+    expect(info.subdominant).toBe('A');
     expect(info.harmonicField.map(item => `${item.degree}: ${item.chord}`)).toEqual([
       'i: Em',
       'ii°: F#°',

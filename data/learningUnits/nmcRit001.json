@@ -1,0 +1,32 @@
+{
+  "schema": "ga-learning-unit/0.1",
+  "id": "NMC-RIT-001",
+  "version": "0.1.4",
+  "contractVersion": "0.2.2",
+  "sourceDossierVersion": "0.1.2",
+  "editorialStatus": "draft",
+  "visibility": "internal",
+  "language": "pt-BR",
+  "moment": "initiation",
+  "domain": "rhythm",
+  "title": "Pulso e regularidade",
+  "estimatedMinutes": [4, 7],
+  "activityIds": ["perceive-pulse", "add-sound", "explore-metronome"],
+  "studioContext": {
+    "tool": "metronome",
+    "mode": "contextual",
+    "tempoMode": "user-selectable",
+    "initialAudio": "off",
+    "initialVisualPulse": true,
+    "restoreLastTempo": true,
+    "scoring": false,
+    "recording": false
+  },
+  "accessibility": {
+    "equivalentEntryModalities": ["visual", "auditory", "combined"],
+    "audioRequiresUserAction": true,
+    "screenReaderRequired": true,
+    "keyboardRequired": true,
+    "visualVolumeMeterRequired": false
+  }
+}

@@ -231,19 +231,6 @@ export const createReadonlyFretboardStateFromChordDiagramData = (
     shapeMode: 'lead-circle',
   });
 
-  positions
-    .filter((position) => position.fret === 0)
-    .forEach((position) => {
-      markers.push({
-        id: crypto.randomUUID(),
-        string: position.string,
-        fret: 0,
-        shape: 'circle',
-        color: '#2563eb',
-        finger: undefined,
-      });
-    });
-
   const visibleFrets = Math.max(5, diagram.visibleFrets || 5);
   const startFret = 0;
   const minimumEndFret = visibleFrets - 1;

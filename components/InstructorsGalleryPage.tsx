@@ -9,7 +9,9 @@ import {
   type InstructorArea,
   type InstructorAudienceLevel,
 } from '../data/instructors';
+import { guestSpecialists } from '../data/guestSpecialists';
 import InstructorCard from './InstructorCard';
+import GuestSpecialistCard from './GuestSpecialistCard';
 import AppFooter from './AppFooter';
 
 type ThemeMode = 'light' | 'dark';
@@ -35,7 +37,6 @@ const SunIcon = () => (
 
 const areaFilters: InstructorArea[] = ['kids', 'teens', 'studio'];
 const levelFilters: InstructorAudienceLevel[] = ['earlyEducation', 'beginner', 'intermediate', 'advanced'];
-
 const GALLERY_SCROLL_KEY = 'ga_instructors_gallery_scroll';
 
 const InstructorsGalleryPage: React.FC = () => {
@@ -47,24 +48,12 @@ const InstructorsGalleryPage: React.FC = () => {
 
   useEffect(() => {
     let stored: string | null = null;
-    try {
-      stored = sessionStorage.getItem(GALLERY_SCROLL_KEY);
-    } catch {
-      // sessionStorage indisponível — mantém o topo da página.
-    }
+    try { stored = sessionStorage.getItem(GALLERY_SCROLL_KEY); } catch { /* mantém o topo */ }
     if (stored === null) return;
     const scrollY = Number(stored);
     if (!Number.isFinite(scrollY)) return;
-    // A chave só é removida quando a restauração realmente ocorre (dentro do
-    // rAF), não ao montar o efeito. Isso evita que a dupla montagem do
-    // React.StrictMode (mount → cleanup → mount) consuma a chave e cancele o
-    // frame antes que a montagem final tenha a chance de restaurar o scroll.
     const frame = requestAnimationFrame(() => {
-      try {
-        sessionStorage.removeItem(GALLERY_SCROLL_KEY);
-      } catch {
-        // sessionStorage indisponível — nada a remover.
-      }
+      try { sessionStorage.removeItem(GALLERY_SCROLL_KEY); } catch { /* nada a remover */ }
       window.scrollTo(0, scrollY);
     });
     return () => cancelAnimationFrame(frame);
@@ -92,11 +81,9 @@ const InstructorsGalleryPage: React.FC = () => {
     backgroundImage: `linear-gradient(${isLight ? '#e2e8f0' : '#1e293b'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#e2e8f0' : '#1e293b'} 1px, transparent 1px)`,
     backgroundSize: '24px 24px',
   };
-
   const actionClass = isLight
     ? 'border-zinc-300 bg-white text-zinc-700 shadow-[0_8px_20px_rgba(15,23,42,0.08)] hover:border-blue-400'
     : 'border-zinc-700 bg-zinc-900 text-zinc-200 shadow-[0_0_0_1px_rgba(255,255,255,0.04)] hover:border-blue-500';
-
   const noticeClass = isLight
     ? 'border-blue-100 bg-blue-50/70 text-blue-800'
     : 'border-[rgba(30,64,175,0.4)] bg-[rgba(10,20,36,0.92)] text-blue-200';
@@ -108,74 +95,43 @@ const InstructorsGalleryPage: React.FC = () => {
 
   const t = lang === 'pt'
     ? {
-        back: '← Voltar ao App',
-        eyebrow: 'Guitar Architect',
-        title: 'Nossos Mestres Arquitetos',
+        back: '← Voltar ao App', eyebrow: 'Guitar Architect', title: 'Nossos Mestres Arquitetos',
         subtitle: 'Conheça os 19 Mestres Arquitetos e Diana Helena Moreau Fontenelle, Diretora de Experiência e Jornada. Juntos, esses 20 personagens representam diferentes formas de viver, compreender e se relacionar com a música.',
         noticeTitle: 'Galeria em construção',
         noticeBody: 'Os perfis já estão disponíveis. Em breve, os Mestres Arquitetos e Diana serão conectados a trilhas, dicas, desafios, recomendações personalizadas e desbloqueios progressivos.',
         fictionalNotice: 'Os Mestres Arquitetos e Diana são personagens fictícios criados para fins educacionais e de identidade visual do Guitar Architect. Suas imagens foram geradas por inteligência artificial, e seus nomes, perfis e características são fictícios. Qualquer semelhança com pessoas reais, vivas ou falecidas, é mera coincidência.',
-        filterLabel: 'Filtrar personagens',
+        filterLabel: 'Filtrar personagens', guestEyebrow: 'Além do instrumento', guestTitle: 'Especialistas convidados',
+        guestIntro: 'A formação de um músico não termina na técnica. Saúde, carreira, organização, direitos e decisões profissionais também fazem parte dessa jornada. O Guitar Architect recebe especialistas de diferentes áreas para compartilhar conhecimentos que dialogam com a vida musical.',
       }
     : {
-        back: '← Back to App',
-        eyebrow: 'Guitar Architect',
-        title: 'Our Master Architects',
+        back: '← Back to App', eyebrow: 'Guitar Architect', title: 'Our Master Architects',
         subtitle: 'Meet the 19 Master Architects and Diana Helena Moreau Fontenelle, Director of Experience & Journey. Together, these 20 characters represent different ways of living, understanding and relating to music.',
         noticeTitle: 'Gallery in progress',
         noticeBody: 'Profiles are already available. Soon, the Master Architects and Diana will be connected to tracks, tips, challenges, personalized recommendations and progressive unlocks.',
         fictionalNotice: 'The Master Architects and Diana are fictional characters created for educational and visual identity purposes within Guitar Architect. Their images were generated by artificial intelligence, and their names, profiles and characteristics are fictional. Any resemblance to real persons, living or deceased, is purely coincidental.',
-        filterLabel: 'Filter characters',
+        filterLabel: 'Filter characters', guestEyebrow: 'Beyond the instrument', guestTitle: 'Guest specialists',
+        guestIntro: 'A musician’s education does not end with technique. Health, career, organization, rights and professional decisions are also part of the journey. Guitar Architect welcomes specialists from different fields to share knowledge connected to musical life.',
       };
 
-  const clearFilters = () => {
-    setAreaFilter(null);
-    setLevelFilter(null);
-  };
+  const clearFilters = () => { setAreaFilter(null); setLevelFilter(null); };
 
   return (
     <>
       <div className={`relative min-h-screen p-6 md:p-12 ${isLight ? 'bg-slate-50 text-zinc-900' : 'bg-zinc-950 text-white'}`}>
         <div className="absolute inset-0 pointer-events-none opacity-50" style={gridStyle} />
-
         <div className="relative mx-auto max-w-[1200px] py-6">
           <div className="mb-8 flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={() => navigateTo('/ecosystem')}
-              className="inline-flex items-center gap-2 text-blue-500 font-black text-xs uppercase tracking-widest hover:underline"
-            >
-              {t.back}
-            </button>
+            <button type="button" onClick={() => navigateTo('/ecosystem')} className="inline-flex items-center gap-2 text-blue-500 font-black text-xs uppercase tracking-widest hover:underline">{t.back}</button>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleToggleTheme}
-                className={`flex h-9 w-9 items-center justify-center rounded-xl border text-xs font-black transition-all ${actionClass}`}
-                aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
-              >
-                {isLight ? <MoonIcon /> : <SunIcon />}
-              </button>
-              <button
-                type="button"
-                onClick={handleToggleLang}
-                className={`min-h-[36px] rounded-xl border px-3 py-2 text-[11px] font-black uppercase transition-all ${actionClass}`}
-              >
-                {lang.toUpperCase()}
-              </button>
+              <button type="button" onClick={handleToggleTheme} className={`flex h-9 w-9 items-center justify-center rounded-xl border text-xs font-black transition-all ${actionClass}`} aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}>{isLight ? <MoonIcon /> : <SunIcon />}</button>
+              <button type="button" onClick={handleToggleLang} className={`min-h-[36px] rounded-xl border px-3 py-2 text-[11px] font-black uppercase transition-all ${actionClass}`}>{lang.toUpperCase()}</button>
             </div>
           </div>
 
           <div className="text-center mb-8">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">
-              {t.eyebrow}
-            </p>
-            <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter">
-              {t.title}
-            </h1>
-            <p className="mx-auto mt-3 max-w-2xl text-sm md:text-base font-semibold leading-relaxed text-zinc-500">
-              {t.subtitle}
-            </p>
+            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">{t.eyebrow}</p>
+            <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter">{t.title}</h1>
+            <p className="mx-auto mt-3 max-w-2xl text-sm md:text-base font-semibold leading-relaxed text-zinc-500">{t.subtitle}</p>
           </div>
 
           <div className={`mx-auto mb-10 max-w-3xl rounded-2xl border p-5 text-center ${noticeClass}`}>
@@ -185,79 +141,35 @@ const InstructorsGalleryPage: React.FC = () => {
           </div>
 
           <div className="mb-5">
-            <p className={`mb-2 text-center text-[10px] font-black uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>
-              {t.filterLabel}
-            </p>
+            <p className={`mb-2 text-center text-[10px] font-black uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>{t.filterLabel}</p>
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <button
-                type="button"
-                onClick={clearFilters}
-                aria-pressed={!areaFilter && !levelFilter}
-                className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${
-                  !areaFilter && !levelFilter
-                    ? 'border-blue-500 bg-blue-600 text-white'
-                    : actionClass
-                }`}
-              >
-                {lang === 'pt' ? 'Todos' : 'All'}
-              </button>
-              <div
-                role="group"
-                aria-label={lang === 'pt' ? 'Área de atuação' : 'Area'}
-                className="flex flex-wrap items-center justify-center gap-2"
-              >
-                {areaFilters.map(area => (
-                  <button
-                    key={area}
-                    type="button"
-                    onClick={() => setAreaFilter(current => current === area ? null : area)}
-                    aria-pressed={areaFilter === area}
-                    className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${
-                      areaFilter === area
-                        ? 'border-blue-500 bg-blue-600 text-white'
-                        : actionClass
-                    }`}
-                  >
-                    {getInstructorAreaLabel(area, lang)}
-                  </button>
-                ))}
+              <button type="button" onClick={clearFilters} aria-pressed={!areaFilter && !levelFilter} className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${!areaFilter && !levelFilter ? 'border-blue-500 bg-blue-600 text-white' : actionClass}`}>{lang === 'pt' ? 'Todos' : 'All'}</button>
+              <div role="group" aria-label={lang === 'pt' ? 'Área de atuação' : 'Area'} className="flex flex-wrap items-center justify-center gap-2">
+                {areaFilters.map(area => <button key={area} type="button" onClick={() => setAreaFilter(current => current === area ? null : area)} aria-pressed={areaFilter === area} className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${areaFilter === area ? 'border-blue-500 bg-blue-600 text-white' : actionClass}`}>{getInstructorAreaLabel(area, lang)}</button>)}
               </div>
-              <span
-                aria-hidden="true"
-                className={`mx-1 hidden h-5 w-px md:block ${isLight ? 'bg-zinc-300' : 'bg-zinc-700'}`}
-              />
-              <div
-                role="group"
-                aria-label={lang === 'pt' ? 'Nível' : 'Level'}
-                className="flex flex-wrap items-center justify-center gap-2"
-              >
-                {levelFilters.map(level => (
-                  <button
-                    key={level}
-                    type="button"
-                    onClick={() => setLevelFilter(current => current === level ? null : level)}
-                    aria-pressed={levelFilter === level}
-                    className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${
-                      levelFilter === level
-                        ? 'border-blue-500 bg-blue-600 text-white'
-                        : actionClass
-                    }`}
-                  >
-                    {getInstructorAudienceLevelLabel(level, lang)}
-                  </button>
-                ))}
+              <span aria-hidden="true" className={`mx-1 hidden h-5 w-px md:block ${isLight ? 'bg-zinc-300' : 'bg-zinc-700'}`} />
+              <div role="group" aria-label={lang === 'pt' ? 'Nível' : 'Level'} className="flex flex-wrap items-center justify-center gap-2">
+                {levelFilters.map(level => <button key={level} type="button" onClick={() => setLevelFilter(current => current === level ? null : level)} aria-pressed={levelFilter === level} className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${levelFilter === level ? 'border-blue-500 bg-blue-600 text-white' : actionClass}`}>{getInstructorAudienceLevelLabel(level, lang)}</button>)}
               </div>
             </div>
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {filteredInstructors.map(instructor => (
-              <InstructorCard key={instructor.id} instructor={instructor} isLight={isLight} lang={lang} />
-            ))}
+            {filteredInstructors.map(instructor => <InstructorCard key={instructor.id} instructor={instructor} isLight={isLight} lang={lang} />)}
           </div>
+
+          <section className={`mt-16 border-t pt-14 ${isLight ? 'border-zinc-200' : 'border-zinc-800'}`}>
+            <div className="mx-auto mb-9 max-w-3xl text-center">
+              <p className="mb-2 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">{t.guestEyebrow}</p>
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter md:text-5xl">{t.guestTitle}</h2>
+              <p className="mx-auto mt-4 text-sm font-semibold leading-relaxed text-zinc-500">{t.guestIntro}</p>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {guestSpecialists.map(guest => <GuestSpecialistCard key={guest.id} guest={guest} isLight={isLight} lang={lang} />)}
+            </div>
+          </section>
         </div>
       </div>
-
       <AppFooter isLight={isLight} lang={lang} logoSrc="/Logo Guitar.webp" logoAlt="Guitar Architect" compact />
     </>
   );
