@@ -4,6 +4,17 @@ export type LearningMoment = 'discovery' | 'initiation' | 'fundamentals' | 'cons
 export type LearningModality = 'visual' | 'auditory' | 'combined';
 export type LearningInteraction = 'observed' | 'moved' | 'played' | 'explored-tool';
 
+export interface LearningCompanionPerspective {
+  insight?: string;
+  optionalExperiment?: string;
+  closing?: string;
+}
+
+export interface LearningCompanionLayer {
+  alice?: LearningCompanionPerspective;
+  arthur?: LearningCompanionPerspective;
+}
+
 export interface LearningSourceRef {
   claimId: string;
   sourceIds: string[];
@@ -78,4 +89,5 @@ export interface LearningUnit {
     visualVolumeMeterRequired: false;
   };
   sourceRefs: LearningSourceRef[];
+  companionPerspective?: LearningCompanionLayer;
 }

@@ -62,6 +62,7 @@ export const MY_ACADEMY_CURRICULUM: MyAcademyCurriculumMoment[] = [
           topic('M0-03-01', 'Reconhecimento geral de guitarra e baixo.', 'General recognition of guitar and bass.'),
           topic('M0-03-02', 'Cordas, braço, captação e caminho básico do som.', 'Strings, fretboard, pickups and the basic signal path.'),
           topic('M0-03-03', 'Afinação como referência, volume confortável, pausas e cuidado com dor.', 'Tuning as a reference, comfortable volume, breaks and attention to pain.'),
+          topic('M0-03-04', 'Ajuste do instrumento ao corpo e sinais de desconforto.', 'Fitting the instrument to your body and signs of discomfort.'),
         ],
       },
       {

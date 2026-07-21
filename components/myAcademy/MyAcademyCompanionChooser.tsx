@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { MyAcademyCompanionId } from '../../types/myAcademyCompanion';
+import type { MyAcademyCompanionChoice, MyAcademyCompanionId } from '../../types/myAcademyCompanion';
 import {
   MY_ACADEMY_COMPANIONS,
   clearMyAcademyCompanionChoice,
@@ -11,9 +11,10 @@ import {
 interface MyAcademyCompanionChooserProps {
   lang: 'pt' | 'en';
   compact?: boolean;
+  onChoiceChange?: (choice: MyAcademyCompanionChoice | null) => void;
 }
 
-const MyAcademyCompanionChooser: React.FC<MyAcademyCompanionChooserProps> = ({ lang, compact = false }) => {
+const MyAcademyCompanionChooser: React.FC<MyAcademyCompanionChooserProps> = ({ lang, compact = false, onChoiceChange }) => {
   const [selectedId, setSelectedId] = useState<MyAcademyCompanionId | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -22,15 +23,18 @@ const MyAcademyCompanionChooser: React.FC<MyAcademyCompanionChooserProps> = ({ l
   }, []);
 
   const choose = (companionId: MyAcademyCompanionId) => {
-    saveMyAcademyCompanionChoice(createMyAcademyCompanionChoice(companionId));
+    const choice = createMyAcademyCompanionChoice(companionId);
+    saveMyAcademyCompanionChoice(choice);
     setSelectedId(companionId);
     setSaved(true);
+    onChoiceChange?.(choice);
   };
 
   const clear = () => {
     clearMyAcademyCompanionChoice();
     setSelectedId(null);
     setSaved(true);
+    onChoiceChange?.(null);
   };
 
   const isPt = lang === 'pt';

@@ -153,4 +153,16 @@ export const NMC_RIT_001 = {
     { claimId: 'C-06', sourceIds: ['SRC-NMC-RIT-001-02'], status: 'verified' },
     { claimId: 'C-07', sourceIds: ['SRC-NMC-RIT-001-07'], status: 'verified' },
   ],
+  companionPerspective: {
+    alice: {
+      insight: 'Ouça como o pulso muda a sensação da música, mesmo quando ele continua estável. Perceber o pulso é também uma forma de sentir a música, não só de contá-la.',
+      optionalExperiment: 'Toque ou marque o mesmo pulso de forma leve e depois com mais intenção. Perceba como a sensação muda, mesmo que o tempo continue igual.',
+      closing: 'Você manteve o pulso e começou a perceber como ele carrega intenção e sensação, não apenas contagem.',
+    },
+    arthur: {
+      insight: 'Observe que o pulso é uma referência que se repete em intervalos regulares — é essa regularidade que organiza tudo o que vem depois, do ritmo aos acordes.',
+      optionalExperiment: 'Marque o pulso com o metrônomo em duas velocidades diferentes e observe como a estrutura se mantém a mesma, mudando apenas a referência de tempo.',
+      closing: 'Você manteve o pulso e reconheceu nele uma estrutura de referência regular, base para organizar ritmo e tempo.',
+    },
+  },
 } satisfies LearningUnit;
