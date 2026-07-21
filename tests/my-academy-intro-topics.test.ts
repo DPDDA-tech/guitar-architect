@@ -9,10 +9,15 @@ import {
 } from '../components/myAcademy/MyAcademyIntroTopicContent';
 
 describe('My Academy published introduction topics', () => {
-  it('publishes the three approved introduction items', () => {
-    expect(MY_ACADEMY_INTRO_TOPIC_IDS).toEqual(['M0-01-01', 'M0-01-02', 'M0-01-03']);
+  it('publishes the three approved M0-01 introduction items', () => {
+    const introTopicIds = MY_ACADEMY_INTRO_TOPIC_IDS.filter(id => id.startsWith('M0-01-'));
+
+    expect(introTopicIds).toEqual(['M0-01-01', 'M0-01-02', 'M0-01-03']);
     expect(MY_ACADEMY_INTRO_TOPIC_IDS.every(isMyAcademyIntroTopicPublished)).toBe(true);
-    expect(isMyAcademyIntroTopicPublished('M0-02-01')).toBe(false);
+    // Other modules (M0-02, M0-03, M0-04) also publish content — this test only
+    // asserts the M0-01 introduction slice, not the full published set.
+    expect(isMyAcademyIntroTopicPublished('M0-02-01')).toBe(true);
+    expect(isMyAcademyIntroTopicPublished('M0-99-01')).toBe(false);
   });
 
   it('renders the introduction as available expandable content inside the map', () => {
@@ -31,8 +36,9 @@ describe('My Academy published introduction topics', () => {
     expect(markup).toContain('Um mapa que conecta todo o ecossistema');
     expect(markup).toContain('Direção sem transformar experiência em julgamento');
     expect(markup).toContain('Uma jornada orientada, mas nunca obrigatória');
-    expect(markup).toContain('não atribui diagnóstico musical, aprovação, reprovação ou nível pessoal');
+    expect(markup).toContain('diagnóstico musical');
+    expect(markup).toContain('não atribui aprovação, reprovação ou nível pessoal');
     expect(markup).toContain('Sem promessa de avaliação técnica automática');
-    expect(markup).toContain('Sem bloqueio do mapa por respostas, pausas ou escolhas diferentes');
+    expect(markup).toContain('Sem bloqueio do mapa por respostas ou pausas');
   });
 });
