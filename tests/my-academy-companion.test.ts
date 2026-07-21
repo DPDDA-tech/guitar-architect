@@ -91,8 +91,13 @@ describe('My Academy journey companion', () => {
       onEngage: () => undefined,
     }));
 
-    expect(markup).toContain('Acompanhante de jornada');
-    expect(markup).toContain('Ver, trocar ou remover Alice ou Arthur');
+    // Dedicated companion panel — separate from "Encontros da turnê".
+    expect(markup).toContain('Escolha seu Arquiteto para esta etapa');
+    expect(markup).toContain('Alice ou Arthur podem acompanhar seus próximos passos');
+    expect(markup).toContain('Alice');
+    expect(markup).toContain('Arthur');
     expect(markup).toContain('my-academy-companion-choice');
+    // Choice remains optional and reversible — never forced.
+    expect(markup).toContain('Nenhum acompanhante por enquanto');
   });
 });

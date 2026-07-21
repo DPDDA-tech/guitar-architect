@@ -162,8 +162,10 @@ describe('My Academy curriculum map v0.1', () => {
 
     expect(html).not.toContain('Derivação local');
     const renderedModuleIds = Array.from(html.matchAll(/data-module-id="([^"]+)"/g), match => match[1]);
-    expect([...new Set(renderedModuleIds)]).toEqual(territory.modules.map(module => module.id));
-    expect(html.match(/data-module-segment="0"/g)).toHaveLength(territory.modules.length * 2);
+    // Every module of the selected territory renders exactly once — no duplicated DOM nodes.
+    expect(renderedModuleIds).toEqual(territory.modules.map(module => module.id));
+    const renderedSegments = Array.from(html.matchAll(/data-module-segment="([^"]+)"/g), match => match[1]);
+    expect(renderedSegments).toEqual(territory.modules.map(() => '0'));
     expect(html).not.toContain('data-module-segment="1"');
     expect(html).toMatch(/data-module-id="M0-02"[\s\S]*?aria-pressed="true"/);
     expect(getDesktopModuleNodePositions('0', territory.modules.length)).toHaveLength(territory.modules.length);
@@ -267,7 +269,9 @@ describe('My Academy curriculum map v0.1', () => {
       onSelectModule: () => undefined,
     }));
 
-    expect(html.match(/data-explored-mark="1"/g)).toHaveLength(2);
+    // The confirmed territory (1) receives exactly one discontinuous exploration
+    // mark on its own cable segment — not a duplicate, and not a continuous fill.
+    expect(html.match(/data-explored-mark="1"/g)).toHaveLength(1);
     expect(html).not.toContain('data-explored-mark="0"');
     expect(html).not.toContain('data-explored-mark="2"');
     expect(html).not.toContain('data-route-progress');

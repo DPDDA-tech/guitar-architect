@@ -12,6 +12,19 @@ const navigateTo = (path: string) => {
   window.dispatchEvent(new Event('ga-route-change'));
 };
 
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5Z" />
+  </svg>
+);
+
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
 interface GuestSpecialistProfilePageProps {
   specialistId: string;
 }
@@ -23,6 +36,13 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
   const isLight = theme === 'light';
 
   useEffect(() => {
+    if (window.location.hash) {
+      const target = document.getElementById(window.location.hash.slice(1));
+      if (target) {
+        target.scrollIntoView({ block: 'start' });
+        return;
+      }
+    }
     window.scrollTo(0, 0);
   }, [specialistId]);
 
@@ -79,7 +99,7 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
   const identity = lang === 'pt'
     ? [
         ['Nome completo', 'Helena Mascarenhas de Mello Villaça'],
-        ['Nome de exibição', 'Dra. Helena'],
+        ['Nome de exibição', 'Dra. Helena Villaça'],
         ['Idade', '43 anos'],
         ['Data de nascimento', '18 de setembro'],
         ['Local de nascimento', 'Belo Horizonte, Minas Gerais'],
@@ -96,7 +116,7 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
       ]
     : [
         ['Full name', 'Helena Mascarenhas de Mello Villaça'],
-        ['Display name', 'Dr. Helena'],
+        ['Display name', 'Dr. Helena Villaça'],
         ['Age', '43 years old'],
         ['Date of birth', 'September 18'],
         ['Place of birth', 'Belo Horizonte, Minas Gerais, Brazil'],
@@ -146,18 +166,86 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
     ? ['Dor persistente ou progressiva', 'Formigamento ou alteração de sensibilidade', 'Perda de força', 'Limitação de movimento', 'Trauma', 'Zumbido', 'Audição abafada ou redução auditiva', 'Outro sintoma que interfira na prática ou nas atividades diárias']
     : ['Persistent or progressive pain', 'Tingling or altered sensation', 'Loss of strength', 'Restricted movement', 'Trauma', 'Tinnitus', 'Muffled hearing or hearing reduction', 'Any symptom that interferes with practice or daily activities'];
 
-  const references = lang === 'pt'
+  const referenceGroups = lang === 'pt'
     ? [
-        ['Organização Mundial da Saúde — Making Listening Safe', 'https://www.who.int/activities/making-listening-safe/'],
-        ['Organização Mundial da Saúde — Safe listening', 'https://www.who.int/news-room/questions-and-answers/item/deafness-and-hearing-loss-safe-listening'],
-        ['CDC/NIOSH — Reducing the Risk of Hearing Disorders among Musicians', 'https://www.cdc.gov/niosh/docs/wp-solutions/2015-184/'],
-        ['Performing Arts Medicine Association', 'https://artsmed.org/'],
+        {
+          heading: 'Medicina Física e Reabilitação',
+          kindLabel: 'Instituição de referência',
+          items: [
+            ['American Academy of Physical Medicine and Rehabilitation (AAPM&R) — About Physiatry', 'https://www.aapmr.org/about-physiatry'],
+          ],
+        },
+        {
+          heading: 'Saúde musculoesquelética do músico',
+          kindLabel: 'Revisão científica',
+          items: [
+            ['Rotter et al. — Musculoskeletal disorders and complaints in professional musicians: a systematic review (2020)', 'https://pubmed.ncbi.nlm.nih.gov/31482285/'],
+            ['Kok et al. — The occurrence of musculoskeletal complaints among professional musicians: a systematic review (2016)', 'https://pubmed.ncbi.nlm.nih.gov/26563718/'],
+          ],
+        },
+        {
+          heading: 'Ergonomia e prevenção aplicada ao músico',
+          kindLabel: 'Artigo científico',
+          items: [
+            ['Foxman & Burgel — Musician health and safety: Preventing playing-related musculoskeletal disorders (2006)', 'https://pubmed.ncbi.nlm.nih.gov/16862878/'],
+          ],
+        },
+        {
+          heading: 'Medicina das artes performáticas',
+          kindLabel: 'Instituição de referência',
+          items: [
+            ['Performing Arts Medicine Association', 'https://artsmed.org/'],
+          ],
+        },
+        {
+          heading: 'Saúde auditiva',
+          kindLabel: 'Materiais educativos oficiais',
+          items: [
+            ['Organização Mundial da Saúde — Making Listening Safe', 'https://www.who.int/activities/making-listening-safe/'],
+            ['Organização Mundial da Saúde — Safe listening', 'https://www.who.int/news-room/questions-and-answers/item/deafness-and-hearing-loss-safe-listening'],
+            ['CDC/NIOSH — Reducing the Risk of Hearing Disorders among Musicians', 'https://www.cdc.gov/niosh/docs/wp-solutions/2015-184/'],
+          ],
+        },
       ]
     : [
-        ['World Health Organization — Making Listening Safe', 'https://www.who.int/activities/making-listening-safe/'],
-        ['World Health Organization — Safe listening', 'https://www.who.int/news-room/questions-and-answers/item/deafness-and-hearing-loss-safe-listening'],
-        ['CDC/NIOSH — Reducing the Risk of Hearing Disorders among Musicians', 'https://www.cdc.gov/niosh/docs/wp-solutions/2015-184/'],
-        ['Performing Arts Medicine Association', 'https://artsmed.org/'],
+        {
+          heading: 'Physical Medicine and Rehabilitation',
+          kindLabel: 'Reference institution',
+          items: [
+            ['American Academy of Physical Medicine and Rehabilitation (AAPM&R) — About Physiatry', 'https://www.aapmr.org/about-physiatry'],
+          ],
+        },
+        {
+          heading: 'Musculoskeletal health of musicians',
+          kindLabel: 'Systematic review',
+          items: [
+            ['Rotter et al. — Musculoskeletal disorders and complaints in professional musicians: a systematic review (2020)', 'https://pubmed.ncbi.nlm.nih.gov/31482285/'],
+            ['Kok et al. — The occurrence of musculoskeletal complaints among professional musicians: a systematic review (2016)', 'https://pubmed.ncbi.nlm.nih.gov/26563718/'],
+          ],
+        },
+        {
+          heading: 'Ergonomics and prevention applied to musicians',
+          kindLabel: 'Scientific article',
+          items: [
+            ['Foxman & Burgel — Musician health and safety: Preventing playing-related musculoskeletal disorders (2006)', 'https://pubmed.ncbi.nlm.nih.gov/16862878/'],
+          ],
+        },
+        {
+          heading: 'Performing arts medicine',
+          kindLabel: 'Reference institution',
+          items: [
+            ['Performing Arts Medicine Association', 'https://artsmed.org/'],
+          ],
+        },
+        {
+          heading: 'Hearing health',
+          kindLabel: 'Official educational materials',
+          items: [
+            ['World Health Organization — Making Listening Safe', 'https://www.who.int/activities/making-listening-safe/'],
+            ['World Health Organization — Safe listening', 'https://www.who.int/news-room/questions-and-answers/item/deafness-and-hearing-loss-safe-listening'],
+            ['CDC/NIOSH — Reducing the Risk of Hearing Disorders among Musicians', 'https://www.cdc.gov/niosh/docs/wp-solutions/2015-184/'],
+          ],
+        },
       ];
 
   return (
@@ -170,7 +258,14 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
               ← {lang === 'pt' ? 'Voltar à galeria' : 'Back to gallery'}
             </button>
             <div className="flex gap-2">
-              <button type="button" onClick={toggleTheme} className={`h-9 rounded-xl border px-3 text-xs font-black ${actionClass}`}>{isLight ? '◐' : '☀'}</button>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className={`flex h-9 w-9 items-center justify-center rounded-xl border text-xs font-black transition-all ${actionClass}`}
+                aria-label={isLight ? (lang === 'pt' ? 'Ativar modo escuro' : 'Enable dark mode') : (lang === 'pt' ? 'Ativar modo claro' : 'Enable light mode')}
+              >
+                {isLight ? <MoonIcon /> : <SunIcon />}
+              </button>
               <button type="button" onClick={toggleLang} className={`h-9 rounded-xl border px-3 text-xs font-black uppercase ${actionClass}`}>{lang}</button>
             </div>
           </header>
@@ -245,21 +340,34 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
             </div>
           </section>
 
-          <section className={`mt-6 rounded-3xl border p-6 md:p-8 ${panelClass}`}>
+          <section id="fontes-e-referencias" className={`mt-6 scroll-mt-24 rounded-3xl border p-6 md:p-8 ${panelClass}`}>
             <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{lang === 'pt' ? 'Fontes e referências' : 'Sources and references'}</h2>
             <p className={`mt-3 text-sm leading-7 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
-              {lang === 'pt' ? 'As advertências e recomendações gerais desta página são apoiadas por instituições reconhecidas em saúde auditiva e medicina das artes performáticas.' : 'The general warnings and recommendations on this page are supported by recognized institutions in hearing health and performing arts medicine.'}
+              {lang === 'pt'
+                ? 'As orientações desta página se apoiam em fontes de naturezas diferentes — revisões científicas, artigos, instituições de referência e materiais educativos oficiais — cobrindo fisiatria, saúde musculoesquelética, ergonomia, medicina das artes performáticas e saúde auditiva. A natureza de cada fonte está identificada abaixo; elas não têm o mesmo peso probatório entre si.'
+                : 'The guidance on this page draws on sources of different natures — scientific reviews, articles, reference institutions and official educational materials — covering physiatry, musculoskeletal health, ergonomics, performing arts medicine and hearing health. Each source’s nature is identified below; they do not carry the same evidentiary weight.'}
             </p>
-            <div className="mt-5 space-y-3">
-              {references.map(([label, href]) => (
-                <a key={href} href={href} target="_blank" rel="noreferrer" className={`block rounded-2xl border p-4 text-sm font-bold transition hover:border-blue-500 ${softPanelClass}`}>{label} ↗</a>
+            <div className="mt-5 space-y-6">
+              {referenceGroups.map(group => (
+                <div key={group.heading}>
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h3 className={`text-xs font-black uppercase tracking-widest ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>{group.heading}</h3>
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>{group.kindLabel}</span>
+                  </div>
+                  <div className="mt-2 space-y-2">
+                    {group.items.map(([label, href]) => (
+                      <a key={href} href={href} target="_blank" rel="noreferrer" className={`block rounded-2xl border p-4 text-sm font-bold transition hover:border-blue-500 ${softPanelClass}`}>{label} ↗</a>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </section>
 
           <div className={`mt-6 rounded-3xl border p-6 text-sm leading-relaxed ${isLight ? 'border-amber-200 bg-amber-50 text-amber-900' : 'border-amber-900/60 bg-amber-950/30 text-amber-200'}`}>
             <p>{lang === 'pt' ? 'Conteúdo educacional: as orientações apresentadas são gerais e não substituem consulta, exame físico, diagnóstico ou tratamento por profissional habilitado. Em caso de sintomas persistentes, progressivos ou relevantes, interrompa a atividade e procure avaliação profissional.' : 'Educational content: the guidance presented is general and does not replace consultation, physical examination, diagnosis or treatment by a qualified professional. In case of persistent, progressive or relevant symptoms, stop the activity and seek professional assessment.'}</p>
-            <p className="mt-3 text-xs opacity-75">{lang === 'pt' ? 'Dra. Helena é uma personagem fictícia criada para fins educacionais e narrativos. Sua imagem e seu vídeo foram gerados por inteligência artificial.' : 'Dr. Helena is a fictional character created for educational and narrative purposes. Her image and video were generated with artificial intelligence.'}</p>
+            <p className="mt-3">{lang === 'pt' ? 'As participações da Dra. Helena Villaça têm caráter exclusivamente educativo e são elaboradas com base em artigos, diretrizes e referências indicadas nas respectivas intervenções (veja "Fontes e referências" acima). Elas não constituem consulta, diagnóstico, prescrição ou tratamento médico individual e não substituem a avaliação de um profissional de saúde quando necessária.' : 'Dra. Helena Villaça’s participations are exclusively educational and are prepared based on articles, guidelines and references indicated in each intervention (see "Sources and references" above). They do not constitute consultation, diagnosis, prescription or individual medical treatment, and do not replace assessment by a health professional when needed.'}</p>
+            <p className="mt-3 text-xs opacity-75">{lang === 'pt' ? 'Dra. Helena Villaça é uma personagem fictícia criada para fins educacionais e narrativos. Sua imagem e seu vídeo foram gerados por inteligência artificial.' : 'Dr. Helena Villaça is a fictional character created for educational and narrative purposes. Her image and video were generated with artificial intelligence.'}</p>
           </div>
         </div>
       </main>

@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { NMC_RIT_001 } from '../data/learningUnits/nmcRit001';
 import type { LearningInteraction } from '../types/learningUnit';
+import type { MyAcademyCompanionChoice } from '../types/myAcademyCompanion';
 import type { MyAcademyNextPreference, MyAcademyPerception } from '../types/myAcademyJourney';
 import { navigateToPath } from '../utils/fretboardNavigation';
+import { getMyAcademyCompanionProfile, loadMyAcademyCompanionChoice } from '../utils/myAcademyCompanion';
 import { createNmcRit001SelfRecord, saveMyAcademySelfRecord } from '../utils/myAcademyJourney';
 import { useGlobalPreferences } from '../utils/useGlobalPreferences';
 import GlobalPreferenceControls from './GlobalPreferenceControls';
@@ -27,9 +29,14 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
   const [perception, setPerception] = useState<MyAcademyPerception | null>(null);
   const [nextPreference, setNextPreference] = useState<MyAcademyNextPreference | null>(null);
   const [recordSaved, setRecordSaved] = useState(false);
+  const [companionChoice, setCompanionChoice] = useState<MyAcademyCompanionChoice | null>(() => loadMyAcademyCompanionChoice());
+  const [repeatCount, setRepeatCount] = useState(0);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const totalSteps = 8;
   const activity = step >= 1 && step <= 3 ? NMC_RIT_001.activities[step - 1] : null;
+  const companionId = companionChoice?.companionId ?? null;
+  const companionProfile = companionId ? getMyAcademyCompanionProfile(companionId) : null;
+  const companionPerspective = companionId ? NMC_RIT_001.companionPerspective?.[companionId] : undefined;
   const conceptFeedback = useMemo(
     () => NMC_RIT_001.conceptCheck.choices.find(choice => choice.id === conceptChoice)?.feedback,
     [conceptChoice],
@@ -95,6 +102,12 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
                   <p className="mt-1 text-sm font-semibold leading-relaxed text-cyan-100/80">Vamos começar por uma experiência simples: perceber uma referência que se repete no tempo.</p>
                 </div>
               </div>
+              {companionPerspective?.insight && companionProfile && (
+                <div className="mb-5 rounded-2xl border border-amber-400/30 bg-amber-950/20 p-4">
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">{`Com a perspectiva de ${companionProfile.name}`}</p>
+                  <p className="mt-2 text-sm font-semibold leading-relaxed text-amber-100/85">{companionPerspective.insight}</p>
+                </div>
+              )}
               <div className="space-y-4 text-base font-semibold leading-relaxed text-slate-300">
                 {NMC_RIT_001.opening.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
               </div>
@@ -125,6 +138,12 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
                 <div className="mt-5">
                   {step === 3 && <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-blue-300">Ferramenta do Studio · exploração livre</p>}
                   <AccessiblePulse allowTempoChange={step === 3} />
+                  {step === 3 && companionPerspective?.optionalExperiment && companionProfile && (
+                    <div className="mt-4 rounded-2xl border border-amber-400/30 bg-amber-950/20 p-4">
+                      <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">{`Experiência opcional com ${companionProfile.name}`}</p>
+                      <p className="mt-2 text-sm font-semibold leading-relaxed text-amber-100/85">{companionPerspective.optionalExperiment}</p>
+                    </div>
+                  )}
                 </div>
               )}
               {step === 2 && (
@@ -196,7 +215,13 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
                 <p className="mt-2 text-lg font-black text-cyan-100">A experiência de pulso permanece disponível.</p>
                 <p className="mt-3 text-sm font-semibold leading-relaxed text-cyan-100/75">O GA apenas organiza caminhos possíveis a partir das escolhas que você fez. Você continua livre para repetir, explorar ou voltar ao mapa.</p>
               </div>
-              <MyAcademyCompanionChooser lang={lang} />
+              <MyAcademyCompanionChooser lang={lang} compact onChoiceChange={setCompanionChoice} />
+              {companionPerspective?.closing && companionProfile && (
+                <div className="rounded-2xl border border-amber-400/30 bg-amber-950/20 p-4">
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">{`Síntese com ${companionProfile.name}`}</p>
+                  <p className="mt-2 text-sm font-semibold leading-relaxed text-amber-100/85">{companionPerspective.closing}</p>
+                </div>
+              )}
               <div className="rounded-2xl border border-cyan-400/30 bg-cyan-950/20 p-4">
                 <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">Próximo passo</p>
                 <p className="mt-2 text-sm font-semibold leading-relaxed text-cyan-100/80">A próxima experiência guiada está sendo preparada. Você pode seguir para o mapa e conhecer os caminhos disponíveis.</p>
@@ -204,7 +229,17 @@ const MyAcademyUnitPrototypePage: React.FC = () => {
               </div>
               <div className="grid gap-3">
                 <button type="button" onClick={() => navigateToPath('/studio')} className="min-h-12 rounded-xl border border-blue-400/40 bg-blue-600 px-4 text-sm font-black text-white">Explorar o Studio livremente</button>
-                <button type="button" onClick={() => setStep(1)} className="min-h-12 rounded-xl border border-slate-700 bg-slate-950/60 px-4 text-sm font-black text-slate-100">Repetir a experiência</button>
+                {companionProfile ? (
+                  <button
+                    type="button"
+                    onClick={() => { setRepeatCount(count => count + 1); setStep(0); }}
+                    className="min-h-12 rounded-xl border border-amber-400/50 bg-amber-500/15 px-4 text-sm font-black text-amber-100 transition hover:border-amber-300"
+                  >
+                    {repeatCount > 0 ? `Repetir esta etapa com ${companionProfile.name}` : `Experimentar esta etapa com ${companionProfile.name}`}
+                  </button>
+                ) : (
+                  <button type="button" onClick={() => setStep(1)} className="min-h-12 rounded-xl border border-slate-700 bg-slate-950/60 px-4 text-sm font-black text-slate-100">Repetir a experiência</button>
+                )}
                 <button type="button" onClick={() => navigateToPath('/my-academy')} className="min-h-12 rounded-xl border border-slate-700 px-4 text-sm font-black text-slate-300">Sair da jornada</button>
               </div>
             </div>

@@ -16,6 +16,12 @@ type TopicCopy = {
     role: string;
     profilePath?: string;
   };
+  sourcesNote?: {
+    label: string;
+    items: readonly string[];
+    linkLabel: string;
+    linkPath: string;
+  };
 };
 
 const topic = (pt: TopicCopy, en: TopicCopy): { pt: TopicCopy; en: TopicCopy } => ({ pt, en });
@@ -28,6 +34,11 @@ const clara = (rolePt: string, roleEn: string) => ({
 const tom = (rolePt: string, roleEn: string) => ({
   pt: { name: 'Tom', image: '/instructors/1000/tom-card-instructor.webp', role: rolePt, profilePath: '/instructors/tom' },
   en: { name: 'Tom', image: '/instructors/1000/tom-card-instructor.webp', role: roleEn, profilePath: '/instructors/tom' },
+});
+
+const helena = (rolePt: string, roleEn: string) => ({
+  pt: { name: 'Dra. Helena Villaça', image: '/guests/helena/helena-card-guest.webp', role: rolePt, profilePath: '/especialistas/dra-helena' },
+  en: { name: 'Dr. Helena Villaça', image: '/guests/helena/helena-card-guest.webp', role: roleEn, profilePath: '/especialistas/dra-helena' },
 });
 
 const topicContent = {
@@ -205,6 +216,44 @@ const topicContent = {
       character: tom('Afinação e cuidado do instrumento', 'Tuning and instrument care').en,
     },
   ),
+  'M0-03-04': topic(
+    {
+      heading: 'O instrumento se ajusta a você, não o contrário',
+      paragraphs: [
+        'Altura da alça, apoio, ângulo do braço e distância em relação ao corpo influenciam a tensão nos ombros, punhos e mãos. Pequenos ajustes na forma de segurar ou apoiar o instrumento podem reduzir esforço desnecessário sem exigir equipamento especial.',
+        'Sinais como formigamento, dor localizada, rigidez ou fadiga que não melhora com uma pausa curta merecem atenção — não como motivo de alarme, mas como informação para ajustar a prática.',
+      ],
+      points: ['Experimente diferentes apoios e alturas até sentir estabilidade.', 'Evite tensão fixa nos ombros e no pulso ao tocar.', 'Faça pausas antes que o desconforto se acumule.', 'Se a dor for persistente ou progressiva, procure avaliação profissional.'],
+      character: helena('Especialista convidada em Saúde do Músico', 'Guest specialist in Musician Health').pt,
+      sourcesNote: {
+        label: 'Base desta orientação',
+        items: [
+          'Rotter et al. — revisão sistemática sobre queixas musculoesqueléticas em músicos.',
+          'Foxman & Burgel — prevenção de distúrbios relacionados à prática musical.',
+        ],
+        linkLabel: 'Ver fontes completas no perfil da Dra. Helena Villaça',
+        linkPath: '/especialistas/dra-helena#fontes-e-referencias',
+      },
+    },
+    {
+      heading: 'The instrument adjusts to you, not the other way around',
+      paragraphs: [
+        'Strap height, support, neck angle and distance from the body all influence tension in the shoulders, wrists and hands. Small adjustments to how you hold or support the instrument can reduce unnecessary effort without special equipment.',
+        'Signs such as tingling, localized pain, stiffness or fatigue that does not improve with a short break deserve attention — not as a reason for alarm, but as information to adjust practice.',
+      ],
+      points: ['Try different supports and heights until you feel stable.', 'Avoid fixed tension in the shoulders and wrist while playing.', 'Take breaks before discomfort builds up.', 'If pain is persistent or progressive, seek professional assessment.'],
+      character: helena('Especialista convidada em Saúde do Músico', 'Guest specialist in Musician Health').en,
+      sourcesNote: {
+        label: 'Basis for this guidance',
+        items: [
+          'Rotter et al. — systematic review on musculoskeletal complaints in musicians.',
+          'Foxman & Burgel — prevention of playing-related musculoskeletal disorders.',
+        ],
+        linkLabel: 'See full sources on Dr. Helena Villaça’s profile',
+        linkPath: '/especialistas/dra-helena#fontes-e-referencias',
+      },
+    },
+  ),
   'M0-04-01': topic(
     {
       heading: 'O braço interativo é um mapa, não um teste',
@@ -305,6 +354,19 @@ const MyAcademyIntroTopicContent: React.FC<MyAcademyIntroTopicContentProps> = ({
             </li>
           ))}
         </ul>
+        {content.sourcesNote && (
+          <div className="mt-4 rounded-xl border border-slate-700 bg-slate-950/40 p-3">
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">{content.sourcesNote.label}</p>
+            <ul className="mt-2 space-y-1">
+              {content.sourcesNote.items.map(sourceItem => (
+                <li key={sourceItem} className="text-xs font-semibold leading-relaxed text-slate-300">{sourceItem}</li>
+              ))}
+            </ul>
+            <a href={content.sourcesNote.linkPath} className="mt-2 inline-flex text-xs font-bold text-cyan-300 hover:text-cyan-200">
+              {content.sourcesNote.linkLabel} ↗
+            </a>
+          </div>
+        )}
       </div>
     </details>
   );

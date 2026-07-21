@@ -34,12 +34,10 @@ import {
   unlockAchievement,
 } from '../utils/achievementStorage';
 import { getAchievementById, getRewardById } from '../utils/achievementUtils';
-import { getTierName } from '../utils/tierNomenclature';
 import { supabase } from '../src/lib/supabase';
 import { migrateLocalIdentityToSupabase, pushLocalSnapshotToSupabase, syncSupabaseSnapshot } from '../src/lib/cloudSync';
 import { canUseDisplayName, getDisplayNameError, getSupabaseDisplayName } from '../src/lib/userIdentity';
 import { listInstruments, replaceInstruments } from '../utils/instrumentRegistry';
-import { PinnedProfileBadges } from './PinnedProfileBadges';
 import { isAdminEmail } from '../utils/adminAccess';
 import { getMyAdminRole, type AdminRole } from '../utils/adminRoles';
 import { FretboardInstructionCard, type FretboardInstruction } from './FretboardInstructionCard';
@@ -1602,17 +1600,6 @@ const handleDismissReturnContext = () => {
     }
     : brandAssets;
 
-  const isGuestMode = !authUser && !user;
-
-  const currentUserTier = useMemo(() => {
-    if (!user) return 0;
-    const unlocked = getUnlockedAchievementIds(user);
-    const tiers = unlocked
-      .map(id => getAchievementById(id)?.tier)
-      .filter((tier): tier is 0 | 1 | 2 | 3 | 4 | 5 | 6 => typeof tier === 'number');
-    return tiers.length ? Math.max(...tiers) as 0 | 1 | 2 | 3 | 4 | 5 | 6 : 0;
-  }, [user]);
-  const currentUserTierName = getTierName(currentUserTier, lang);
   const updatePrimaryInstrument = (instrumentType: InstrumentType) => {
     const instrument = INSTRUMENT_PRESETS[instrumentType];
     const instrumentFamily = instrumentType.startsWith('bass')
@@ -2393,9 +2380,7 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
       </div>
 
       <div className="hidden lg:flex min-w-0 flex-col items-start gap-2 overflow-hidden">
-        {!isGuestMode && <PinnedProfileBadges isLight={isLight} />}
-
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {authUser && (adminRole === 'ADMIN' || adminRole === 'SUPER_ADMIN') && (
             <a
               href="/admin/rewards"
@@ -2404,9 +2389,6 @@ ${isSmallScreen ? 'hidden' : 'py-3 md:py-4'}
               ADMIN
             </a>
           )}
-          <span className={`rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.08em] ${isLight ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-blue-900/70 bg-blue-950/40 text-blue-200'}`}>
-            {isGuestMode ? (lang === 'pt' ? 'VISITANTE' : 'VISITOR') : currentUserTierName}
-          </span>
           {authUser ? (
             <button
               onClick={requestLogout}

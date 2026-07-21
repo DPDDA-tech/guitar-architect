@@ -32,7 +32,7 @@ export const guestSpecialists: GuestSpecialist[] = [
     id: 'dra-helena',
     status: 'active',
     name: 'Helena Mascarenhas de Mello Villaça',
-    cardName: 'Dra. Helena',
+    cardName: 'Dra. Helena Villaça',
     specialty: { pt: 'Saúde do músico', en: 'Musician health' },
     shortDescription: {
       pt: 'Médica fisiatra dedicada à prevenção de lesões, ergonomia e construção de hábitos de prática mais sustentáveis.',

@@ -1,7 +1,6 @@
 import React from 'react';
 import { MY_ACADEMY_CURRICULUM } from '../../data/myAcademyCurriculum';
 import type { MyAcademyCurriculumMoment } from '../../types/myAcademyCurriculum';
-import { navigateToPath } from '../../utils/fretboardNavigation';
 import type { MyAcademyMomentId } from '../../utils/myAcademyMapPresentation';
 import {
   deriveMyAcademyExplorationEvidence,
@@ -14,6 +13,7 @@ import {
   getMyAcademyWaypointPresentation,
 } from '../../utils/myAcademyMapPresentation';
 import { getMobileRouteGeometry } from '../../utils/myAcademyRouteGeometry';
+import { getMyAcademyEncountersForModule, type MyAcademyEncounterProfile } from '../../utils/myAcademyEncounters';
 import MyAcademyCableRoute from './MyAcademyCableRoute';
 import MyAcademyCableModules from './MyAcademyCableModules';
 import MyAcademyWaypoint from './MyAcademyWaypoint';
@@ -27,49 +27,8 @@ interface MyAcademyJourneyRouteProps {
   animateRoute: boolean;
   onSelect: (momentId: MyAcademyMomentId) => void;
   onSelectModule: (moduleId: string) => void;
-  onOpenCharacters: () => void;
+  onSelectEncounter: (encounter: MyAcademyEncounterProfile) => void;
 }
-
-type CharacterMarker = {
-  name: string;
-  image: string;
-  role: 'guide' | 'choice' | 'specialist';
-  profilePath?: string;
-};
-
-const BASE_CHARACTER_MARKERS: Partial<Record<MyAcademyMomentId, readonly CharacterMarker[]>> = {
-  '0': [
-    {
-      name: 'Clara',
-      image: '/instructors/1000/clara-card-instructor.webp',
-      role: 'guide',
-    },
-  ],
-  '1': [
-    {
-      name: 'Clara',
-      image: '/instructors/1000/clara-card-instructor.webp',
-      role: 'guide',
-    },
-    {
-      name: 'Alice',
-      image: '/instructors/1000/alice-card-instructor.webp',
-      role: 'choice',
-    },
-    {
-      name: 'Arthur',
-      image: '/instructors/1000/arthur-card-instructor.webp',
-      role: 'choice',
-    },
-  ],
-};
-
-const TOM_MARKER: CharacterMarker = {
-  name: 'Tom',
-  image: '/instructors/1000/tom-card-instructor.webp',
-  role: 'specialist',
-  profilePath: '/instructors/tom',
-};
 
 const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
   lang,
@@ -80,7 +39,7 @@ const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
   animateRoute,
   onSelect,
   onSelectModule,
-  onOpenCharacters,
+  onSelectEncounter,
 }) => {
   const isPt = lang === 'pt';
   const moduleCount = selectedTerritory.modules.length;
@@ -93,39 +52,23 @@ const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
     explorationEvidence,
   );
   const moduleAccent = getMyAcademyWaypointAccent(selectedVisualState) === 'gold' ? 'amber' : 'cyan';
-  const showTom = selectedMomentId === '0' && selectedModuleId === 'M0-03';
+  const moduleCharacters = getMyAcademyEncountersForModule(selectedModuleId);
   const selectedModuleIndex = selectedTerritory.modules.findIndex(module => module.id === selectedModuleId);
   const selectedModulePlacement = selectedModuleIndex >= 0 ? routeGeometry.modulePositions[selectedModuleIndex] : undefined;
 
-  const markerActionLabel = (character: CharacterMarker) => {
-    if (character.role === 'guide') return isPt ? `Conversar com ${character.name}` : `Talk with ${character.name}`;
-    if (character.role === 'specialist') return isPt ? `Conhecer ${character.name}, especialista convidado` : `Meet ${character.name}, guest specialist`;
-    return isPt ? `Escolher ${character.name}` : `Choose ${character.name}`;
-  };
-
-  const openCharacter = (character: CharacterMarker) => {
-    if (character.profilePath) {
-      navigateToPath(character.profilePath);
-      return;
-    }
-    onOpenCharacters();
-  };
-
-  const renderCharacterButton = (character: CharacterMarker, key: string, overlap = 0) => {
-    const label = markerActionLabel(character);
-    const specialist = character.role === 'specialist';
+  const renderEncounterButton = (encounter: MyAcademyEncounterProfile) => {
+    const label = isPt ? `Rever participação de ${encounter.name}` : `Revisit ${encounter.name}'s participation`;
     return (
       <button
-        key={key}
+        key={encounter.id}
         type="button"
-        onClick={() => openCharacter(character)}
+        onClick={() => onSelectEncounter(encounter)}
         title={label}
         aria-label={label}
-        className={`relative h-9 w-9 shrink-0 overflow-hidden rounded-full border-2 bg-slate-950 shadow-lg transition hover:z-20 hover:scale-110 focus-visible:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 sm:h-11 sm:w-11 ${character.role === 'choice' ? 'border-cyan-300' : 'border-amber-300'} ${specialist ? 'ring-2 ring-amber-300/25 ring-offset-2 ring-offset-slate-950' : ''}`}
-        style={{ marginInlineStart: overlap }}
+        className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border-2 border-amber-300 bg-slate-950 shadow-lg ring-2 ring-amber-300/25 ring-offset-2 ring-offset-slate-950 transition hover:z-20 hover:scale-110 focus-visible:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 sm:h-11 sm:w-11"
       >
-        <img src={character.image} alt="" className="h-full w-full object-cover object-top" />
-        <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border border-slate-950 ${character.role === 'choice' ? 'bg-cyan-300' : 'bg-amber-300'}`} aria-hidden="true" />
+        <img src={encounter.image} alt="" className="h-full w-full object-cover object-top" />
+        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border border-slate-950 bg-amber-300" aria-hidden="true" />
       </button>
     );
   };
@@ -166,8 +109,6 @@ const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
               const presentation = getMyAcademyWaypointPresentation(moment.id, hasSelfRecord, lang);
               const visualState = getMyAcademyWaypointVisualState(moment.id, selectedMomentId, moment.status, explorationEvidence);
               const position = routeGeometry.waypointPositions[index];
-              const characters = BASE_CHARACTER_MARKERS[moment.id] ?? [];
-              const placeCharactersOnRight = position.x < 50;
 
               return (
                 <li
@@ -188,12 +129,6 @@ const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
                     align="center"
                     onSelect={() => onSelect(moment.id)}
                   />
-
-                  {characters.length > 0 && (
-                    <div className={`absolute top-1/2 flex -translate-y-1/2 items-center ${placeCharactersOnRight ? 'left-[calc(100%+6px)]' : 'right-[calc(100%+6px)] flex-row-reverse'}`}>
-                      {characters.map((character, characterIndex) => renderCharacterButton(character, `${moment.id}-${character.name}`, characterIndex === 0 ? 0 : -10))}
-                    </div>
-                  )}
                 </li>
               );
             })}
@@ -207,15 +142,15 @@ const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
             mobile
             onSelectModule={onSelectModule}
           />
-          {showTom && selectedModulePlacement && (
+          {moduleCharacters.length > 0 && selectedModulePlacement && (
             <div
-              className="absolute z-30 -translate-x-1/2 -translate-y-1/2"
+              className="absolute z-30 flex -translate-x-1/2 flex-col items-center gap-2"
               style={{
                 left: `calc(${selectedModulePlacement.point.x}% ${selectedModulePlacement.point.x < 50 ? '+' : '-'} 58px)`,
-                top: selectedModulePlacement.point.y,
+                top: selectedModulePlacement.point.y + 46,
               }}
             >
-              {renderCharacterButton(TOM_MARKER, 'module-M0-03-tom')}
+              {moduleCharacters.map(encounter => renderEncounterButton(encounter))}
             </div>
           )}
           <p className="pointer-events-none absolute right-5 text-right text-xs font-bold uppercase tracking-[0.08em] text-amber-100/80" style={{ top: routeGeometry.finalPoint.y + 28 }}>
