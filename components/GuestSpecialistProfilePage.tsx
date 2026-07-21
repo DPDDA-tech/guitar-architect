@@ -55,7 +55,7 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
     );
   }
 
-  const title = specialist.name ?? specialist.cardName ?? 'Helena Valença Monteiro';
+  const title = specialist.name ?? specialist.cardName ?? 'Helena Mascarenhas de Mello Villaça';
   const specialty = specialist.specialty?.[lang] ?? '';
   const description = specialist.shortDescription?.[lang] ?? '';
   const quote = specialist.quote?.[lang] ?? '';
@@ -78,7 +78,7 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
 
   const identity = lang === 'pt'
     ? [
-        ['Nome completo', 'Helena Valença Monteiro'],
+        ['Nome completo', 'Helena Mascarenhas de Mello Villaça'],
         ['Nome de exibição', 'Dra. Helena'],
         ['Idade', '43 anos'],
         ['Data de nascimento', '18 de setembro'],
@@ -95,7 +95,7 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
         ['Personagem', 'Fictícia, criada com auxílio de inteligência artificial'],
       ]
     : [
-        ['Full name', 'Helena Valença Monteiro'],
+        ['Full name', 'Helena Mascarenhas de Mello Villaça'],
         ['Display name', 'Dr. Helena'],
         ['Age', '43 years old'],
         ['Date of birth', 'September 18'],

@@ -123,11 +123,24 @@ const MyAcademyPage: React.FC = () => {
             <h3 className={`mt-3 text-2xl font-black tracking-tight ${isLight ? 'text-slate-950' : 'text-white'}`}>
               {isPt ? 'Pulso e regularidade' : 'Pulse and regularity'}
             </h3>
-            <p className={`mt-4 max-w-3xl text-sm font-semibold leading-relaxed sm:text-base ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-              {isPt
-                ? 'Sugerimos esta unidade porque ela apresenta a relação entre percepção, prática e ferramentas que será usada ao longo do My Academy.'
-                : 'We suggest this unit because it introduces the relationship between perception, practice and tools that will be used throughout My Academy.'}
-            </p>
+            <dl className="mt-5 space-y-4">
+              <div>
+                <dt className={`text-[10px] font-black uppercase tracking-[0.18em] ${isLight ? 'text-cyan-700' : 'text-cyan-300'}`}>{isPt ? 'Foco atual' : 'Current focus'}</dt>
+                <dd className={`mt-1 text-sm font-semibold leading-relaxed sm:text-base ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>{isPt ? 'Pulso e regularidade.' : 'Pulse and regularity.'}</dd>
+              </div>
+              <div>
+                <dt className={`text-[10px] font-black uppercase tracking-[0.18em] ${isLight ? 'text-cyan-700' : 'text-cyan-300'}`}>{isPt ? 'O que você está construindo' : 'What you are building'}</dt>
+                <dd className={`mt-1 text-sm font-semibold leading-relaxed sm:text-base ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>{isPt ? 'A capacidade de manter estabilidade rítmica enquanto toca.' : 'The ability to maintain rhythmic stability while playing.'}</dd>
+              </div>
+              <div>
+                <dt className={`text-[10px] font-black uppercase tracking-[0.18em] ${isLight ? 'text-cyan-700' : 'text-cyan-300'}`}>{isPt ? 'Como isso segue com você depois' : 'How this stays with you afterward'}</dt>
+                <dd className={`mt-1 text-sm font-semibold leading-relaxed sm:text-base ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                  {isPt
+                    ? 'Essa competência servirá de base para acordes, levadas, repertório e outras atividades musicais que integrarão a jornada à medida que ela for ampliada.'
+                    : 'This competency will serve as a base for chords, grooves, repertoire and other musical activities that will integrate the journey as it expands.'}
+                </dd>
+              </div>
+            </dl>
             <button
               type="button"
               onClick={openPilotUnit}

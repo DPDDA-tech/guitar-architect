@@ -121,7 +121,7 @@ const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
         onClick={() => openCharacter(character)}
         title={label}
         aria-label={label}
-        className={`relative h-11 w-11 overflow-hidden rounded-full border-2 bg-slate-950 shadow-lg transition hover:z-20 hover:scale-110 focus-visible:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${character.role === 'choice' ? 'border-cyan-300' : 'border-amber-300'} ${specialist ? 'ring-2 ring-amber-300/25 ring-offset-2 ring-offset-slate-950' : ''}`}
+        className={`relative h-9 w-9 shrink-0 overflow-hidden rounded-full border-2 bg-slate-950 shadow-lg transition hover:z-20 hover:scale-110 focus-visible:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 sm:h-11 sm:w-11 ${character.role === 'choice' ? 'border-cyan-300' : 'border-amber-300'} ${specialist ? 'ring-2 ring-amber-300/25 ring-offset-2 ring-offset-slate-950' : ''}`}
         style={{ marginInlineStart: overlap }}
       >
         <img src={character.image} alt="" className="h-full w-full object-cover object-top" />
@@ -190,7 +190,7 @@ const MyAcademyJourneyRoute: React.FC<MyAcademyJourneyRouteProps> = ({
                   />
 
                   {characters.length > 0 && (
-                    <div className={`absolute top-1/2 flex -translate-y-1/2 items-center ${placeCharactersOnRight ? 'left-[calc(100%+8px)]' : 'right-[calc(100%+8px)] flex-row-reverse'}`}>
+                    <div className={`absolute top-1/2 flex -translate-y-1/2 items-center ${placeCharactersOnRight ? 'left-[calc(100%+6px)]' : 'right-[calc(100%+6px)] flex-row-reverse'}`}>
                       {characters.map((character, characterIndex) => renderCharacterButton(character, `${moment.id}-${character.name}`, characterIndex === 0 ? 0 : -10))}
                     </div>
                   )}

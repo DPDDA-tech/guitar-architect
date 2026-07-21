@@ -6,22 +6,27 @@ import type {
 
 export const MY_ACADEMY_COMPANION_KEY = 'ga_my_academy_companion_v1';
 
+// Domínio editorial implícito na escolha (não é um campo de dado — apenas orienta a copy
+// e uma futura entrada contextual ao longo do percurso; a escolha continua reversível,
+// não exclusiva, e não altera o currículo disponível):
+// - Alice → percepção, expressão, aplicação musical, escuta, fraseado.
+// - Arthur → estrutura, organização, relações, fundamentação técnica.
 export const MY_ACADEMY_COMPANIONS: readonly MyAcademyCompanionProfile[] = [
   {
     id: 'alice',
     name: 'Alice',
     image: '/instructors/1000/alice-card-instructor.webp',
     title: {
-      pt: 'Acolhimento e primeiros passos',
-      en: 'Welcoming guidance and first steps',
+      pt: 'Percepção e expressão',
+      en: 'Perception and expression',
     },
     invitation: {
-      pt: 'Posso acompanhar você com calma, clareza e atenção aos detalhes que tornam o começo mais seguro.',
-      en: 'I can accompany you with calm, clarity and attention to the details that make the beginning feel safer.',
+      pt: 'Vamos descobrir como esse conteúdo começa a aparecer no som que você produz.',
+      en: 'Let’s discover how this content starts to show up in the sound you produce.',
     },
     emphasis: {
-      pt: 'Para quem prefere avançar com explicações acolhedoras e pausas para compreender cada etapa.',
-      en: 'For those who prefer welcoming explanations and space to understand each step.',
+      pt: 'Para quem prefere avançar com atenção à escuta, ao fraseado e à aplicação musical do que está aprendendo.',
+      en: 'For those who prefer to move forward paying attention to listening, phrasing and the musical application of what they are learning.',
     },
   },
   {
@@ -29,16 +34,16 @@ export const MY_ACADEMY_COMPANIONS: readonly MyAcademyCompanionProfile[] = [
     name: 'Arthur',
     image: '/instructors/1000/arthur-card-instructor.webp',
     title: {
-      pt: 'Incentivo e evolução',
-      en: 'Encouragement and development',
+      pt: 'Estrutura e compreensão técnica',
+      en: 'Structure and technical understanding',
     },
     invitation: {
-      pt: 'Posso acompanhar você com incentivo, objetivos claros e pequenos desafios para manter a jornada em movimento.',
-      en: 'I can accompany you with encouragement, clear goals and small challenges that keep the journey moving.',
+      pt: 'Vamos entender como este fundamento se conecta ao que você já estudou e ao que virá depois.',
+      en: 'Let’s understand how this fundamental connects to what you have already studied and what comes next.',
     },
     emphasis: {
-      pt: 'Para quem prefere transformar cada etapa em impulso para experimentar e seguir adiante.',
-      en: 'For those who prefer turning each step into momentum to experiment and move forward.',
+      pt: 'Para quem prefere avançar entendendo a organização, as relações e a estrutura técnica de cada conteúdo.',
+      en: 'For those who prefer to move forward by understanding the organization, relationships and technical structure of each topic.',
     },
   },
 ] as const;

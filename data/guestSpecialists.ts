@@ -31,7 +31,7 @@ export const guestSpecialists: GuestSpecialist[] = [
   {
     id: 'dra-helena',
     status: 'active',
-    name: 'Helena Valença Monteiro',
+    name: 'Helena Mascarenhas de Mello Villaça',
     cardName: 'Dra. Helena',
     specialty: { pt: 'Saúde do músico', en: 'Musician health' },
     shortDescription: {
@@ -62,7 +62,7 @@ export const guestSpecialists: GuestSpecialist[] = [
       { pt: 'Saúde auditiva e sinais de alerta', en: 'Hearing health and warning signs' },
     ],
     profile: {
-      fullName: { pt: 'Helena Valença Monteiro', en: 'Helena Valença Monteiro' },
+      fullName: { pt: 'Helena Mascarenhas de Mello Villaça', en: 'Helena Mascarenhas de Mello Villaça' },
       age: { pt: '43 anos', en: '43 years old' },
       birthplace: { pt: 'Belo Horizonte, Minas Gerais', en: 'Belo Horizonte, Minas Gerais, Brazil' },
       livesIn: { pt: 'Juiz de Fora, Minas Gerais', en: 'Juiz de Fora, Minas Gerais, Brazil' },

@@ -85,7 +85,7 @@ const pointAtArcProgress = (segment: RouteSegment, progress: number): RoutePoint
 
 const safeProgress = (momentId: MyAcademyMomentId, index: number, count: number): number => {
   if (count === 1) return 0.5;
-  const start = 0.22;
+  const start = 0.32;
   const end = momentId === '6' ? 0.72 : 0.76;
   return start + (((end - start) * index) / (count - 1));
 };

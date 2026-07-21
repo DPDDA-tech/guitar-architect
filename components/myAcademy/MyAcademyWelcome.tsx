@@ -36,6 +36,11 @@ const MyAcademyWelcome: React.FC<MyAcademyWelcomeProps> = ({ lang, isLight, mode
                 ? 'O mapa oferece direção, mas não determina por onde você deve seguir. Você pode começar pela sugestão, explorar outros assuntos ou voltar ao que quiser, quando quiser.'
                 : 'The map offers direction, but it does not decide where you must go. You can begin with the suggestion, explore other subjects or return to anything you choose, whenever you choose.'}
             </p>
+            <p>
+              {isPt
+                ? 'Aqui, sua jornada não será uma lista que cresce para sempre. Vamos escolher o que merece atenção agora. Conforme você avança, alguns conteúdos ainda precisarão de novos contatos, outros passarão a aparecer dentro de músicas e atividades integradas, e alguns poderão esperar até o momento certo de retornar.'
+                : 'Here, your journey won’t be a list that keeps growing forever. Let’s choose what deserves attention now. As you move forward, some content will still need further contact, other content will start appearing inside songs and integrated activities, and some may wait until the right moment to return.'}
+            </p>
           </div>
         </div>
     </div>

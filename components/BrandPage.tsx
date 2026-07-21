@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
+import { getEcosystemBrandAsset } from '../utils/ecosystemBrandAssets';
 import AppFooter from './AppFooter';
 import ImageLightbox from './ImageLightbox';
 
@@ -121,7 +122,8 @@ const BrandPage: React.FC = () => {
           'É essa mesma ideia que sustenta o nome Guitar Architect e o convite por trás de cada etapa do ecossistema: defina sua etapa na construção musical.',
         ],
         s4Title: 'Um ecossistema em evolução',
-        s4Intro: 'O Guitar Architect é dividido em três ambientes, cada um pensado para uma etapa da jornada musical.',
+        s4Intro: 'O Guitar Architect é dividido em ambientes complementares, cada um pensado para uma etapa ou dimensão da jornada musical.',
+        s4AcademyNote: 'O My Academy conecta os ambientes, os Arquitetos e os Especialistas Convidados em uma jornada musical progressiva. Sua proposta não é apenas ordenar conteúdos, mas ajudar cada músico a administrar o que aprende ao longo do tempo: escolhendo prioridades, consolidando fundamentos, aplicando conhecimentos em situações musicais e evitando que a rotina se transforme em uma lista que cresce indefinidamente.',
         s5Title: 'Nossa filosofia',
         s5: [
           'Acreditamos que aprender é construir. Compreender é mais importante do que decorar, e teoria e prática devem caminhar sempre juntas.',
@@ -151,6 +153,7 @@ const BrandPage: React.FC = () => {
           kids: { title: 'KIDS', tagline: 'Descoberta', description: 'Representa os primeiros contatos com a música, utilizando elementos visuais mais coloridos, leves e acolhedores.', linkLabel: 'Conhecer Kids →' },
           teens: { title: 'TEENS', tagline: 'Exploração', description: 'Representa a fase de conexão entre conceitos, prática guiada e expansão do repertório musical.', linkLabel: 'Conhecer Teens →' },
           studio: { title: 'STUDIO', tagline: 'Construção', description: 'Representa o aprofundamento técnico, a experimentação consciente e o desenvolvimento contínuo da arquitetura musical.', linkLabel: 'Conhecer Studio →' },
+          academy: { title: 'MY ACADEMY', tagline: 'Sua evolução musical, organizada no tempo.', description: 'Uma jornada orientada para ajudar você a organizar o que estudar agora, o que consolidar, o que aplicar e o que pode esperar.', linkLabel: 'Conhecer My Academy →' },
         },
       }
     : {
@@ -188,7 +191,8 @@ const BrandPage: React.FC = () => {
           'That is the same idea behind the name Guitar Architect, and the invitation behind every stage of the ecosystem: define your stage in the musical construction.',
         ],
         s4Title: 'An evolving ecosystem',
-        s4Intro: 'Guitar Architect is divided into three environments, each designed for a stage of the musical journey.',
+        s4Intro: 'Guitar Architect is divided into complementary environments, each designed for a stage or dimension of the musical journey.',
+        s4AcademyNote: 'My Academy connects the environments, the Architects and the Guest Specialists in a progressive musical journey. Its purpose is not just to order content, but to help every musician manage what they learn over time: choosing priorities, consolidating fundamentals, applying knowledge to musical situations and avoiding a routine that keeps growing indefinitely.',
         s5Title: 'Our philosophy',
         s5: [
           'We believe that learning is building. Understanding matters more than memorizing, and theory and practice should always go hand in hand.',
@@ -218,6 +222,7 @@ const BrandPage: React.FC = () => {
           kids: { title: 'KIDS', tagline: 'Discovery', description: 'Represents the first contact with music, using visual elements that are more colorful, light and welcoming.', linkLabel: 'Discover Kids →' },
           teens: { title: 'TEENS', tagline: 'Exploration', description: 'Represents the phase of connecting concepts, guided practice and the expansion of musical repertoire.', linkLabel: 'Discover Teens →' },
           studio: { title: 'STUDIO', tagline: 'Construction', description: 'Represents technical depth, conscious experimentation and the continuous development of musical architecture.', linkLabel: 'Discover Studio →' },
+          academy: { title: 'MY ACADEMY', tagline: 'Your musical growth, organized over time.', description: 'A guided journey that helps you organize what to study now, what to consolidate, what to apply and what can wait.', linkLabel: 'Discover My Academy →' },
         },
       });
 
@@ -225,6 +230,7 @@ const BrandPage: React.FC = () => {
     { id: 'kids', logo: '/gakidslogo.webp', path: '/kids', accent: isLight ? 'text-emerald-600' : 'text-emerald-400', ...t.ecosystem.kids },
     { id: 'teens', logo: '/gateenslogo.webp', path: '/teens', accent: isLight ? 'text-violet-600' : 'text-violet-400', ...t.ecosystem.teens },
     { id: 'studio', logo: '/logogastudio.webp', path: '/studio', accent: isLight ? 'text-blue-600' : 'text-blue-400', ...t.ecosystem.studio },
+    { id: 'academy', logo: getEcosystemBrandAsset('academy', theme), path: '/my-academy', accent: isLight ? 'text-cyan-600' : 'text-cyan-400', ...t.ecosystem.academy },
   ];
 
   return (
@@ -335,7 +341,7 @@ const BrandPage: React.FC = () => {
               <section>
                 <h2 className="text-lg font-black uppercase tracking-tight mb-2">{t.s4Title}</h2>
                 <p className={`mb-5 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{t.s4Intro}</p>
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {ecosystemAreas.map(area => (
                     <div
                       key={area.id}
@@ -362,6 +368,9 @@ const BrandPage: React.FC = () => {
                     </div>
                   ))}
                 </div>
+                <p className={`mt-6 rounded-2xl border p-5 text-sm font-semibold leading-relaxed ${accentPanelClass} ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                  {t.s4AcademyNote}
+                </p>
               </section>
 
               <hr className={isLight ? 'border-zinc-100' : 'border-zinc-800'} />

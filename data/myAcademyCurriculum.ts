@@ -4,6 +4,18 @@ import type {
   MyAcademyLocalizedText,
 } from '../types/myAcademyCurriculum';
 
+// Próximo conteúdo planejado:
+// "Subdivisão: dividindo o pulso sem perder a estabilidade".
+//
+// Papel na jornada:
+// - não substitui o trabalho de pulso e regularidade (NMC-RIT-001);
+// - integra a competência anterior em um contexto rítmico mais complexo;
+// - o conteúdo anterior deixa de ser apenas exercício isolado e passa a
+//   funcionar como fundamento aplicado;
+// - avaliar, em implementação futura, se "Pulso e regularidade" deve aparecer
+//   como competência em consolidação durante esta unidade, em vez de
+//   permanecer apenas como pré-requisito concluído.
+
 const text = (pt: string, en: string): MyAcademyLocalizedText => ({ pt, en });
 
 const topic = (id: string, pt: string, en: string, status: 'preparing' | 'horizon' = 'preparing'): MyAcademyCurriculumItem => ({

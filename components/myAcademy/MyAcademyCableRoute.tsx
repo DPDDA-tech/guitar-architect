@@ -6,6 +6,7 @@ import {
   MY_ACADEMY_DESKTOP_SEGMENTS,
   routeSegmentPath,
 } from '../../utils/myAcademyRouteGeometry';
+import MyAcademyRouteTerminal from './MyAcademyRouteTerminal';
 
 interface MyAcademyCableRouteProps {
   mobile: boolean;
@@ -17,49 +18,52 @@ interface MyAcademyCableRouteProps {
 
 const curveCommand = (path: string) => path.slice(path.indexOf('C'));
 
-const StartConnector: React.FC = () => (
-  <svg viewBox="0 0 68 24" className="h-full w-full" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-    <path d="M0 9H13V15H0Z" fill="#e2e8f0" />
-    <path d="M13 7H34V17H13Z" fill="#cbd5e1" stroke="#f8fafc" strokeWidth="2" />
-    <path d="M34 5H52V19H34Z" fill="#475569" stroke="#94a3b8" strokeWidth="2" />
-    <rect x="50" y="2" width="18" height="20" rx="5" fill="#111827" stroke="#64748b" strokeWidth="2" />
-    <path d="M22 7V17" stroke="#b4823f" strokeWidth="2" />
-  </svg>
-);
-
-const EndConnector: React.FC = () => (
-  <svg viewBox="0 0 70 24" className="h-full w-full" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-    <rect x="0" y="2" width="18" height="20" rx="5" fill="#111827" stroke="#64748b" strokeWidth="2" />
-    <path d="M16 5H34V19H16Z" fill="#475569" stroke="#94a3b8" strokeWidth="2" />
-    <path d="M34 7H55V17H34Z" fill="#cbd5e1" stroke="#f8fafc" strokeWidth="2" />
-    <path d="M55 9H70V15H55Z" fill="#e2e8f0" />
-    <path d="M45 7V17" stroke="#b4823f" strokeWidth="2" />
-  </svg>
-);
+const DESKTOP_START_POINT = { x: 49, y: 314 };
+const DESKTOP_END_POINT = MY_ACADEMY_DESKTOP_SEGMENTS[MY_ACADEMY_DESKTOP_SEGMENTS.length - 1].end;
 
 const DesktopCable: React.FC<Omit<MyAcademyCableRouteProps, 'mobile' | 'moduleCount'>> = ({ animate, confirmedMomentIds }) => {
   const leadPath = 'M49 314C72 314 94 314 115 314';
   const fullPath = `${leadPath}${MY_ACADEMY_DESKTOP_SEGMENTS.map(segment => curveCommand(routeSegmentPath(segment))).join('')}`;
 
   return (
-    <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
-      <path d={leadPath} fill="none" stroke="#020617" strokeWidth="10" strokeLinecap="round" />
-      <path d={leadPath} fill="none" stroke="#334155" strokeWidth="7" strokeLinecap="round" />
-      {MY_ACADEMY_DESKTOP_SEGMENTS.map(segment => {
-        const path = routeSegmentPath(segment);
-        return (
-          <g key={segment.momentId}>
-            <path d={path} fill="none" stroke="#020617" strokeWidth="10" strokeLinecap="round" />
-            <path data-cable-segment={segment.momentId} d={path} fill="none" stroke="#334155" strokeWidth="7" strokeLinecap="round" />
-            <path d={path} fill="none" stroke="#67e8f9" strokeOpacity="0.3" strokeWidth="2.2" strokeLinecap="round" />
-          </g>
-        );
-      })}
-      {MY_ACADEMY_DESKTOP_SEGMENTS.filter(segment => confirmedMomentIds.includes(segment.momentId)).map(segment => (
-        <path key={`confirmed-${segment.momentId}`} data-explored-mark={segment.momentId} d={getRoutePathSlice(segment, 0.06, 0.16)} fill="none" stroke="#fcd34d" strokeOpacity="0.78" strokeWidth="5" strokeDasharray="8 7" strokeLinecap="round" />
-      ))}
-      {animate && <path pathLength="1000" d={fullPath} className="ga-academy-cable-pulse" fill="none" stroke="#fef3c7" strokeWidth="3" strokeLinecap="round" />}
-    </svg>
+    <>
+      <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
+        <path d={leadPath} fill="none" stroke="#020617" strokeWidth="10" strokeLinecap="round" />
+        <path d={leadPath} fill="none" stroke="#334155" strokeWidth="7" strokeLinecap="round" />
+        {MY_ACADEMY_DESKTOP_SEGMENTS.map(segment => {
+          const path = routeSegmentPath(segment);
+          return (
+            <g key={segment.momentId}>
+              <path d={path} fill="none" stroke="#020617" strokeWidth="10" strokeLinecap="round" />
+              <path data-cable-segment={segment.momentId} d={path} fill="none" stroke="#334155" strokeWidth="7" strokeLinecap="round" />
+              <path d={path} fill="none" stroke="#67e8f9" strokeOpacity="0.3" strokeWidth="2.2" strokeLinecap="round" />
+            </g>
+          );
+        })}
+        {MY_ACADEMY_DESKTOP_SEGMENTS.filter(segment => confirmedMomentIds.includes(segment.momentId)).map(segment => (
+          <path key={`confirmed-${segment.momentId}`} data-explored-mark={segment.momentId} d={getRoutePathSlice(segment, 0.06, 0.16)} fill="none" stroke="#fcd34d" strokeOpacity="0.78" strokeWidth="5" strokeDasharray="8 7" strokeLinecap="round" />
+        ))}
+        {animate && <path pathLength="1000" d={fullPath} className="ga-academy-cable-pulse" fill="none" stroke="#fef3c7" strokeWidth="3" strokeLinecap="round" />}
+      </svg>
+
+      <div
+        data-cable-terminal="start"
+        className="pointer-events-none absolute z-[2] h-8 w-8 -translate-x-1/2 -translate-y-1/2"
+        style={{ left: `${(DESKTOP_START_POINT.x / 1000) * 100}%`, top: `${(DESKTOP_START_POINT.y / 600) * 100}%` }}
+        aria-hidden="true"
+      >
+        <MyAcademyRouteTerminal kind="start" />
+      </div>
+
+      <div
+        data-cable-terminal="end"
+        className="pointer-events-none absolute z-[2] h-8 w-8 -translate-x-1/2 -translate-y-1/2"
+        style={{ left: `${(DESKTOP_END_POINT.x / 1000) * 100}%`, top: `${(DESKTOP_END_POINT.y / 600) * 100}%` }}
+        aria-hidden="true"
+      >
+        <MyAcademyRouteTerminal kind="end" />
+      </div>
+    </>
   );
 };
 
@@ -90,29 +94,21 @@ const MobileCable: React.FC<Omit<MyAcademyCableRouteProps, 'mobile'>> = ({ anima
       </svg>
 
       <div
-        data-cable-connector="start"
-        className="pointer-events-none absolute z-[2] h-7 w-[76px] origin-center"
-        style={{
-          left: '32%',
-          top: 38,
-          transform: 'translate(-50%, -92%) rotate(90deg)',
-        }}
+        data-cable-terminal="start"
+        className="pointer-events-none absolute z-[2] h-8 w-8 -translate-x-1/2 -translate-y-1/2"
+        style={{ left: '32%', top: 38 }}
         aria-hidden="true"
       >
-        <StartConnector />
+        <MyAcademyRouteTerminal kind="start" />
       </div>
 
       <div
-        data-cable-connector="end"
-        className="pointer-events-none absolute z-[2] h-7 w-[78px] origin-center"
-        style={{
-          left: `${geometry.finalPoint.x}%`,
-          top: geometry.finalPoint.y,
-          transform: 'translate(-50%, -8%) rotate(90deg)',
-        }}
+        data-cable-terminal="end"
+        className="pointer-events-none absolute z-[2] h-8 w-8 -translate-x-1/2 -translate-y-1/2"
+        style={{ left: `${geometry.finalPoint.x}%`, top: geometry.finalPoint.y }}
         aria-hidden="true"
       >
-        <EndConnector />
+        <MyAcademyRouteTerminal kind="end" />
       </div>
     </>
   );

@@ -43,6 +43,7 @@ const MyAcademyCompanionChooser: React.FC<MyAcademyCompanionChooserProps> = ({ l
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">{isPt ? 'Um convite de Clara' : 'An invitation from Clara'}</p>
           <h2 className="mt-1 text-lg font-black text-white">{isPt ? 'Quem você gostaria que acompanhasse os próximos passos?' : 'Who would you like to accompany your next steps?'}</h2>
           <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-300">{isPt ? 'Esta escolha é opcional, pode ser alterada a qualquer momento e não muda o currículo nem bloqueia caminhos.' : 'This choice is optional, can be changed at any time, and does not change the curriculum or block paths.'}</p>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-300">{isPt ? 'Você encontrará ambos ao longo da jornada. Escolha apenas qual perspectiva deseja ter mais próxima neste momento.' : 'You will find both of them along the journey. Just choose which perspective you would like to have closer right now.'}</p>
         </div>
       </div>
 

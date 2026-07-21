@@ -140,7 +140,7 @@ const MyAcademyCableModules: React.FC<MyAcademyCableModulesProps> = ({
         right: overlayRect.right - 12,
         bottom: overlayRect.bottom - 12,
       };
-      const protectedRects = Array.from(root.querySelectorAll<HTMLElement>('[data-waypoint-protected], [data-cable-connector]'))
+      const protectedRects = Array.from(root.querySelectorAll<HTMLElement>('[data-waypoint-protected], [data-cable-terminal]'))
         .map(element => element.getBoundingClientRect())
         .filter(isVisibleRect)
         .map(toRect);
