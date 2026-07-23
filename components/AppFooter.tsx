@@ -93,6 +93,16 @@ const AppFooter: React.FC<AppFooterProps> = ({
               {lang === 'pt' ? 'Temporada 1' : 'Season 1'}
             </a>
             <a
+              href="/gear"
+              onClick={event => {
+                event.preventDefault();
+                navigateTo('/gear');
+              }}
+              className="cursor-pointer transition-colors hover:text-blue-600"
+            >
+              {lang === 'pt' ? 'Gear' : 'Gear'}
+            </a>
+            <a
               href="/about"
               onClick={event => {
                 event.preventDefault();
