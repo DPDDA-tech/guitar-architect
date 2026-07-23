@@ -11,6 +11,12 @@ dist
 
 .vercel
 
+# Supabase CLI local link cache (contains a pooler connection string)
+supabase/.temp/
+
+# Claude Code local configuration (not part of the app)
+.claude/
+
 # Codex local environment
 .codex-edge-profile/
 *.patch
