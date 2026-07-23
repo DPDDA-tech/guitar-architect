@@ -105,6 +105,44 @@ export async function fetchOwnGearFeedback(productId: string): Promise<GearFeedb
   };
 }
 
+// Structured error codes the Edge Function itself returns as
+// `{ "error": "<code>" }` — see supabase/functions/submit-gear-feedback.
+// Anything in this set maps to the same "review your answers" message.
+const VALIDATION_ERROR_CODES = new Set([
+  'invalid_payload',
+  'invalid_product',
+  'invalid_interest',
+  'missing_use_contexts',
+  'too_many_use_contexts',
+  'invalid_use_context',
+  'invalid_priority',
+  'invalid_other_use_context',
+  'other_use_context_too_long',
+  'invalid_comment',
+  'comment_too_long',
+  'invalid_email',
+  'email_too_long',
+  'missing_turnstile_token',
+  'invalid_json',
+  'method_not_allowed',
+]);
+
+/**
+ * Safely reads the Edge Function's structured `{ "error": "<code>" }` body
+ * out of the Response the supabase-js SDK attaches to a FunctionsHttpError
+ * as `error.context`. Never throws — a malformed/unreadable body just means
+ * no code was recovered, and callers fall back to a generic message.
+ */
+async function extractEdgeFunctionErrorCode(context: Response | undefined): Promise<string | undefined> {
+  if (!context) return undefined;
+  try {
+    const body = await context.clone().json();
+    return typeof body?.error === 'string' ? body.error : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function submitGearFeedback(payload: GearFeedbackSubmitPayload): Promise<GearFeedbackSubmitResult> {
   const { data, error } = await supabase.functions.invoke('submit-gear-feedback', {
     body: payload,
@@ -112,19 +150,40 @@ export async function submitGearFeedback(payload: GearFeedbackSubmitPayload): Pr
 
   if (error) {
     const context = (error as { context?: Response }).context;
-    if (context?.status === 429) {
+    const code = await extractEdgeFunctionErrorCode(context);
+
+    if (context?.status === 429 || code === 'rate_limited') {
       throw new GearFeedbackError({
         kind: 'rate_limited',
         message: 'Muitas tentativas. Aguarde um momento e tente novamente.',
       });
     }
-    if (context?.status && context.status >= 400 && context.status < 500) {
+    if (code === 'turnstile_failed') {
+      throw new GearFeedbackError({
+        kind: 'validation',
+        message: 'Não foi possível confirmar a verificação de segurança. Tente novamente.',
+      });
+    }
+    if (code === 'authentication_required') {
+      throw new GearFeedbackError({
+        kind: 'auth_unavailable',
+        message: 'Sua sessão expirou ou não pôde ser criada. Recarregue a página e tente novamente.',
+      });
+    }
+    if ((code && VALIDATION_ERROR_CODES.has(code)) || (context?.status && context.status >= 400 && context.status < 500)) {
       throw new GearFeedbackError({
         kind: 'validation',
         message: 'Não foi possível validar sua opinião. Revise os campos e tente novamente.',
       });
     }
-    throw new GearFeedbackError({ kind: 'network', message: error.message });
+
+    // Covers 500s (e.g. "unexpected_error") and any other case: never
+    // surface the raw SDK message (things like "Edge Function returned a
+    // non-2xx status code") to the user.
+    throw new GearFeedbackError({
+      kind: 'unexpected',
+      message: 'Não foi possível registrar sua opinião agora. Tente novamente em instantes.',
+    });
   }
 
   if (!data || typeof data.status !== 'string') {

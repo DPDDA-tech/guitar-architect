@@ -14,12 +14,17 @@ const MIGRATION_PATH = path.resolve(
   __dirname,
   '../supabase/migrations/20260723000215_gear_public_feedback.sql'
 );
+const SERVICE_ROLE_GRANTS_MIGRATION_PATH = path.resolve(
+  __dirname,
+  '../supabase/migrations/20260723035421_gear_public_feedback_service_role_grants.sql'
+);
 const EDGE_FUNCTION_PATH = path.resolve(
   __dirname,
   '../supabase/functions/submit-gear-feedback/index.ts'
 );
 
 const migrationSql = fs.readFileSync(MIGRATION_PATH, 'utf8');
+const serviceRoleGrantsMigrationSql = fs.readFileSync(SERVICE_ROLE_GRANTS_MIGRATION_PATH, 'utf8');
 const edgeFunctionSource = fs.readFileSync(EDGE_FUNCTION_PATH, 'utf8');
 
 // Strip SQL line comments so a "-- create policy ... for insert" mentioned
@@ -234,5 +239,43 @@ describe('Frontend: no direct write path to gear_public_feedback, no service rol
     const clientPath = path.join(PROJECT_ROOT, 'utils/gearFeedbackClient.ts');
     const content = fs.readFileSync(clientPath, 'utf8');
     expect(content).toMatch(/supabase\.functions\.invoke\(\s*['"]submit-gear-feedback['"]/);
+  });
+});
+
+describe('Corrective migration: service_role grants on gear_public_feedback', () => {
+  const stripped = stripSqlComments(serviceRoleGrantsMigrationSql);
+
+  it('grants exactly select, insert, update on gear_public_feedback to service_role', () => {
+    const grantStatements = [...stripped.matchAll(/grant\s+([^;]+?)\s+on\s+table\s+public\.gear_public_feedback\s+to\s+([^;]+);/gi)];
+    expect(grantStatements).toHaveLength(1);
+    const [, privileges, roles] = grantStatements[0];
+    const privilegeList = privileges.toLowerCase().replace(/\s+/g, ' ').trim();
+    expect(privilegeList).toBe('select, insert, update');
+    expect(roles.trim().toLowerCase()).toBe('service_role');
+  });
+
+  it('does not grant anything on gear_feedback_rate_limits (access stays exclusive to the security definer RPC)', () => {
+    expect(stripped).not.toMatch(/gear_feedback_rate_limits/i);
+  });
+
+  it('does not touch RLS, policies, or any other object — grants only', () => {
+    expect(stripped).not.toMatch(/create\s+policy/i);
+    expect(stripped).not.toMatch(/drop\s+policy/i);
+    expect(stripped).not.toMatch(/alter\s+table/i);
+    expect(stripped).not.toMatch(/create\s+trigger/i);
+    expect(stripped).not.toMatch(/create\s+(or\s+replace\s+)?function/i);
+    expect(stripped).not.toMatch(/drop\s+table/i);
+  });
+
+  it('does not edit the already-applied original migration', () => {
+    // Sanity check: the original migration file must still exist unchanged
+    // in its grant shape (authenticated stays select-only) — this corrective
+    // migration is additive, in its own new file. Uses the same
+    // comment-stripped source as the rest of the suite so a "grant" mentioned
+    // only in prose above the real statement can't be matched instead.
+    const originalStripped = stripSqlComments(migrationSql);
+    const originalGrant = originalStripped.match(/grant\s+([^;]+?)\s+on\s+table\s+public\.gear_public_feedback\s+to\s+([^;]+);/i);
+    expect(originalGrant?.[1].toLowerCase().trim()).toBe('select');
+    expect(originalGrant?.[2].trim().toLowerCase()).toBe('authenticated');
   });
 });
