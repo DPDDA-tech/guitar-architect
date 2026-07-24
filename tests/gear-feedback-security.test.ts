@@ -31,7 +31,7 @@ const edgeFunctionSource = fs.readFileSync(EDGE_FUNCTION_PATH, 'utf8');
 // only in prose can't accidentally satisfy (or fail) a regex check.
 const stripSqlComments = (sql: string) =>
   sql
-    .split('\n')
+    .split(/\r\n|\n/)
     .map(line => line.replace(/--.*$/, ''))
     .join('\n');
 

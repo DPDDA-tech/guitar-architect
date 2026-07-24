@@ -477,6 +477,12 @@ const GearPage: React.FC = () => {
             </p>
           </div>
 
+          <p className={`mb-8 rounded-2xl border px-5 py-4 text-center text-xs font-semibold leading-relaxed md:text-sm ${accentPanelClass} ${isLight ? 'text-zinc-700' : 'text-zinc-200'}`}>
+            {isPt
+              ? 'A Gear não é uma loja. Não há produtos à venda, preços, pedidos, pagamentos ou reservas. Os itens apresentados são conceitos em consulta pública. Qualquer comercialização futura dependerá de validação e do prévio atendimento às exigências legais e operacionais aplicáveis.'
+              : 'Gear is not a store. There are no products for sale, prices, orders, payments or reservations. The items shown are concepts under public consultation. Any future commercialization will depend on validation and on first meeting the applicable legal and operational requirements.'}
+          </p>
+
           <div className={`rounded-[40px] border p-8 md:p-12 ${cardClass}`}>
             <div className={`mb-8 overflow-hidden rounded-3xl border ${isLight ? 'border-zinc-200 bg-zinc-50' : 'border-blue-950/70 bg-zinc-900'}`}>
               <video
@@ -616,7 +622,7 @@ const GearPage: React.FC = () => {
                     const applyAvailableDarkTreatment = group.id === 'available' && !isLight;
                     return (
                       <div key={group.id} className={`rounded-2xl border p-4 ${panelClass}`}>
-                        <h3 className={`flex items-center gap-1.5 text-xs font-black uppercase tracking-widest ${group.accent}`}>
+                        <h3 className={`flex min-h-10 items-center gap-1.5 text-xs font-black uppercase leading-tight tracking-widest ${group.accent}`}>
                           <span aria-hidden="true">{group.badge}</span> {group.title}
                         </h3>
                         <div className={`relative mt-3 aspect-[4/3] overflow-hidden rounded-xl border border-dashed ${group.border} ${isLight ? 'bg-zinc-50' : 'bg-zinc-900/40'}`}>
