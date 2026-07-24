@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { loadConfig } from '../utils/persistence';
 import { getGlobalLang, getGlobalTheme, setGlobalPreferences } from '../utils/ecosystemPreferences';
 import { getGuestSpecialistById } from '../data/guestSpecialists';
+import { getGuestSpecialistProfileContent } from '../data/guestSpecialistProfileContent';
 import AppFooter from './AppFooter';
 
 type ThemeMode = 'light' | 'dark';
@@ -64,7 +65,9 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
     setLang(nextLang);
   };
 
-  if (!specialist || specialist.status !== 'active') {
+  const content = specialist ? getGuestSpecialistProfileContent(specialist.id) : undefined;
+
+  if (!specialist || specialist.status !== 'active' || !content) {
     return (
       <main className="min-h-screen bg-zinc-950 p-8 text-white">
         <button type="button" onClick={() => navigateTo('/instructors')} className="text-xs font-black uppercase tracking-widest text-blue-500">
@@ -75,11 +78,12 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
     );
   }
 
-  const title = specialist.name ?? specialist.cardName ?? 'Helena Mascarenhas de Mello Villaça';
+  const title = specialist.name ?? specialist.cardName ?? '';
+  const guestBadgeLabel = specialist.guestBadgeLabel?.[lang] ?? (lang === 'pt' ? 'Especialista convidada' : 'Guest specialist');
   const specialty = specialist.specialty?.[lang] ?? '';
-  const description = specialist.shortDescription?.[lang] ?? '';
+  const description = specialist.heroDescription?.[lang] ?? specialist.shortDescription?.[lang] ?? '';
   const quote = specialist.quote?.[lang] ?? '';
-  const biography = specialist.biography?.[lang] ?? '';
+  const biographyParagraphs = (specialist.biography?.[lang] ?? '').split(/\n{2,}/).filter(Boolean);
 
   const gridStyle: React.CSSProperties = {
     backgroundImage: `linear-gradient(${isLight ? '#e2e8f0' : '#1e293b'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#e2e8f0' : '#1e293b'} 1px, transparent 1px)`,
@@ -95,158 +99,6 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
   const actionClass = isLight
     ? 'border-zinc-300 bg-white text-zinc-700 hover:border-blue-400'
     : 'border-zinc-700 bg-zinc-900 text-zinc-200 hover:border-blue-500';
-
-  const identity = lang === 'pt'
-    ? [
-        ['Nome completo', 'Helena Mascarenhas de Mello Villaça'],
-        ['Nome de exibição', 'Dra. Helena Villaça'],
-        ['Idade', '43 anos'],
-        ['Data de nascimento', '18 de setembro'],
-        ['Local de nascimento', 'Belo Horizonte, Minas Gerais'],
-        ['Onde vive', 'Juiz de Fora, Minas Gerais'],
-        ['Nacionalidade', 'Brasileira'],
-        ['Profissão', 'Médica fisiatra'],
-        ['Área de atuação', 'Saúde musculoesquelética e funcional de músicos'],
-        ['Formação complementar', 'Medicina do esporte, ergonomia, dor musculoesquelética e reabilitação funcional'],
-        ['Instrumento', 'Violão'],
-        ['Nível musical', 'Amadora dedicada'],
-        ['Papel no Guitar Architect', 'Especialista em Saúde do Músico'],
-        ['Vínculo institucional', 'Consultora do Guitar Architect My Academy e integrante da rede de apoio à jornada musical'],
-        ['Personagem', 'Fictícia, criada com auxílio de inteligência artificial'],
-      ]
-    : [
-        ['Full name', 'Helena Mascarenhas de Mello Villaça'],
-        ['Display name', 'Dr. Helena Villaça'],
-        ['Age', '43 years old'],
-        ['Date of birth', 'September 18'],
-        ['Place of birth', 'Belo Horizonte, Minas Gerais, Brazil'],
-        ['Lives in', 'Juiz de Fora, Minas Gerais, Brazil'],
-        ['Nationality', 'Brazilian'],
-        ['Profession', 'Physiatrist'],
-        ['Field', 'Musculoskeletal and functional health for musicians'],
-        ['Additional training', 'Sports medicine, ergonomics, musculoskeletal pain and functional rehabilitation'],
-        ['Instrument', 'Acoustic guitar'],
-        ['Musical level', 'Dedicated amateur'],
-        ['Role at Guitar Architect', 'Musician Health Specialist'],
-        ['Institutional link', 'Consultant to Guitar Architect My Academy and member of the musical journey support network'],
-        ['Character', 'Fictional, created with the aid of artificial intelligence'],
-      ];
-
-  const principles = lang === 'pt'
-    ? [
-        ['O corpo não é apenas um suporte para o instrumento', 'Respiração, estabilidade, mobilidade, coordenação e controle de força participam diretamente da produção sonora e da execução.'],
-        ['Dor não é requisito para evolução', 'Esforço e fadiga podem ocorrer, mas desconfortos persistentes ou progressivos não devem ser normalizados como prova de dedicação.'],
-        ['A melhor postura não é uma posição rígida', 'Uma postura saudável combina estabilidade, mobilidade e variação, evitando sobrecarga prolongada e tensão desnecessária.'],
-        ['A prevenção começa na rotina', 'Pequenos ajustes diários na prática, no ambiente e no uso do instrumento podem ser mais eficazes do que agir apenas depois do aparecimento de uma lesão.'],
-      ]
-    : [
-        ['The body is not merely an instrument support', 'Breathing, stability, mobility, coordination and force control directly participate in sound production and performance.'],
-        ['Pain is not a requirement for progress', 'Effort and fatigue may occur, but persistent or progressive discomfort should not be normalized as proof of dedication.'],
-        ['The best posture is not rigid', 'Healthy posture combines stability, mobility and variation while avoiding prolonged overload and unnecessary tension.'],
-        ['Prevention begins in the routine', 'Small daily adjustments to practice, environment and instrument use may be more effective than acting only after an injury appears.'],
-      ];
-
-  const pausa = lang === 'pt'
-    ? [
-        ['P', 'Perceba', 'Reconheça as sensações presentes antes, durante e depois da prática.'],
-        ['A', 'Ajuste', 'Observe instrumento, cadeira, apoio, correia, tela, partitura e ambiente.'],
-        ['U', 'Use menos tensão', 'Identifique força excessiva e movimentos desnecessários.'],
-        ['S', 'Segmente o estudo', 'Divida a prática em blocos compatíveis com seu condicionamento e com a dificuldade do conteúdo.'],
-        ['A', 'Avalie os sinais', 'Diferencie fadiga transitória de sintomas persistentes ou progressivos que exigem atenção profissional.'],
-      ]
-    : [
-        ['P', 'Perceive', 'Notice sensations before, during and after practice.'],
-        ['A', 'Adjust', 'Review the instrument, chair, support, strap, screen, score and environment.'],
-        ['U', 'Use less tension', 'Identify excessive force and unnecessary movements.'],
-        ['S', 'Segment practice', 'Divide practice into blocks suited to your conditioning and the difficulty of the material.'],
-        ['A', 'Assess the signs', 'Distinguish temporary fatigue from persistent or progressive symptoms that require professional attention.'],
-      ];
-
-  const warningSigns = lang === 'pt'
-    ? ['Dor persistente ou progressiva', 'Formigamento ou alteração de sensibilidade', 'Perda de força', 'Limitação de movimento', 'Trauma', 'Zumbido', 'Audição abafada ou redução auditiva', 'Outro sintoma que interfira na prática ou nas atividades diárias']
-    : ['Persistent or progressive pain', 'Tingling or altered sensation', 'Loss of strength', 'Restricted movement', 'Trauma', 'Tinnitus', 'Muffled hearing or hearing reduction', 'Any symptom that interferes with practice or daily activities'];
-
-  const referenceGroups = lang === 'pt'
-    ? [
-        {
-          heading: 'Medicina Física e Reabilitação',
-          kindLabel: 'Instituição de referência',
-          items: [
-            ['American Academy of Physical Medicine and Rehabilitation (AAPM&R) — About Physiatry', 'https://www.aapmr.org/about-physiatry'],
-          ],
-        },
-        {
-          heading: 'Saúde musculoesquelética do músico',
-          kindLabel: 'Revisão científica',
-          items: [
-            ['Rotter et al. — Musculoskeletal disorders and complaints in professional musicians: a systematic review (2020)', 'https://pubmed.ncbi.nlm.nih.gov/31482285/'],
-            ['Kok et al. — The occurrence of musculoskeletal complaints among professional musicians: a systematic review (2016)', 'https://pubmed.ncbi.nlm.nih.gov/26563718/'],
-          ],
-        },
-        {
-          heading: 'Ergonomia e prevenção aplicada ao músico',
-          kindLabel: 'Artigo científico',
-          items: [
-            ['Foxman & Burgel — Musician health and safety: Preventing playing-related musculoskeletal disorders (2006)', 'https://pubmed.ncbi.nlm.nih.gov/16862878/'],
-          ],
-        },
-        {
-          heading: 'Medicina das artes performáticas',
-          kindLabel: 'Instituição de referência',
-          items: [
-            ['Performing Arts Medicine Association', 'https://artsmed.org/'],
-          ],
-        },
-        {
-          heading: 'Saúde auditiva',
-          kindLabel: 'Materiais educativos oficiais',
-          items: [
-            ['Organização Mundial da Saúde — Making Listening Safe', 'https://www.who.int/activities/making-listening-safe/'],
-            ['Organização Mundial da Saúde — Safe listening', 'https://www.who.int/news-room/questions-and-answers/item/deafness-and-hearing-loss-safe-listening'],
-            ['CDC/NIOSH — Reducing the Risk of Hearing Disorders among Musicians', 'https://www.cdc.gov/niosh/docs/wp-solutions/2015-184/'],
-          ],
-        },
-      ]
-    : [
-        {
-          heading: 'Physical Medicine and Rehabilitation',
-          kindLabel: 'Reference institution',
-          items: [
-            ['American Academy of Physical Medicine and Rehabilitation (AAPM&R) — About Physiatry', 'https://www.aapmr.org/about-physiatry'],
-          ],
-        },
-        {
-          heading: 'Musculoskeletal health of musicians',
-          kindLabel: 'Systematic review',
-          items: [
-            ['Rotter et al. — Musculoskeletal disorders and complaints in professional musicians: a systematic review (2020)', 'https://pubmed.ncbi.nlm.nih.gov/31482285/'],
-            ['Kok et al. — The occurrence of musculoskeletal complaints among professional musicians: a systematic review (2016)', 'https://pubmed.ncbi.nlm.nih.gov/26563718/'],
-          ],
-        },
-        {
-          heading: 'Ergonomics and prevention applied to musicians',
-          kindLabel: 'Scientific article',
-          items: [
-            ['Foxman & Burgel — Musician health and safety: Preventing playing-related musculoskeletal disorders (2006)', 'https://pubmed.ncbi.nlm.nih.gov/16862878/'],
-          ],
-        },
-        {
-          heading: 'Performing arts medicine',
-          kindLabel: 'Reference institution',
-          items: [
-            ['Performing Arts Medicine Association', 'https://artsmed.org/'],
-          ],
-        },
-        {
-          heading: 'Hearing health',
-          kindLabel: 'Official educational materials',
-          items: [
-            ['World Health Organization — Making Listening Safe', 'https://www.who.int/activities/making-listening-safe/'],
-            ['World Health Organization — Safe listening', 'https://www.who.int/news-room/questions-and-answers/item/deafness-and-hearing-loss-safe-listening'],
-            ['CDC/NIOSH — Reducing the Risk of Hearing Disorders among Musicians', 'https://www.cdc.gov/niosh/docs/wp-solutions/2015-184/'],
-          ],
-        },
-      ];
 
   return (
     <>
@@ -277,11 +129,11 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
               </video>
             ) : null}
             <div className="p-7 text-center md:p-12">
-              <p className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-500">{lang === 'pt' ? 'Especialista convidada' : 'Guest specialist'}</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-500">{guestBadgeLabel}</p>
               <h1 className="mt-3 text-4xl font-black uppercase tracking-tighter md:text-6xl">{title}</h1>
               <p className="mt-2 text-sm font-black uppercase tracking-widest text-blue-500">{specialty}</p>
               <p className={`mx-auto mt-4 max-w-3xl text-sm font-semibold leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                {lang === 'pt' ? 'Saúde do músico · Prevenção de lesões · Ergonomia · Consciência corporal · Hábitos de estudo saudáveis' : 'Musician health · Injury prevention · Ergonomics · Body awareness · Healthy practice habits'}
+                {content.taglineLine[lang]}
               </p>
               {quote ? <blockquote className={`mx-auto mt-7 max-w-3xl text-lg font-semibold italic leading-relaxed ${isLight ? 'text-zinc-700' : 'text-zinc-200'}`}>“{quote}”</blockquote> : null}
               <p className={`mx-auto mt-6 max-w-3xl text-sm leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{description}</p>
@@ -289,85 +141,91 @@ const GuestSpecialistProfilePage: React.FC<GuestSpecialistProfilePageProps> = ({
           </section>
 
           <section className={`mt-8 rounded-3xl border p-6 md:p-8 ${panelClass}`}>
-            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{lang === 'pt' ? 'Identidade da personagem' : 'Character identity'}</h2>
+            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{content.identityTitle[lang]}</h2>
             <dl className="mt-5 grid gap-3 md:grid-cols-2">
-              {identity.map(([label, value]) => (
-                <div key={label} className={`rounded-2xl border p-4 ${softPanelClass}`}>
-                  <dt className={`text-[9px] font-black uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>{label}</dt>
-                  <dd className="mt-1 text-sm font-semibold leading-relaxed">{value}</dd>
+              {content.identity.map(field => (
+                <div key={field.label.pt} className={`rounded-2xl border p-4 ${softPanelClass}`}>
+                  <dt className={`text-[9px] font-black uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>{field.label[lang]}</dt>
+                  <dd className="mt-1 text-sm font-semibold leading-relaxed">{field.value[lang]}</dd>
                 </div>
               ))}
             </dl>
           </section>
 
           <section className={`mt-6 rounded-3xl border p-6 md:p-8 ${panelClass}`}>
-            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{lang === 'pt' ? 'Trajetória' : 'Background'}</h2>
-            <p className={`mt-4 text-sm leading-7 ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>{biography}</p>
+            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{content.backgroundTitle[lang]}</h2>
+            {biographyParagraphs.map((paragraph, index) => (
+              <p key={index} className={`mt-4 text-sm leading-7 ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>{paragraph}</p>
+            ))}
           </section>
 
           <section className={`mt-6 rounded-3xl border p-6 md:p-8 ${panelClass}`}>
-            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{lang === 'pt' ? 'Filosofia profissional' : 'Professional philosophy'}</h2>
+            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{content.philosophyTitle[lang]}</h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {principles.map(([heading, body]) => (
-                <article key={heading} className={`rounded-2xl border p-5 ${softPanelClass}`}>
-                  <h3 className="text-sm font-black leading-snug">{heading}</h3>
-                  <p className={`mt-3 text-sm leading-6 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{body}</p>
+              {content.principles.map(principle => (
+                <article key={principle.heading.pt} className={`rounded-2xl border p-5 ${softPanelClass}`}>
+                  <h3 className="text-sm font-black leading-snug">{principle.heading[lang]}</h3>
+                  <p className={`mt-3 text-sm leading-6 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{principle.body[lang]}</p>
                 </article>
               ))}
             </div>
           </section>
 
           <section className={`mt-6 rounded-3xl border p-6 md:p-8 ${panelClass}`}>
-            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{lang === 'pt' ? 'Método P.A.U.S.A.' : 'P.A.U.S.A. method'}</h2>
+            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{content.methodTitle[lang]}</h2>
             <p className={`mt-3 text-sm leading-7 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
-              {lang === 'pt' ? 'Ferramenta educacional criada para o GA, destinada à construção de hábitos mais conscientes. Não constitui protocolo médico.' : 'An educational tool created for GA to support more conscious habits. It is not a medical protocol.'}
+              {content.methodIntro[lang]}
             </p>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {pausa.map(([letter, heading, body]) => (
-                <article key={`${letter}-${heading}`} className={`rounded-2xl border p-4 ${softPanelClass}`}>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-lg font-black text-white">{letter}</div>
-                  <h3 className="mt-4 text-sm font-black">{heading}</h3>
-                  <p className={`mt-2 text-xs leading-5 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{body}</p>
+            <div className={`mt-5 grid gap-4 ${content.methodColumnsClass}`}>
+              {content.methodSteps.map(step => (
+                <article key={`${step.letter}-${step.heading.pt}`} className={`rounded-2xl border p-4 ${softPanelClass}`}>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-lg font-black text-white">{step.letter}</div>
+                  <h3 className="mt-4 text-sm font-black">{step.heading[lang]}</h3>
+                  <p className={`mt-2 text-xs leading-5 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{step.body[lang]}</p>
                 </article>
               ))}
             </div>
           </section>
 
           <section className={`mt-6 rounded-3xl border p-6 md:p-8 ${panelClass}`}>
-            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{lang === 'pt' ? 'Quando procurar avaliação profissional' : 'When to seek professional assessment'}</h2>
+            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{content.whenToSeekTitle[lang]}</h2>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {warningSigns.map((item) => <div key={item} className={`rounded-2xl border p-4 text-sm font-semibold ${softPanelClass}`}>{item}</div>)}
+              {content.whenToSeekItems.map(item => <div key={item.pt} className={`rounded-2xl border p-4 text-sm font-semibold ${softPanelClass}`}>{item[lang]}</div>)}
             </div>
           </section>
 
           <section id="fontes-e-referencias" className={`mt-6 scroll-mt-24 rounded-3xl border p-6 md:p-8 ${panelClass}`}>
-            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{lang === 'pt' ? 'Fontes e referências' : 'Sources and references'}</h2>
+            <h2 className="text-sm font-black uppercase tracking-widest text-blue-500">{content.referencesTitle[lang]}</h2>
             <p className={`mt-3 text-sm leading-7 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
-              {lang === 'pt'
-                ? 'As orientações desta página se apoiam em fontes de naturezas diferentes — revisões científicas, artigos, instituições de referência e materiais educativos oficiais — cobrindo fisiatria, saúde musculoesquelética, ergonomia, medicina das artes performáticas e saúde auditiva. A natureza de cada fonte está identificada abaixo; elas não têm o mesmo peso probatório entre si.'
-                : 'The guidance on this page draws on sources of different natures — scientific reviews, articles, reference institutions and official educational materials — covering physiatry, musculoskeletal health, ergonomics, performing arts medicine and hearing health. Each source’s nature is identified below; they do not carry the same evidentiary weight.'}
+              {content.referencesIntro[lang]}
             </p>
             <div className="mt-5 space-y-6">
-              {referenceGroups.map(group => (
-                <div key={group.heading}>
+              {content.referenceGroups.map(group => (
+                <div key={group.heading.pt}>
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h3 className={`text-xs font-black uppercase tracking-widest ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>{group.heading}</h3>
-                    <span className={`text-[10px] font-black uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>{group.kindLabel}</span>
+                    <h3 className={`text-xs font-black uppercase tracking-widest ${isLight ? 'text-zinc-700' : 'text-zinc-300'}`}>{group.heading[lang]}</h3>
+                    {group.kindLabel ? <span className={`text-[10px] font-black uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>{group.kindLabel[lang]}</span> : null}
                   </div>
-                  <div className="mt-2 space-y-2">
-                    {group.items.map(([label, href]) => (
-                      <a key={href} href={href} target="_blank" rel="noreferrer" className={`block rounded-2xl border p-4 text-sm font-bold transition hover:border-blue-500 ${softPanelClass}`}>{label} ↗</a>
-                    ))}
-                  </div>
+                  {group.items.length > 0 ? (
+                    <div className="mt-2 space-y-2">
+                      {group.items.map(item => (
+                        <a key={item.href} href={item.href} target="_blank" rel="noreferrer" className={`block rounded-2xl border p-4 text-sm font-bold transition hover:border-blue-500 ${softPanelClass}`}>{item.label} ↗</a>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
           </section>
 
           <div className={`mt-6 rounded-3xl border p-6 text-sm leading-relaxed ${isLight ? 'border-amber-200 bg-amber-50 text-amber-900' : 'border-amber-900/60 bg-amber-950/30 text-amber-200'}`}>
-            <p>{lang === 'pt' ? 'Conteúdo educacional: as orientações apresentadas são gerais e não substituem consulta, exame físico, diagnóstico ou tratamento por profissional habilitado. Em caso de sintomas persistentes, progressivos ou relevantes, interrompa a atividade e procure avaliação profissional.' : 'Educational content: the guidance presented is general and does not replace consultation, physical examination, diagnosis or treatment by a qualified professional. In case of persistent, progressive or relevant symptoms, stop the activity and seek professional assessment.'}</p>
-            <p className="mt-3">{lang === 'pt' ? 'As participações da Dra. Helena Villaça têm caráter exclusivamente educativo e são elaboradas com base em artigos, diretrizes e referências indicadas nas respectivas intervenções (veja "Fontes e referências" acima). Elas não constituem consulta, diagnóstico, prescrição ou tratamento médico individual e não substituem a avaliação de um profissional de saúde quando necessária.' : 'Dra. Helena Villaça’s participations are exclusively educational and are prepared based on articles, guidelines and references indicated in each intervention (see "Sources and references" above). They do not constitute consultation, diagnosis, prescription or individual medical treatment, and do not replace assessment by a health professional when needed.'}</p>
-            <p className="mt-3 text-xs opacity-75">{lang === 'pt' ? 'Dra. Helena Villaça é uma personagem fictícia criada para fins educacionais e narrativos. Sua imagem e seu vídeo foram gerados por inteligência artificial.' : 'Dr. Helena Villaça is a fictional character created for educational and narrative purposes. Her image and video were generated with artificial intelligence.'}</p>
+            {content.disclaimerParagraphs.map((paragraph, index) => {
+              const isFirst = index === 0;
+              const isLast = index === content.disclaimerParagraphs.length - 1;
+              return (
+                <p key={index} className={`${isFirst ? '' : 'mt-3'} ${isLast ? 'text-xs opacity-75' : ''}`}>{paragraph[lang]}</p>
+              );
+            })}
           </div>
         </div>
       </main>

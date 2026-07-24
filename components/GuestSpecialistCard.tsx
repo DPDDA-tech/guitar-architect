@@ -48,11 +48,11 @@ const GuestSpecialistCard: React.FC<GuestSpecialistCardProps> = ({ guest, isLigh
         {guest.cardImage && <img src={guest.cardImage} alt={guest.cardName} className="absolute inset-0 h-full w-full object-cover object-center" />}
       </div>
       <div className="flex flex-1 flex-col p-4">
-        <span className="w-fit rounded-full bg-blue-600 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white">{lang === 'pt' ? 'Especialista convidada' : 'Guest specialist'}</span>
+        <span className="w-fit rounded-full bg-blue-600 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white">{guest.guestBadgeLabel?.[lang] ?? (lang === 'pt' ? 'Especialista convidada' : 'Guest specialist')}</span>
         <h3 className={`mt-3 text-sm font-black uppercase tracking-tight ${isLight ? 'text-zinc-800' : 'text-white'}`}>{guest.cardName}</h3>
         <p className="text-[11px] font-bold uppercase tracking-widest text-blue-500">{guest.specialty[lang]}</p>
         <p className={`mt-2 text-xs leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>{guest.shortDescription[lang]}</p>
-        <p className={`mt-2 text-[9px] italic opacity-60 ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>{lang === 'pt' ? 'Personagem fictícia · IA' : 'Fictional character · AI'}</p>
+        <p className={`mt-2 text-[9px] italic opacity-60 ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>{guest.characterTagline?.[lang] ?? (lang === 'pt' ? 'Personagem fictícia · IA' : 'Fictional character · AI')}</p>
         <span className="mt-auto pt-4 text-[10px] font-black uppercase tracking-widest text-blue-500">{lang === 'pt' ? 'Ver perfil →' : 'View profile →'}</span>
       </div>
     </button>

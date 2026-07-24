@@ -9,6 +9,9 @@ export interface GuestSpecialist {
   cardName?: string;
   specialty: LocalizedText;
   shortDescription: LocalizedText;
+  heroDescription?: LocalizedText;
+  guestBadgeLabel?: LocalizedText;
+  characterTagline?: LocalizedText;
   cardImage?: string;
   profileImage?: string;
   presentationVideo?: string;
@@ -38,6 +41,8 @@ export const guestSpecialists: GuestSpecialist[] = [
       pt: 'Médica fisiatra dedicada à prevenção de lesões, ergonomia e construção de hábitos de prática mais sustentáveis.',
       en: 'A physiatrist focused on injury prevention, ergonomics and more sustainable practice habits.',
     },
+    guestBadgeLabel: { pt: 'Especialista convidada', en: 'Guest specialist' },
+    characterTagline: { pt: 'Personagem fictícia · IA', en: 'Fictional character · AI' },
     cardImage: '/guests/helena/helena-card-guest.webp',
     profileImage: '/guests/helena/helena-profile.webp',
     presentationVideo: '/guests/helena/helena-presentation.mp4',
@@ -72,12 +77,31 @@ export const guestSpecialists: GuestSpecialist[] = [
     },
   },
   {
-    id: 'carreira-negocios',
-    status: 'coming-soon',
-    specialty: { pt: 'Carreira, projetos e negócios musicais', en: 'Music career, projects and business' },
+    id: 'bernardo-alencar',
+    status: 'active',
+    name: 'Bernardo Ribeiro de Matos Alencar',
+    cardName: 'Bernardo Alencar',
+    specialty: { pt: 'Carreira e negócios da música', en: 'Music career and business' },
     shortDescription: {
-      pt: 'Organização profissional, projetos, receitas, posicionamento e desenvolvimento de carreira.',
-      en: 'Professional organization, projects, revenue, positioning and career development.',
+      pt: 'Empresário musical dedicado à organização de projetos, planejamento de carreira, receitas, posicionamento e relações profissionais.',
+      en: 'A music business manager focused on organizing projects, career planning, revenue, positioning and professional relationships.',
+    },
+    heroDescription: {
+      pt: 'Empresário musical dedicado à organização de projetos, planejamento de carreira e desenvolvimento de relações profissionais mais conscientes e sustentáveis.',
+      en: 'A music business manager focused on organizing projects, career planning and developing more conscious and sustainable professional relationships.',
+    },
+    guestBadgeLabel: { pt: 'Especialista convidado', en: 'Guest specialist' },
+    characterTagline: { pt: 'Personagem fictício · IA', en: 'Fictional character · AI' },
+    cardImage: '/guests/bernardo/bernardo-card-guest.webp',
+    profileImage: '/guests/bernardo/bernardo-profile.webp',
+    presentationVideo: '/guests/bernardo/bernardo-presentation.mp4',
+    quote: {
+      pt: 'Uma carreira não se constrói apenas com boas oportunidades, mas com critérios para reconhecer quais delas realmente fazem sentido.',
+      en: 'A career is not built on good opportunities alone, but on having criteria to recognize which of them truly make sense.',
+    },
+    biography: {
+      pt: 'Bernardo cresceu em um ambiente no qual música, cultura e organização profissional sempre estiveram próximas. Teve contato com instrumentos desde jovem e encontrou no saxofone uma forma pessoal de manter sua ligação com a prática musical, embora sua principal vocação profissional tenha se desenvolvido nos bastidores: estruturar projetos, organizar equipes e transformar iniciativas artísticas em atividades profissionalmente sustentáveis.\n\nAo acompanhar músicos e bandas em diferentes estágios, percebeu que muitos projetos consistentes encontravam dificuldades não por ausência de qualidade artística, mas por falta de planejamento, desconhecimento de custos, conflitos internos, escolhas precipitadas e pouca clareza sobre objetivos.\n\nSua atuação passou então a concentrar-se na gestão de carreira, no planejamento de lançamentos e apresentações, na análise de oportunidades e na construção de relações profissionais mais transparentes. No Guitar Architect, Bernardo ajuda o músico a compreender quando sua atividade começa a exigir organização, estratégia e apoio especializado.',
+      en: 'Bernardo grew up in an environment where music, culture and professional organization were always close together. He was exposed to instruments from a young age and found in the saxophone a personal way to stay connected to musical practice, although his main professional calling developed behind the scenes: structuring projects, organizing teams and turning artistic initiatives into professionally sustainable activities.\n\nWhile following musicians and bands through different stages, he noticed that many solid projects ran into trouble not for lack of artistic quality, but because of poor planning, unclear costs, internal conflicts, rushed choices and a lack of clarity about goals.\n\nHis work then came to focus on career management, planning releases and performances, analyzing opportunities and building more transparent professional relationships. At Guitar Architect, Bernardo helps musicians understand when their activity starts to require organization, strategy and specialized support.',
     },
   },
   {
